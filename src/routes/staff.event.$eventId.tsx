@@ -2,8 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserStaffAssignments } from "@/api/staff";
+import { getBadgeProjectByEventId } from "@/api/badges";
 import { useUserAuth } from "@/contexts/UserAuthContext";
-import { Lock, ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, XCircle, CheckCircle2, Ticket, Shield, ArrowRight } from "lucide-react";
+import { Lock, ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, XCircle, CheckCircle2, Ticket, Shield, ArrowRight, BadgeCheck } from "lucide-react";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
 import { getEventById } from "@/api/events";
 
@@ -176,6 +177,12 @@ function StaffEventDashboard() {
   const { data: eventDetails } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEventById({ data: { id: eventId } } as any),
+    enabled: !!eventId && isAuthenticated,
+  });
+
+  const { data: badgeProject } = useQuery({
+    queryKey: ["badge-project", eventId],
+    queryFn: () => getBadgeProjectByEventId({ data: { event_id: eventId } } as any),
     enabled: !!eventId && isAuthenticated,
   });
 
@@ -371,17 +378,31 @@ function StaffEventDashboard() {
           </div>
           
           <div className="pt-6">
-            <Link to="/events/$eventId" params={{ eventId }} className="block">
-              <div className="bg-secondary/30 border border-border/50 rounded-2xl p-4 flex items-center justify-between hover:bg-secondary/50 active:bg-secondary transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground/80">
-                    <ExternalLink className="h-5 w-5" />
+            {assignment?.badge_qr_string && badgeProject ? (
+              <Link to="/b/$qrString" params={{ qrString: assignment.badge_qr_string }} className="block">
+                <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between hover:bg-primary/20 active:bg-primary/30 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                      <BadgeCheck className="h-5 w-5" />
+                    </div>
+                    <h4 className="font-bold text-primary">See Your Badge</h4>
                   </div>
-                  <h4 className="font-bold">View Event Page</h4>
+                  <ArrowRight className="h-5 w-5 text-primary/70" />
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </Link>
+              </Link>
+            ) : (
+              <Link to="/events/$eventId" params={{ eventId }} className="block">
+                <div className="bg-secondary/30 border border-border/50 rounded-2xl p-4 flex items-center justify-between hover:bg-secondary/50 active:bg-secondary transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground/80">
+                      <ExternalLink className="h-5 w-5" />
+                    </div>
+                    <h4 className="font-bold">View Event Page</h4>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </main>
