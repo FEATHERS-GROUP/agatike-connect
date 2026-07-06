@@ -1912,11 +1912,6 @@ flowchart TD
     Sim --> Rev["Agatike Revenue = Customer Fee + Organizer Subscription Fee"]
     Sim --> Cost["Total Cost = PawaPay Collection Cost"]
 
-### 24.2.1 Fee Presentation on Pricing Plans
-
-To ensure full transparency to the Organizer on the **Pricing Plans** page:
-- **Collection Fee Display:** We display the *maximum* possible network fee for their country, minus the 2% paid by the customer. E.g. If the highest network fee in Rwanda is Airtel at 3.1%, the Organizer's displayed fee is `3.1% - 2.0% = 1.1% per ticket`. This guarantees they are aware of the maximum possible fallback cost.
-
     Cost & Rev --> Check{Is Revenue < Cost?}
 
     Check -->|No - Profitable| Proceed["Approve Checkout"]
@@ -1930,6 +1925,11 @@ To ensure full transparency to the Organizer on the **Pricing Plans** page:
     Proceed --> PawaPay["Send Charge to PawaPay"]
     PawaPay --> Wallet["Credit Organizer Wallet with Net Payout"]
 ```
+
+### 24.2.1 Fee Presentation on Pricing Plans
+
+To ensure full transparency to the Organizer on the **Pricing Plans** page:
+- **Collection Fee Display:** We display the *maximum* possible network fee for their country, minus the 2% paid by the customer. E.g. If the highest network fee in Rwanda is Airtel at 3.1%, the Organizer's displayed fee is `3.1% - 2.0% = 1.1% per ticket`. This guarantees they are aware of the maximum possible fallback cost.
 
 ### 24.3 Withdrawals and Wallet Logic
 
