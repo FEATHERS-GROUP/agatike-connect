@@ -22,6 +22,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { getStaffByBadgeId, getEventSections } from "@/api/staff";
 import { getWorkspaceEvents } from "@/api/events";
 import { scanAndVerifyTicket } from "@/api/attendees";
+import { scanVenueBooking } from "@/api/venue_bookings";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { lazy, Suspense } from "react";
 
@@ -321,6 +322,12 @@ export function ScannerMobile({
         return { type: "staff" as const, data: staff };
       } else {
         const res = await scanAndVerifyTicket({ data: { qrcode_number: qr } } as any);
+        if (!res.success && res.message === "Invalid ticket QR code.") {
+          const venueRes = await scanVenueBooking({ data: { otp: qr } } as any);
+          if (venueRes.booking || venueRes.message !== "otp is required") {
+            return { type: "venue" as const, data: venueRes };
+          }
+        }
         return { type: "ticket" as const, data: res };
       }
     },
@@ -364,6 +371,20 @@ export function ScannerMobile({
         }
 
         setScannedTicket(attendee);
+        setResult("success");
+        onScanSuccess?.();
+      } else if (resultData.type === "venue") {
+        const { success, message, booking } = resultData.data;
+        if (!success) {
+          setResult("fail");
+          setFailReason(message.toUpperCase());
+          return;
+        }
+
+        setScannedTicket({
+          names: booking.customer_name,
+          qrcode_number: booking.venue_name || "VENUE BOOKING",
+        });
         setResult("success");
         onScanSuccess?.();
       }

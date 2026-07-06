@@ -13,7 +13,7 @@ async function run() {
     body: JSON.stringify({
       type: "run_sql",
       args: {
-        sql: "ALTER TABLE public.event_attendees ADD COLUMN IF NOT EXISTS scanned boolean DEFAULT false; ALTER TABLE public.event_attendees ADD COLUMN IF NOT EXISTS scanned_at timestamp with time zone;",
+        sql: "ALTER TABLE public.venue_bookings ADD COLUMN IF NOT EXISTS scanned boolean DEFAULT false; ALTER TABLE public.venue_bookings ADD COLUMN IF NOT EXISTS scanned_at timestamp with time zone;",
       },
     }),
   });
