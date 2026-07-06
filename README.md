@@ -1929,7 +1929,8 @@ flowchart TD
 ### 24.2.1 Fee Presentation on Pricing Plans
 
 To ensure full transparency to the Organizer on the **Pricing Plans** page:
-- **Collection Fee Display:** We display the *maximum* possible network fee for their country, minus the 2% paid by the customer. E.g. If the highest network fee in Rwanda is Airtel at 3.1%, the Organizer's displayed fee is `3.1% - 2.0% = 1.1% per ticket`. This guarantees they are aware of the maximum possible fallback cost.
+
+- **Collection Fee Display:** We display the _maximum_ possible network fee for their country, minus the 2% paid by the customer. E.g. If the highest network fee in Rwanda is Airtel at 3.1%, the Organizer's displayed fee is `3.1% - 2.0% = 1.1% per ticket`. This guarantees they are aware of the maximum possible fallback cost.
 
 ### 24.3 Withdrawals and Wallet Logic
 
@@ -2079,11 +2080,11 @@ flowchart TD
     Engine --> GetFees["Fetch Plan Fees & Provider Tiered Rates"]
     GetFees --> CalcRev["Calculate Customer & Organizer Fees"]
     CalcRev --> CalcCost["Calculate PawaPay Collection Cost"]
-    
+
     CalcCost --> CheckMargin{Cost > Revenue?}
     CheckMargin -->|Yes| Shortfall["Calculate Shortfall"]
     Shortfall --> SubsidyCheck{Shortfall > maxAllowedSubsidy?}
-    
+
     SubsidyCheck -->|Yes| Blocked["❌ Block Transaction: Unprofitable"]
     SubsidyCheck -->|No| Subsidized["✅ Subsidized: Organizer Absorbs"]
     CheckMargin -->|No| Approved["✅ Approved: Profitable"]

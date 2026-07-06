@@ -94,7 +94,7 @@ export const scanAndVerifyTicket = createServerFn({ method: "POST" })
   .validator((d: { qrcode_number: string }) => d)
   .handler(async (ctx) => {
     const { qrcode_number } = ctx.data;
-    
+
     // 1. Fetch attendee
     const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, {
       qrcode_number,
@@ -106,10 +106,10 @@ export const scanAndVerifyTicket = createServerFn({ method: "POST" })
     }
 
     if (attendee.scanned) {
-      return { 
-        success: false, 
-        message: "Ticket has already been scanned.", 
-        attendee 
+      return {
+        success: false,
+        message: "Ticket has already been scanned.",
+        attendee,
       };
     }
 
@@ -117,10 +117,10 @@ export const scanAndVerifyTicket = createServerFn({ method: "POST" })
     const scanned_at = new Date().toISOString();
     await hasuraRequest(UPDATE_ATTENDEE_SCANNED, { id: attendee.id, scanned_at });
 
-    return { 
-      success: true, 
-      message: "Ticket successfully scanned and verified.", 
-      attendee: { ...attendee, scanned: true, scanned_at } 
+    return {
+      success: true,
+      message: "Ticket successfully scanned and verified.",
+      attendee: { ...attendee, scanned: true, scanned_at },
     };
   });
 

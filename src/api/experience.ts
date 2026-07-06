@@ -298,7 +298,9 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
               data: {
                 userIds: targetUsers,
                 title: "New Post",
-                body: input.content ? `An organizer posted: "${input.content.slice(0, 40)}..."` : "An organizer you follow posted an update.",
+                body: input.content
+                  ? `An organizer posted: "${input.content.slice(0, 40)}..."`
+                  : "An organizer you follow posted an update.",
                 data: { url: `/community/${result.id}` },
               },
             } as any);

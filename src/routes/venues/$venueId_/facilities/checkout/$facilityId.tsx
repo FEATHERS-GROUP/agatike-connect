@@ -568,7 +568,10 @@ function FacilityCheckoutPage() {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Time (Daily)</span>
             <span className="font-medium text-right">
-              {`${Math.min(...selectedSlots).toString().padStart(2, "0")}:00`} - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
+              {`${Math.min(...selectedSlots)
+                .toString()
+                .padStart(2, "0")}:00`}{" "}
+              - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
             </span>
           </div>
         )}
@@ -816,7 +819,9 @@ function FacilityCheckoutPage() {
               />
             </div>
             {!summaryExpanded && (
-              <span className="font-bold text-primary text-sm">{formatCurrency(totalAmount, currency)}</span>
+              <span className="font-bold text-primary text-sm">
+                {formatCurrency(totalAmount, currency)}
+              </span>
             )}
           </div>
 

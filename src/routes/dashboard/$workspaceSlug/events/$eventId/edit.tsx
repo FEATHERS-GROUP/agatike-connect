@@ -189,7 +189,8 @@ function EditEventPage() {
       locations: tourStops,
       coverPreview: event.cover || "",
       allowed_public: !!event.allowed_public,
-      isUpcoming: tourStops[0]?.is_upcoming === true || String(tourStops[0]?.is_upcoming) === "true",
+      isUpcoming:
+        tourStops[0]?.is_upcoming === true || String(tourStops[0]?.is_upcoming) === "true",
       waitlistUrl: tourStops[0]?.waitlist_url || "",
       timerDate: tourStops[0]?.timer_date || "",
     });

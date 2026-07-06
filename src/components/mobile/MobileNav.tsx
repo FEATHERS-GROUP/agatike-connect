@@ -45,7 +45,8 @@ export function MobileNav() {
   });
 
   const activeAssignments = staffAssignments.filter((a: any) => {
-    const isExpired = a.event?.schedules?.[0]?.end_date && new Date(a.event.schedules[0].end_date) < new Date();
+    const isExpired =
+      a.event?.schedules?.[0]?.end_date && new Date(a.event.schedules[0].end_date) < new Date();
     return !isExpired;
   });
 

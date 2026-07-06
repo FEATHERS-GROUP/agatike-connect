@@ -293,15 +293,24 @@ export function ProfileMobile({
           <div className="space-y-4">
             {staffAssignments.length > 0 ? (
               staffAssignments.map((assignment: any) => {
-                const isExpired = assignment.event?.schedules?.[0]?.end_date && new Date(assignment.event.schedules[0].end_date) < new Date();
+                const isExpired =
+                  assignment.event?.schedules?.[0]?.end_date &&
+                  new Date(assignment.event.schedules[0].end_date) < new Date();
                 return (
-                  <div key={assignment.id} className={`bg-card border border-border/60 rounded-2xl p-4 shadow-sm ${isExpired ? "opacity-60" : ""}`}>
+                  <div
+                    key={assignment.id}
+                    className={`bg-card border border-border/60 rounded-2xl p-4 shadow-sm ${isExpired ? "opacity-60" : ""}`}
+                  >
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="font-bold text-lg">{assignment.event?.title || "Event Dashboard"}</h4>
+                        <h4 className="font-bold text-lg">
+                          {assignment.event?.title || "Event Dashboard"}
+                        </h4>
                         <p className="text-sm text-muted-foreground">{assignment.role}</p>
                       </div>
-                      <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${isExpired ? "bg-red-500/10 text-red-500" : "bg-emerald-500/10 text-emerald-500"}`}>
+                      <span
+                        className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${isExpired ? "bg-red-500/10 text-red-500" : "bg-emerald-500/10 text-emerald-500"}`}
+                      >
                         {isExpired ? "Expired" : "Active"}
                       </span>
                     </div>
@@ -309,7 +318,10 @@ export function ProfileMobile({
                       <p className="text-xs text-muted-foreground">Access expired</p>
                     ) : (
                       <Link to={`/staff/event/${assignment.event_id}`}>
-                        <Button className="w-full font-bold shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                        <Button
+                          className="w-full font-bold shadow-[var(--shadow-glow)]"
+                          style={{ background: "var(--gradient-primary)" }}
+                        >
                           Open Dashboard <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
                       </Link>

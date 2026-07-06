@@ -1,5 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, UserCheck, MapPin, ShieldAlert, Loader2, QrCode, Palette, UserPlus, FlipHorizontal } from "lucide-react";
+import {
+  Plus,
+  UserCheck,
+  MapPin,
+  ShieldAlert,
+  Loader2,
+  QrCode,
+  Palette,
+  UserPlus,
+  FlipHorizontal,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -398,7 +408,10 @@ function StaffView() {
         </div>
         <div className="flex gap-3">
           {canAddEventStaff(staff.length) && (
-            <Link to="/dashboard/$workspaceSlug/events/$eventId/staff/add" params={{ workspaceSlug, eventId }}>
+            <Link
+              to="/dashboard/$workspaceSlug/events/$eventId/staff/add"
+              params={{ workspaceSlug, eventId }}
+            >
               <Button className="gap-2 bg-[#f97316] hover:bg-[#ea580c] text-white">
                 <UserPlus className="w-4 h-4" />
                 Add Staff
@@ -462,8 +475,8 @@ function StaffView() {
                   const assignedSections =
                     s.allowed_sections && s.allowed_sections.length > 0
                       ? s.allowed_sections
-                        .map((id: string) => sections.find((sec: any) => sec.id === id))
-                        .filter(Boolean)
+                          .map((id: string) => sections.find((sec: any) => sec.id === id))
+                          .filter(Boolean)
                       : [];
                   const isUnregistered = !s.user_id && (s.first_name || s.last_name);
                   const displayName = isUnregistered
@@ -537,10 +550,11 @@ function StaffView() {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === "active"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            s.status === "active"
                               ? "bg-green-500/10 text-green-500"
                               : "bg-yellow-500/10 text-yellow-500"
-                            }`}
+                          }`}
                         >
                           {s.status}
                         </span>
@@ -553,15 +567,20 @@ function StaffView() {
                             className={`h-7 px-2 text-[10px] uppercase tracking-wider font-bold ${s.status === "active" ? "text-yellow-600 border-yellow-600/30 hover:bg-yellow-600/10" : "text-green-600 border-green-600/30 hover:bg-green-600/10"}`}
                             onClick={() => {
                               toast.promise(
-                                updateStaffStatus({ data: { id: s.id, status: s.status === "active" ? "disabled" : "active" } } as any),
+                                updateStaffStatus({
+                                  data: {
+                                    id: s.id,
+                                    status: s.status === "active" ? "disabled" : "active",
+                                  },
+                                } as any),
                                 {
                                   loading: s.status === "active" ? "Disabling..." : "Enabling...",
                                   success: () => {
                                     queryClient.invalidateQueries({ queryKey: ["event-staff"] });
                                     return `Staff ${s.status === "active" ? "disabled" : "enabled"}!`;
                                   },
-                                  error: "Failed to change status"
-                                }
+                                  error: "Failed to change status",
+                                },
                               );
                             }}
                           >
@@ -572,18 +591,19 @@ function StaffView() {
                             size="sm"
                             className="h-7 px-2 text-[10px] uppercase tracking-wider font-bold text-red-500 border-red-500/30 hover:bg-red-500/10"
                             onClick={() => {
-                              if (window.confirm("Are you sure you want to delete this staff member? This cannot be undone.")) {
-                                toast.promise(
-                                  deleteEventStaff({ data: { id: s.id } } as any),
-                                  {
-                                    loading: "Deleting...",
-                                    success: () => {
-                                      queryClient.invalidateQueries({ queryKey: ["event-staff"] });
-                                      return "Staff deleted successfully!";
-                                    },
-                                    error: "Failed to delete staff"
-                                  }
-                                );
+                              if (
+                                window.confirm(
+                                  "Are you sure you want to delete this staff member? This cannot be undone.",
+                                )
+                              ) {
+                                toast.promise(deleteEventStaff({ data: { id: s.id } } as any), {
+                                  loading: "Deleting...",
+                                  success: () => {
+                                    queryClient.invalidateQueries({ queryKey: ["event-staff"] });
+                                    return "Staff deleted successfully!";
+                                  },
+                                  error: "Failed to delete staff",
+                                });
                               }
                             }}
                           >
@@ -672,12 +692,15 @@ function StaffView() {
                       showUserImage: badgeProject.show_user_image,
                       accentColor: badgeProject.accent_color,
                       ...(badgeProject.front_design || {}),
+                      backText: badgeProject.back_design?.text || "",
                     }}
                     isDesigner={false}
                     mockUser={{
                       name:
-                        !selectedStaff.user_id && (selectedStaff.first_name || selectedStaff.last_name)
-                          ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim() || selectedStaff.email
+                        !selectedStaff.user_id &&
+                        (selectedStaff.first_name || selectedStaff.last_name)
+                          ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim() ||
+                            selectedStaff.email
                           : selectedStaff.first_name || selectedStaff.last_name
                             ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
                             : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,

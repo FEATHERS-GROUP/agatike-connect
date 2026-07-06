@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getStaffByBadgeId, getEventSections } from "@/api/staff";
 import { getBadgeProjectByEventId } from "@/api/badges";
 import { BadgePreview } from "@/components/badge-designer/BadgePreview";
-import { Loader2, ShieldAlert, X, Clock } from "lucide-react";
+import { Loader2, ShieldAlert, X, Clock, FlipHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/b/$qrString")({
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/b/$qrString")({
 
 function PublicBadgeRoute() {
   const { qrString } = Route.useParams();
+  const [activeSide, setActiveSide] = useState<"front" | "back">("front");
 
   const {
     data: staff,
@@ -145,7 +146,10 @@ function PublicBadgeRoute() {
               showUserImage: badgeProject.show_user_image,
               accentColor: badgeProject.accent_color,
               ...(badgeProject.front_design || {}),
+              backText: badgeProject.back_design?.text || "",
             }}
+            activeSide={activeSide}
+            setActiveSide={setActiveSide}
             isDesigner={false}
             mockUser={{
               name: name,
@@ -164,6 +168,15 @@ function PublicBadgeRoute() {
             }}
             sponsors={badgeProject.sponsors_json || []}
           />
+          <div className="flex justify-center mt-6 relative z-50">
+            <button
+              onClick={() => setActiveSide(activeSide === "front" ? "back" : "front")}
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full border border-white/20 flex items-center gap-2 backdrop-blur-md transition-colors shadow-lg"
+            >
+              <FlipHorizontal className="h-4 w-4" />
+              Flip to {activeSide === "front" ? "Back" : "Front"}
+            </button>
+          </div>
         </div>
       ) : (
         <div className="w-full max-w-sm bg-slate-900 border border-border/10 rounded-3xl p-8 text-center shadow-2xl">
