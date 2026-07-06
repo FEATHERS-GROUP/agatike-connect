@@ -35,6 +35,7 @@ export function TicketEditor({
   setActiveTourStopIdx,
   forms = [],
   vipPrivileges = [],
+  canCreateTicketTier,
 }: {
   tickets: Ticket[];
   setTickets: (t: Ticket[]) => void;

@@ -24,6 +24,8 @@ if (firebaseConfig.apiKey) {
       body: payload.notification.body,
       icon: "/agatike-icon.png",
       data: payload.data || {},
+      requireInteraction: true,
+      vibrate: [200, 100, 200, 100, 200, 100, 200],
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);

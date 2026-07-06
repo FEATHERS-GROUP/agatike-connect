@@ -12,6 +12,8 @@ import {
   ArrowRight,
   CheckCircle2,
   Smartphone,
+  ChevronUp,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +96,7 @@ function FacilityCheckoutPage() {
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
   const [bookingRef, setBookingRef] = useState<string>("");
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
   const dailyRate = Number(facility?.pricing?.daily_rate) || hourlyRate;
@@ -531,8 +534,72 @@ function FacilityCheckoutPage() {
     );
   }
 
+  const OrderSummaryContent = () => (
+    <>
+      <div className="space-y-4 mb-6">
+        {facility.image_url && (
+          <div className="w-full h-32 rounded-xl overflow-hidden mb-4">
+            <img
+              src={facility.image_url}
+              alt={facility.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Facility</span>
+          <span className="font-medium text-right">{facility.name}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Venue</span>
+          <span className="font-medium text-right">{venue.name}</span>
+        </div>
+        {date?.from && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Date Range</span>
+            <span className="font-medium text-right">
+              {date.to && date.to > date.from
+                ? `${format(date.from, "MMM d")} - ${format(date.to, "MMM d, yyyy")}`
+                : format(date.from, "MMM d, yyyy")}
+            </span>
+          </div>
+        )}
+        {date?.from && selectedSlots.length > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Time (Daily)</span>
+            <span className="font-medium text-right">
+              {`${Math.min(...selectedSlots)
+                .toString()
+                .padStart(2, "0")}:00`}{" "}
+              - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-border/60 pt-4 space-y-4 mb-8">
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Hourly Rate</span>
+          <span>{formatCurrency(hourlyRate, currency)} / hr</span>
+        </div>
+        {daysInRange.length > 1 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Days</span>
+            <span>{daysInRange.length} days</span>
+          </div>
+        )}
+        <div className="flex justify-between items-end">
+          <span className="font-bold text-lg">Total Due</span>
+          <span className="text-2xl font-black text-primary">
+            {formatCurrency(totalAmount, currency)}
+          </span>
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pb-24 lg:pb-0">
       <Navbar />
       <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
         <Link
@@ -706,69 +773,9 @@ function FacilityCheckoutPage() {
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-[var(--shadow-card)] lg:sticky lg:top-24">
+          <div className="hidden lg:block bg-card border border-border/60 rounded-3xl p-6 shadow-[var(--shadow-card)] sticky top-24">
             <h3 className="text-xl font-semibold mb-6">Booking Summary</h3>
-
-            <div className="space-y-4 mb-6">
-              {facility.image_url && (
-                <div className="w-full h-32 rounded-xl overflow-hidden mb-4">
-                  <img
-                    src={facility.image_url}
-                    alt={facility.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Facility</span>
-                <span className="font-medium text-right">{facility.name}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Venue</span>
-                <span className="font-medium text-right">{venue.name}</span>
-              </div>
-              {date?.from && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Date Range</span>
-                  <span className="font-medium text-right">
-                    {date.to && date.to > date.from
-                      ? `${format(date.from, "MMM d")} - ${format(date.to, "MMM d, yyyy")}`
-                      : format(date.from, "MMM d, yyyy")}
-                  </span>
-                </div>
-              )}
-              {date?.from && selectedSlots.length > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Time (Daily)</span>
-                  <span className="font-medium text-right">
-                    {`${Math.min(...selectedSlots)
-                      .toString()
-                      .padStart(2, "0")}:00`}{" "}
-                    - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="border-t border-border/60 pt-4 space-y-4 mb-8">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Hourly Rate</span>
-                <span>{formatCurrency(hourlyRate, currency)} / hr</span>
-              </div>
-              {daysInRange.length > 1 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Days</span>
-                  <span>{daysInRange.length} days</span>
-                </div>
-              )}
-              <div className="flex justify-between items-end">
-                <span className="font-bold text-lg">Total Due</span>
-                <span className="text-2xl font-black text-primary">
-                  {formatCurrency(totalAmount, currency)}
-                </span>
-              </div>
-            </div>
-
+            <OrderSummaryContent />
             <Button
               type="submit"
               form="booking-form"
@@ -795,6 +802,57 @@ function FacilityCheckoutPage() {
               </p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Action Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300">
+        <div className="max-w-md mx-auto p-4">
+          <div
+            className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+            onClick={() => setSummaryExpanded(!summaryExpanded)}
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm text-muted-foreground font-semibold">Order Summary</span>
+              <ChevronUp
+                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${summaryExpanded ? "rotate-180" : ""}`}
+              />
+            </div>
+            {!summaryExpanded && (
+              <span className="font-bold text-primary text-sm">
+                {formatCurrency(totalAmount, currency)}
+              </span>
+            )}
+          </div>
+
+          {summaryExpanded && (
+            <div className="mb-4 text-sm animate-in slide-in-from-bottom-2 fade-in duration-200 border-t border-border/40 pt-4 max-h-[50vh] overflow-y-auto scrollbar-hide">
+              <OrderSummaryContent />
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            form="booking-form"
+            disabled={
+              bookingMutation.isPending ||
+              !date?.from ||
+              (!isSharedAccess && selectedSlots.length === 0) ||
+              (isSharedAccess && quantity < 1)
+            }
+            className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            {bookingMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
+              </>
+            ) : facility.requires_approval ? (
+              "Request Booking"
+            ) : (
+              "Proceed to Payment"
+            )}
+          </Button>
         </div>
       </div>
 

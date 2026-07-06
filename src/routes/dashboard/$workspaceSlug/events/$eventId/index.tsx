@@ -523,7 +523,7 @@ function DashboardEventDetails() {
               <h3 className="font-semibold mb-1">Sold vs Available</h3>
               <p className="text-xs text-muted-foreground mb-4">Overall ticket fill rate</p>
               <div className="relative h-52">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <PieChart>
                     <Pie
                       data={soldVsUnsold}
@@ -568,7 +568,7 @@ function DashboardEventDetails() {
               <h3 className="font-semibold mb-1">Ticket Performance</h3>
               <p className="text-xs text-muted-foreground mb-4">Best to least sold, by type</p>
               <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <BarChart
                     data={chartData}
                     layout="vertical"
@@ -619,7 +619,7 @@ function DashboardEventDetails() {
 
               {/* Stop bar chart */}
               <div className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <BarChart
                     data={stopBreakdown}
                     margin={{ top: 8, right: 8, left: -20, bottom: 0 }}
@@ -717,7 +717,7 @@ function DashboardEventDetails() {
             <h3 className="font-semibold mb-1">Revenue by Ticket Type</h3>
             <p className="text-xs text-muted-foreground mb-5">Highest-grossing to lowest</p>
             <div className="h-60">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <BarChart
                   data={sortedByRevenue}
                   margin={{ top: 8, right: 8, left: -10, bottom: 0 }}
@@ -759,7 +759,7 @@ function DashboardEventDetails() {
               Anticipated capacity vs actual tickets sold
             </p>
             <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <BarChart
                   data={attendanceProgressData}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
@@ -1060,7 +1060,7 @@ function DashboardEventDetails() {
               <h3 className="font-semibold mb-1">Sales Breakdown</h3>
               <p className="text-xs text-muted-foreground mb-4">By ticket type</p>
               <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <PieChart>
                     <Pie
                       data={ticketBreakdown}

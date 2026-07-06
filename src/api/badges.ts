@@ -112,5 +112,9 @@ export const deleteBadgeProject = createServerFn({ method: "POST" }).handler(asy
 });
 
 export const saveBadgeProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  return await hasuraRequest(INSERT_BADGE_PROJECT_MUTATION, ctx.data);
+  const data = { ...ctx.data } as any;
+  if (!data.id) {
+    data.id = crypto.randomUUID();
+  }
+  return await hasuraRequest(INSERT_BADGE_PROJECT_MUTATION, data);
 });
