@@ -130,7 +130,7 @@ const ADD_MULTIPLE_EVENT_STAFF = `
 `;
 
 export const addMultipleEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { objects } = ctx.data as { objects: any[] };
+  const { objects } = ctx.data as unknown as { objects: any[] };
   return hasuraRequest(ADD_MULTIPLE_EVENT_STAFF, { objects });
 });
 

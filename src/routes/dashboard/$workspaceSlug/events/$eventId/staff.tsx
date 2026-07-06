@@ -19,26 +19,16 @@ import {
 } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getEventSections,
   getEventStaff,
-  createEventSection,
-  addEventStaff,
   updateEventStaff,
   updateStaffStatus,
   deleteEventStaff,
 } from "@/api/staff";
 import { getEventById } from "@/api/events";
-import { getUserByHandle } from "@/api/users";
 import { createCustomForm } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
@@ -56,6 +46,7 @@ function GenerateVendorFormModal({
   eventId,
   activeWorkspace,
   canUseFormIntegration,
+  canCreateCustomerForm,
 }: {
   eventId: string;
   activeWorkspace: any;
@@ -407,7 +398,7 @@ function StaffView() {
         </div>
         <div className="flex gap-3">
           {canAddEventStaff(staff.length) && (
-            <Link to={`/dashboard/${workspaceSlug}/events/${eventId}/staff/add`}>
+            <Link to="/dashboard/$workspaceSlug/events/$eventId/staff/add" params={{ workspaceSlug, eventId }}>
               <Button className="gap-2 bg-[#f97316] hover:bg-[#ea580c] text-white">
                 <UserPlus className="w-4 h-4" />
                 Add Staff
@@ -471,8 +462,8 @@ function StaffView() {
                   const assignedSections =
                     s.allowed_sections && s.allowed_sections.length > 0
                       ? s.allowed_sections
-                          .map((id: string) => sections.find((sec: any) => sec.id === id))
-                          .filter(Boolean)
+                        .map((id: string) => sections.find((sec: any) => sec.id === id))
+                        .filter(Boolean)
                       : [];
                   const isUnregistered = !s.user_id && (s.first_name || s.last_name);
                   const displayName = isUnregistered
@@ -546,11 +537,10 @@ function StaffView() {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            s.status === "active"
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${s.status === "active"
                               ? "bg-green-500/10 text-green-500"
                               : "bg-yellow-500/10 text-yellow-500"
-                          }`}
+                            }`}
                         >
                           {s.status}
                         </span>
@@ -651,17 +641,17 @@ function StaffView() {
           {selectedStaff && (
             <div className="flex flex-col items-center mt-4">
               <div className="flex bg-secondary/50 p-1 rounded-full mb-8 shadow-sm border border-border/50">
-                <Button 
-                  variant={badgeSide === "front" ? "default" : "ghost"} 
-                  size="sm" 
+                <Button
+                  variant={badgeSide === "front" ? "default" : "ghost"}
+                  size="sm"
                   className={`rounded-full px-6 transition-all ${badgeSide === "front" ? "shadow-md" : "hover:bg-secondary"}`}
                   onClick={() => setBadgeSide("front")}
                 >
                   Front
                 </Button>
-                <Button 
-                  variant={badgeSide === "back" ? "default" : "ghost"} 
-                  size="sm" 
+                <Button
+                  variant={badgeSide === "back" ? "default" : "ghost"}
+                  size="sm"
                   className={`rounded-full px-6 transition-all ${badgeSide === "back" ? "shadow-md" : "hover:bg-secondary"}`}
                   onClick={() => setBadgeSide("back")}
                 >
