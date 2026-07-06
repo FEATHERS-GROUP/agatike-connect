@@ -34,7 +34,7 @@ function Numpad({ onPinComplete, error, event }: { onPinComplete: (pin: string) 
 
   return (
     <div 
-      className="flex flex-col items-center justify-center min-h-[100dvh] bg-background text-foreground px-6 w-full relative overflow-hidden"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background text-foreground px-6 w-full overflow-hidden"
       style={{ "--color-primary": themeColor } as React.CSSProperties}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-background pointer-events-none" />
@@ -93,13 +93,53 @@ function Numpad({ onPinComplete, error, event }: { onPinComplete: (pin: string) 
   );
 }
 
+const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in ms
+
 function StaffEventDashboard() {
   const { eventId } = Route.useParams();
   const { user } = useUserAuth();
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const lastActive = localStorage.getItem(`staff_session_${eventId}`);
+    if (lastActive && Date.now() - parseInt(lastActive) < SESSION_TIMEOUT) {
+      return true;
+    }
+    return false;
+  });
   const [pinError, setPinError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    let lastActivity = Date.now();
+    localStorage.setItem(`staff_session_${eventId}`, lastActivity.toString());
+    
+    const handleActivity = () => {
+      lastActivity = Date.now();
+    };
+    
+    // Track major interactions to keep session alive
+    const events = ['mousedown', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(e => document.addEventListener(e, handleActivity, { passive: true }));
+    
+    const interval = setInterval(() => {
+      const storedActivity = parseInt(localStorage.getItem(`staff_session_${eventId}`) || "0");
+      const maxActivity = Math.max(lastActivity, storedActivity);
+      
+      if (Date.now() - maxActivity >= SESSION_TIMEOUT) {
+        setIsAuthenticated(false);
+        localStorage.removeItem(`staff_session_${eventId}`);
+      } else if (lastActivity > storedActivity) {
+        localStorage.setItem(`staff_session_${eventId}`, lastActivity.toString());
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => {
+      events.forEach(e => document.removeEventListener(e, handleActivity));
+      clearInterval(interval);
+    };
+  }, [isAuthenticated, eventId]);
 
   const { data: assignments = [], isLoading } = useQuery({
     queryKey: ["user-staff-assignments", user?.id],
@@ -154,6 +194,7 @@ function StaffEventDashboard() {
           console.log("Expected PIN:", assignment.pin_code, "Entered PIN:", pin);
           if (pin === String(assignment.pin_code)) {
             setIsAuthenticated(true);
+            localStorage.setItem(`staff_session_${eventId}`, Date.now().toString());
             setPinError("");
           } else {
             setPinError("Incorrect PIN");

@@ -212,7 +212,6 @@ function RootComponent() {
     (location.pathname.match(/^\/.+\/message$/) && !!(location.search as any)?.chatId) ||
     (location.pathname.startsWith("/buses/") && location.pathname !== "/buses/mobile") ||
     location.pathname.startsWith("/dashboard") ||
-    location.pathname.startsWith("/staff") ||
     location.pathname === "/signin" ||
     location.pathname === "/signup" ||
     location.pathname === "/onboarding",
