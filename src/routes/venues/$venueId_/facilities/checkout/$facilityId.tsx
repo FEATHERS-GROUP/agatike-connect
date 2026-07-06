@@ -31,8 +31,8 @@ import { useEffect } from "react";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { sendTicketsEmail } from "@/api/email";
-import { getTicketProjects } from "@/api/ticket_designer";
-import { TicketDesign } from "@/components/venue-designer/TicketDesign";
+import { getWorkspaceTicketProjects } from "@/api/events";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { Ticket, Plus, Minus } from "lucide-react";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
@@ -69,8 +69,8 @@ function FacilityCheckoutPage() {
   const isSharedAccess = facility?.type === "shared_access";
 
   const { data: ticketProjects } = useQuery({
-    queryKey: ["ticket_projects", venue?.workspace_id],
-    queryFn: () => getTicketProjects({ data: { workspace_id: venue?.workspace_id } }),
+    queryKey: ["workspace-ticket-projects", venue?.workspace_id],
+    queryFn: () => getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id } } as any),
     enabled: !!venue?.workspace_id,
   });
   const venueProject = ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
@@ -223,7 +223,7 @@ function FacilityCheckoutPage() {
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
             type: "venue_booking",
-            referenceId: paymentRef,
+            referenceId: results.map((r: any) => r.id).join(","),
             workspaceId: venue.workspace_id,
             reason: `${facility?.name} Booking`,
             shortfall: paymentDetails?.shortfall || 0,
@@ -809,52 +809,46 @@ function FacilityCheckoutPage() {
         <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>
           {issuedTickets.map((ticket: any) => (
             <div key={ticket.id} id={`ticket-render-${ticket.id}`} style={{ display: "inline-block" }}>
-              <TicketDesign
-                ticket={{
-                  ...ticket,
-                  qrData: `${window.location.origin}/v/${ticket.otp}`,
-                  venueName: venue.name,
-                  dateString: format(new Date(ticket.start_time), "MMM d, yyyy"),
-                  timeString: "Full Day Access",
-                }}
+              <TicketPreview
                 template={venueProject.template}
                 palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
                 font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                blur={Number(venueProject.blur || 0)}
-                brightness={Number(venueProject.brightness || 100)}
-                contrast={Number(venueProject.contrast || 100)}
-                grayscale={Number(venueProject.grayscale || 0)}
+                tier={ticket.tier || "Facility Access"}
+                title={venue.name}
+                subtitle={facility.name}
+                date={date?.from ? format(date.from, "LLL dd, yyyy") : ""}
+                time="Full Day Access"
+                seat={name || "General"}
+                price={totalAmount.toString()}
+                currency={currency}
                 cover={venueProject.coverImage || ""}
                 logoText={venueProject.logoText || "Agatike"}
                 logoImage={venueProject.logoImage}
                 logoScale={Number(venueProject.logoScale || 24)}
                 logoOpacity={Number(venueProject.logoOpacity ?? 1)}
                 logoColorMode={venueProject.logoColorMode || "original"}
-                designOverrides={{
-                  layout:
-                    venueProject.design_overrides?.layout || {
-                      qrPosition: "bottom-right",
-                      qrSize: 120,
-                      contentAlign: "left",
-                      titleSize: "large",
-                    },
-                  front:
-                    venueProject.design_overrides?.front || {
-                      showTitle: true,
-                      showDate: true,
-                      showTime: true,
-                      showVenue: true,
-                      showLocation: true,
-                      showAdmit: true,
-                    },
-                  back:
-                    venueProject.design_overrides?.back || {
-                      showQr: true,
-                      showBarcode: false,
-                      showTerms: true,
-                      termsText: venueProject.terms || "Standard venue terms apply.",
-                    },
-                }}
+                orderId={ticket.otp || bookingRef}
+                qrValue={`${window.location.origin}/v/${ticket.otp}`}
+                previewMode="Front"
+                layout={
+                  venueProject.design_overrides?.layout || {
+                    titleSize: 30,
+                    subtitleSize: 14,
+                    metaSize: 11,
+                    titleAlign: "left",
+                    titleOffsetY: 0,
+                    subtitleOffsetY: 0,
+                    metaOffsetY: 0,
+                  }
+                }
+                back={
+                  venueProject.design_overrides?.back || {
+                    showQr: true,
+                    showBarcode: false,
+                    showTerms: true,
+                    termsText: venueProject.terms || "Standard venue terms apply.",
+                  }
+                }
               />
             </div>
           ))}
