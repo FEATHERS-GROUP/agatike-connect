@@ -371,7 +371,7 @@ function StaffEventDashboard() {
           </div>
           
           <div className="pt-6">
-            <Link to={`/events/${eventId}`} className="block">
+            <Link to="/events/$eventId" params={{ eventId }} className="block">
               <div className="bg-secondary/30 border border-border/50 rounded-2xl p-4 flex items-center justify-between hover:bg-secondary/50 active:bg-secondary transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground/80">
