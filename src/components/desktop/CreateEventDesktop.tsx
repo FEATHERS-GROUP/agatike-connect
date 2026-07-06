@@ -409,13 +409,17 @@ export function CreateEventDesktop() {
           ...loc,
           date: loc.date || null,
           time: loc.time || null,
-          ...(idx === 0 && data.isUpcoming
+          ...(idx === 0
             ? {
-                is_upcoming: true,
-                waitlist_url: data.waitlistUrl || null,
-                timer_date: data.timerDate || null,
+                is_upcoming: data.isUpcoming,
+                waitlist_url: data.isUpcoming ? data.waitlistUrl || null : null,
+                timer_date: data.isUpcoming ? data.timerDate || null : null,
               }
-            : {}),
+            : {
+                is_upcoming: false,
+                waitlist_url: null,
+                timer_date: null,
+              }),
         })),
         event_requency:
           data.isRecurring && !data.isUpcoming

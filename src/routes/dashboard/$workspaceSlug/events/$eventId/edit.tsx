@@ -138,6 +138,9 @@ function EditEventPage() {
     locations: [] as any[],
     coverPreview: "",
     allowed_public: false,
+    isUpcoming: false,
+    waitlistUrl: "",
+    timerDate: "",
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
 
@@ -162,28 +165,33 @@ function EditEventPage() {
   // Populate form once event loads
   useEffect(() => {
     if (!event) return;
+    const tourStops =
+      Array.isArray(event.tour_stops) && event.tour_stops.length > 0
+        ? event.tour_stops
+        : [
+            {
+              id: generateId(),
+              venue: "",
+              city: "",
+              address: "",
+              date: "",
+              time: "",
+              latitude: null,
+              longitude: null,
+            },
+          ];
+
     setForm({
       title: event.title || "",
       category: event.category || categories[0],
       description: event.description || "",
       vipPerks: event.vipPerks || "",
-      locations:
-        Array.isArray(event.tour_stops) && event.tour_stops.length > 0
-          ? event.tour_stops
-          : [
-              {
-                id: generateId(),
-                venue: "",
-                city: "",
-                address: "",
-                date: "",
-                time: "",
-                latitude: null,
-                longitude: null,
-              },
-            ],
+      locations: tourStops,
       coverPreview: event.cover || "",
       allowed_public: !!event.allowed_public,
+      isUpcoming: tourStops[0]?.is_upcoming === true || String(tourStops[0]?.is_upcoming) === "true",
+      waitlistUrl: tourStops[0]?.waitlist_url || "",
+      timerDate: tourStops[0]?.timer_date || "",
     });
 
     if (event.event_tickets) {
@@ -240,7 +248,20 @@ function EditEventPage() {
           category: form.category,
           description: form.description,
           cover: coverUrl,
-          tour_stops: form.locations,
+          tour_stops: form.locations.map((loc: any, idx: number) => ({
+            ...loc,
+            ...(idx === 0
+              ? {
+                  is_upcoming: form.isUpcoming,
+                  waitlist_url: form.isUpcoming ? form.waitlistUrl || null : null,
+                  timer_date: form.isUpcoming ? form.timerDate || null : null,
+                }
+              : {
+                  is_upcoming: false,
+                  waitlist_url: null,
+                  timer_date: null,
+                }),
+          })),
           vipPerks: form.vipPerks,
           event_requency: event?.event_requency || {},
           allowed_public: form.allowed_public,
@@ -418,6 +439,86 @@ function EditEventPage() {
             className="mt-1"
           />
         </div>
+      </div>
+
+      {/* Teaser / Upcoming Event */}
+      <div className="rounded-[2rem] border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <Label className="text-base font-semibold">Teaser / Upcoming Event</Label>
+            <p className="text-sm text-muted-foreground">
+              Announce this event without actual dates or tickets yet.
+            </p>
+          </div>
+          <div className="flex bg-secondary p-1 rounded-xl shrink-0">
+            <button
+              type="button"
+              onClick={() => updateField("isUpcoming", false)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${!form.isUpcoming ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Standard
+            </button>
+            <button
+              type="button"
+              onClick={() => updateField("isUpcoming", true)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${form.isUpcoming ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Upcoming
+            </button>
+          </div>
+        </div>
+
+        {form.isUpcoming && (
+          <div className="grid gap-4 md:grid-cols-2 pt-4 border-t border-border/60 animate-in fade-in slide-in-from-top-2">
+            <div>
+              <Label>Waitlist / RSVP Form (Optional)</Label>
+              <div className="flex flex-col sm:flex-row gap-2 mt-1">
+                <select
+                  value={
+                    form.waitlistUrl.startsWith("/f/")
+                      ? form.waitlistUrl
+                      : form.waitlistUrl
+                        ? "external"
+                        : ""
+                  }
+                  onChange={(e) => {
+                    if (e.target.value === "external") {
+                      updateField("waitlistUrl", "https://");
+                    } else {
+                      updateField("waitlistUrl", e.target.value);
+                    }
+                  }}
+                  className="flex h-12 w-full sm:w-auto rounded-xl border border-input bg-background px-4 py-2 text-base shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all duration-200 focus-visible:outline-none focus-visible:border-primary md:text-sm"
+                >
+                  <option value="">No form (Coming Soon)</option>
+                  {forms?.map((f: any) => (
+                    <option key={f.id} value={`/f/${f.id}`}>
+                      {f.title}
+                    </option>
+                  ))}
+                  <option value="external">External Link</option>
+                </select>
+                {!form.waitlistUrl.startsWith("/f/") && form.waitlistUrl !== "" && (
+                  <Input
+                    placeholder="https://..."
+                    value={form.waitlistUrl}
+                    onChange={(e) => updateField("waitlistUrl", e.target.value)}
+                    className="h-12 flex-1"
+                  />
+                )}
+              </div>
+            </div>
+            <div>
+              <Label>Countdown Timer Date (Optional)</Label>
+              <Input
+                type="datetime-local"
+                value={form.timerDate}
+                onChange={(e) => updateField("timerDate", e.target.value)}
+                className="mt-1 h-12 rounded-xl"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Locations / Tour Stops */}
