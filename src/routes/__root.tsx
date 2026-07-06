@@ -141,6 +141,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
                   document.documentElement.classList.remove('dark');
                 }
               } catch (_) {}
+
+              try {
+                var manifestLink = document.querySelector('link[rel="manifest"]');
+                if (manifestLink) {
+                  if (window.location.pathname.startsWith('/dashboard')) {
+                    manifestLink.href = '/manifest-dashboard.json';
+                  } else {
+                    manifestLink.href = '/manifest.json';
+                  }
+                }
+              } catch (_) {}
             `,
           }}
         />
@@ -180,6 +191,20 @@ function RootComponent() {
       });
     }
   }, []);
+
+  useEffect(() => {
+    // Dynamically update manifest on client-side navigation
+    try {
+      const manifestLink = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
+      if (manifestLink) {
+        if (location.pathname.startsWith('/dashboard')) {
+          manifestLink.href = '/manifest-dashboard.json';
+        } else {
+          manifestLink.href = '/manifest.json';
+        }
+      }
+    } catch (_) {}
+  }, [location.pathname]);
 
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
   const hideNav = Boolean(
