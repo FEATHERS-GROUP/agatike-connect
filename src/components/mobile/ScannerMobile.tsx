@@ -8,7 +8,13 @@ import { toast } from "sonner";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getStaffByBadgeId, getEventSections } from "@/api/staff";
 import { getWorkspaceEvents } from "@/api/events";
+import { scanAndVerifyTicket } from "@/api/attendees";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { lazy, Suspense } from "react";
+
+// Dynamically import Scanner to prevent SSR crashes since it uses browser APIs
+const Scanner = lazy(() => import("@yudiel/react-qr-scanner").then(m => ({ default: m.Scanner })));
+import { outline } from "@yudiel/react-qr-scanner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -101,7 +107,7 @@ function ScannerHeader({ onClose, events, sections, selectedEventId, setSelected
   );
 }
 
-function ScannerViewport({ result }: { result: Result }) {
+function ScannerViewport({ result, onScan }: { result: Result, onScan: (text: string) => void }) {
   const getBorderColor = () => {
     if (result === "idle") return "border-primary/60";
     if (result === "success" || result === "vip" || result === "staff") return "border-emerald-500";
@@ -135,19 +141,41 @@ function ScannerViewport({ result }: { result: Result }) {
 
         {/* Scan Laser & Idle State */}
         {result === "idle" && (
-          <div className="absolute inset-0 overflow-hidden rounded-[2.5rem]">
-            <div className="absolute left-0 right-0 h-1 bg-primary shadow-[0_0_20px_4px_var(--color-primary)] animate-[scan_2s_ease-in-out_infinite] z-20">
-              {/* Light beam gradient under the laser */}
-              <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/30 to-transparent pointer-events-none" />
+          <>
+            <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] z-10 pointer-events-auto bg-black">
+              {typeof window !== "undefined" && (
+                <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-white/50">Loading camera...</div>}>
+                  <Scanner 
+                    onScan={(detected) => {
+                      if (detected && detected.length > 0 && detected[0].rawValue) {
+                        onScan(detected[0].rawValue);
+                      }
+                    }}
+                    formats={["qr_code"]}
+                    components={{
+                      tracker: outline,
+                    }}
+                    styles={{
+                      container: { width: '100%', height: '100%', borderRadius: '2.5rem' },
+                      video: { objectFit: 'cover' }
+                    }}
+                  />
+                </Suspense>
+              )}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute left-0 right-0 h-1 bg-primary shadow-[0_0_20px_4px_var(--color-primary)] animate-[scan_2s_ease-in-out_infinite] z-20">
+                  <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/30 to-transparent pointer-events-none" />
+                </div>
+              </div>
             </div>
             
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
               <ScanLine className="h-16 w-16 mb-4 text-white/30" />
               <p className="text-[11px] font-black tracking-[0.2em] uppercase text-center px-4 text-white/50 bg-black/40 py-1.5 px-3 rounded-full backdrop-blur-md">
                 Align QR Code
               </p>
             </div>
-          </div>
+          </>
         )}
 
         {/* Result Overlay */}
@@ -219,12 +247,13 @@ export function ScannerMobile({ onClose }: { onClose?: () => void }) {
   const [result, setResult] = useState<Result>("idle");
   const [online, setOnline] = useState(true);
   const [torch, setTorch] = useState(false);
+  const [failReason, setFailReason] = useState("");
+  const [scannedStaff, setScannedStaff] = useState<any>(null);
+  const [scannedTicket, setScannedTicket] = useState<any>(null);
 
   const { activeWorkspace } = useWorkspace();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [currentSectionId, setCurrentSectionId] = useState<string>("none");
-  const [scannedStaff, setScannedStaff] = useState<any>(null);
-  const [failReason, setFailReason] = useState<string>("");
 
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
@@ -240,33 +269,56 @@ export function ScannerMobile({ onClose }: { onClose?: () => void }) {
 
   const scanMutation = useMutation({
     mutationFn: async (qr: string) => {
-      const staff = await getStaffByBadgeId({ data: { badge_qr_string: qr } } as any);
-      return staff;
+      // If it starts with STAFF-, it's a staff badge. Otherwise, ticket.
+      if (qr.startsWith("STAFF-")) {
+        const staff = await getStaffByBadgeId({ data: { badge_qr_string: qr } } as any);
+        return { type: "staff" as const, data: staff };
+      } else {
+        const res = await scanAndVerifyTicket({ data: { qrcode_number: qr } } as any);
+        return { type: "ticket" as const, data: res };
+      }
     },
-    onSuccess: (staff) => {
-      if (!staff) {
-        setResult("fail");
-        setFailReason("CODE NOT FOUND");
-        return;
-      }
-      setScannedStaff(staff);
-
-      if (staff.status !== "active") {
-        setResult("fail");
-        setFailReason("BADGE INACTIVE");
-        return;
+    onSuccess: (resultData) => {
+      // Vibrate on result
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate([200]);
       }
 
-      if (currentSectionId !== "none") {
-        const allowed = staff.allowed_sections || [];
-        if (allowed.length > 0 && !allowed.includes(currentSectionId)) {
+      if (resultData.type === "staff") {
+        const staff = resultData.data;
+        if (!staff) {
           setResult("fail");
-          setFailReason("RESTRICTED AREA");
+          setFailReason("BADGE NOT FOUND");
           return;
         }
-      }
+        setScannedStaff(staff);
 
-      setResult("staff");
+        if (staff.status !== "active") {
+          setResult("fail");
+          setFailReason("BADGE INACTIVE");
+          return;
+        }
+
+        if (currentSectionId !== "none") {
+          const allowed = staff.allowed_sections || [];
+          if (allowed.length > 0 && !allowed.includes(currentSectionId)) {
+            setResult("fail");
+            setFailReason("RESTRICTED AREA");
+            return;
+          }
+        }
+        setResult("staff");
+      } else if (resultData.type === "ticket") {
+        const { success, message, attendee } = resultData.data;
+        if (!success) {
+          setResult("fail");
+          setFailReason(message.toUpperCase());
+          return;
+        }
+        
+        setScannedTicket(attendee);
+        setResult("success");
+      }
     },
     onError: () => {
       setResult("fail");
@@ -275,6 +327,7 @@ export function ScannerMobile({ onClose }: { onClose?: () => void }) {
   });
 
   const handleManualScan = (qr: string) => {
+    if (result !== "idle" || scanMutation.isPending) return;
     scanMutation.mutate(qr);
   };
 
@@ -307,7 +360,7 @@ export function ScannerMobile({ onClose }: { onClose?: () => void }) {
         torch={torch} setTorch={setTorch} online={online} setOnline={setOnline}
       />
 
-      <ScannerViewport result={result} />
+      <ScannerViewport result={result} onScan={handleManualScan} />
 
       {/* Result Card Bottom Sheet */}
       <div className={`absolute bottom-0 left-0 right-0 bg-[#111] rounded-t-[2.5rem] border-t border-white/10 p-6 pb-safe transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${result !== "idle" ? "translate-y-0 shadow-[0_-30px_60px_rgba(0,0,0,0.9)]" : "translate-y-[120%]"}`}>
@@ -315,22 +368,19 @@ export function ScannerMobile({ onClose }: { onClose?: () => void }) {
         {/* TICKET RESULT */}
         {(result === "success" || result === "fail" || result === "vip") && (
           <div className="animate-in slide-in-from-bottom-8 duration-300">
-            <div className="flex items-center gap-4 mb-5">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-primary to-accent p-0.5 shadow-lg">
-                <img src="https://i.pravatar.cc/150?img=12" className="h-full w-full rounded-full border-[3px] border-black object-cover" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-black tracking-tight">Amaka Okafor</h3>
-                <p className="text-white/50 text-sm font-medium">#TICKET-48211</p>
-              </div>
-              {result === "vip" && (
-                <div className="bg-[#FFD700]/10 text-[#FFD700] border border-[#FFD700]/30 px-3 py-1 rounded-full flex items-center gap-1 font-black text-xs uppercase shadow-[0_0_15px_rgba(255,215,0,0.2)]">
-                  <Crown className="h-3.5 w-3.5" /> VIP
+            {result !== "fail" && scannedTicket && (
+              <div className="flex items-center gap-4 mb-5">
+                <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-primary to-accent p-0.5 shadow-lg flex-shrink-0 flex items-center justify-center font-black text-2xl">
+                  {scannedTicket?.names?.charAt(0) || "G"}
                 </div>
-              )}
-            </div>
+                <div className="flex-1 overflow-hidden">
+                  <h3 className="text-2xl font-black tracking-tight truncate">{scannedTicket?.names || "Guest"}</h3>
+                  <p className="text-white/50 text-sm font-medium truncate">#{scannedTicket?.qrcode_number || "TICKET"}</p>
+                </div>
+              </div>
+            )}
 
-            <div className={`w-full p-5 rounded-2xl text-center font-black text-xl tracking-wide shadow-inner ${result === "fail" ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
+            <div className={`w-full p-5 rounded-2xl text-center font-black text-xl tracking-wide shadow-inner mb-4 ${result === "fail" ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"}`}>
               {result === "fail" ? failReason || "ALREADY SCANNED" : "ENTRY APPROVED"}
             </div>
 

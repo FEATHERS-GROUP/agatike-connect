@@ -1,4 +1,4 @@
-require('dotenv').config();
+import 'dotenv/config';
 
 async function run() {
   const url = process.env.HASURA_ADMIN_API.replace('/v1/graphql', '/v2/query');
@@ -13,7 +13,7 @@ async function run() {
     body: JSON.stringify({
       type: "run_sql",
       args: {
-        sql: "ALTER TABLE public.event_staff ADD COLUMN IF NOT EXISTS id_passport text;"
+        sql: "ALTER TABLE public.event_attendees ADD COLUMN IF NOT EXISTS scanned boolean DEFAULT false; ALTER TABLE public.event_attendees ADD COLUMN IF NOT EXISTS scanned_at timestamp with time zone;"
       }
     })
   });

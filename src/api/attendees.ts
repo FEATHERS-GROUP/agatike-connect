@@ -56,6 +56,8 @@ const GET_ATTENDEE_BY_QR_CODE = `
       qrcode_number
       quanity
       status
+      scanned
+      scanned_at
       ticket_id
       ticket_type
       type
@@ -76,6 +78,50 @@ export const getAttendeeByQrCode = createServerFn({ method: "POST" })
       qrcode_number,
     });
     return data.event_attendees?.[0] || null;
+  });
+
+const UPDATE_ATTENDEE_SCANNED = `
+  mutation UpdateAttendeeScanned($id: uuid!, $scanned_at: timestamptz!) {
+    update_event_attendees_by_pk(pk_columns: {id: $id}, _set: {scanned: true, scanned_at: $scanned_at}) {
+      id
+      scanned
+      scanned_at
+    }
+  }
+`;
+
+export const scanAndVerifyTicket = createServerFn({ method: "POST" })
+  .validator((d: { qrcode_number: string }) => d)
+  .handler(async (ctx) => {
+    const { qrcode_number } = ctx.data;
+    
+    // 1. Fetch attendee
+    const data = await hasuraRequest<{ event_attendees: any[] }>(GET_ATTENDEE_BY_QR_CODE, {
+      qrcode_number,
+    });
+    const attendee = data.event_attendees?.[0];
+
+    if (!attendee) {
+      return { success: false, message: "Invalid ticket QR code.", attendee: null };
+    }
+
+    if (attendee.scanned) {
+      return { 
+        success: false, 
+        message: "Ticket has already been scanned.", 
+        attendee 
+      };
+    }
+
+    // 2. Update to scanned
+    const scanned_at = new Date().toISOString();
+    await hasuraRequest(UPDATE_ATTENDEE_SCANNED, { id: attendee.id, scanned_at });
+
+    return { 
+      success: true, 
+      message: "Ticket successfully scanned and verified.", 
+      attendee: { ...attendee, scanned: true, scanned_at } 
+    };
   });
 
 const ADD_EVENT_ATTENDEES = `
