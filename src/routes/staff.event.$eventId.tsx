@@ -11,74 +11,56 @@ export const Route = createFileRoute("/staff/event/$eventId")({
   component: StaffEventDashboard,
 });
 
-function Numpad({ onPinComplete, error }: { onPinComplete: (pin: string) => void, error: string }) {
+function AccessCodeInput({ onPinComplete, error, event }: { onPinComplete: (pin: string) => void, error: string, event?: any }) {
   const [pin, setPin] = useState("");
 
-  const handlePress = (num: string) => {
-    if (pin.length < 4) {
-      const newPin = pin + num;
-      setPin(newPin);
-      if (newPin.length === 4) {
-        onPinComplete(newPin);
-        // Add slight delay before clearing so user sees the 4th dot
-        setTimeout(() => setPin(""), 500);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase();
+    if (value.length <= 9) {
+      setPin(value);
+      if (value.length === 9) {
+        onPinComplete(value);
       }
     }
   };
 
-  const handleDelete = () => {
-    setPin(pin.slice(0, -1));
-  };
+  const themeColor = event?.theme_color || event?.tickets_page_styles?.primary_color || "#ff3b30";
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-black text-white px-6 w-full relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-black pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+    <div 
+      className="flex flex-col items-center justify-center min-h-[100dvh] bg-background text-foreground px-6 w-full relative overflow-hidden"
+      style={{ "--color-primary": themeColor } as React.CSSProperties}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-background pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="z-10 w-full max-w-sm flex flex-col items-center">
-        <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center mb-6 shadow-[0_0_30px_var(--color-primary)]/30">
-          <Lock className="h-8 w-8 text-primary" />
-        </div>
-        <h1 className="text-2xl font-bold mb-2">Staff Portal</h1>
-        <p className="text-white/60 text-sm mb-8">Enter your 4-digit security PIN</p>
+        {event?.cover ? (
+          <img src={event.cover} alt="Event Cover" className="w-24 h-24 rounded-2xl object-cover mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10" />
+        ) : (
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-8 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
+            <Lock className="h-10 w-10 text-primary" />
+          </div>
+        )}
+        <h1 className="text-3xl font-black mb-2 text-center tracking-tight">{event?.title || "Staff Portal"}</h1>
+        <p className="text-muted-foreground text-sm mb-10 text-center font-medium">Enter your 9-character Access Code</p>
 
-        <div className="flex gap-4 mb-12">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className={`w-4 h-4 rounded-full transition-all duration-300 ${
-                pin.length > i ? "bg-primary shadow-[0_0_10px_var(--color-primary)] scale-125" : "bg-white/20"
-              }`}
-            />
-          ))}
+        <div className="w-full relative group">
+          <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl transition-all duration-500 opacity-0 group-focus-within:opacity-100" />
+          <input
+            type="text"
+            value={pin}
+            onChange={handleChange}
+            placeholder="e.g. 2607NWREL"
+            className="w-full h-16 bg-background/80 backdrop-blur-md border-2 border-primary/20 focus:border-primary rounded-2xl text-center text-2xl font-black tracking-[0.2em] outline-none shadow-sm transition-all uppercase placeholder:text-muted-foreground/30 relative z-10"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            maxLength={9}
+          />
         </div>
 
-        {error && <p className="text-red-400 text-sm mb-6 animate-pulse">{error}</p>}
-
-        <div className="grid grid-cols-3 gap-x-8 gap-y-6 w-full max-w-[280px]">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-            <button
-              key={num}
-              onClick={() => handlePress(num.toString())}
-              className="w-16 h-16 rounded-full bg-white/5 border border-white/10 text-2xl font-medium flex items-center justify-center active:bg-white/20 active:scale-95 transition-all mx-auto backdrop-blur-md"
-            >
-              {num}
-            </button>
-          ))}
-          <div />
-          <button
-            onClick={() => handlePress("0")}
-            className="w-16 h-16 rounded-full bg-white/5 border border-white/10 text-2xl font-medium flex items-center justify-center active:bg-white/20 active:scale-95 transition-all mx-auto backdrop-blur-md"
-          >
-            0
-          </button>
-          <button
-            onClick={handleDelete}
-            className="w-16 h-16 rounded-full text-white/50 text-xl font-medium flex items-center justify-center active:text-white active:scale-95 transition-all mx-auto"
-          >
-            DEL
-          </button>
-        </div>
+        {error && <p className="text-destructive text-sm mt-6 font-medium animate-pulse">{error}</p>}
       </div>
     </div>
   );
@@ -107,17 +89,17 @@ function StaffEventDashboard() {
   });
 
   if (isLoading) {
-    return <div className="min-h-[100dvh] bg-black flex items-center justify-center text-white/50">Loading security protocols...</div>;
+    return <div className="min-h-[100dvh] bg-background flex items-center justify-center text-muted-foreground">Loading security protocols...</div>;
   }
 
   if (!assignment) {
     return (
-      <div className="min-h-[100dvh] bg-black text-white flex flex-col items-center justify-center p-6 text-center">
-        <XCircle className="h-16 w-16 text-red-500 mb-4" />
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+        <XCircle className="h-16 w-16 text-destructive mb-4" />
         <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-        <p className="text-white/60 mb-6">You are not assigned as staff for this event or your assignment has been revoked.</p>
+        <p className="text-muted-foreground mb-6">You are not assigned as staff for this event or your assignment has been revoked.</p>
         <Link to="/profile">
-          <button className="px-6 py-3 bg-white/10 rounded-full font-medium active:bg-white/20">Return to Profile</button>
+          <button className="px-6 py-3 bg-secondary text-secondary-foreground rounded-full font-medium hover:bg-secondary/80">Return to Profile</button>
         </Link>
       </div>
     );
@@ -127,12 +109,12 @@ function StaffEventDashboard() {
 
   if (isExpired) {
     return (
-      <div className="min-h-[100dvh] bg-black text-white flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
         <XCircle className="h-16 w-16 text-yellow-500 mb-4" />
         <h2 className="text-xl font-bold mb-2">Event Ended</h2>
-        <p className="text-white/60 mb-6">Staff access for "{assignment.event?.title}" has expired.</p>
+        <p className="text-muted-foreground mb-6">Staff access for "{assignment.event?.title}" has expired.</p>
         <Link to="/profile">
-          <button className="px-6 py-3 bg-white/10 rounded-full font-medium active:bg-white/20">Return to Profile</button>
+          <button className="px-6 py-3 bg-secondary text-secondary-foreground rounded-full font-medium hover:bg-secondary/80">Return to Profile</button>
         </Link>
       </div>
     );
@@ -140,16 +122,17 @@ function StaffEventDashboard() {
 
   if (!isAuthenticated && assignment.pin_code) {
     return (
-      <Numpad
+      <AccessCodeInput
         onPinComplete={(pin) => {
           if (pin === assignment.pin_code) {
             setIsAuthenticated(true);
             setPinError("");
           } else {
-            setPinError("Incorrect PIN");
+            setPinError("Incorrect Access Code. Please try again.");
           }
         }}
         error={pinError}
+        event={assignment.event}
       />
     );
   }
@@ -173,14 +156,14 @@ function StaffEventDashboard() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#0A0A0A] text-white overflow-y-auto pb-safe">
-      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/20 to-transparent pointer-events-none" />
+    <div className="min-h-[100dvh] bg-background text-foreground overflow-y-auto pb-safe">
+      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
       
       <header className="px-6 pt-safe-top pb-4 flex items-center justify-between relative z-10 mt-4">
-        <Link to="/profile" className="p-2 -ml-2 text-white/70 hover:text-white">
+        <Link to="/profile" className="p-2 -ml-2 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <div className="bg-primary/20 border border-primary/50 px-3 py-1 rounded-full flex items-center gap-2">
+        <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
           <span className="text-primary text-xs font-bold tracking-wider uppercase">Live</span>
         </div>
@@ -189,53 +172,53 @@ function StaffEventDashboard() {
       <main className="px-6 pt-2 pb-24 relative z-10">
         <div className="mb-8">
           <h1 className="text-3xl font-black mb-1 leading-tight">{assignment.event?.title || "Event Dashboard"}</h1>
-          <p className="text-white/60 font-medium">{assignment.role} • {assignment.allowed_sections?.includes('*') ? 'All Access' : 'Restricted Access'}</p>
+          <p className="text-muted-foreground font-medium">{assignment.role} • {assignment.allowed_sections?.includes('*') ? 'All Access' : 'Restricted Access'}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-md flex flex-col justify-between aspect-square">
-            <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+          <div className="bg-card border border-border rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-square">
+            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-4">
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
               <p className="text-3xl font-black mb-1">0</p>
-              <p className="text-xs text-white/50 font-medium">Checked In</p>
+              <p className="text-xs text-muted-foreground font-medium">Checked In</p>
             </div>
           </div>
           
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-md flex flex-col justify-between aspect-square">
-            <div className="h-10 w-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-4">
+          <div className="bg-card border border-border rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-square">
+            <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 mb-4">
               <Activity className="h-5 w-5" />
             </div>
             <div>
               <p className="text-3xl font-black mb-1">0</p>
-              <p className="text-xs text-white/50 font-medium">Scans/Hour</p>
+              <p className="text-xs text-muted-foreground font-medium">Scans/Hour</p>
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-white/40 ml-2">Quick Actions</h3>
+          <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-2">Quick Actions</h3>
           
           <Link to={`/events/${eventId}`} className="block">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 active:bg-white/10 transition-colors">
-              <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center">
-                <ExternalLink className="h-6 w-6 text-white/80" />
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:bg-secondary/50 active:bg-secondary transition-colors shadow-sm">
+              <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
+                <ExternalLink className="h-6 w-6 text-foreground/80" />
               </div>
               <div className="flex-1">
                 <h4 className="font-bold text-lg">View Event Page</h4>
-                <p className="text-xs text-white/50">See public details & lineup</p>
+                <p className="text-xs text-muted-foreground">See public details & lineup</p>
               </div>
             </div>
           </Link>
           
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 opacity-50 pointer-events-none">
-            <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center">
-              <Users className="h-6 w-6 text-white/80" />
+          <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 opacity-50 pointer-events-none shadow-sm">
+            <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
+              <Users className="h-6 w-6 text-foreground/80" />
             </div>
             <div className="flex-1">
               <h4 className="font-bold text-lg">Guest List</h4>
-              <p className="text-xs text-white/50">View attendees (Coming Soon)</p>
+              <p className="text-xs text-muted-foreground">View attendees (Coming Soon)</p>
             </div>
           </div>
         </div>
@@ -245,7 +228,7 @@ function StaffEventDashboard() {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <button 
           onClick={() => setShowScanner(true)}
-          className="flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full font-black text-lg shadow-[0_10px_40px_rgba(255,255,255,0.3)] active:scale-95 transition-all"
+          className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 rounded-full font-black text-lg shadow-[0_10px_40px_rgba(var(--color-primary),0.3)] hover:opacity-90 active:scale-95 transition-all"
         >
           <ScanLine className="h-6 w-6" /> Scan Tickets
         </button>
