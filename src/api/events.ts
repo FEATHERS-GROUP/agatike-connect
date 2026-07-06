@@ -3,6 +3,7 @@ import { hasuraRequest } from "./graphql.server";
 import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { getSession } from "./auth";
+import { sendPushNotification } from "./push";
 
 const CREATE_EVENT = `
   mutation CreateEvent($object: events_insert_input!) {
@@ -62,6 +63,15 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
               targetUsers: targetUsers,
               createdAt: new Date().toISOString(),
             });
+
+            await sendPushNotification({
+              data: {
+                userIds: targetUsers,
+                title: "New Event Announced!",
+                body: "An organizer you follow just posted a new event.",
+                data: { url: `/event/${eventId}` },
+              },
+            } as any);
           }
         }
       }

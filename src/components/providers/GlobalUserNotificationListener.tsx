@@ -76,6 +76,11 @@ export function GlobalUserNotificationListener() {
               : "An organizer you follow posted an update.";
             if (data.postId) targetPath = `/community/${data.postId}`;
             Icon = Film;
+          } else if (data.type === "new_story") {
+            title = "New Story";
+            body = "An organizer you follow just posted a new story.";
+            if (data.eventId) targetPath = `/event/${data.eventId}`;
+            Icon = Film;
           } else if (data.type === "new_message") {
             title = "New Message";
             body = data.content ? `New message: "${data.content}"` : "You have a new message.";
