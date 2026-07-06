@@ -53,6 +53,9 @@ export default defineConfig({
       "firebase/firestore",
       "firebase/auth",
       "firebase/storage",
+      "@yudiel/react-qr-scanner",
+      "react-qr-code",
+      "react-barcode",
     ],
   },
   ssr: {
@@ -75,6 +78,9 @@ export default defineConfig({
       "leaflet",
       "react-leaflet",
       "html-to-image",
+      "@yudiel/react-qr-scanner",
+      "react-qr-code",
+      "react-barcode",
     ],
   },
   plugins: [
