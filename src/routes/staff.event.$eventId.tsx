@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserStaffAssignments } from "@/api/staff";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -111,6 +111,28 @@ function StaffEventDashboard() {
   const [pinError, setPinError] = useState("");
   const [showScanner, setShowScanner] = useState(false);
 
+  // Local scan stats
+  const [scans, setScans] = useState<number[]>(() => {
+    try {
+      const stored = localStorage.getItem(`scan_stats_${eventId}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const checkedIn = scans.length;
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  const scansPerHour = scans.filter(t => t >= oneHourAgo).length;
+
+  const recordScan = useCallback(() => {
+    setScans(prev => {
+      const newScans = [...prev, Date.now()];
+      localStorage.setItem(`scan_stats_${eventId}`, JSON.stringify(newScans));
+      return newScans;
+    });
+  }, [eventId]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
     
@@ -193,7 +215,6 @@ function StaffEventDashboard() {
     return (
       <Numpad
         onPinComplete={(pin) => {
-          console.log("Expected PIN:", assignment.pin_code, "Entered PIN:", pin);
           if (pin === String(assignment.pin_code)) {
             setIsAuthenticated(true);
             localStorage.setItem(`staff_session_${eventId}`, Date.now().toString());
@@ -213,7 +234,7 @@ function StaffEventDashboard() {
   if (showScanner) {
     return (
       <div className="fixed inset-0 z-[100] bg-black flex flex-col">
-        <ScannerMobile eventId={eventId} onClose={() => setShowScanner(false)} />
+        <ScannerMobile eventId={eventId} onClose={() => setShowScanner(false)} onScanSuccess={recordScan} />
       </div>
     );
   }
@@ -261,7 +282,7 @@ function StaffEventDashboard() {
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-4xl font-black mb-0.5 tracking-tighter">0</p>
+                  <p className="text-4xl font-black mb-0.5 tracking-tighter">{checkedIn}</p>
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Checked In</p>
                 </div>
               </div>
@@ -274,7 +295,7 @@ function StaffEventDashboard() {
                   <Activity className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-4xl font-black mb-0.5 tracking-tighter">0</p>
+                  <p className="text-4xl font-black mb-0.5 tracking-tighter">{scansPerHour}</p>
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Scans/Hour</p>
                 </div>
               </div>

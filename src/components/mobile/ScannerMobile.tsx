@@ -204,7 +204,7 @@ function ScannerManualEntryModal({ onScan, isPending }: { onScan: (qr: string) =
 
 // --- MAIN COMPONENT ---
 
-export function ScannerMobile({ onClose, eventId }: { onClose?: () => void, eventId?: string }) {
+export function ScannerMobile({ onClose, eventId, onScanSuccess }: { onClose?: () => void, eventId?: string, onScanSuccess?: () => void }) {
   const [result, setResult] = useState<Result>("idle");
   const [online, setOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const [torch, setTorch] = useState(false);
@@ -269,6 +269,7 @@ export function ScannerMobile({ onClose, eventId }: { onClose?: () => void, even
           }
         }
         setResult("staff");
+        onScanSuccess?.();
       } else if (resultData.type === "ticket") {
         const { success, message, attendee } = resultData.data;
         if (!success) {
@@ -279,6 +280,7 @@ export function ScannerMobile({ onClose, eventId }: { onClose?: () => void, even
         
         setScannedTicket(attendee);
         setResult("success");
+        onScanSuccess?.();
       }
     },
     onError: () => {
