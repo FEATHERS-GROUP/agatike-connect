@@ -98,9 +98,8 @@ function CommunityPage() {
   const { workspaceSlug } = useParams({ from: "/dashboard/$workspaceSlug/community" });
   const { activeWorkspace } = useWorkspace();
 
-  // For demo, assume current user ID. Normally grabbed from auth context.
-  const currentUserId = "me";
   const organizerId = activeWorkspace?.orgnizer_id || "";
+  const currentUserId = organizerId;
 
   const { chatId } = Route.useSearch();
   const navigate = Route.useNavigate();

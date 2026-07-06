@@ -272,7 +272,9 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
 
     // 2. Fetch all workspace IDs for this organizer
     const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
-    const wsRes = await hasuraRequest<{ workspaces: { id: string }[] }>(wsQuery, { id: organizer_id });
+    const wsRes = await hasuraRequest<{ workspaces: { id: string }[] }>(wsQuery, {
+      id: organizer_id,
+    });
     const workspaceIds = wsRes.workspaces.map((w) => w.id);
 
     // 3. Create new sub

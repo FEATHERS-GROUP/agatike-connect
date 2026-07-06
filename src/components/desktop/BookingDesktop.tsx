@@ -418,7 +418,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         };
       });
 
-      if (ticketsToIssue.length > 0 ) {
+      if (ticketsToIssue.length > 0) {
         setIsGenerating(true);
         setIssuedTickets(ticketsToIssue);
       } else {
@@ -494,58 +494,58 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   };
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 ) {
+    if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
           await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
           const attachments = [];
           if (eventProject) {
-for (const ticket of issuedTickets) {
-            const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) {
-              toast.error(`DOM Element missing for ticket ${ticket.id}`);
-              continue;
+            for (const ticket of issuedTickets) {
+              const el = document.getElementById(`ticket-render-${ticket.id}`);
+              if (!el) {
+                toast.error(`DOM Element missing for ticket ${ticket.id}`);
+                continue;
+              }
+
+              await new Promise((r) => setTimeout(r, 100));
+
+              const imgData = await htmlToImage.toJpeg(el, {
+                pixelRatio: 1.5,
+                quality: 0.8,
+                backgroundColor: "#ffffff",
+                width: 720,
+                height: 260,
+              });
+
+              if (!imgData || imgData === "data:,") {
+                throw new Error(
+                  "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+                );
+              }
+
+              const width = 720;
+              const height = 260;
+
+              const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [width, height],
+              });
+              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+              const base64 = pdf.output("datauristring").split(",")[1];
+
+              attachments.push({
+                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                content: base64,
+              });
             }
-
-            await new Promise((r) => setTimeout(r, 100));
-
-            const imgData = await htmlToImage.toJpeg(el, {
-              pixelRatio: 1.5,
-              quality: 0.8,
-              backgroundColor: "#ffffff",
-              width: 720,
-              height: 260,
-            });
-
-            if (!imgData || imgData === "data:,") {
-              throw new Error(
-                "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-              );
-            }
-
-            const width = 720;
-            const height = 260;
-
-            const pdf = new jsPDF({
-              orientation: "landscape",
-              unit: "px",
-              format: [width, height],
-            });
-            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-            const base64 = pdf.output("datauristring").split(",")[1];
-
-            attachments.push({
-              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-              content: base64,
-            });
-          }
           } else {
             for (const ticket of issuedTickets) {
               const fallbackPdf = generateFallbackReceipt({
                 entityName: event?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,
-                customerName: ticket.attendee?.firstName || "Guest"
+                customerName: ticket.attendee?.firstName || "Guest",
               });
               attachments.push(fallbackPdf);
             }

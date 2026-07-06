@@ -22,7 +22,7 @@ if (firebaseConfig.apiKey) {
     const notificationTitle = payload.notification.title || "New Notification";
     const notificationOptions = {
       body: payload.notification.body,
-      icon: "/icon.svg",
+      icon: "/agatike-icon.png",
       data: payload.data || {},
     };
 

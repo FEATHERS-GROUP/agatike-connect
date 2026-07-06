@@ -239,7 +239,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         return;
       }
 
-      if (td?.issued && td.issued.length > 0 ) {
+      if (td?.issued && td.issued.length > 0) {
         setIsGenerating(true);
       } else {
         localStorage.removeItem(storageKey);
@@ -263,8 +263,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         ) {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
-          if (issuedTickets.length > 0 ) {
-        setIsGenerating(true);
+          if (issuedTickets.length > 0) {
+            setIsGenerating(true);
           } else {
             setIsSuccess(true);
           }
@@ -281,7 +281,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, storageKey]);
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 ) {
+    if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
@@ -302,54 +302,55 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           await new Promise((r) => setTimeout(r, 600));
 
           if (venueProject) {
-for (const ticket of issuedTickets) {
-            const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) continue;
+            for (const ticket of issuedTickets) {
+              const el = document.getElementById(`ticket-render-${ticket.id}`);
+              if (!el) continue;
 
-            // Wait a tiny bit more for React to flush the DOM
-            await new Promise((r) => setTimeout(r, 100));
+              // Wait a tiny bit more for React to flush the DOM
+              await new Promise((r) => setTimeout(r, 100));
 
-            const rectDebug = el.getBoundingClientRect();
-            console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
+              const rectDebug = el.getBoundingClientRect();
+              console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
 
-            const imgData = await htmlToImage.toJpeg(el, {
-              pixelRatio: 1.5,
-              quality: 0.8,
-              backgroundColor: "#ffffff",
-              width: 720,
-              height: 260,
-            });
-            console.log("Generated imgData length:", imgData?.length);
-            if (!imgData || imgData === "data:,") {
-              throw new Error(
-                "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-              );
+              const imgData = await htmlToImage.toJpeg(el, {
+                pixelRatio: 1.5,
+                quality: 0.8,
+                backgroundColor: "#ffffff",
+                width: 720,
+                height: 260,
+              });
+              console.log("Generated imgData length:", imgData?.length);
+              if (!imgData || imgData === "data:,") {
+                throw new Error(
+                  "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+                );
+              }
+
+              const rect = el.getBoundingClientRect();
+              const width = rect.width || 720;
+              const height = rect.height || 260;
+
+              const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [width, height],
+              });
+              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+              const base64 = pdf.output("datauristring").split(",")[1];
+
+              attachments.push({
+                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                content: base64,
+              });
             }
-
-            const rect = el.getBoundingClientRect();
-            const width = rect.width || 720;
-            const height = rect.height || 260;
-
-            const pdf = new jsPDF({
-              orientation: "landscape",
-              unit: "px",
-              format: [width, height],
-            });
-            pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-            const base64 = pdf.output("datauristring").split(",")[1];
-
-            attachments.push({
-              filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-              content: base64,
-            });
-          }
           } else {
             for (const ticket of issuedTickets) {
               const fallbackPdf = generateFallbackReceipt({
                 entityName: venue?.name || "Event/Venue",
                 ticket,
                 bookingRef: ticket.booking_ref || bookingRef,
-                customerName: customerName || (attendees && attendees[0] ? attendees[0].firstName : "Guest")
+                customerName:
+                  customerName || (attendees && attendees[0] ? attendees[0].firstName : "Guest"),
               });
               attachments.push(fallbackPdf);
             }

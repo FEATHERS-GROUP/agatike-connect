@@ -278,7 +278,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         return;
       }
 
-      if (ticketsToIssue.length > 0 ) {
+      if (ticketsToIssue.length > 0) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
@@ -311,8 +311,8 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (issuedTickets.length > 0 ) {
-        setIsGenerating(true);
+          if (issuedTickets.length > 0) {
+            setIsGenerating(true);
           } else {
             setIsSuccess(true);
           }
@@ -329,7 +329,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   }, [isPollingPawaPay, pawapayDepositId, issuedTickets, movieProject]);
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 ) {
+    if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
@@ -348,43 +348,43 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           await new Promise((r) => setTimeout(r, 600));
 
           if (movieProject) {
-for (const ticket of issuedTickets) {
-            const el = document.getElementById(`ticket-render-${ticket.id}`);
-            if (!el) continue;
+            for (const ticket of issuedTickets) {
+              const el = document.getElementById(`ticket-render-${ticket.id}`);
+              if (!el) continue;
 
-            await new Promise((r) => setTimeout(r, 100));
+              await new Promise((r) => setTimeout(r, 100));
 
-            const imgData = await htmlToImage.toJpeg(el, {
-              pixelRatio: 1.5,
-              quality: 0.8,
-              backgroundColor: "#ffffff",
-              width: 720,
-              height: 260,
-            });
+              const imgData = await htmlToImage.toJpeg(el, {
+                pixelRatio: 1.5,
+                quality: 0.8,
+                backgroundColor: "#ffffff",
+                width: 720,
+                height: 260,
+              });
 
-            if (!imgData || imgData === "data:,")
-              throw new Error("Empty image data from htmlToImage");
+              if (!imgData || imgData === "data:,")
+                throw new Error("Empty image data from htmlToImage");
 
-            const pdf = new jsPDF({
-              orientation: "landscape",
-              unit: "px",
-              format: [720, 260],
-            });
-            pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
-            const base64 = pdf.output("datauristring").split(",")[1];
+              const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [720, 260],
+              });
+              pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+              const base64 = pdf.output("datauristring").split(",")[1];
 
-            attachments.push({
-              filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-              content: base64,
-            });
-          }
+              attachments.push({
+                filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                content: base64,
+              });
+            }
           } else {
             for (const ticket of issuedTickets) {
               const fallbackPdf = generateFallbackReceipt({
                 entityName: movie?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,
-                customerName: ticket.attendee?.firstName || "Guest"
+                customerName: ticket.attendee?.firstName || "Guest",
               });
               attachments.push(fallbackPdf);
             }

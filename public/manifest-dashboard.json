@@ -1,8 +1,9 @@
 {
   "name": "Agatike Connect",
   "short_name": "Agatike",
-  "description": "Event management and ticketing platform",
-  "start_url": "/",
+  "description": "Event management and ticketing platform for organizers",
+  "start_url": "/dashboard/login",
+  "scope": "/dashboard/",
   "display": "standalone",
   "background_color": "#f97316",
   "theme_color": "#f97316",

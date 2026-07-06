@@ -17,11 +17,11 @@ This project uses **TanStack Start** for file-based routing, **React Query** for
 
 ```mermaid
 flowchart TD
-  User[Organizer] -->|Registers| WS[Workspace]
-  WS --> Brand[Branding & Settings]
-  WS --> Wallet[Wallet & Currency]
-  WS --> Teams[Team Members]
-  WS --> Events[Events]
+  User["Organizer"] -->|Registers| WS["Workspace"]
+  WS --> Brand["Branding & Settings"]
+  WS --> Wallet["Wallet & Currency"]
+  WS --> Teams["Team Members"]
+  WS --> Events["Events"]
 
   style WS fill:#f9f,stroke:#333,stroke-width:2px
 ```
@@ -45,10 +45,10 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  WS[Workspace] -->|Creates| Event[Event]
-  Event --> Meta[Metadata & Dates]
-  Event --> Venue[Venue Details]
-  Event --> Unlocks[Unlocks Features]
+  WS["Workspace"] -->|Creates| Event["Event"]
+  Event --> Meta["Metadata & Dates"]
+  Event --> Venue["Venue Details"]
+  Event --> Unlocks["Unlocks Features"]
   Unlocks --> Staffing
   Unlocks --> RSVPs
   Unlocks --> Tickets
@@ -70,11 +70,11 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Org[Organizer] -->|Designs| Form[Custom Form]
-  Form --> Fields[Dynamic JSONB Fields]
-  User[Attendee/Staff] -->|Submits| Form
-  Form --> Answers[rsvp_answers]
-  Answers -->|Bulk Import| StaffDir[Staff Directory]
+  Org["Organizer"] -->|Designs| Form["Custom Form"]
+  Form --> Fields["Dynamic JSONB Fields"]
+  User["Attendee/Staff"] -->|Submits| Form
+  Form --> Answers["rsvp_answers"]
+  Answers -->|Bulk Import| StaffDir["Staff Directory"]
 ```
 
 ---
@@ -90,11 +90,11 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Event[Event] -->|Defines| SecA[Main Gate]
-  Event -->|Defines| SecB[VIP Lounge]
-  Event -->|Defines| SecC[Backstage]
-  SecB -.->|Assigned To| Staff[Staff Member]
-  SecA -.->|Assigned To| Tkt[Attendee Ticket]
+  Event["Event"] -->|Defines| SecA["Main Gate"]
+  Event -->|Defines| SecB["VIP Lounge"]
+  Event -->|Defines| SecC["Backstage"]
+  SecB -.->|Assigned To| Staff["Staff Member"]
+  SecA -.->|Assigned To| Tkt["Attendee Ticket"]
 ```
 
 ---
@@ -111,13 +111,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Canvas[Venue Designer Canvas] -->|Draw| Stage[Stage/Pitch]
-  Canvas -->|Draw| Sec[Seating Section]
+  Canvas["Venue Designer Canvas"] -->|Draw| Stage["Stage/Pitch"]
+  Canvas -->|Draw| Sec["Seating Section"]
   Stage & Sec --> Calc{getSectionOrientation}
-  Calc -->|Top/Bottom/Left/Right| MapRender[Canvas Map Renderer]
-  MapRender --> R1[Row 1 physically closest to stage]
-  Calc --> Booking[Booking Modal]
-  Booking --> Standard[Standardized View: Stage & Row 1 at Top]
+  Calc -->|Top/Bottom/Left/Right| MapRender["Canvas Map Renderer"]
+  MapRender --> R1["Row 1 physically closest to stage"]
+  Calc --> Booking["Booking Modal"]
+  Booking --> Standard["Standardized View: Stage & Row 1 at Top"]
 ```
 
 ---
@@ -137,13 +137,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Event -->|Add / Import| Staff[Staff Member]
-  Staff --> Role[Job Role]
-  Staff --> Access[allowed_sections]
-  Access --> AllAccess["[*] All Access"]
-  Access --> Partial["[uuid-1] Specific Zone"]
-  Access --> None["[] No Access"]
-  Staff --> QR[Unique QR String]
+  Event -->|Add / Import| Staff["Staff Member"]
+  Staff --> Role["Job Role"]
+  Staff --> Access["allowed_sections"]
+  Access --> AllAccess["\"[*"] All Access"]
+  Access --> Partial["\"[uuid-1"] Specific Zone"]
+  Access --> None["\"["] No Access"]
+  Staff --> QR["Unique QR String"]
 ```
 
 ---
@@ -159,12 +159,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Designer[Badge Designer] -->|Saves| Proj[badge_projects]
-  Proj --> Config[Theme, Fonts, Sponsors]
-  StaffDB[event_staff] --> Data[Name, Role, Image, QR]
+  Designer["Badge Designer"] -->|Saves| Proj["badge_projects"]
+  Proj --> Config["Theme, Fonts, Sponsors"]
+  StaffDB["event_staff"] --> Data["Name, Role, Image, QR"]
   Config --> Merge{BadgePreview}
   Data --> Merge
-  Merge --> Rendered[Live Digital Badge]
+  Merge --> Rendered["Live Digital Badge"]
 ```
 
 ---
@@ -181,12 +181,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Designer[Ticket Designer] -->|Saves| TktProj[ticket_projects]
-  Purchaser[Attendee] -->|Buys| TicketDB[tickets]
-  TicketDB --> TktData[Name, Type, QR]
+  Designer["Ticket Designer"] -->|Saves| TktProj["ticket_projects"]
+  Purchaser["Attendee"] -->|Buys| TicketDB["tickets"]
+  TicketDB --> TktData["Name, Type, QR"]
   TktProj --> Merge{Public Route}
   TktData --> Merge
-  Merge --> AppleWallet[Digital Ticket Pass]
+  Merge --> AppleWallet["Digital Ticket Pass"]
 ```
 
 ---
@@ -214,12 +214,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Scanner[Scanner App] -->|Selects Location| Loc[Current Zone]
-  Scanner -->|Scans QR| DB[(Database)]
+  Scanner["Scanner App"] -->|Selects Location| Loc["Current Zone"]
+  Scanner -->|Scans QR| DB["(Database)"]
   DB --> CheckActive{Is Active?}
   CheckActive -->|Yes| CheckZone{Access to Zone?}
-  CheckActive -->|No| Denied[Access Denied 🟥]
-  CheckZone -->|Yes| Granted[Access Granted 🟩]
+  CheckActive -->|No| Denied["Access Denied 🟥"]
+  CheckZone -->|Yes| Granted["Access Granted 🟩"]
   CheckZone -->|No| Denied
 ```
 
@@ -238,13 +238,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Event -->|Creates| Product[Product]
+  Event -->|Creates| Product["Product"]
   Product --> Type{Type?}
-  Type --> Physical[Physical Merch]
-  Type --> Punch[Punch Card]
-  Type --> Voucher[Voucher]
-  Type --> Loyalty[Loyalty Card]
-  Punch --> Uses[punch_count decrements on scan]
+  Type --> Physical["Physical Merch"]
+  Type --> Punch["Punch Card"]
+  Type --> Voucher["Voucher"]
+  Type --> Loyalty["Loyalty Card"]
+  Punch --> Uses["punch_count decrements on scan"]
 ```
 
 ---
@@ -258,10 +258,10 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  Event -->|Onboards| Vendor[Vendor]
-  Vendor --> Products[Vendor Products]
-  Vendor --> Staff[Vendor Staff]
-  Products -->|Sales| Revenue[Revenue Split]
+  Event -->|Onboards| Vendor["Vendor"]
+  Vendor --> Products["Vendor Products"]
+  Vendor --> Staff["Vendor Staff"]
+  Products -->|Sales| Revenue["Revenue Split"]
 ```
 
 ---
@@ -279,12 +279,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  WS[Workspace] --> Wallet[Wallet]
-  Sales[Ticket/Merch Sales] -->|Credits| Ledger[wallet_transactions]
-  Ledger --> Balance[Total Balance]
-  Balance -->|Request Payout| Withdraw[Pending Debit]
-  Withdraw --> Admin[Admin / MoMo / PawaPay Payouts]
-  Admin -->|Processed| Completed[Completed Debit]
+  WS["Workspace"] --> Wallet["Wallet"]
+  Sales["Ticket/Merch Sales"] -->|Credits| Ledger["wallet_transactions"]
+  Ledger --> Balance["Total Balance"]
+  Balance -->|Request Payout| Withdraw["Pending Debit"]
+  Withdraw --> Admin["Admin / MoMo / PawaPay Payouts"]
+  Admin -->|Processed| Completed["Completed Debit"]
 ```
 
 ---
@@ -360,19 +360,19 @@ Because telecom network fees fluctuate heavily based on the size of the transact
 
 ```mermaid
 flowchart TD
-    UI[Checkout UI] -->|User Selects Network| Sim[Simulation Engine]
-    Sim --> DB[(pricing_plans.tiered_rules)]
+    UI["Checkout UI"] -->|User Selects Network| Sim["Simulation Engine"]
+    Sim --> DB["(pricing_plans.tiered_rules)"]
     DB --> Calc{Calculate Fee Based on Brackets}
-    Calc -->|Ticket price > Fee| Normal[Normal Flow]
-    Calc -->|Fee > Ticket price| Shortfall[Shortfall Mode]
+    Calc -->|Ticket price > Fee| Normal["Normal Flow"]
+    Calc -->|Fee > Ticket price| Shortfall["Shortfall Mode"]
 
-    Normal --> ChargeCust[Charge Customer Base Price + Markup]
+    Normal --> ChargeCust["Charge Customer Base Price + Markup"]
     Shortfall --> ChargeCust
 
-    Normal --> OrgFee[Normal Platform Fee Withheld]
-    Shortfall --> OrgDeduct[Shortfall Deducted from Organizer Wallet]
+    Normal --> OrgFee["Normal Platform Fee Withheld"]
+    Shortfall --> OrgDeduct["Shortfall Deducted from Organizer Wallet"]
 
-    OrgFee --> Webhook[PawaPay Webhook Completes]
+    OrgFee --> Webhook["PawaPay Webhook Completes"]
     OrgDeduct --> Webhook
 ```
 
@@ -388,15 +388,15 @@ Organizers have full control over which telecom networks their attendees can use
 
 ```mermaid
 flowchart TD
-    Org[Organizer] -->|Selects Networks| DB[(wallets.supported_networks)]
-    UI[Customer Opens Checkout] --> Read[Fetch Wallet Config]
+    Org["Organizer"] -->|Selects Networks| DB["(wallets.supported_networks)"]
+    UI["Customer Opens Checkout"] --> Read["Fetch Wallet Config"]
     Read --> Check{Is Array Empty?}
 
-    Check -->|Yes| Blocked[Disable 'Pay' Button\nShow Red Alert Message]
-    Check -->|No| Filter[Filter Networks Dropdown]
+    Check -->|Yes| Blocked["Disable 'Pay' Button\nShow Red Alert Message"]
+    Check -->|No| Filter["Filter Networks Dropdown"]
 
-    Filter --> Proceed[Customer Chooses Configured Network]
-    Proceed --> CheckoutFlow[Proceed to Payment]
+    Filter --> Proceed["Customer Chooses Configured Network"]
+    Proceed --> CheckoutFlow["Proceed to Payment"]
 ```
 
 ---
@@ -425,10 +425,10 @@ The Budget & Settlement page is the **financial command centre** for an event. I
 
 ```mermaid
 graph LR
-    PlanningView --> OV[Overview Tab]
-    PlanningView --> VE[Vendors Tab]
-    PlanningView --> VO[Sponsored Vouchers Tab]
-    PlanningView --> BK[Agatike Book Tab]
+    PlanningView --> OV["Overview Tab"]
+    PlanningView --> VE["Vendors Tab"]
+    PlanningView --> VO["Sponsored Vouchers Tab"]
+    PlanningView --> BK["Agatike Book Tab"]
 ```
 
 ---
@@ -445,17 +445,17 @@ Vendors are physical stalls or service providers at the event who can accept spo
 
 ```mermaid
 flowchart TD
-    A[Organizer clicks Add Vendor] --> B[Dialog: Name + Description + Contact]
-    B --> C[Submit]
-    C --> D[Server auto-generates VND-XXXXXX ID]
-    D --> E[createEventVendor mutation → DB insert]
-    E --> F[Vendor card appears in grid]
+    A["Organizer clicks Add Vendor"] --> B["Dialog: Name + Description + Contact"]
+    B --> C["Submit"]
+    C --> D["Server auto-generates VND-XXXXXX ID"]
+    D --> E["createEventVendor mutation → DB insert"]
+    E --> F["Vendor card appears in grid"]
     F --> G{Click vendor card}
-    G --> H[Ledger modal opens]
-    H --> I[getVendorTransactions query - enabled only when vendor selected]
-    I --> J[Table: Date / Description / Voucher QR / Amount]
+    G --> H["Ledger modal opens"]
+    H --> I["getVendorTransactions query - enabled only when vendor selected"]
+    I --> J["Table: Date / Description / Voucher QR / Amount"]
     J --> K{Export CSV}
-    K --> L[Blob download triggered via hidden anchor click]
+    K --> L["Blob download triggered via hidden anchor click"]
 ```
 
 **Database table:** `event_vendors`
@@ -478,16 +478,16 @@ Sponsored Vouchers are digital credit instruments issued to attendees. The syste
 
 ```mermaid
 flowchart TD
-    A[Organizer clicks Generate Vouchers] --> B{Campaign Type}
-    B -->|Standalone Batch| C[Enter Name + Value per Voucher + Quantity]
-    B -->|Ticket-Attached| D[Select Trigger Tickets grouped by Tour Stop]
+    A["Organizer clicks Generate Vouchers"] --> B{Campaign Type}
+    B -->|Standalone Batch| C["Enter Name + Value per Voucher + Quantity"]
+    B -->|Ticket-Attached| D["Select Trigger Tickets grouped by Tour Stop"]
     D --> E{Value Type}
-    E -->|match_ticket_price| F[Voucher = Ticket cost]
-    E -->|fixed| G[Voucher = Custom RWF amount]
-    C & F & G --> H[batchGenerateSponsoredVouchers server fn]
-    H -->|Standalone| I[Creates batch row + N sponsored_voucher rows\nEach with VCH-XXXXXX QR code]
-    H -->|Ticket-Linked| J[Creates batch row only\nlinked_ticket_ids stored as JSONB]
-    I & J --> K[Voucher table re-renders]
+    E -->|match_ticket_price| F["Voucher = Ticket cost"]
+    E -->|fixed| G["Voucher = Custom RWF amount"]
+    C & F & G --> H["batchGenerateSponsoredVouchers server fn"]
+    H -->|Standalone| I["Creates batch row + N sponsored_voucher rows\nEach with VCH-XXXXXX QR code"]
+    H -->|Ticket-Linked| J["Creates batch row only\nlinked_ticket_ids stored as JSONB"]
+    I & J --> K["Voucher table re-renders"]
 ```
 
 **Pagination:** The voucher table supports 10/20/50/100 rows per page using client-side slicing (`vouchers.slice((currentPage-1)*pageSize, currentPage*pageSize)`).
@@ -510,37 +510,37 @@ The Agatike Book is a fully flexible, custom spreadsheet/database builder — si
 
 ```mermaid
 flowchart TD
-    A[Create Custom Book] --> B[Step 1: Template Selection]
+    A["Create Custom Book"] --> B["Step 1: Template Selection"]
     B --> C{Pick Template}
-    C -->|Expenses & Payouts| D[Description text + Amount number + Paid boolean]
-    C -->|Staff Roster| E[Name + Role + Daily Rate + Paid]
-    C -->|Event Checklist| F[Task + Assigned To + Completed]
-    C -->|Sponsor Tracking| G[Sponsor + Deliverable + Value + Delivered]
-    C -->|Start from Scratch| H[Single empty Name text field]
-    D & E & F & G & H --> I[Step 2: Field Customizer]
-    I --> J[Edit Book Name]
-    I --> K[Add / Remove / Rename Fields]
-    K --> L[Each field: name string + type text/number/boolean]
-    J & L --> M[Submit: createAgatikeBook]
-    M --> N[Book saved: name + schema_fields JSONB → agatike_books table]
-    N --> O[Book card appears in grid]
+    C -->|Expenses & Payouts| D["Description text + Amount number + Paid boolean"]
+    C -->|Staff Roster| E["Name + Role + Daily Rate + Paid"]
+    C -->|Event Checklist| F["Task + Assigned To + Completed"]
+    C -->|Sponsor Tracking| G["Sponsor + Deliverable + Value + Delivered"]
+    C -->|Start from Scratch| H["Single empty Name text field"]
+    D & E & F & G & H --> I["Step 2: Field Customizer"]
+    I --> J["Edit Book Name"]
+    I --> K["Add / Remove / Rename Fields"]
+    K --> L["Each field: name string + type text/number/boolean"]
+    J & L --> M["Submit: createAgatikeBook"]
+    M --> N["Book saved: name + schema_fields JSONB → agatike_books table"]
+    N --> O["Book card appears in grid"]
 ```
 
 #### Record Management Flow
 
 ```mermaid
 flowchart TD
-    A[Click a Book Card] --> B[Full-page detail view]
-    B --> C[Table: columns = schema_fields, rows = records]
+    A["Click a Book Card"] --> B["Full-page detail view"]
+    B --> C["Table: columns = schema_fields, rows = records"]
     C --> D{Add Record}
-    D --> E[Dynamic form: renders an input per field\nbased on field.type text/number/boolean]
-    E --> F[Submit: createAgatikeBookRecord]
-    F --> G[record_data JSONB saved → agatike_book_records table]
-    G --> H[invalidateQueries → table refreshes]
+    D --> E["Dynamic form: renders an input per field\nbased on field.type text/number/boolean"]
+    E --> F["Submit: createAgatikeBookRecord"]
+    F --> G["record_data JSONB saved → agatike_book_records table"]
+    G --> H["invalidateQueries → table refreshes"]
     C --> I{Delete Record}
-    I --> J[deleteAgatikeBookRecord mutation]
+    I --> J["deleteAgatikeBookRecord mutation"]
     J --> H
-    C --> K[Back button → returns to book grid]
+    C --> K["Back button → returns to book grid"]
 ```
 
 #### Field Types
@@ -587,21 +587,21 @@ The Overview Tab aggregates live data from all three other tabs — Tickets, Ven
 
 ```mermaid
 flowchart TD
-    OT[OverviewTab mounts] --> Q1[getEventById → event_tickets]
-    OT --> Q2[getEventVendors → event_vendors]
-    OT --> Q3[getSponsoredVoucherBatches → batch objects with nested vouchers]
-    OT --> Q4[getAgatikeBooks → books + records]
+    OT["OverviewTab mounts"] --> Q1["getEventById → event_tickets"]
+    OT --> Q2["getEventVendors → event_vendors"]
+    OT --> Q3["getSponsoredVoucherBatches → batch objects with nested vouchers"]
+    OT --> Q4["getAgatikeBooks → books + records"]
 
-    Q1 --> TR[totalTicketRevenue = SUM sold × cost]
-    Q1 --> TS[totalTicketsSold = SUM sold]
-    Q2 --> VR[totalVendorRevenue = SUM vendor.total_revenue]
-    Q3 --> VP[totalVoucherProvisioned = SUM current_balance + spent per voucher]
-    Q3 --> VS[totalVoucherSpent = SUM transaction amounts]
-    Q3 --> VB[voucherBreakdown array: one entry per batch]
-    Q4 --> BE[totalBookExpenses = SUM first number field across all records]
-    Q4 --> BB[bookBreakdown array: books with non-zero totals]
+    Q1 --> TR["totalTicketRevenue = SUM sold × cost"]
+    Q1 --> TS["totalTicketsSold = SUM sold"]
+    Q2 --> VR["totalVendorRevenue = SUM vendor.total_revenue"]
+    Q3 --> VP["totalVoucherProvisioned = SUM current_balance + spent per voucher"]
+    Q3 --> VS["totalVoucherSpent = SUM transaction amounts"]
+    Q3 --> VB["voucherBreakdown array: one entry per batch"]
+    Q4 --> BE["totalBookExpenses = SUM first number field across all records"]
+    Q4 --> BB["bookBreakdown array: books with non-zero totals"]
 
-    TR --> PP[projectedProfit = Ticket Sales - Vendor Payouts + Book Expenses]
+    TR --> PP["projectedProfit = Ticket Sales - Vendor Payouts + Book Expenses"]
 ```
 
 #### KPI Cards
@@ -620,10 +620,10 @@ Shows the first **6** voucher campaigns. If there are more than 6, a "View All N
 
 ```mermaid
 flowchart LR
-    voucherBreakdown -->|slice 0-6| Table[Preview Table]
+    voucherBreakdown -->|slice 0-6| Table["Preview Table"]
     Table --> Btn{length > 6?}
-    Btn -->|Yes| Modal[View All Dialog - full scrollable table]
-    Btn -->|No| Nothing[No button]
+    Btn -->|Yes| Modal["View All Dialog - full scrollable table"]
+    Btn -->|No| Nothing["No button"]
 ```
 
 ---
@@ -637,29 +637,29 @@ Manages all attendee records for an event — viewing, searching, importing from
 
 ```mermaid
 flowchart TD
-    A[Page loads] --> B[getEventAttendees]
-    A --> C[getWorkspaceForms - for import dropdown]
-    A --> D[getAllBadgeProjects - for badge printing]
-    A --> E[getOrganizerProfile - for email sender identity]
+    A["Page loads"] --> B["getEventAttendees"]
+    A --> C["getWorkspaceForms - for import dropdown"]
+    A --> D["getAllBadgeProjects - for badge printing"]
+    A --> E["getOrganizerProfile - for email sender identity"]
 
-    B --> F[Attendee table with search filter]
-    F -->|Client-side| G[Filter by name or email]
+    B --> F["Attendee table with search filter"]
+    F -->|Client-side| G["Filter by name or email"]
 
     F --> H{Import from RSVP Form}
-    H --> I[Select a form]
-    I --> J[getFormDetails → fetch submissions]
-    J --> K[Map form field IDs to labels\nTransform each submission to attendee object]
-    K --> L[addEventAttendees bulk insert]
-    L --> M[invalidateQueries - table refreshes]
+    H --> I["Select a form"]
+    I --> J["getFormDetails → fetch submissions"]
+    J --> K["Map form field IDs to labels\nTransform each submission to attendee object"]
+    K --> L["addEventAttendees bulk insert"]
+    L --> M["invalidateQueries - table refreshes"]
 
     F --> N{Select attendees with checkboxes}
-    N --> O[selectedAttendees string array]
+    N --> O["selectedAttendees string array"]
     O --> P{Send Email}
-    P --> Q[React Quill rich-text email composer]
-    Q --> R[sendAttendeeEmail - one email per selected attendee]
+    P --> Q["React Quill rich-text email composer"]
+    Q --> R["sendAttendeeEmail - one email per selected attendee"]
 
     F --> S{Export CSV}
-    S --> T[Build CSV from all attendees\nBlob download via hidden anchor]
+    S --> T["Build CSV from all attendees\nBlob download via hidden anchor"]
 ```
 
 ### RSVP Form Import
@@ -778,10 +778,10 @@ The Page Builder is a no-code visual website editor that allows organizers to bu
 
 ```mermaid
 graph LR
-    PageBuilder --> LeftSidebar[Left Sidebar\nPage list + create]
-    PageBuilder --> RightMain[Main Area - 2 columns]
-    RightMain --> SettingsPanel[Left Col: Toolbox + Page Settings]
-    RightMain --> Canvas[Right Col: Live Canvas preview]
+    PageBuilder --> LeftSidebar["Left Sidebar\nPage list + create"]
+    PageBuilder --> RightMain["Main Area - 2 columns"]
+    RightMain --> SettingsPanel["Left Col: Toolbox + Page Settings"]
+    RightMain --> Canvas["Right Col: Live Canvas preview"]
 ```
 
 ### State Model
@@ -813,28 +813,28 @@ The `editorState` object shape:
 
 ```mermaid
 flowchart TD
-    A[Page Builder mounts] --> B[getAllWorkspacePages - list all pages]
-    B --> C[Left sidebar shows page list with slug + Published/Draft badge]
+    A["Page Builder mounts"] --> B["getAllWorkspacePages - list all pages"]
+    B --> C["Left sidebar shows page list with slug + Published/Draft badge"]
 
     C --> D{User action}
-    D -->|Click existing page| E[setActivePageId]
-    E --> F[getWorkspacePage - fetch full page data]
-    F --> G[useEffect hydrates editorState from pageData\nFilters out page_settings block into top-level fields]
-    G --> H[Canvas + settings panel populate]
+    D -->|Click existing page| E["setActivePageId"]
+    E --> F["getWorkspacePage - fetch full page data"]
+    F --> G["useEffect hydrates editorState from pageData\nFilters out page_settings block into top-level fields"]
+    G --> H["Canvas + settings panel populate"]
 
-    D -->|Click + New Page| I[setIsNewPage true\nReset editorState to makeBlankPage]
+    D -->|Click + New Page| I["setIsNewPage true\nReset editorState to makeBlankPage"]
     I --> H
 
     H --> J{Publish button}
-    J --> K[Validate: slug is required]
-    K --> L[saveMutation: upsertWorkspacePage\nMerges page_settings block back into components array]
-    L -->|New page| M[Store returned id in editorState\nUpdate activePageId]
-    L -->|Existing page| N[invalidateQueries - sidebar refreshes]
+    J --> K["Validate: slug is required"]
+    K --> L["saveMutation: upsertWorkspacePage\nMerges page_settings block back into components array"]
+    L -->|New page| M["Store returned id in editorState\nUpdate activePageId"]
+    L -->|Existing page| N["invalidateQueries - sidebar refreshes"]
 
     H --> O{Delete button}
-    O --> P[AlertDialog confirm]
-    P --> Q[deleteMutation: deleteWorkspacePage]
-    Q --> R[Reset editor to blank state]
+    O --> P["AlertDialog confirm"]
+    P --> Q["deleteMutation: deleteWorkspacePage"]
+    Q --> R["Reset editor to blank state"]
 ```
 
 ### The `page_settings` Block Pattern
@@ -855,10 +855,10 @@ When a page is **loaded**, `useEffect` extracts this block, puts its values into
 
 ```mermaid
 flowchart LR
-    A[Preview button clicked] --> B[Serialize full editorState + page_settings block]
-    B --> C[localStorage.setItem page_preview_data]
-    C --> D[window.open /p/slug?preview=true in new tab]
-    D --> E[Public page route reads localStorage when preview=true\nDisplays live unsaved state]
+    A["Preview button clicked"] --> B["Serialize full editorState + page_settings block"]
+    B --> C["localStorage.setItem page_preview_data"]
+    C --> D["window.open /p/slug?preview=true in new tab"]
+    D --> E["Public page route reads localStorage when preview=true\nDisplays live unsaved state"]
 ```
 
 This allows organizers to preview their page exactly as it will look — **without needing to save first**.
@@ -899,17 +899,17 @@ Every content block on the canvas is rendered by the `ComponentBlock` sub-compon
 
 ```mermaid
 flowchart LR
-    addComponent --> newComp[Creates new block object with id=Date.now]
-    newComp --> setEditorState[Appends to components array]
+    addComponent --> newComp["Creates new block object with id=Date.now"]
+    newComp --> setEditorState["Appends to components array"]
 
-    updateComponent --> immutableCopy[Spreads existing components array]
-    immutableCopy --> overwrite[Overwrites specific key on target index]
+    updateComponent --> immutableCopy["Spreads existing components array"]
+    immutableCopy --> overwrite["Overwrites specific key on target index"]
     overwrite --> setEditorState
 
-    removeComponent --> spliceOut[Removes index from copy]
+    removeComponent --> spliceOut["Removes index from copy"]
     spliceOut --> setEditorState
 
-    moveComponent --> swap[Swaps block at index with index+dir]
+    moveComponent --> swap["Swaps block at index with index+dir"]
     swap --> setEditorState
 ```
 
@@ -923,13 +923,13 @@ The Page Builder pulls `getWorkspaceForms` at mount. Any form marked `is_active 
 
 ```mermaid
 flowchart TD
-    PageBuilder -->|on mount| Forms[(getWorkspaceForms)]
-    Forms --> FormLink[form_link block\nEmbed a single form as card or button]
-    Forms --> FormGrid[form_grid block\nEmbed multiple forms as a card grid]
-    FormLink --> PublicPage[/p/slug - renders inline form embed]
+    PageBuilder -->|on mount| Forms["(getWorkspaceForms)"]
+    Forms --> FormLink["form_link block\nEmbed a single form as card or button"]
+    Forms --> FormGrid["form_grid block\nEmbed multiple forms as a card grid"]
+    FormLink --> PublicPage["/p/slug - renders inline form embed"]
     FormGrid --> PublicPage
-    PublicPage -->|user submits| RSVP[(rsvp_answers)]
-    RSVP --> AttendeesPage[Import to /attendees]
+    PublicPage -->|user submits| RSVP["(rsvp_answers)"]
+    RSVP --> AttendeesPage["Import to /attendees"]
 ```
 
 This creates the full end-to-end funnel: **Page Builder → Public Page → Form Submission → Attendee Import**.
@@ -954,31 +954,31 @@ This creates the full end-to-end funnel: **Page Builder → Public Page → Form
 
 ```mermaid
 flowchart TD
-    A[Page mounts] --> B[getEventAttendees\nAll attendees for this event]
-    A --> C[getWorkspaceForms\nAll workspace forms for import dropdown]
-    A --> D[getAllBadgeProjects\nAll badge designs for email attachment]
-    A --> E[getOrganizerProfile\nOrganizer name/email/phone for email templates]
+    A["Page mounts"] --> B["getEventAttendees\nAll attendees for this event"]
+    A --> C["getWorkspaceForms\nAll workspace forms for import dropdown"]
+    A --> D["getAllBadgeProjects\nAll badge designs for email attachment"]
+    A --> E["getOrganizerProfile\nOrganizer name/email/phone for email templates"]
 
-    B --> F[filteredAttendees = attendees.filter by searchTerm\nMatches names + email + type]
-    F --> G[Table renders: avatar + name + email + type badge + ticket + date + actions]
+    B --> F["filteredAttendees = attendees.filter by searchTerm\nMatches names + email + type"]
+    F --> G["Table renders: avatar + name + email + type badge + ticket + date + actions"]
 ```
 
 ### RSVP Form Import — Detailed Mapping Flow
 
 ```mermaid
 flowchart TD
-    A[Organizer opens Import Modal] --> B[Select from workspace forms dropdown]
-    B --> C[Click Import Attendees]
-    C --> D[getFormDetails: fetch form schema + all rsvp submissions]
-    D --> E[Build fieldMap:\nreduce form_fields to id→label lookup]
-    E --> F[Loop each rsvp submission]
-    F --> G[Loop rsvp_answers array\nMap each answer field_id → label via fieldMap]
-    G --> H[Extract known fields with fallback chains:\nnames: answers.Names OR answers.Name OR rsvp.first_name\nemail: answers.Email OR answers.Email Address OR rsvp.email\nphone: answers.Phone OR answers.Phone Number\nticket_type: answers.Ticket Type/Registration Type OR Form Registration]
-    H --> I[Generate random 8-char alphanumeric qrcode_number]
-    I --> J[Assemble attendee object:\nevent_id, names, email, phone, ticket_type,\nqrcode_number, status=registered, type=attendee,\ncustom_fields=full answers object]
-    J --> K[addEventAttendees: bulk insert all objects]
-    K --> L[invalidateQueries event-attendees]
-    L --> M[Table refreshes with imported attendees]
+    A["Organizer opens Import Modal"] --> B["Select from workspace forms dropdown"]
+    B --> C["Click Import Attendees"]
+    C --> D["getFormDetails: fetch form schema + all rsvp submissions"]
+    D --> E["Build fieldMap:\nreduce form_fields to id→label lookup"]
+    E --> F["Loop each rsvp submission"]
+    F --> G["Loop rsvp_answers array\nMap each answer field_id → label via fieldMap"]
+    G --> H["Extract known fields with fallback chains:\nnames: answers.Names OR answers.Name OR rsvp.first_name\nemail: answers.Email OR answers.Email Address OR rsvp.email\nphone: answers.Phone OR answers.Phone Number\nticket_type: answers.Ticket Type/Registration Type OR Form Registration"]
+    H --> I["Generate random 8-char alphanumeric qrcode_number"]
+    I --> J["Assemble attendee object:\nevent_id, names, email, phone, ticket_type,\nqrcode_number, status=registered, type=attendee,\ncustom_fields=full answers object"]
+    J --> K["addEventAttendees: bulk insert all objects"]
+    K --> L["invalidateQueries event-attendees"]
+    L --> M["Table refreshes with imported attendees"]
 ```
 
 #### Why `custom_fields`?
@@ -989,15 +989,15 @@ Every attendee imported from a form stores the **full raw answers** object as `c
 
 ```mermaid
 flowchart TD
-    Table --> CheckboxHeader[Select All checkbox in header]
-    Table --> RowCheckbox[Individual row checkboxes]
-    CheckboxHeader -->|checked| SelectAll[setSelectedAttendees filteredAttendees.map id]
-    CheckboxHeader -->|unchecked| ClearAll[setSelectedAttendees empty array]
-    RowCheckbox -->|checked| AddToArray[append id to selectedAttendees]
-    RowCheckbox -->|unchecked| RemoveFromArray[filter out id from selectedAttendees]
+    Table --> CheckboxHeader["Select All checkbox in header"]
+    Table --> RowCheckbox["Individual row checkboxes"]
+    CheckboxHeader -->|checked| SelectAll["setSelectedAttendees filteredAttendees.map id"]
+    CheckboxHeader -->|unchecked| ClearAll["setSelectedAttendees empty array"]
+    RowCheckbox -->|checked| AddToArray["append id to selectedAttendees"]
+    RowCheckbox -->|unchecked| RemoveFromArray["filter out id from selectedAttendees"]
 
-    SelectedAttendees -->|length > 0| BulkBar[Bulk action bar slides in with count badge]
-    BulkBar --> BulkEmail[Send Bulk Email button → BulkEmailModal]
+    SelectedAttendees -->|length > 0| BulkBar["Bulk action bar slides in with count badge"]
+    BulkBar --> BulkEmail["Send Bulk Email button → BulkEmailModal"]
 ```
 
 ### Attendee Details Modal (`AttendeeDetailsModal`)
@@ -1020,13 +1020,13 @@ Both single-attendee and bulk emails use an identical template with **template v
 
 ```mermaid
 flowchart TD
-    Template[HTML Template with placeholders] --> Regex[Regex replace chain]
-    Regex --> V1["[First Name] / {{name}} → attendee first name"]
-    Regex --> V2["[Registration Details] → auto-generated HTML block\nwith Registration ID + Ticket Number + Badge Link"]
-    Regex --> V3["[Contact Email] / {{contact_email}} → organizer email"]
-    Regex --> V4["[Phone Number] / {{phone_number}} → organizer phone"]
-    Regex --> Final[finalMessage HTML string]
-    Final --> sendAttendeeEmail[API call with to/subject/message/badgeLink/org branding]
+    Template["HTML Template with placeholders"] --> Regex["Regex replace chain"]
+    Regex --> V1["\"[First Name"] / {{name}} → attendee first name"]
+    Regex --> V2["\"[Registration Details"] → auto-generated HTML block\nwith Registration ID + Ticket Number + Badge Link"]
+    Regex --> V3["\"[Contact Email"] / {{contact_email}} → organizer email"]
+    Regex --> V4["\"[Phone Number"] / {{phone_number}} → organizer phone"]
+    Regex --> Final["finalMessage HTML string"]
+    Final --> sendAttendeeEmail["API call with to/subject/message/badgeLink/org branding"]
 ```
 
 The **Registration Details** block is generated differently based on attendee type:
@@ -1040,20 +1040,20 @@ The `BulkEmailModal` sends emails **one-by-one** in a sequential `for` loop (not
 
 ```mermaid
 flowchart TD
-    Start[handleSendBulk called] --> Init[setIsSending true\nsetProgress 0 of N]
-    Init --> Loop[for i=0 to selectedAttendees.length]
-    Loop --> FindAttendee[attendees.find by id]
+    Start["handleSendBulk called"] --> Init["setIsSending true\nsetProgress 0 of N"]
+    Init --> Loop["for i=0 to selectedAttendees.length"]
+    Loop --> FindAttendee["attendees.find by id"]
     FindAttendee --> Guard{Has email?}
-    Guard -->|No| Skip[increment progress, continue]
-    Guard -->|Yes| BuildBadgeLink[Build /a/qrcode?badgeId URL]
-    BuildBadgeLink --> BuildRegistrationInfo[Generate registration HTML block]
-    BuildRegistrationInfo --> ApplyTemplate[Apply template variable replacements]
-    ApplyTemplate --> SendEmail[await sendAttendeeEmail]
-    SendEmail --> IncrProgress[increment progress.current]
+    Guard -->|No| Skip["increment progress, continue"]
+    Guard -->|Yes| BuildBadgeLink["Build /a/qrcode?badgeId URL"]
+    BuildBadgeLink --> BuildRegistrationInfo["Generate registration HTML block"]
+    BuildRegistrationInfo --> ApplyTemplate["Apply template variable replacements"]
+    ApplyTemplate --> SendEmail["await sendAttendeeEmail"]
+    SendEmail --> IncrProgress["increment progress.current"]
     IncrProgress --> Loop
-    Loop -->|done| SuccessToast[toast.success N emails sent]
-    SuccessToast --> CloseModal[setIsOpen false]
-    CloseModal --> ClearSelection[onClearSelection callback]
+    Loop -->|done| SuccessToast["toast.success N emails sent"]
+    SuccessToast --> CloseModal["setIsOpen false"]
+    CloseModal --> ClearSelection["onClearSelection callback"]
 ```
 
 A real-time **progress bar** (`progress.current / progress.total × 100%`) fills as each email is sent, giving the organizer live visual feedback. The modal's close button is disabled during sending to prevent accidental interruption.
@@ -1073,14 +1073,14 @@ A real-time **progress bar** (`progress.current / progress.total × 100%`) fills
 
 ```mermaid
 flowchart TD
-    Organizer -->|Creates form| FormBuilder[Form Builder\nCustom RSVP form with dynamic fields]
-    FormBuilder -->|Embeds form on| PageBuilder[Page Builder\nform_link or form_grid block]
-    PageBuilder -->|Publishes to| PublicPage[/p/:slug\nPublic landing page]
-    PublicPage -->|Visitor submits| RSVPAnswers[(rsvp_answers table)]
-    RSVPAnswers -->|Import Registrations| AttendeesPage[Attendees Page]
-    AttendeesPage -->|Field mapping transforms| AttendeeRecords[(event_attendees table\nwith custom_fields JSONB)]
-    AttendeeRecords -->|Select + email| BulkEmail[Bulk Email with badge link]
-    BulkEmail -->|Opens| BadgeRoute[/a/:qrcode_number\nDigital badge/ticket]
+    Organizer -->|Creates form| FormBuilder["Form Builder\nCustom RSVP form with dynamic fields"]
+    FormBuilder -->|Embeds form on| PageBuilder["Page Builder\nform_link or form_grid block"]
+    PageBuilder -->|Publishes to| PublicPage["/p/:slug\nPublic landing page"]
+    PublicPage -->|Visitor submits| RSVPAnswers["(rsvp_answers table)"]
+    RSVPAnswers -->|Import Registrations| AttendeesPage["Attendees Page"]
+    AttendeesPage -->|Field mapping transforms| AttendeeRecords["(event_attendees table\nwith custom_fields JSONB)"]
+    AttendeeRecords -->|Select + email| BulkEmail["Bulk Email with badge link"]
+    BulkEmail -->|Opens| BadgeRoute["/a/:qrcode_number\nDigital badge/ticket"]
 ```
 
 **Database tables:** `event_attendees`, `rsvp_answers`, `workspace_pages`, `custom_forms`
@@ -1102,13 +1102,13 @@ The Venue Designer is an interactive canvas tool that allows organizers to build
 
 ```mermaid
 flowchart TD
-    Hub[Venue Designer Hub] -->|Select Template| Modal[Setup Modal]
-    Modal -->|Select Event & Location| Create[createVenueProject]
-    Create -->|Initialize Canvas| Designer[Venue Canvas Workspace]
-    Designer -->|Draw / Edit Sections| State[Local 'sections' array]
-    State -->|Click Save| Save[saveVenueProject API]
-    Save --> DB[(venue_projects table)]
-    DB --> |JSON Serialization| Col[sections_data JSONB column]
+    Hub["Venue Designer Hub"] -->|Select Template| Modal["Setup Modal"]
+    Modal -->|Select Event & Location| Create["createVenueProject"]
+    Create -->|Initialize Canvas| Designer["Venue Canvas Workspace"]
+    Designer -->|Draw / Edit Sections| State["Local 'sections' array"]
+    State -->|Click Save| Save["saveVenueProject API"]
+    Save --> DB["(venue_projects table)"]
+    DB --> |JSON Serialization| Col["sections_data JSONB column"]
     Col --> |Load Project| Designer
 ```
 
@@ -1125,11 +1125,11 @@ The true power of the Venue Designer is how it bridges visual shapes with actual
 
 ```mermaid
 flowchart TD
-    Event[Event Dashboard] -->|Creates| Tickets[Ticket Tiers (e.g., VIP, GA)]
-    Venue[Venue Designer] -->|Draws| Shape[Canvas Shape]
-    Shape -->|Selects| Sidebar[Properties Sidebar]
-    Sidebar -->|Assigns Ticket| Map[Link Shape to Ticket ID]
-    Map -->|Save| JSONB[(venue_projects.sections_data)]
+    Event["Event Dashboard"] -->|Creates| Tickets["Ticket Tiers (e.g., VIP, GA)"]
+    Venue["Venue Designer"] -->|Draws| Shape["Canvas Shape"]
+    Shape -->|Selects| Sidebar["Properties Sidebar"]
+    Sidebar -->|Assigns Ticket| Map["Link Shape to Ticket ID"]
+    Map -->|Save| JSONB["(venue_projects.sections_data)"]
 
     style Map fill:#bbf,stroke:#333,stroke-width:2px
 ```
@@ -1147,15 +1147,15 @@ When a customer attempts to buy tickets on the public event page (`/events/$even
 
 ```mermaid
 flowchart TD
-    Checkout[Event Details Page] --> Fetch[Fetch venue_projects]
+    Checkout["Event Details Page"] --> Fetch["Fetch venue_projects"]
     Fetch --> Check{Is Ticket Mapped\nto a Canvas Shape?}
-    Check -->|No| Basic[Standard +/- Quantity Selector]
-    Check -->|Yes| SeatButton[Show 'Select Seats' Button]
-    SeatButton -->|Clicks| SVGMap[Interactive SVG Venue Map]
-    SVGMap -->|Clicks Shape| AutoZoom[Zoom into Section]
-    AutoZoom --> GridView[Render CSS Grid of Seats]
-    GridView -->|User taps seat| AddCart[Add exact seat to Cart]
-    AddCart --> Confirm[Proceed to Payment]
+    Check -->|No| Basic["Standard +/- Quantity Selector"]
+    Check -->|Yes| SeatButton["Show 'Select Seats' Button"]
+    SeatButton -->|Clicks| SVGMap["Interactive SVG Venue Map"]
+    SVGMap -->|Clicks Shape| AutoZoom["Zoom into Section"]
+    AutoZoom --> GridView["Render CSS Grid of Seats"]
+    GridView -->|User taps seat| AddCart["Add exact seat to Cart"]
+    AddCart --> Confirm["Proceed to Payment"]
 ```
 
 **Database tables:** `venue_projects` (stores `sections_data`), `events`, `event_tickets`
@@ -1175,11 +1175,11 @@ The Experience Dashboard is the **content & engagement hub** for an event or gui
 
 ```mermaid
 graph LR
-    ExperienceDashboard --> Header[Page Header + Share Feedback Link]
-    ExperienceDashboard --> Tabs[3-Tab Interface]
-    Tabs --> FB[Reviews Tab]
-    Tabs --> ST[Stories Tab]
-    Tabs --> PO[Posts Tab]
+    ExperienceDashboard --> Header["Page Header + Share Feedback Link"]
+    ExperienceDashboard --> Tabs["3-Tab Interface"]
+    Tabs --> FB["Reviews Tab"]
+    Tabs --> ST["Stories Tab"]
+    Tabs --> PO["Posts Tab"]
 ```
 
 The page header contains a **"Share Feedback Link"** button that copies a public review URL (`/f/{eventId}/review`) to the clipboard using the `navigator.clipboard` API, allowing organizers to distribute a direct link to attendees.
@@ -1195,20 +1195,20 @@ Fetches the full review dataset for the event, including aggregated statistics a
 
 ```mermaid
 flowchart TD
-    A[Page mounts] --> B[getEventFeedback query]
-    B --> C[feedbackData.reviews array]
-    B --> D[feedbackData.aggregate: count + avg.rating]
+    A["Page mounts"] --> B["getEventFeedback query"]
+    B --> C["feedbackData.reviews array"]
+    B --> D["feedbackData.aggregate: count + avg.rating"]
 
-    C --> E[ratingDist: count per star 1-5]
-    C --> F[categoryAvgs: avg per category key]
-    D --> G[avgRating: string displayed as X.X / 5]
+    C --> E["ratingDist: count per star 1-5"]
+    C --> F["categoryAvgs: avg per category key"]
+    D --> G["avgRating: string displayed as X.X / 5"]
 
-    E --> H[Rating Distribution bar chart]
-    F --> I[Category Scores radar chart using Recharts]
-    G --> J[KPI Card: Avg Rating]
-    D --> K[KPI Card: Total Reviews]
-    C --> L[KPI Card: Verified count]
-    C --> M[KPI Card: Featured count]
+    E --> H["Rating Distribution bar chart"]
+    F --> I["Category Scores radar chart using Recharts"]
+    G --> J["KPI Card: Avg Rating"]
+    D --> K["KPI Card: Total Reviews"]
+    C --> L["KPI Card: Verified count"]
+    C --> M["KPI Card: Featured count"]
 ```
 
 #### KPI Cards
@@ -1240,9 +1240,9 @@ Hidden reviews are shown at `opacity-50` in the organizer view; they are not vis
 
 ```mermaid
 flowchart TD
-    ToggleFeatured[Click ⭐] --> feedbackMutation[updateFeedback mutation]
-    feedbackMutation --> invalidate[invalidateQueries event-feedback]
-    invalidate --> rerender[Review re-renders with updated badge]
+    ToggleFeatured["Click ⭐"] --> feedbackMutation["updateFeedback mutation"]
+    feedbackMutation --> invalidate["invalidateQueries event-feedback"]
+    invalidate --> rerender["Review re-renders with updated badge"]
 ```
 
 ---
@@ -1258,16 +1258,16 @@ Stories are **ephemeral** — they expire 48 hours after posting and appear in t
 
 ```mermaid
 flowchart TD
-    A[Organizer selects photo file] --> B{File size > 6MB?}
-    B --> |Yes| C[toast.error: Image too large]
-    B --> |No| D[setIsUploadingStory true]
-    D --> E[uploadFileToStorage file to stories/{eventId}]
-    E --> F[Returns permanent storage URL]
-    F --> G[createEventStory mutation]
-    G --> H[Payload: event_id + workspace_id + media_url + media_type=photo + caption?]
-    H --> I[invalidateQueries event-stories]
-    I --> J[Story card appears in grid]
-    J --> K[setStoryCaption reset to empty]
+    A["Organizer selects photo file"] --> B{File size > 6MB?}
+    B --> |Yes| C["toast.error: Image too large"]
+    B --> |No| D["setIsUploadingStory true"]
+    D --> E["uploadFileToStorage file to stories/{eventId}"]
+    E --> F["Returns permanent storage URL"]
+    F --> G["createEventStory mutation"]
+    G --> H["Payload: event_id + workspace_id + media_url + media_type=photo + caption?"]
+    H --> I["invalidateQueries event-stories"]
+    I --> J["Story card appears in grid"]
+    J --> K["setStoryCaption reset to empty"]
 ```
 
 **Upload constraints:**
@@ -1316,21 +1316,21 @@ Posts are **permanent** and visible to followers in the activity feed indefinite
 
 ```mermaid
 flowchart TD
-    A[Organizer selects files via file input] --> B{files provided?}
-    B --> |No| Z[return early]
-    B --> |Yes| C[remaining = MAX_POST_IMAGES - postMedia.length]
+    A["Organizer selects files via file input"] --> B{files provided?}
+    B --> |No| Z["return early"]
+    B --> |Yes| C["remaining = MAX_POST_IMAGES - postMedia.length"]
     C --> D{remaining <= 0?}
-    D --> |Yes| E[toast.error: Maximum 4 photos per post]
-    D --> |No| F[toUpload = Array.from files .slice 0 remaining]
+    D --> |Yes| E["toast.error: Maximum 4 photos per post"]
+    D --> |No| F["toUpload = Array.from files .slice 0 remaining"]
     F --> G{Any file > 5MB?}
-    G --> |Yes| H[toast.error: X image s too large]
-    G --> |No| I[setIsUploadingPostMedia true]
-    I --> J[Promise.all: uploadFileToStorage each file to posts/{eventId}]
-    J --> K[setPostMedia prev => [...prev, ...newUrls]]
+    G --> |Yes| H["toast.error: X image s too large"]
+    G --> |No| I["setIsUploadingPostMedia true"]
+    I --> J["Promise.all: uploadFileToStorage each file to posts/{eventId}"]
+    J --> K["setPostMedia prev => [...prev, ...newUrls"]]
     K --> L{toUpload.length < files.length?}
-    L --> |Yes| M[toast.info: Only X of Y photos added]
-    L --> |No| N[done]
-    N --> O[setIsUploadingPostMedia false]
+    L --> |Yes| M["toast.info: Only X of Y photos added"]
+    L --> |No| N["done"]
+    N --> O["setIsUploadingPostMedia false"]
 ```
 
 **Upload constraints:**
@@ -1347,9 +1347,9 @@ The photo button adapts based on how many images are already attached:
 
 ```mermaid
 flowchart LR
-    A{postMedia.length} --> |0| B[Show full ghost button: Camera + Add Photos]
-    A --> |1-3| C[Show inline + tile in preview grid with X/4 count]
-    A --> |4| D[Hide add button — max reached]
+    A{postMedia.length} --> |0| B["Show full ghost button: Camera + Add Photos"]
+    A --> |1-3| C["Show inline + tile in preview grid with X/4 count"]
+    A --> |4| D["Hide add button — max reached"]
 ```
 
 - When images are attached, each thumbnail shows a ✕ delete button on hover
@@ -1360,14 +1360,14 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[Organizer clicks Publish] --> B{postContent.trim() empty?}
-    B --> |Yes| C[Publish button disabled - no action]
-    B --> |No| D[createEventPost mutation]
-    D --> E[Payload: event_id + workspace_id + content + media_urls array]
-    E --> F[DB insert]
-    F --> G[invalidateQueries event-posts]
-    G --> H[Post appears in feed]
-    H --> I[Reset: postContent='' postMedia=[]]
+    A["Organizer clicks Publish"] --> B{postContent.trim() empty?}
+    B --> |Yes| C["Publish button disabled - no action"]
+    B --> |No| D["createEventPost mutation"]
+    D --> E["Payload: event_id + workspace_id + content + media_urls array"]
+    E --> F["DB insert"]
+    F --> G["invalidateQueries event-posts"]
+    G --> H["Post appears in feed"]
+    H --> I["Reset: postContent='' postMedia=["]]
 ```
 
 #### Post Feed — Media Rendering
@@ -1406,27 +1406,27 @@ Pinned posts render with a `border-primary/30 bg-primary/5` highlight and a "Pin
 
 ```mermaid
 flowchart TD
-    Route["Route: /events/$eventId/experience"] --> Params[useParams: eventId + workspaceSlug]
-    Params --> WS[useWorkspace: activeWorkspace.id]
+    Route["Route: /events/$eventId/experience"] --> Params["useParams: eventId + workspaceSlug"]
+    Params --> WS["useWorkspace: activeWorkspace.id"]
 
-    Params --> Q1[getEventFeedback]
-    Params --> Q2[getEventStories]
-    Params --> Q3[getEventPosts]
-    Params --> Q4[getEventHighlights - loaded but reserved]
+    Params --> Q1["getEventFeedback"]
+    Params --> Q2["getEventStories"]
+    Params --> Q3["getEventPosts"]
+    Params --> Q4["getEventHighlights - loaded but reserved"]
 
-    Q1 --> FeedbackTab[Reviews Tab]
-    Q2 --> StoriesTab[Stories Tab]
-    Q3 --> PostsTab[Posts Tab]
+    Q1 --> FeedbackTab["Reviews Tab"]
+    Q2 --> StoriesTab["Stories Tab"]
+    Q3 --> PostsTab["Posts Tab"]
 
-    FeedbackTab --> M1[updateFeedback mutation]
-    StoriesTab --> M2[createEventStory mutation]
-    StoriesTab --> M3[deleteEventStory mutation]
-    PostsTab --> M4[createEventPost mutation]
-    PostsTab --> M5[togglePinPost mutation]
-    PostsTab --> M6[deleteEventPost mutation]
+    FeedbackTab --> M1["updateFeedback mutation"]
+    StoriesTab --> M2["createEventStory mutation"]
+    StoriesTab --> M3["deleteEventStory mutation"]
+    PostsTab --> M4["createEventPost mutation"]
+    PostsTab --> M5["togglePinPost mutation"]
+    PostsTab --> M6["deleteEventPost mutation"]
 
-    M1 & M2 & M3 & M4 & M5 & M6 --> QC[queryClient.invalidateQueries]
-    QC --> Refresh[UI re-renders with fresh data]
+    M1 & M2 & M3 & M4 & M5 & M6 --> QC["queryClient.invalidateQueries"]
+    QC --> Refresh["UI re-renders with fresh data"]
 ```
 
 ### API Functions Reference
@@ -1482,10 +1482,10 @@ The community system uses a hybrid database architecture:
 
 ```mermaid
 flowchart LR
-    UI[Community UI] -->|Query Metadata| Hasura[Hasura GraphQL]
-    UI <-->|Real-time Sync| Firestore[Firebase Firestore]
-    Hasura --> ChannelDB[(Postgres:\ncommunity_channels)]
-    Firestore --> MsgDB[(Firestore:\nagatike_messages)]
+    UI["Community UI"] -->|Query Metadata| Hasura["Hasura GraphQL"]
+    UI <-->|Real-time Sync| Firestore["Firebase Firestore"]
+    Hasura --> ChannelDB["(Postgres:\ncommunity_channels)"]
+    Firestore --> MsgDB["(Firestore:\nagatike_messages)"]
 ```
 
 ### Channel Types & Audience
@@ -1524,13 +1524,13 @@ To minimize Firestore costs and database bloat, the system implements a **Lazy C
 
 ```mermaid
 flowchart TD
-    Load[Organizer Loads Community] --> Fetch[getCommunityChannels]
+    Load["Organizer Loads Community"] --> Fetch["getCommunityChannels"]
     Fetch --> Eval{Is Event Date + 5 Days in the past?}
-    Eval -->|No| Keep[Return Channel to UI]
-    Eval -->|Yes| Filter[Hide from UI]
-    Filter --> AsyncDel[Trigger Background Deletion]
-    AsyncDel --> DelHasura[Delete from Hasura]
-    AsyncDel --> DelFirestore[Wipe Firestore Messages]
+    Eval -->|No| Keep["Return Channel to UI"]
+    Eval -->|Yes| Filter["Hide from UI"]
+    Filter --> AsyncDel["Trigger Background Deletion"]
+    AsyncDel --> DelHasura["Delete from Hasura"]
+    AsyncDel --> DelFirestore["Wipe Firestore Messages"]
 ```
 
 ### Global Message Notifications
@@ -1579,25 +1579,25 @@ The system includes a sophisticated manual booking engine where an organizer can
 
 ```mermaid
 flowchart TD
-    Start[Organizer starts Manual Booking] --> Model{Rental Model}
-    Model -->|Entire Venue| SelectTier[Select Pricing Tier\n(e.g., Full Day)]
-    Model -->|Entrance Only| SelectQty[Select Ticket Quantities\n(e.g., 2 Adult, 1 Child)]
-    SelectTier --> DatePicker[Select Start & End Dates/Times]
-    SelectQty --> DateOnly[Select Date of Visit\n(Time hidden)]
-    DatePicker --> Attendees[Enter Primary Customer\n& Optional Additional Attendees]
+    Start["Organizer starts Manual Booking"] --> Model{Rental Model}
+    Model -->|Entire Venue| SelectTier["Select Pricing Tier\n(e.g., Full Day)"]
+    Model -->|Entrance Only| SelectQty["Select Ticket Quantities\n(e.g., 2 Adult, 1 Child)"]
+    SelectTier --> DatePicker["Select Start & End Dates/Times"]
+    SelectQty --> DateOnly["Select Date of Visit\n(Time hidden)"]
+    DatePicker --> Attendees["Enter Primary Customer\n& Optional Additional Attendees"]
     DateOnly --> Attendees
-    Attendees --> Confirm[Confirm Booking & Payment Status]
-    Confirm --> DB[Insert into venue_bookings]
+    Attendees --> Confirm["Confirm Booking & Payment Status"]
+    Confirm --> DB["Insert into venue_bookings"]
 
-    DB --> GenerateOTPs[Backend: Generate 6-char OTP per Ticket]
-    GenerateOTPs --> SaveOTP[Save OTPs in tickets_data JSONB]
-    SaveOTP --> PDFEngine[jsPDF Engine (Node.js)]
+    DB --> GenerateOTPs["Backend: Generate 6-char OTP per Ticket"]
+    GenerateOTPs --> SaveOTP["Save OTPs in tickets_data JSONB"]
+    SaveOTP --> PDFEngine["jsPDF Engine (Node.js)"]
 
-    PDFEngine -->|Draw Ticket| Ticket1[PDF Ticket: Attendee 1]
-    PDFEngine -->|Draw Ticket| TicketN[PDF Ticket: Attendee N]
+    PDFEngine -->|Draw Ticket| Ticket1["PDF Ticket: Attendee 1"]
+    PDFEngine -->|Draw Ticket| TicketN["PDF Ticket: Attendee N"]
 
-    Ticket1 & TicketN --> Email[Resend API: sendTicketsEmail]
-    Email --> Delivery[Customer Inbox: Email with PDF Attachments]
+    Ticket1 & TicketN --> Email["Resend API: sendTicketsEmail"]
+    Email --> Delivery["Customer Inbox: Email with PDF Attachments"]
 ```
 
 #### Server-Side PDF Engine
@@ -1682,22 +1682,22 @@ This approach is highly secure — the OTP is never stored in plaintext, the tok
 
 ```mermaid
 flowchart TD
-    A[User fills signup form] -->|Submit| B[Client: calls sendSignupOtp with email]
-    B --> C[Server: generate 6-digit OTP]
-    C --> D[Server: bcrypt.hash OTP]
-    D --> E[Server: create signed JWT with email + hashed OTP]
-    E --> F[Server: send OTP email via Resend API]
-    F --> G[Server: return JWT token to client]
-    G --> H[Client: show OTP input screen]
+    A["User fills signup form"] -->|Submit| B["Client: calls sendSignupOtp with email"]
+    B --> C["Server: generate 6-digit OTP"]
+    C --> D["Server: bcrypt.hash OTP"]
+    D --> E["Server: create signed JWT with email + hashed OTP"]
+    E --> F["Server: send OTP email via Resend API"]
+    F --> G["Server: return JWT token to client"]
+    G --> H["Client: show OTP input screen"]
     H --> I{User enters 6-digit code}
-    I -->|Submit| J[Client: calls signupUser with form data + OTP + JWT token]
-    J --> K[Server: jwtVerify token — checks signature + expiry]
-    K -->|Invalid/Expired| L[throw Error: Invalid or expired OTP]
-    K -->|Valid| M[Server: bcrypt.compare submitted OTP vs hashed OTP in token]
-    M -->|No match| N[throw Error: Incorrect OTP provided]
-    M -->|Match| O[Server: insert new user into DB]
-    O --> P[Server: create session cookie]
-    P --> Q[Client: navigate to /onboarding]
+    I -->|Submit| J["Client: calls signupUser with form data + OTP + JWT token"]
+    J --> K["Server: jwtVerify token — checks signature + expiry"]
+    K -->|Invalid/Expired| L["throw Error: Invalid or expired OTP"]
+    K -->|Valid| M["Server: bcrypt.compare submitted OTP vs hashed OTP in token"]
+    M -->|No match| N["throw Error: Incorrect OTP provided"]
+    M -->|Match| O["Server: insert new user into DB"]
+    O --> P["Server: create session cookie"]
+    P --> Q["Client: navigate to /onboarding"]
 ```
 
 **Key state in `signup.tsx`:**
@@ -1714,13 +1714,13 @@ The organizer signup is a 5-step wizard. On **Step 5 (Security & Agreement)**, t
 
 ```mermaid
 flowchart TD
-    A[Organizer completes Step 5 form] -->|Click Send Verification Code| B[Client: calls sendSignupOtp with organizer email]
-    B --> C[Step 5 UI transitions to OTP input view]
+    A["Organizer completes Step 5 form"] -->|Click Send Verification Code| B["Client: calls sendSignupOtp with organizer email"]
+    B --> C["Step 5 UI transitions to OTP input view"]
     C --> D{Organizer enters 6-digit code}
-    D -->|Click Verify & Create Profile| E[Client: calls createOrganizerAccount with all form data + OTP + JWT token]
-    E --> F[Server: verify JWT + bcrypt.compare OTP]
-    F -->|Valid| G[Server: insert organizer record into DB]
-    F -->|Invalid| H[throw Error: Invalid or expired OTP]
+    D -->|Click Verify & Create Profile| E["Client: calls createOrganizerAccount with all form data + OTP + JWT token"]
+    E --> F["Server: verify JWT + bcrypt.compare OTP"]
+    F -->|Valid| G["Server: insert organizer record into DB"]
+    F -->|Invalid| H["throw Error: Invalid or expired OTP"]
 ```
 
 **Key state in `create-organizer.tsx`:**
@@ -1782,22 +1782,22 @@ Both columns must exist on the `users` table:
 
 ```mermaid
 flowchart TD
-    A[User opens Settings] --> B[Scrolls to Danger Zone section]
-    B --> C[Clicks Delete Account]
-    C --> D[Confirmation modal opens]
-    D --> E[User reads warning:\nThis action cannot be undone]
-    E --> F[User types their exact @handle in the input field]
+    A["User opens Settings"] --> B["Scrolls to Danger Zone section"]
+    B --> C["Clicks Delete Account"]
+    C --> D["Confirmation modal opens"]
+    D --> E["User reads warning:\nThis action cannot be undone"]
+    E --> F["User types their exact @handle in the input field"]
     F --> G{handle matches user.handle?}
-    G -->|No| H[Delete button remains disabled]
-    G -->|Yes| I[Delete button becomes active]
-    I --> J[User clicks Yes, delete my account]
-    J --> K[Client: calls deactivateUserAccount server fn]
-    K --> L[Server: reads agatike_user_auth cookie]
-    L --> M[Server: jwtVerify cookie — confirms identity]
-    M --> N[Server: Hasura mutation — set active=false for user.id]
-    N --> O[Server: deleteCookie agatike_user_auth]
-    O --> P[Client: toast.success - account deleted]
-    P --> Q[Client: navigate to /]
+    G -->|No| H["Delete button remains disabled"]
+    G -->|Yes| I["Delete button becomes active"]
+    I --> J["User clicks Yes, delete my account"]
+    J --> K["Client: calls deactivateUserAccount server fn"]
+    K --> L["Server: reads agatike_user_auth cookie"]
+    L --> M["Server: jwtVerify cookie — confirms identity"]
+    M --> N["Server: Hasura mutation — set active=false for user.id"]
+    N --> O["Server: deleteCookie agatike_user_auth"]
+    O --> P["Client: toast.success - account deleted"]
+    P --> Q["Client: navigate to /"]
 ```
 
 ### Confirmation UX Details
@@ -1879,17 +1879,17 @@ The `pricing_plans` table defines the `organizer_platform_contribution` for each
 
 ```mermaid
 flowchart TD
-    Org[Organizer] -->|Clicks Upgrade| Plans[View Pricing Plans]
-    Plans --> Fetch[Query pricing_plans table]
+    Org["Organizer"] -->|Clicks Upgrade| Plans["View Pricing Plans"]
+    Plans --> Fetch["Query pricing_plans table"]
     Fetch --> Select{Organizer Selects Plan}
-    Select -->|Free Plan| Free[organizer_platform_contribution = 4.5%]
-    Select -->|Pro Plan| Pro[organizer_platform_contribution = 3.5%]
-    Select -->|Business Plan| Bus[organizer_platform_contribution = 2.8%]
+    Select -->|Free Plan| Free["organizer_platform_contribution = 4.5%"]
+    Select -->|Pro Plan| Pro["organizer_platform_contribution = 3.5%"]
+    Select -->|Business Plan| Bus["organizer_platform_contribution = 2.8%"]
 
-    Free & Pro & Bus --> Checkout[MoMo / Card Payment for Subscription]
-    Checkout -->|Success Webhook| DB[Update workspaces_subscriptions]
-    DB --> Active[Plan Becomes Active]
-    Active --> Sim[Simulation Engine dynamically uses new lower contribution %]
+    Free & Pro & Bus --> Checkout["MoMo / Card Payment for Subscription"]
+    Checkout -->|Success Webhook| DB["Update workspaces_subscriptions"]
+    DB --> Active["Plan Becomes Active"]
+    Active --> Sim["Simulation Engine dynamically uses new lower contribution %"]
 ```
 
 ### 24.2 Logic to Charge Customers (The Checkout Simulation)
@@ -1904,12 +1904,12 @@ When a customer buys a ticket, the system uses a strict **Cost Coverage Hierarch
 
 ```mermaid
 flowchart TD
-    Cust[Customer] -->|Selects 10,000 RWF Ticket| Checkout
-    Checkout --> FetchRates[Fetch PawaPay Collection Rates]
-    FetchRates --> Sim[Simulation Engine Calculates Margin]
+    Cust["Customer"] -->|Selects 10,000 RWF Ticket| Checkout
+    Checkout --> FetchRates["Fetch PawaPay Collection Rates"]
+    FetchRates --> Sim["Simulation Engine Calculates Margin"]
 
-    Sim --> Rev[Agatike Revenue = Customer Fee + Organizer Subscription Fee]
-    Sim --> Cost[Total Cost = PawaPay Collection Cost]
+    Sim --> Rev["Agatike Revenue = Customer Fee + Organizer Subscription Fee"]
+    Sim --> Cost["Total Cost = PawaPay Collection Cost"]
 
 ### 24.2.1 Fee Presentation on Pricing Plans
 
@@ -1918,16 +1918,16 @@ To ensure full transparency to the Organizer on the **Pricing Plans** page:
 
     Cost & Rev --> Check{Is Revenue < Cost?}
 
-    Check -->|No - Profitable| Proceed[Approve Checkout]
-    Check -->|Yes - Shortfall| Absorb[Organizer Absorbs Shortfall]
+    Check -->|No - Profitable| Proceed["Approve Checkout"]
+    Check -->|Yes - Shortfall| Absorb["Organizer Absorbs Shortfall"]
 
-    Absorb --> CalcPayout[Organizer Payout = Ticket Price - Absorbed Shortfall]
+    Absorb --> CalcPayout["Organizer Payout = Ticket Price - Absorbed Shortfall"]
     CalcPayout --> CheckNeg{Is Payout < 0?}
-    CheckNeg -->|Yes| Block[Block Customer: Ticket price too low]
+    CheckNeg -->|Yes| Block["Block Customer: Ticket price too low"]
     CheckNeg -->|No| Proceed
 
-    Proceed --> PawaPay[Send Charge to PawaPay]
-    PawaPay --> Wallet[Credit Organizer Wallet with Net Payout]
+    Proceed --> PawaPay["Send Charge to PawaPay"]
+    PawaPay --> Wallet["Credit Organizer Wallet with Net Payout"]
 ```
 
 ### 24.3 Withdrawals and Wallet Logic
@@ -1959,23 +1959,23 @@ Because withdrawals execute real financial payouts, they require explicit multi-
 
 ```mermaid
 flowchart TD
-    Dashboard[Organizer Dashboard] -->|Clicks Withdraw| Req[Enter Amount to Withdraw]
-    Req --> NetCalc[Calculate Tiered Fees & Platform Percentages]
-    NetCalc --> Exch[Fetch Live Target Currency Exchange Rate]
-    Exch --> UI[Display Converted Summary]
-    UI -->|Clicks Confirm| OTPAPI[Generate & Email 8-Char OTP]
-    OTPAPI --> SecUI[Organizer Enters OTP & Password]
+    Dashboard["Organizer Dashboard"] -->|Clicks Withdraw| Req["Enter Amount to Withdraw"]
+    Req --> NetCalc["Calculate Tiered Fees & Platform Percentages"]
+    NetCalc --> Exch["Fetch Live Target Currency Exchange Rate"]
+    Exch --> UI["Display Converted Summary"]
+    UI -->|Clicks Confirm| OTPAPI["Generate & Email 8-Char OTP"]
+    OTPAPI --> SecUI["Organizer Enters OTP & Password"]
 
-    SecUI --> Server[Submit Secure Payload]
+    SecUI --> Server["Submit Secure Payload"]
     Server --> JWTCheck{Verify OTP JWT & Match}
-    JWTCheck -->|Fails| Reject[Block Withdrawal]
+    JWTCheck -->|Fails| Reject["Block Withdrawal"]
     JWTCheck -->|Passes| PassCheck{Verify Password Hash}
     PassCheck -->|Fails| Reject
-    PassCheck -->|Passes| Ledger[Create Pending wallet_transactions Debit]
-    Ledger --> API[Trigger PawaPay Disbursement API]
+    PassCheck -->|Passes| Ledger["Create Pending wallet_transactions Debit"]
+    Ledger --> API["Trigger PawaPay Disbursement API"]
 
-    API -->|Success Webhook| Update[Update transaction to 'completed']
-    Update --> Bank[Money hits Organizer's Mobile Money Account]
+    API -->|Success Webhook| Update["Update transaction to 'completed'"]
+    Update --> Bank["Money hits Organizer's Mobile Money Account"]
 ```
 
 ---
@@ -2005,14 +2005,14 @@ To prevent clutter as organizers generate hundreds of documents, the Procurement
 
 ```mermaid
 flowchart TD
-    Proc[Procurement Page] --> |Right Click| Ctx[Context Menu]
-    Ctx --> |Create Folder| Modal[Dialog Modal]
-    Modal --> DB[(agatike_book_folders)]
-    Proc --> |Right Click Invoice| Move[Move to Folder]
-    Move --> Update[Update invoice folder_id]
-    Proc --> |Checkboxes| Bulk[Bulk Actions Toolbar]
-    Bulk --> BulkMove[Promise.all Move]
-    Bulk --> BulkDel[Promise.all Delete]
+    Proc["Procurement Page"] --> |Right Click| Ctx["Context Menu"]
+    Ctx --> |Create Folder| Modal["Dialog Modal"]
+    Modal --> DB["(agatike_book_folders)"]
+    Proc --> |Right Click Invoice| Move["Move to Folder"]
+    Move --> Update["Update invoice folder_id"]
+    Proc --> |Checkboxes| Bulk["Bulk Actions Toolbar"]
+    Bulk --> BulkMove["Promise.all Move"]
+    Bulk --> BulkDel["Promise.all Delete"]
 ```
 
 ---
@@ -2073,15 +2073,15 @@ To ensure the complex interplay between (1) the chosen Pricing Plan, (2) the Cus
 
 ```mermaid
 flowchart TD
-    Ticket[Customer buys 5000 RWF Ticket] --> Plan[Active Organizer Pricing Plan]
-    Plan -->|Customer Fee 2%| Gross[Gross Processed: 5100 RWF]
-    Plan -->|Org Margin 3%| Wallet[Organizer Wallet Credited: 4850 RWF]
+    Ticket["Customer buys 5000 RWF Ticket"] --> Plan["Active Organizer Pricing Plan"]
+    Plan -->|Customer Fee 2%| Gross["Gross Processed: 5100 RWF"]
+    Plan -->|Org Margin 3%| Wallet["Organizer Wallet Credited: 4850 RWF"]
 
-    Gross --> Gateway[PawaPay Provider Fees]
-    Gateway -->|Charges 1%| Net[Agatike Revenue: 5049 RWF]
+    Gross --> Gateway["PawaPay Provider Fees"]
+    Gateway -->|Charges 1%| Net["Agatike Revenue: 5049 RWF"]
 
-    Net --> ProfitCalc[Net Revenue 5049 - Organizer Payout 4850]
-    ProfitCalc --> FinalProfit[Agatike Net Profit: +199 RWF]
+    Net --> ProfitCalc["Net Revenue 5049 - Organizer Payout 4850"]
+    ProfitCalc --> FinalProfit["Agatike Net Profit: +199 RWF"]
 ```
 
 ---

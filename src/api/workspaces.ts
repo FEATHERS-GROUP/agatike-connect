@@ -313,12 +313,14 @@ export const createDatabaseWorkspace = createServerFn({ method: "POST" }).handle
           }
         }
       `;
-      const syncData = await hasuraRequest<{ workspaces: any[], subscriptions: any[] }>(syncQuery, { orgId: session.sub });
-      
+      const syncData = await hasuraRequest<{ workspaces: any[]; subscriptions: any[] }>(syncQuery, {
+        orgId: session.sub,
+      });
+
       if (syncData.subscriptions.length > 0) {
         const subId = syncData.subscriptions[0].id;
         const workspaceIds = syncData.workspaces.map((w) => w.id);
-        
+
         const updateSubQuery = `
           mutation UpdateSubWorkspaces($subId: uuid!, $workspaceIds: jsonb!) {
             update_subscriptions_by_pk(pk_columns: { id: $subId }, _set: { workspace_id: $workspaceIds }) {

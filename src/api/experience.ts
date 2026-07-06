@@ -4,6 +4,7 @@ import { getSession, getUserSession } from "./auth";
 import { deleteFiles } from "./storage";
 import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { sendPushNotification } from "./push";
 
 // ─── STORIES ──────────────────────────────────────────────────────────────────
 
@@ -46,7 +47,69 @@ export const createEventStory = createServerFn({ method: "POST" }).handler(async
       views_count: "0",
     },
   });
-  return data.insert_event_stories_one;
+  const result = data.insert_event_stories_one;
+
+  if (result?.id && input.workspace_id) {
+    try {
+      // 1. Get organizer_id from workspace
+      const wsQuery = `
+        query GetWorkspaceOrg($id: uuid!) {
+          workspaces_by_pk(id: $id) {
+            orgnizer_id
+          }
+        }
+      `;
+      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+        id: input.workspace_id,
+      });
+      const orgId = wsData?.workspaces_by_pk?.orgnizer_id;
+
+      if (orgId) {
+        // 2. Get followers
+        const followersQuery = `
+          query GetFollowers($orgId: uuid!) {
+            organizer_followers(where: { organizer_id: { _eq: $orgId } }) {
+              user_id
+            }
+          }
+        `;
+        const followersData = await hasuraRequest<{ organizer_followers: any[] }>(followersQuery, {
+          orgId,
+        });
+        const row = followersData?.organizer_followers?.[0];
+
+        if (row && row.user_id) {
+          const userIds = Array.isArray(row.user_id) ? row.user_id : [row.user_id];
+          const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
+
+          if (targetUsers.length > 0) {
+            await addDoc(collection(db, "agatike_notifications"), {
+              type: "new_story",
+              storyId: result.id,
+              eventId: input.event_id,
+              organizerId: input.workspace_id,
+              actorId: session.sub,
+              targetUsers: targetUsers,
+              createdAt: new Date().toISOString(),
+            });
+
+            await sendPushNotification({
+              data: {
+                userIds: targetUsers,
+                title: "New Story",
+                body: "An organizer you follow just posted a new story.",
+                data: { url: `/event/${input.event_id}` },
+              },
+            } as any);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to push new_story notification:", e);
+    }
+  }
+
+  return result;
 });
 
 export const getEventStories = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -230,6 +293,15 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
               targetUsers: targetUsers,
               createdAt: new Date().toISOString(),
             });
+
+            await sendPushNotification({
+              data: {
+                userIds: targetUsers,
+                title: "New Post",
+                body: input.content ? `An organizer posted: "${input.content.slice(0, 40)}..."` : "An organizer you follow posted an update.",
+                data: { url: `/community/${result.id}` },
+              },
+            } as any);
           }
         }
       }

@@ -76,6 +76,11 @@ export function GlobalUserNotificationListener() {
               : "An organizer you follow posted an update.";
             if (data.postId) targetPath = `/community/${data.postId}`;
             Icon = Film;
+          } else if (data.type === "new_story") {
+            title = "New Story";
+            body = "An organizer you follow just posted a new story.";
+            if (data.eventId) targetPath = `/event/${data.eventId}`;
+            Icon = Film;
           } else if (data.type === "new_message") {
             title = "New Message";
             body = data.content ? `New message: "${data.content}"` : "You have a new message.";
@@ -89,7 +94,7 @@ export function GlobalUserNotificationListener() {
                 .then((registration) => {
                   registration.showNotification(title, {
                     body,
-                    icon: "/icon.svg",
+                    icon: "/agatike-icon.png",
                     tag: `user-notif-${notifId}`,
                     data: { url: targetPath },
                   });
@@ -97,7 +102,7 @@ export function GlobalUserNotificationListener() {
                 .catch(() => {
                   const notif = new Notification(title, {
                     body,
-                    icon: "/icon.svg",
+                    icon: "/agatike-icon.png",
                     tag: `user-notif-${notifId}`,
                   });
                   notif.onclick = () => {
@@ -108,7 +113,7 @@ export function GlobalUserNotificationListener() {
             } else {
               const notif = new Notification(title, {
                 body,
-                icon: "/icon.svg",
+                icon: "/agatike-icon.png",
                 tag: `user-notif-${notifId}`,
               });
               notif.onclick = () => {
