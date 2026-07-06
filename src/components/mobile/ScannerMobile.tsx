@@ -26,11 +26,8 @@ import { scanVenueBooking } from "@/api/venue_bookings";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { lazy, Suspense } from "react";
 
-// Dynamically import Scanner to prevent SSR crashes since it uses browser APIs
-const Scanner = lazy(() =>
-  import("@yudiel/react-qr-scanner").then((m) => ({ default: m.Scanner })),
-);
-import { outline } from "@yudiel/react-qr-scanner";
+// Dynamically import QRScanner to prevent SSR crashes and OOM during build
+const QRScanner = lazy(() => import("./QRScanner"));
 import {
   Dialog,
   DialogContent,
@@ -166,22 +163,7 @@ function ScannerViewport({ result, onScan }: { result: Result; onScan: (text: st
                     </div>
                   }
                 >
-                  <Scanner
-                    onScan={(detected) => {
-                      if (detected && detected.length > 0 && detected[0].rawValue) {
-                        onScan(detected[0].rawValue);
-                      }
-                    }}
-                    formats={["qr_code"]}
-                    components={{
-                      tracker: outline,
-                      torch: true,
-                    }}
-                    styles={{
-                      container: { width: "100%", height: "100%", borderRadius: "2.5rem" },
-                      video: { objectFit: "cover" },
-                    }}
-                  />
+                  <QRScanner onScan={onScan} />
                 </Suspense>
               )}
               <div className="absolute inset-0 pointer-events-none">

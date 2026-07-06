@@ -44,6 +44,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
       deposit_paid,
       total_amount,
       event_id,
+      payment_method,
     } = ctx.data;
 
     let final_tickets_data = tickets_data;
@@ -372,4 +373,58 @@ export const approveVenueBooking = createServerFn({ method: "POST" })
     }
 
     return res.update_venue_bookings_by_pk;
+  });
+
+export const scanVenueBooking = createServerFn({ method: "POST" })
+  .validator((d: { otp: string }) => d)
+  .handler(async (ctx) => {
+    const { otp } = ctx.data;
+    if (!otp) return { success: false, message: "otp is required" };
+
+    const res = await hasuraRequest<{ venue_bookings: any[] }>(VALIDATE_TICKET_OTP, { otp });
+    const booking = res.venue_bookings[0] || null;
+
+    if (!booking) {
+      return { success: false, message: "Invalid venue booking OTP" };
+    }
+
+    const tickets_data = booking.tickets_data;
+    if (!tickets_data || !tickets_data.issued) {
+      return { success: false, message: "No tickets found in booking" };
+    }
+
+    const ticketIndex = tickets_data.issued.findIndex((t: any) => t.otp === otp);
+    if (ticketIndex === -1) {
+      return { success: false, message: "Ticket not found" };
+    }
+
+    const ticket = tickets_data.issued[ticketIndex];
+    if (ticket.used) {
+      return { success: false, message: "Ticket has already been scanned", booking };
+    }
+
+    // Mark as used
+    tickets_data.issued[ticketIndex].used = true;
+    tickets_data.issued[ticketIndex].scanned_at = new Date().toISOString();
+
+    await hasuraRequest(UPDATE_VENUE_BOOKING_TICKETS, {
+      id: booking.id,
+      tickets_data,
+    });
+
+    if (booking.venue_id) {
+      const venueRes = await hasuraRequest<{ rentable_venues_by_pk: any }>(
+        `
+        query GetVenueName($id: uuid!) {
+          rentable_venues_by_pk(id: $id) {
+            name
+          }
+        }
+      `,
+        { id: booking.venue_id },
+      );
+      booking.venue_name = venueRes?.rentable_venues_by_pk?.name || "Venue";
+    }
+
+    return { success: true, message: "Ticket successfully scanned and verified.", booking };
   });
