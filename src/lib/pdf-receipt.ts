@@ -42,9 +42,9 @@ export const generateFallbackReceipt = (options: {
     y += 20;
   }
 
-  pdf.setLineDash([2, 2]);
+  pdf.setLineDashPattern([2, 2], 0);
   pdf.line(20, y + 20, 280, y + 20);
-  pdf.setLineDash([]);
+  pdf.setLineDashPattern([], 0);
 
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
