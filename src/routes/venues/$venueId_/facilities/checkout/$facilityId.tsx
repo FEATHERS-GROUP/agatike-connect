@@ -346,7 +346,7 @@ function FacilityCheckoutPage() {
 
           const coverUrl = venueProject.coverImage;
           if (coverUrl) {
-            await new Promise((resolve) => {
+            await new Promise<void>((resolve) => {
               const img = new Image();
               img.crossOrigin = "anonymous";
               img.onload = () => resolve();
@@ -355,13 +355,13 @@ function FacilityCheckoutPage() {
             });
           }
 
-          await new Promise((r) => setTimeout(r, 600));
+          await new Promise<void>((r) => setTimeout(r, 600));
 
           for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
-            await new Promise((r) => setTimeout(r, 100));
+            await new Promise<void>((r) => setTimeout(r, 100));
 
             const imgData = await htmlToImage.toJpeg(el, {
               pixelRatio: 1.5,
@@ -409,7 +409,8 @@ function FacilityCheckoutPage() {
           setIsSuccess(true);
         } catch (e) {
           console.error("PDF generation error:", e);
-          toast.error(`Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`);
+          const errorMessage = e instanceof Error ? e.message : "Unknown error";
+          toast.error(`Ticket generation failed: ${errorMessage}. Please try again.`);
           setIsGenerating(false);
         }
       };
