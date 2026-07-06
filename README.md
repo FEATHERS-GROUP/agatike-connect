@@ -140,9 +140,9 @@ flowchart TD
   Event -->|Add / Import| Staff["Staff Member"]
   Staff --> Role["Job Role"]
   Staff --> Access["allowed_sections"]
-  Access --> AllAccess["\"[*"] All Access"]
-  Access --> Partial["\"[uuid-1"] Specific Zone"]
-  Access --> None["\"["] No Access"]
+  Access --> AllAccess["'[*]' All Access"]
+  Access --> Partial["'[uuid-1]' Specific Zone"]
+  Access --> None["'[]' No Access"]
   Staff --> QR["Unique QR String"]
 ```
 
@@ -1021,10 +1021,10 @@ Both single-attendee and bulk emails use an identical template with **template v
 ```mermaid
 flowchart TD
     Template["HTML Template with placeholders"] --> Regex["Regex replace chain"]
-    Regex --> V1["\"[First Name"] / {{name}} → attendee first name"]
-    Regex --> V2["\"[Registration Details"] → auto-generated HTML block\nwith Registration ID + Ticket Number + Badge Link"]
-    Regex --> V3["\"[Contact Email"] / {{contact_email}} → organizer email"]
-    Regex --> V4["\"[Phone Number"] / {{phone_number}} → organizer phone"]
+    Regex --> V1["'[First Name]' / {{name}} → attendee first name"]
+    Regex --> V2["'[Registration Details]' → auto-generated HTML block\nwith Registration ID + Ticket Number + Badge Link"]
+    Regex --> V3["'[Contact Email]' / {{contact_email}} → organizer email"]
+    Regex --> V4["'[Phone Number]' / {{phone_number}} → organizer phone"]
     Regex --> Final["finalMessage HTML string"]
     Final --> sendAttendeeEmail["API call with to/subject/message/badgeLink/org branding"]
 ```
@@ -1291,7 +1291,7 @@ Stories are rendered in a responsive 9:16 aspect-ratio grid (portrait format mat
 
 ```mermaid
 flowchart LR
-    story.expires_at --> hoursLeft["hoursLeft = floor((expires_at - now) / 3600000)"]
+    expires_at --> hoursLeft["hoursLeft = floor((expires_at - now) / 3600000)"]
     hoursLeft --> badge["⏱ Xh left badge"]
 ```
 
@@ -1321,14 +1321,15 @@ flowchart TD
     B --> |Yes| C["remaining = MAX_POST_IMAGES - postMedia.length"]
     C --> D{remaining <= 0?}
     D --> |Yes| E["toast.error: Maximum 4 photos per post"]
+    D --> |Yes| E["toast.error Maximum 4 photos per post"]
     D --> |No| F["toUpload = Array.from files .slice 0 remaining"]
     F --> G{Any file > 5MB?}
-    G --> |Yes| H["toast.error: X image s too large"]
+    G --> |Yes| H["toast.error X image too large"]
     G --> |No| I["setIsUploadingPostMedia true"]
-    I --> J["Promise.all: uploadFileToStorage each file to posts/{eventId}"]
-    J --> K["setPostMedia prev => [...prev, ...newUrls"]]
+    I --> J["Promise.all uploadFileToStorage each file to posts/{eventId}"]
+    J --> K["setPostMedia prev => [...prev, ...newUrls]"]
     K --> L{toUpload.length < files.length?}
-    L --> |Yes| M["toast.info: Only X of Y photos added"]
+    L --> |Yes| M["toast.info Only X of Y photos added"]
     L --> |No| N["done"]
     N --> O["setIsUploadingPostMedia false"]
 ```
@@ -1360,14 +1361,14 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A["Organizer clicks Publish"] --> B{postContent.trim() empty?}
+    A["Organizer clicks Publish"] --> B{"postContent.trim() empty?"}
     B --> |Yes| C["Publish button disabled - no action"]
     B --> |No| D["createEventPost mutation"]
     D --> E["Payload: event_id + workspace_id + content + media_urls array"]
     E --> F["DB insert"]
     F --> G["invalidateQueries event-posts"]
     G --> H["Post appears in feed"]
-    H --> I["Reset: postContent='' postMedia=["]]
+    H --> I["Reset: postContent='' postMedia=[]"]
 ```
 
 #### Post Feed — Media Rendering
