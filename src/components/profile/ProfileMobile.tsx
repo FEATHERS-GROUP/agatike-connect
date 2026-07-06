@@ -28,6 +28,7 @@ export function ProfileMobile({
   tab,
   setTab,
   subscriptions,
+  staffAssignments = [],
 }: any) {
   const navigate = useNavigate();
 
@@ -163,7 +164,7 @@ export function ProfileMobile({
 
       {/* Tabs */}
       <div className="flex border-b border-border/40 mt-4 px-4 gap-1 overflow-x-auto hide-scrollbar">
-        {(["upcoming", "history", "following", "subscriptions"] as any[]).map((t) => (
+        {(["upcoming", "history", "following", "subscriptions", "work"] as any[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -188,6 +189,11 @@ export function ProfileMobile({
               {t === "subscriptions" && (
                 <>
                   <Repeat className="h-4 w-4" /> Subs
+                </>
+              )}
+              {t === "work" && (
+                <>
+                  <User className="h-4 w-4" /> Work
                 </>
               )}
             </span>
@@ -278,6 +284,42 @@ export function ProfileMobile({
             ) : (
               <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
                 <p className="text-muted-foreground text-sm">No active subscriptions.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "work" && (
+          <div className="space-y-4">
+            {staffAssignments.length > 0 ? (
+              staffAssignments.map((assignment: any) => {
+                const isExpired = assignment.event?.schedules?.[0]?.end_date && new Date(assignment.event.schedules[0].end_date) < new Date();
+                return (
+                  <div key={assignment.id} className={`bg-card border border-border/60 rounded-2xl p-4 shadow-sm ${isExpired ? "opacity-60" : ""}`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-bold text-lg">{assignment.event?.title || "Event Dashboard"}</h4>
+                        <p className="text-sm text-muted-foreground">{assignment.role}</p>
+                      </div>
+                      <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${isExpired ? "bg-red-500/10 text-red-500" : "bg-emerald-500/10 text-emerald-500"}`}>
+                        {isExpired ? "Expired" : "Active"}
+                      </span>
+                    </div>
+                    {isExpired ? (
+                      <p className="text-xs text-muted-foreground">Access expired</p>
+                    ) : (
+                      <Link to={`/staff/event/${assignment.event_id}`}>
+                        <Button className="w-full font-bold shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                          Open Dashboard <ChevronRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
+                <p className="text-muted-foreground text-sm">You are not assigned to any events.</p>
               </div>
             )}
           </div>

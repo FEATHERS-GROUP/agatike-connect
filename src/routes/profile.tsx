@@ -45,8 +45,9 @@ import { HistoryCard } from "@/components/profile/HistoryCard";
 import { favoriteCategories } from "@/components/profile/mockData";
 import { ProfileDesktop } from "@/components/profile/ProfileDesktop";
 import { ProfileMobile } from "@/components/profile/ProfileMobile";
+import { getUserStaffAssignments } from "@/api/staff";
 
-type Tab = "upcoming" | "history" | "following" | "subscriptions";
+type Tab = "upcoming" | "history" | "following" | "subscriptions" | "work";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -86,6 +87,12 @@ function ProfilePage() {
   const { data: subscriptions = [], isLoading: isLoadingSubscriptions } = useQuery({
     queryKey: ["user-subscriptions", user?.id],
     queryFn: () => getUserSubscriptions({ data: { user_id: user?.id, email: user?.email } }),
+    enabled: !!user,
+  });
+
+  const { data: staffAssignments = [], isLoading: isLoadingStaff } = useQuery({
+    queryKey: ["user-staff-assignments", user?.id],
+    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id } } as any),
     enabled: !!user,
   });
 
@@ -212,6 +219,7 @@ function ProfilePage() {
         favoriteCategories={favoriteCategories}
         setShowLogoutModal={setShowLogoutModal}
         subscriptions={subscriptions}
+        staffAssignments={staffAssignments}
         tab={tab}
         setTab={setTab}
       />

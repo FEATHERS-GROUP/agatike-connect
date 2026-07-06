@@ -49,6 +49,8 @@ const GET_EVENT_STAFF = `
       badge_qr_string
       allowed_sections
       profile_image
+      pin_code
+      app_permissions
     }
   }
 `;
@@ -74,6 +76,8 @@ const GET_STAFF_BY_BADGE = `
       allowed_sections
       profile_image
       event_id
+      pin_code
+      app_permissions
     }
   }
 `;
@@ -95,6 +99,8 @@ const ADD_EVENT_STAFF = `
       email
       phone
       profile_image
+      pin_code
+      app_permissions
     }
   }
 `;
@@ -102,6 +108,30 @@ const ADD_EVENT_STAFF = `
 export const addEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const staffData = ctx.data as any;
   return hasuraRequest(ADD_EVENT_STAFF, { object: staffData });
+});
+
+const ADD_MULTIPLE_EVENT_STAFF = `
+  mutation AddMultipleEventStaff($objects: [event_staff_insert_input!]!) {
+    insert_event_staff(objects: $objects) {
+      returning {
+        id
+        role
+        badge_qr_string
+        first_name
+        last_name
+        email
+        phone
+        profile_image
+        pin_code
+        app_permissions
+      }
+    }
+  }
+`;
+
+export const addMultipleEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { objects } = ctx.data as { objects: any[] };
+  return hasuraRequest(ADD_MULTIPLE_EVENT_STAFF, { objects });
 });
 
 const UPDATE_EVENT_STAFF = `
@@ -116,4 +146,62 @@ const UPDATE_EVENT_STAFF = `
 export const updateEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id, allowed_sections } = ctx.data as any;
   return hasuraRequest(UPDATE_EVENT_STAFF, { id, allowed_sections });
+});
+
+const UPDATE_STAFF_STATUS = `
+  mutation UpdateStaffStatus($id: uuid!, $status: String!) {
+    update_event_staff_by_pk(pk_columns: { id: $id }, _set: { status: $status }) {
+      id
+      status
+    }
+  }
+`;
+
+export const updateStaffStatus = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, status } = ctx.data as any;
+  return hasuraRequest(UPDATE_STAFF_STATUS, { id, status });
+});
+
+const DELETE_EVENT_STAFF = `
+  mutation DeleteEventStaff($id: uuid!) {
+    delete_event_staff_by_pk(id: $id) {
+      id
+    }
+  }
+`;
+
+export const deleteEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as any;
+  return hasuraRequest(DELETE_EVENT_STAFF, { id });
+});
+
+const GET_USER_STAFF_ASSIGNMENTS = `
+  query GetUserStaffAssignments($user_id: uuid!) {
+    event_staff(where: { user_id: { _eq: $user_id }, status: { _eq: "active" } }, order_by: { created_at: desc }) {
+      id
+      role
+      status
+      event_id
+      pin_code
+      badge_qr_string
+      allowed_sections
+      app_permissions
+      event {
+        id
+        title
+        cover
+        schedules {
+          start_date
+          end_date
+        }
+      }
+    }
+  }
+`;
+
+export const getUserStaffAssignments = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { user_id } = ctx.data as unknown as { user_id: string };
+  if (!user_id) return [];
+  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, { user_id });
+  return data.event_staff || [];
 });

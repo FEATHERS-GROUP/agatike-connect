@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Plus, UserCheck, MapPin, ShieldAlert, Loader2, QrCode, Palette } from "lucide-react";
+import { Plus, UserCheck, MapPin, ShieldAlert, Loader2, QrCode, Palette, UserPlus, FlipHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -34,8 +34,11 @@ import {
   createEventSection,
   addEventStaff,
   updateEventStaff,
+  updateStaffStatus,
+  deleteEventStaff,
 } from "@/api/staff";
 import { getEventById } from "@/api/events";
+import { getUserByHandle } from "@/api/users";
 import { createCustomForm } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
@@ -263,241 +266,6 @@ function GenerateVendorFormModal({
   );
 }
 
-function AddStaffModal({
-  eventId,
-  sections,
-  canAddStaff,
-}: {
-  eventId: string;
-  sections: any[];
-  canAddStaff: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const [registrationType, setRegistrationType] = useState("account"); // "account" or "no-account"
-  const [formData, setFormData] = useState({
-    user_id: "",
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    role: "Volunteer",
-    allowed_sections: [] as string[],
-  });
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      // Mock user_id for demonstration if none provided
-      const finalUserId =
-        registrationType === "account"
-          ? formData.user_id || "00000000-0000-0000-0000-000000000000"
-          : null;
-      const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-      return await addEventStaff({
-        data: {
-          event_id: eventId,
-          user_id: finalUserId,
-          first_name: registrationType === "no-account" ? formData.first_name : null,
-          last_name: registrationType === "no-account" ? formData.last_name : null,
-          email: registrationType === "no-account" ? formData.email : null,
-          phone: registrationType === "no-account" ? formData.phone : null,
-          role: formData.role,
-          allowed_sections: formData.allowed_sections,
-          badge_qr_string: `STAFF-${randomId}`,
-          status: "active",
-        },
-      } as any);
-    },
-    onSuccess: () => {
-      toast.success("Staff added and badge generated!");
-      setOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
-      setFormData({
-        user_id: "",
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        role: "Volunteer",
-        allowed_sections: [],
-      });
-    },
-    onError: (err: any) => toast.error(err.message || "Failed to add staff"),
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          className="rounded-full shadow-[var(--shadow-glow)]"
-          style={{ background: "var(--gradient-primary)" }}
-          disabled={!canAddStaff}
-          onClick={(e) => {
-            if (!canAddStaff) {
-              e.preventDefault();
-              toast.error("Staff Limit Reached", {
-                description: "Upgrade your plan to add more staff members.",
-              });
-            }
-          }}
-        >
-          {canAddStaff ? <Plus className="mr-1 h-4 w-4" /> : <Lock className="mr-1 h-4 w-4" />} Add
-          Staff Member
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Add Staff Member</DialogTitle>
-          <DialogDescription>
-            Assign a role and section. A secure Digital Badge will be generated automatically.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <Tabs value={registrationType} onValueChange={setRegistrationType} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="account">Agatike Account</TabsTrigger>
-              <TabsTrigger value="no-account">No Account (Link)</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="account" className="space-y-4 mt-0">
-              <div className="space-y-2">
-                <Label>User ID / Email Search</Label>
-                <Input
-                  placeholder="Enter User ID (Mocking for now)"
-                  value={formData.user_id}
-                  onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="no-account" className="space-y-4 mt-0">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>First Name</Label>
-                  <Input
-                    placeholder="John"
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Last Name</Label>
-                  <Input
-                    placeholder="Doe"
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  placeholder="john@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="space-y-2">
-            <Label>Role</Label>
-            <Select
-              value={formData.role}
-              onValueChange={(val) => setFormData({ ...formData, role: val })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Organizer">Organizer</SelectItem>
-                <SelectItem value="Event Coordinator">Event Coordinator</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Security Lead">Security Lead</SelectItem>
-                <SelectItem value="Security">Security</SelectItem>
-                <SelectItem value="Gate Staff">Gate Staff / Check-in</SelectItem>
-                <SelectItem value="Box Office">Box Office / Ticketing</SelectItem>
-                <SelectItem value="Bartender">Bartender</SelectItem>
-                <SelectItem value="Bar Staff">Bar Staff</SelectItem>
-                <SelectItem value="Catering Staff">Catering Staff</SelectItem>
-                <SelectItem value="VIP Host">VIP Host / Concierge</SelectItem>
-                <SelectItem value="Stage Manager">Stage Manager</SelectItem>
-                <SelectItem value="Stage Hand">Stage Hand</SelectItem>
-                <SelectItem value="AV Technician">AV Tech</SelectItem>
-                <SelectItem value="Photographer">Photographer</SelectItem>
-                <SelectItem value="Medical Staff">Medical / First Aid</SelectItem>
-                <SelectItem value="Volunteer">Volunteer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-3 pt-2">
-            <Label className="text-sm font-semibold">Allowed Sections (Access Control)</Label>
-            <div className="space-y-2 border border-border/50 rounded-xl p-3 bg-secondary/10 max-h-[150px] overflow-y-auto">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <Checkbox
-                  checked={formData.allowed_sections.includes("*")}
-                  onCheckedChange={(c) => {
-                    if (c) setFormData({ ...formData, allowed_sections: ["*"] });
-                    else setFormData({ ...formData, allowed_sections: [] });
-                  }}
-                />
-                <span className="font-medium">All Access (Everywhere)</span>
-              </label>
-              {sections.map((s) => (
-                <label
-                  key={s.id}
-                  className={`flex items-center gap-2 text-sm cursor-pointer ${formData.allowed_sections.includes("*") ? "opacity-50 pointer-events-none" : ""}`}
-                >
-                  <Checkbox
-                    disabled={formData.allowed_sections.includes("*")}
-                    checked={formData.allowed_sections.includes(s.id)}
-                    onCheckedChange={(c) => {
-                      if (c) {
-                        setFormData({
-                          ...formData,
-                          allowed_sections: [...formData.allowed_sections, s.id],
-                        });
-                      } else {
-                        setFormData({
-                          ...formData,
-                          allowed_sections: formData.allowed_sections.filter((id) => id !== s.id),
-                        });
-                      }
-                    }}
-                  />
-                  <span>{s.name}</span>
-                </label>
-              ))}
-            </div>
-            <p className="text-[10px] text-muted-foreground">
-              Selecting specific sections restricts their badge scan to only those areas.
-            </p>
-          </div>
-          <Button
-            className="w-full mt-4"
-            style={{ background: "var(--gradient-primary)", color: "white" }}
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Generate Staff Badge
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
   const [open, setOpen] = useState(false);
   const [allowedSections, setAllowedSections] = useState<string[]>(staff.allowed_sections || []);
@@ -587,6 +355,7 @@ function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
 function StaffView() {
   const { eventId, workspaceSlug } = Route.useParams();
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  const [badgeSide, setBadgeSide] = useState<"front" | "back">("front");
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -637,11 +406,14 @@ function StaffView() {
           </p>
         </div>
         <div className="flex gap-3">
-          <AddStaffModal
-            eventId={eventId}
-            sections={sections}
-            canAddStaff={canAddEventStaff(staff.length)}
-          />
+          {canAddEventStaff(staff.length) && (
+            <Link to={`/dashboard/${workspaceSlug}/events/${eventId}/staff/add`}>
+              <Button className="gap-2 bg-[#f97316] hover:bg-[#ea580c] text-white">
+                <UserPlus className="w-4 h-4" />
+                Add Staff
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -691,6 +463,7 @@ function StaffView() {
                   <th className="px-6 py-4 font-medium">Assigned Section</th>
                   <th className="px-6 py-4 font-medium">Badge ID</th>
                   <th className="px-6 py-4 font-medium">Status</th>
+                  <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
@@ -703,8 +476,10 @@ function StaffView() {
                       : [];
                   const isUnregistered = !s.user_id && (s.first_name || s.last_name);
                   const displayName = isUnregistered
-                    ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
-                    : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
+                    ? `${s.first_name || ""} ${s.last_name || ""}`.trim() || s.email
+                    : s.first_name || s.last_name
+                      ? `${s.first_name || ""} ${s.last_name || ""}`.trim()
+                      : `User ${s.user_id?.substring(0, 6) || "Unknown"}`;
                   const displayInitials = isUnregistered ? (
                     `${s.first_name?.[0] || ""}${s.last_name?.[0] || ""}`.toUpperCase()
                   ) : (
@@ -780,6 +555,52 @@ function StaffView() {
                           {s.status}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={`h-7 px-2 text-[10px] uppercase tracking-wider font-bold ${s.status === "active" ? "text-yellow-600 border-yellow-600/30 hover:bg-yellow-600/10" : "text-green-600 border-green-600/30 hover:bg-green-600/10"}`}
+                            onClick={() => {
+                              toast.promise(
+                                updateStaffStatus({ data: { id: s.id, status: s.status === "active" ? "disabled" : "active" } } as any),
+                                {
+                                  loading: s.status === "active" ? "Disabling..." : "Enabling...",
+                                  success: () => {
+                                    queryClient.invalidateQueries({ queryKey: ["event-staff"] });
+                                    return `Staff ${s.status === "active" ? "disabled" : "enabled"}!`;
+                                  },
+                                  error: "Failed to change status"
+                                }
+                              );
+                            }}
+                          >
+                            {s.status === "active" ? "Disable" : "Enable"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-[10px] uppercase tracking-wider font-bold text-red-500 border-red-500/30 hover:bg-red-500/10"
+                            onClick={() => {
+                              if (window.confirm("Are you sure you want to delete this staff member? This cannot be undone.")) {
+                                toast.promise(
+                                  deleteEventStaff({ data: { id: s.id } } as any),
+                                  {
+                                    loading: "Deleting...",
+                                    success: () => {
+                                      queryClient.invalidateQueries({ queryKey: ["event-staff"] });
+                                      return "Staff deleted successfully!";
+                                    },
+                                    error: "Failed to delete staff"
+                                  }
+                                );
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -829,9 +650,29 @@ function StaffView() {
 
           {selectedStaff && (
             <div className="flex flex-col items-center mt-4">
+              <div className="flex bg-secondary/50 p-1 rounded-full mb-8 shadow-sm border border-border/50">
+                <Button 
+                  variant={badgeSide === "front" ? "default" : "ghost"} 
+                  size="sm" 
+                  className={`rounded-full px-6 transition-all ${badgeSide === "front" ? "shadow-md" : "hover:bg-secondary"}`}
+                  onClick={() => setBadgeSide("front")}
+                >
+                  Front
+                </Button>
+                <Button 
+                  variant={badgeSide === "back" ? "default" : "ghost"} 
+                  size="sm" 
+                  className={`rounded-full px-6 transition-all ${badgeSide === "back" ? "shadow-md" : "hover:bg-secondary"}`}
+                  onClick={() => setBadgeSide("back")}
+                >
+                  <FlipHorizontal className="h-3 w-3 mr-2" /> Back
+                </Button>
+              </div>
+
               {badgeProject ? (
                 <div className="w-[340px] relative origin-top mx-auto">
                   <BadgePreview
+                    activeSide={badgeSide}
                     config={{
                       theme: badgeProject.theme,
                       fontFamily: badgeProject.font_family,
@@ -845,10 +686,11 @@ function StaffView() {
                     isDesigner={false}
                     mockUser={{
                       name:
-                        !selectedStaff.user_id &&
-                        (selectedStaff.first_name || selectedStaff.last_name)
-                          ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
-                          : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
+                        !selectedStaff.user_id && (selectedStaff.first_name || selectedStaff.last_name)
+                          ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim() || selectedStaff.email
+                          : selectedStaff.first_name || selectedStaff.last_name
+                            ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
+                            : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
                       role: selectedStaff.role,
                       qrString: selectedStaff.badge_qr_string,
                       sectionName: selectedStaff.allowed_sections?.includes("*")

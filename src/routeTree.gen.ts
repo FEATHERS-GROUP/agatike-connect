@@ -61,6 +61,7 @@ import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard/bi
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard/$workspaceSlug/index'
 import { Route as AdminWithdrawalsIndexRouteImport } from './routes/admin/withdrawals/index'
 import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues/checkout/$venueId'
+import { Route as StaffEventEventIdRouteImport } from './routes/staff.event.$eventId'
 import { Route as SpacesSuccessSpaceIdRouteImport } from './routes/spaces/success/$spaceId'
 import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/checkout/$spaceId'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public/badge/$badgeId'
@@ -198,6 +199,7 @@ import { Route as InternalControlAdminOrganizersOrganizerIdContributorsRouteImpo
 import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book-invoices'
 import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book'
 import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.attendees'
+import { Route as DashboardWorkspaceSlugEventsEventIdStaffAddRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/staff_.add'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings'
 
@@ -461,6 +463,11 @@ const AdminWithdrawalsIndexRoute = AdminWithdrawalsIndexRouteImport.update({
 const VenuesCheckoutVenueIdRoute = VenuesCheckoutVenueIdRouteImport.update({
   id: '/venues/checkout/$venueId',
   path: '/venues/checkout/$venueId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffEventEventIdRoute = StaffEventEventIdRouteImport.update({
+  id: '/staff/event/$eventId',
+  path: '/staff/event/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SpacesSuccessSpaceIdRoute = SpacesSuccessSpaceIdRouteImport.update({
@@ -1282,6 +1289,12 @@ const InternalControlAdminOrganizersOrganizerIdAttendeesRoute =
     path: '/attendees',
     getParentRoute: () => InternalControlAdminOrganizersOrganizerIdRoute,
   } as any)
+const DashboardWorkspaceSlugEventsEventIdStaffAddRoute =
+  DashboardWorkspaceSlugEventsEventIdStaffAddRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/staff_/add',
+    path: '/$workspaceSlug/events/$eventId/staff/add',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute =
   DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport.update({
     id: '/receipt/$bookingId',
@@ -1359,6 +1372,7 @@ export interface FileRoutesByFullPath {
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
+  '/staff/event/$eventId': typeof StaffEventEventIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/admin/withdrawals/': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
@@ -1470,6 +1484,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/pricing/': typeof InternalControlAdminPricingIndexRoute
   '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff/add': typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
@@ -1551,6 +1566,7 @@ export interface FileRoutesByTo {
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
+  '/staff/event/$eventId': typeof StaffEventEventIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/admin/withdrawals': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
@@ -1659,6 +1675,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/pricing': typeof InternalControlAdminPricingIndexRoute
   '/internal/control/admin/support': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff/add': typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
@@ -1742,6 +1759,7 @@ export interface FileRoutesById {
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
+  '/staff/event/$eventId': typeof StaffEventEventIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/admin/withdrawals/': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
@@ -1853,6 +1871,7 @@ export interface FileRoutesById {
   '/internal/control/admin/pricing/': typeof InternalControlAdminPricingIndexRoute
   '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff_/add': typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
   '/internal/control/admin/organizers/$organizerId/book-invoices': typeof InternalControlAdminOrganizersOrganizerIdBookInvoicesRoute
@@ -1937,6 +1956,7 @@ export interface FileRouteTypes {
     | '/public/badge/$badgeId'
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
+    | '/staff/event/$eventId'
     | '/venues/checkout/$venueId'
     | '/admin/withdrawals/'
     | '/dashboard/$workspaceSlug/'
@@ -2048,6 +2068,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/pricing/'
     | '/internal/control/admin/support/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff/add'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
     | '/internal/control/admin/organizers/$organizerId/book-invoices'
@@ -2129,6 +2150,7 @@ export interface FileRouteTypes {
     | '/public/badge/$badgeId'
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
+    | '/staff/event/$eventId'
     | '/venues/checkout/$venueId'
     | '/admin/withdrawals'
     | '/dashboard/$workspaceSlug'
@@ -2237,6 +2259,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/pricing'
     | '/internal/control/admin/support'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff/add'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
     | '/internal/control/admin/organizers/$organizerId/book-invoices'
@@ -2319,6 +2342,7 @@ export interface FileRouteTypes {
     | '/public/badge/$badgeId'
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
+    | '/staff/event/$eventId'
     | '/venues/checkout/$venueId'
     | '/admin/withdrawals/'
     | '/dashboard/$workspaceSlug/'
@@ -2430,6 +2454,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/pricing/'
     | '/internal/control/admin/support/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff_/add'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
     | '/internal/control/admin/organizers/$organizerId/book-invoices'
@@ -2499,6 +2524,7 @@ export interface RootRouteChildren {
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
   SpacesCheckoutSpaceIdRoute: typeof SpacesCheckoutSpaceIdRoute
   SpacesSuccessSpaceIdRoute: typeof SpacesSuccessSpaceIdRoute
+  StaffEventEventIdRoute: typeof StaffEventEventIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
   AdminWithdrawalsIndexRoute: typeof AdminWithdrawalsIndexRoute
   VenuesVenueIdFacilitiesCheckoutFacilityIdRoute: typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
@@ -2868,6 +2894,13 @@ declare module '@tanstack/react-router' {
       path: '/venues/checkout/$venueId'
       fullPath: '/venues/checkout/$venueId'
       preLoaderRoute: typeof VenuesCheckoutVenueIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/event/$eventId': {
+      id: '/staff/event/$eventId'
+      path: '/staff/event/$eventId'
+      fullPath: '/staff/event/$eventId'
+      preLoaderRoute: typeof StaffEventEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/spaces/success/$spaceId': {
@@ -3829,6 +3862,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport
       parentRoute: typeof InternalControlAdminOrganizersOrganizerIdRoute
     }
+    '/dashboard/$workspaceSlug/events/$eventId/staff_/add': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/staff_/add'
+      path: '/$workspaceSlug/events/$eventId/staff/add'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/staff/add'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffAddRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': {
       id: '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
       path: '/receipt/$bookingId'
@@ -4039,6 +4079,7 @@ interface DashboardRouteChildren {
   DashboardBillingSubscriptionsCheckoutPlanIdRoute: typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   DashboardWorkspaceSlugEventsEventIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
   DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
+  DashboardWorkspaceSlugEventsEventIdStaffAddRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -4184,6 +4225,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugEventsEventIdIndexRoute,
   DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute:
     DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute,
+  DashboardWorkspaceSlugEventsEventIdStaffAddRoute:
+    DashboardWorkspaceSlugEventsEventIdStaffAddRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -4353,6 +4396,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
   SpacesCheckoutSpaceIdRoute: SpacesCheckoutSpaceIdRoute,
   SpacesSuccessSpaceIdRoute: SpacesSuccessSpaceIdRoute,
+  StaffEventEventIdRoute: StaffEventEventIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
   AdminWithdrawalsIndexRoute: AdminWithdrawalsIndexRoute,
   VenuesVenueIdFacilitiesCheckoutFacilityIdRoute:

@@ -14,6 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getUserStaffAssignments } from "@/api/staff";
 
 export function MobileNav() {
   const location = useLocation();
@@ -35,6 +37,26 @@ export function MobileNav() {
     { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
     { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
   ];
+
+  const { data: staffAssignments = [] } = useQuery({
+    queryKey: ["user-staff-assignments", user?.id],
+    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id } } as any),
+    enabled: !!user,
+  });
+
+  const activeAssignments = staffAssignments.filter((a: any) => {
+    const isExpired = a.event?.schedules?.[0]?.end_date && new Date(a.event.schedules[0].end_date) < new Date();
+    return !isExpired;
+  });
+
+  if (activeAssignments.length > 0) {
+    moreMenuLinks.unshift({
+      name: "Staff Dashboard",
+      href: `/staff/event/${activeAssignments[0].event_id}`,
+      icon: User, // We can just use the User icon or similar
+      requiresAuth: true,
+    });
+  }
 
   // Close on outside tap
   useEffect(() => {

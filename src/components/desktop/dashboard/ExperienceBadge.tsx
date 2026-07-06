@@ -42,7 +42,7 @@ export function ExperienceBadge({ eventId }: { eventId?: string }) {
   // For the global Events badge (no eventId), we could check a global read time or just sum up event unreads.
   // It's safer to just use `experience_read_all` or the specific one.
   const readKey = eventId ? `experience_read_${eventId}` : "experience_read_all";
-  const readTime = parseInt(localStorage.getItem(readKey) || "0", 10);
+  const readTime = typeof window !== "undefined" ? parseInt(localStorage.getItem(readKey) || "0", 10) : 0;
 
   docs.forEach((data) => {
     if (data.type === "like" || data.type === "comment") {
