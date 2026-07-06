@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserStaffAssignments } from "@/api/staff";
 import { useUserAuth } from "@/contexts/UserAuthContext";
-import { Lock, ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, XCircle, CheckCircle2 } from "lucide-react";
+import { Lock, ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, XCircle, CheckCircle2, Ticket, Shield, ArrowRight } from "lucide-react";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
 import { getEventById } from "@/api/events";
 
@@ -11,17 +11,23 @@ export const Route = createFileRoute("/staff/event/$eventId")({
   component: StaffEventDashboard,
 });
 
-function AccessCodeInput({ onPinComplete, error, event }: { onPinComplete: (pin: string) => void, error: string, event?: any }) {
+function Numpad({ onPinComplete, error, event }: { onPinComplete: (pin: string) => void, error: string, event?: any }) {
   const [pin, setPin] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase();
-    if (value.length <= 9) {
-      setPin(value);
-      if (value.length === 9) {
-        onPinComplete(value);
+  const handlePress = (num: string) => {
+    if (pin.length < 9) {
+      const newPin = pin + num;
+      setPin(newPin);
+      if (newPin.length === 9) {
+        onPinComplete(newPin);
+        // Add slight delay before clearing so user sees the 9th dot
+        setTimeout(() => setPin(""), 500);
       }
     }
+  };
+
+  const handleDelete = () => {
+    setPin(pin.slice(0, -1));
   };
 
   const themeColor = event?.theme_color || event?.tickets_page_styles?.primary_color || "#ff3b30";
@@ -36,31 +42,52 @@ function AccessCodeInput({ onPinComplete, error, event }: { onPinComplete: (pin:
       
       <div className="z-10 w-full max-w-sm flex flex-col items-center">
         {event?.cover ? (
-          <img src={event.cover} alt="Event Cover" className="w-24 h-24 rounded-2xl object-cover mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10" />
+          <img src={event.cover} alt="Event Cover" className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10" />
         ) : (
-          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-8 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
-            <Lock className="h-10 w-10 text-primary" />
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
+            <Lock className="h-8 w-8 text-primary" />
           </div>
         )}
-        <h1 className="text-3xl font-black mb-2 text-center tracking-tight">{event?.title || "Staff Portal"}</h1>
-        <p className="text-muted-foreground text-sm mb-10 text-center font-medium">Enter your 9-character Access Code</p>
+        <h1 className="text-2xl font-bold mb-1 text-center">{event?.title || "Staff Portal"}</h1>
+        <p className="text-muted-foreground text-sm mb-8 text-center">Enter your 9-digit security PIN</p>
 
-        <div className="w-full relative group">
-          <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl transition-all duration-500 opacity-0 group-focus-within:opacity-100" />
-          <input
-            type="text"
-            value={pin}
-            onChange={handleChange}
-            placeholder="e.g. 2607NWREL"
-            className="w-full h-16 bg-background/80 backdrop-blur-md border-2 border-primary/20 focus:border-primary rounded-2xl text-center text-2xl font-black tracking-[0.2em] outline-none shadow-sm transition-all uppercase placeholder:text-muted-foreground/30 relative z-10"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-            maxLength={9}
-          />
+        <div className="flex gap-2 mb-10">
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div
+              key={i}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                pin.length > i ? "bg-primary shadow-[0_0_10px_var(--color-primary)] scale-125" : "bg-black/10 dark:bg-white/20"
+              }`}
+            />
+          ))}
         </div>
 
-        {error && <p className="text-destructive text-sm mt-6 font-medium animate-pulse">{error}</p>}
+        {error && <p className="text-destructive text-sm mb-6 animate-pulse">{error}</p>}
+
+        <div className="grid grid-cols-3 gap-x-8 gap-y-4 w-full max-w-[280px]">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <button
+              key={num}
+              onClick={() => handlePress(num.toString())}
+              className="w-16 h-16 rounded-full bg-black/5 border border-black/10 text-2xl font-medium flex items-center justify-center active:bg-black/10 active:scale-95 transition-all mx-auto backdrop-blur-md"
+            >
+              {num}
+            </button>
+          ))}
+          <div />
+          <button
+            onClick={() => handlePress("0")}
+            className="w-16 h-16 rounded-full bg-black/5 border border-black/10 text-2xl font-medium flex items-center justify-center active:bg-black/10 active:scale-95 transition-all mx-auto backdrop-blur-md"
+          >
+            0
+          </button>
+          <button
+            onClick={handleDelete}
+            className="w-16 h-16 rounded-full text-muted-foreground text-xl font-medium flex items-center justify-center active:text-foreground active:scale-95 transition-all mx-auto"
+          >
+            DEL
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -122,13 +149,14 @@ function StaffEventDashboard() {
 
   if (!isAuthenticated && assignment.pin_code) {
     return (
-      <AccessCodeInput
+      <Numpad
         onPinComplete={(pin) => {
-          if (pin === assignment.pin_code) {
+          console.log("Expected PIN:", assignment.pin_code, "Entered PIN:", pin);
+          if (pin === String(assignment.pin_code)) {
             setIsAuthenticated(true);
             setPinError("");
           } else {
-            setPinError("Incorrect Access Code. Please try again.");
+            setPinError("Incorrect PIN");
           }
         }}
         error={pinError}
@@ -155,84 +183,152 @@ function StaffEventDashboard() {
     );
   }
 
+  // Permissions
+  const perms = assignment.app_permissions || [];
+  const canScan = perms.includes("SCAN_TICKETS");
+  const canViewGuestlist = perms.includes("VIEW_GUESTLIST");
+  const canSell = perms.includes("SELL_TICKETS");
+  const canViewAnalytics = perms.includes("VIEW_ANALYTICS");
+
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground overflow-y-auto pb-safe">
-      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+    <div className="min-h-[100dvh] bg-background text-foreground overflow-y-auto pb-safe font-sans" style={{ "--color-primary": assignment.event?.theme_color || "#ff3b30" } as React.CSSProperties}>
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-background to-background pointer-events-none -z-10" />
+      <div className="absolute top-0 left-0 right-0 h-96 bg-primary/10 blur-[100px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
       
-      <header className="px-6 pt-safe-top pb-4 flex items-center justify-between relative z-10 mt-4">
-        <Link to="/profile" className="p-2 -ml-2 text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-6 w-6" />
+      <header className="px-6 pt-safe-top pb-2 flex items-center justify-between relative z-10 mt-6">
+        <Link to="/profile" className="p-3 -ml-3 text-foreground/60 hover:text-foreground active:scale-95 transition-all bg-secondary/50 backdrop-blur-md rounded-full border border-border/50">
+          <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-primary text-xs font-bold tracking-wider uppercase">Live</span>
+        <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_rgba(var(--color-primary),0.1)]">
+          <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)] animate-pulse" />
+          <span className="text-primary text-xs font-black tracking-widest uppercase">Live</span>
         </div>
       </header>
 
-      <main className="px-6 pt-2 pb-24 relative z-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black mb-1 leading-tight">{assignment.event?.title || "Event Dashboard"}</h1>
-          <p className="text-muted-foreground font-medium">{assignment.role} • {assignment.allowed_sections?.includes('*') ? 'All Access' : 'Restricted Access'}</p>
+      <main className="px-6 pt-6 pb-24 relative z-10 space-y-10">
+        <div>
+          <h1 className="text-4xl font-black mb-2 leading-tight tracking-tight">{assignment.event?.title || "Event Dashboard"}</h1>
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider rounded-lg border border-border/50">{assignment.role}</span>
+            <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider rounded-lg border border-primary/20">{assignment.allowed_sections?.includes('*') ? 'All Access' : 'Restricted Sections'}</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-card border border-border rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-square">
-            <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-4">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-3xl font-black mb-1">0</p>
-              <p className="text-xs text-muted-foreground font-medium">Checked In</p>
+        {canViewAnalytics && (
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Live Stats</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-[4/3] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <CheckCircle2 className="h-16 w-16 text-emerald-500" />
+                </div>
+                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-4xl font-black mb-0.5 tracking-tighter">0</p>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Checked In</p>
+                </div>
+              </div>
+              
+              <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-[4/3] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Activity className="h-16 w-16 text-blue-500" />
+                </div>
+                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 border border-blue-500/20">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-4xl font-black mb-0.5 tracking-tighter">0</p>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Scans/Hour</p>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="bg-card border border-border rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-square">
-            <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 mb-4">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-3xl font-black mb-1">0</p>
-              <p className="text-xs text-muted-foreground font-medium">Scans/Hour</p>
-            </div>
-          </div>
-        </div>
+        )}
 
         <div className="space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-2">Quick Actions</h3>
+          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/80 ml-1">Staff Tools</h3>
           
-          <Link to={`/events/${eventId}`} className="block">
-            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 hover:bg-secondary/50 active:bg-secondary transition-colors shadow-sm">
-              <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
-                <ExternalLink className="h-6 w-6 text-foreground/80" />
+          <div className="grid grid-cols-1 gap-4">
+            {canScan && (
+              <button 
+                onClick={() => setShowScanner(true)}
+                className="w-full bg-primary relative overflow-hidden border border-primary/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all shadow-[0_15px_40px_rgba(var(--color-primary),0.25)] group"
+              >
+                <div className="absolute top-0 right-0 p-6 opacity-20 transform translate-x-4 -translate-y-4 group-active:scale-110 transition-transform">
+                  <ScanLine className="h-32 w-32 text-primary-foreground" />
+                </div>
+                <div className="relative z-10 flex flex-col gap-4">
+                  <div className="h-14 w-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white">
+                    <ScanLine className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-2xl text-primary-foreground tracking-tight mb-1">Scan Tickets</h4>
+                    <p className="text-primary-foreground/80 text-sm font-medium">Verify attendees at the gate</p>
+                  </div>
+                </div>
+              </button>
+            )}
+
+            {canViewGuestlist && (
+              <button className="w-full bg-background/60 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-5 transform translate-x-4 -translate-y-4 group-active:scale-110 transition-transform">
+                  <Users className="h-32 w-32 text-foreground" />
+                </div>
+                <div className="relative z-10 flex flex-col gap-4">
+                  <div className="h-14 w-14 rounded-full bg-secondary flex items-center justify-center border border-border/50 text-foreground">
+                    <Users className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-2xl tracking-tight mb-1">Guest List</h4>
+                    <p className="text-muted-foreground text-sm font-medium">Manage VIPs & reservations</p>
+                  </div>
+                </div>
+              </button>
+            )}
+
+            {canSell && (
+              <button className="w-full bg-background/60 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-5 transform translate-x-4 -translate-y-4 group-active:scale-110 transition-transform">
+                  <Ticket className="h-32 w-32 text-foreground" />
+                </div>
+                <div className="relative z-10 flex flex-col gap-4">
+                  <div className="h-14 w-14 rounded-full bg-secondary flex items-center justify-center border border-border/50 text-foreground">
+                    <Ticket className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-2xl tracking-tight mb-1">Box Office</h4>
+                    <p className="text-muted-foreground text-sm font-medium">Sell tickets & collect payments</p>
+                  </div>
+                </div>
+              </button>
+            )}
+
+            {!canScan && !canViewGuestlist && !canSell && (
+              <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
+                <Shield className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <h4 className="font-bold text-lg mb-2">No Tools Assigned</h4>
+                <p className="text-muted-foreground text-sm">You haven't been assigned any app permissions. Contact the organizer if this is a mistake.</p>
               </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-lg">View Event Page</h4>
-                <p className="text-xs text-muted-foreground">See public details & lineup</p>
-              </div>
-            </div>
-          </Link>
+            )}
+          </div>
           
-          <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 opacity-50 pointer-events-none shadow-sm">
-            <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center">
-              <Users className="h-6 w-6 text-foreground/80" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-lg">Guest List</h4>
-              <p className="text-xs text-muted-foreground">View attendees (Coming Soon)</p>
-            </div>
+          <div className="pt-6">
+            <Link to={`/events/${eventId}`} className="block">
+              <div className="bg-secondary/30 border border-border/50 rounded-2xl p-4 flex items-center justify-between hover:bg-secondary/50 active:bg-secondary transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground/80">
+                    <ExternalLink className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-bold">View Event Page</h4>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </Link>
           </div>
         </div>
       </main>
-
-      {/* Floating Action Button for Scanner */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <button 
-          onClick={() => setShowScanner(true)}
-          className="flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 rounded-full font-black text-lg shadow-[0_10px_40px_rgba(var(--color-primary),0.3)] hover:opacity-90 active:scale-95 transition-all"
-        >
-          <ScanLine className="h-6 w-6" /> Scan Tickets
-        </button>
-      </div>
     </div>
   );
 }
