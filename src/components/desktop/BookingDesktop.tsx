@@ -11,6 +11,7 @@ import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
@@ -417,7 +418,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         };
       });
 
-      if (ticketsToIssue.length > 0 && eventProject) {
+      if (ticketsToIssue.length > 0 ) {
         setIsGenerating(true);
         setIssuedTickets(ticketsToIssue);
       } else {
@@ -493,12 +494,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   };
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 && eventProject) {
+    if (isGenerating && issuedTickets.length > 0 ) {
       const generatePDFs = async () => {
         try {
           await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
           const attachments = [];
-          for (const ticket of issuedTickets) {
+          if (eventProject) {
+for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) {
               toast.error(`DOM Element missing for ticket ${ticket.id}`);
@@ -536,6 +538,17 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
               content: base64,
             });
+          }
+          } else {
+            for (const ticket of issuedTickets) {
+              const fallbackPdf = generateFallbackReceipt({
+                entityName: event?.title || "Event/Venue",
+                ticket,
+                bookingRef: ticket.otp,
+                customerName: ticket.attendee?.firstName || "Guest"
+              });
+              attachments.push(fallbackPdf);
+            }
           }
 
           if (attachments.length > 0) {

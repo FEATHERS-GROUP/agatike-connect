@@ -20,6 +20,7 @@ import { createVenueBooking } from "@/api/venue_bookings";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
@@ -229,7 +230,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         return;
       }
 
-      if (td?.issued && td.issued.length > 0 && venueProject) {
+      if (td?.issued && td.issued.length > 0 ) {
         setIsGenerating(true);
       } else {
         localStorage.removeItem(storageKey);
@@ -253,8 +254,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         ) {
           setIsPollingPawaPay(false);
           localStorage.removeItem(storageKey);
-          if (issuedTickets.length > 0 && venueProject) {
-            setIsGenerating(true);
+          if (issuedTickets.length > 0 ) {
+        setIsGenerating(true);
           } else {
             setIsSuccess(true);
           }
@@ -271,11 +272,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, storageKey]);
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 && venueProject) {
+    if (isGenerating && issuedTickets.length > 0 ) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
-          for (const ticket of issuedTickets) {
+          if (venueProject) {
+for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
@@ -315,6 +317,17 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
               filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
               content: base64,
             });
+          }
+          } else {
+            for (const ticket of issuedTickets) {
+              const fallbackPdf = generateFallbackReceipt({
+                entityName: venue?.name || "Event/Venue",
+                ticket,
+                bookingRef: ticket.booking_ref || bookingRef,
+                customerName: customerName || (attendees && attendees[0] ? attendees[0].firstName : "Guest")
+              });
+              attachments.push(fallbackPdf);
+            }
           }
 
           if (attachments.length > 0 && email) {

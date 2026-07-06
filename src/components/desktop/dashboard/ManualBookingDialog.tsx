@@ -13,6 +13,7 @@ import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 
 export function ManualBookingDialog({
@@ -150,7 +151,7 @@ export function ManualBookingDialog({
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venue.id] });
 
       const ticketsData = res.tickets_data;
-      if (ticketsData?.issued && ticketsData.issued.length > 0 && venueProject) {
+      if (ticketsData?.issued && ticketsData.issued.length > 0 ) {
         setIsGenerating(true);
         setIssuedTickets(ticketsData.issued);
         setBookingRes(res);
@@ -167,11 +168,12 @@ export function ManualBookingDialog({
   });
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 && venueProject) {
+    if (isGenerating && issuedTickets.length > 0 ) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
-          for (const ticket of issuedTickets) {
+          if (eventProject) {
+for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
@@ -199,6 +201,17 @@ export function ManualBookingDialog({
               filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
               content: base64,
             });
+          }
+          } else {
+            for (const ticket of issuedTickets) {
+              const fallbackPdf = generateFallbackReceipt({
+                entityName: event?.title || "Event/Venue",
+                ticket,
+                bookingRef: ticket.otp,
+                customerName: formData.customer_name
+              });
+              attachments.push(fallbackPdf);
+            }
           }
 
           setGeneratedPdfs(attachments);

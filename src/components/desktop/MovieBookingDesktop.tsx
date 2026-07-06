@@ -28,6 +28,7 @@ import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
@@ -277,7 +278,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         return;
       }
 
-      if (ticketsToIssue.length > 0 && movieProject) {
+      if (ticketsToIssue.length > 0 ) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
@@ -310,8 +311,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (issuedTickets.length > 0 && movieProject) {
-            setIsGenerating(true);
+          if (issuedTickets.length > 0 ) {
+        setIsGenerating(true);
           } else {
             setIsSuccess(true);
           }
@@ -328,7 +329,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   }, [isPollingPawaPay, pawapayDepositId, issuedTickets, movieProject]);
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0 && movieProject) {
+    if (isGenerating && issuedTickets.length > 0 ) {
       const generatePDFs = async () => {
         try {
           const attachments = [];
@@ -346,7 +347,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
 
           await new Promise((r) => setTimeout(r, 600));
 
-          for (const ticket of issuedTickets) {
+          if (movieProject) {
+for (const ticket of issuedTickets) {
             const el = document.getElementById(`ticket-render-${ticket.id}`);
             if (!el) continue;
 
@@ -375,6 +377,17 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
               filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
               content: base64,
             });
+          }
+          } else {
+            for (const ticket of issuedTickets) {
+              const fallbackPdf = generateFallbackReceipt({
+                entityName: movie?.title || "Event/Venue",
+                ticket,
+                bookingRef: ticket.otp,
+                customerName: ticket.attendee?.firstName || "Guest"
+              });
+              attachments.push(fallbackPdf);
+            }
           }
 
           if (attachments.length > 0 && attendeeInfo.email) {
