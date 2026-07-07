@@ -22,28 +22,13 @@ const externalDeps = [
   "lucide-react",
   "jspdf",
   "xlsx",
-  "firebase-admin",
-  "firebase-admin/app",
-  "firebase-admin/messaging",
-  "firebase-admin/firestore",
   "firebase",
-  "google-auth-library",
   "leaflet",
   "react-leaflet",
   "html-to-image",
   "@yudiel/react-qr-scanner",
   "react-qr-code",
   "react-barcode",
-];
-
-const serverExternalDeps = [
-  "firebase-admin",
-  "firebase-admin/app",
-  "firebase-admin/messaging",
-  "firebase-admin/firestore",
-  "google-auth-library",
-  "jspdf",
-  "xlsx"
 ];
 
 export default defineConfig({
@@ -106,9 +91,6 @@ export default defineConfig({
     nitro({
       preset: process.env.VERCEL ? "vercel" : "node-server",
       sourcemap: false,
-      rollupConfig: {
-        external: serverExternalDeps,
-      },
     }),
     viteReact(),
     tsConfigPaths({
