@@ -36,16 +36,6 @@ const externalDeps = [
   "react-barcode",
 ];
 
-const serverExternalDeps = [
-  "firebase-admin",
-  "firebase-admin/app",
-  "firebase-admin/messaging",
-  "firebase-admin/firestore",
-  "google-auth-library",
-  "jspdf",
-  "xlsx"
-];
-
 export default defineConfig({
   customLogger: logger,
   server: {
@@ -106,9 +96,6 @@ export default defineConfig({
     nitro({
       preset: process.env.VERCEL ? "vercel" : "node-server",
       sourcemap: false,
-      rollupConfig: {
-        external: serverExternalDeps,
-      },
     }),
     viteReact(),
     tsConfigPaths({
