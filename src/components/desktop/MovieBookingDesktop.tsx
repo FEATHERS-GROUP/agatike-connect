@@ -21,7 +21,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
 import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
@@ -381,7 +381,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           } else {
             for (const ticket of issuedTickets) {
               const fallbackPdf = generateFallbackReceipt({
-                entityName: movie?.title || "Event/Venue",
+                entityName: activeMovie?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,
                 customerName: ticket.attendee?.firstName || "Guest",
@@ -520,7 +520,16 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           </div>
           <Button
             variant="outline"
-            onClick={() => setIsPollingPawaPay(false)}
+            onClick={async () => {
+              setIsPollingPawaPay(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
+                }
+              }
+            }}
             className="rounded-2xl h-12 px-8"
           >
             Cancel Payment

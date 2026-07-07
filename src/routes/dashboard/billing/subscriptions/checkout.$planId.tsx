@@ -12,6 +12,7 @@ import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
   getExchangeRate,
+  cancelPendingPayment,
 } from "@/api/pawapay";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { COUNTRIES } from "@/lib/countries";
@@ -70,8 +71,8 @@ function CheckoutPage() {
 
   // Calculate pricing
   const [finalUSDPrice, setFinalUSDPrice] = useState(0);
-  const userCurrency = activeWorkspace?.currency || "RWF";
-  const [selectedCurrency, setSelectedCurrency] = useState(userCurrency);
+  const userCurrency = activeWorkspace?.currency || "USD";
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(userCurrency);
 
   // Available currencies
   const availableCurrencies = Array.from(new Set([userCurrency, "USD", "EUR"]));
@@ -488,26 +489,44 @@ function CheckoutPage() {
                       </p>
                     </div>
                   )}
-                  <Button
-                    onClick={handlePayment}
-                    disabled={
-                      isProcessing ||
-                      isFxLoading ||
-                      finalUSDPrice === 0 ||
-                      (paymentMethod === "pawapay" ? !phoneNumber || !mobileNetwork : !cardNumber)
-                    }
-                    className="w-full h-12 text-lg shadow-lg"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    {isProcessing || isPollingPawaPay ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />{" "}
-                        {isPollingPawaPay ? "Waiting for payment..." : "Processing..."}
-                      </>
-                    ) : (
-                      `Pay ${formatCurrency(getConvertedAmount(finalUSDPrice))}`
-                    )}
-                  </Button>
+                  {isPollingPawaPay ? (
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        setIsPollingPawaPay(false);
+                        if (pawapayDepositId) {
+                          try {
+                            await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                          } catch (e) {
+                            console.error("Cancel cleanup failed:", e);
+                          }
+                        }
+                      }}
+                      className="w-full h-12 text-lg"
+                    >
+                      Cancel Payment
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handlePayment}
+                      disabled={
+                        isProcessing ||
+                        isFxLoading ||
+                        finalUSDPrice === 0 ||
+                        (paymentMethod === "pawapay" ? !phoneNumber || !mobileNetwork : !cardNumber)
+                      }
+                      className="w-full h-12 text-lg shadow-lg"
+                      style={{ background: "var(--gradient-primary)" }}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
+                        </>
+                      ) : (
+                        `Pay ${formatCurrency(getConvertedAmount(finalUSDPrice))}`
+                      )}
+                    </Button>
+                  )}
                 </CardFooter>
               </>
             )}

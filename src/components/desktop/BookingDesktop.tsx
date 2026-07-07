@@ -12,7 +12,7 @@ import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
@@ -628,7 +628,16 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           </div>
           <Button
             variant="outline"
-            onClick={() => setIsPollingPawaPay(false)}
+            onClick={async () => {
+              setIsPollingPawaPay(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
+                }
+              }
+            }}
             className="rounded-2xl h-12 px-8"
           >
             Cancel Payment
