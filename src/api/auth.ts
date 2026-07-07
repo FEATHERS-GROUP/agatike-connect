@@ -5,6 +5,9 @@ import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
 import { hasuraRequest } from "./graphql.server";
 
+import { getApps, initializeApp, applicationDefault } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_AUTH_CLIENT_ID,
   process.env.GOOGLE_AUTH_SECRET,
@@ -56,8 +59,6 @@ export const loginOrganizer = createServerFn({ method: "POST" }).handler(async (
   });
 
   try {
-    const { getApps, initializeApp, applicationDefault } = await import("firebase-admin/app");
-    const { getFirestore } = await import("firebase-admin/firestore");
     if (getApps().length === 0) {
       initializeApp({ credential: applicationDefault() });
     }
@@ -740,8 +741,6 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
   });
 
   try {
-    const { getApps, initializeApp, applicationDefault } = await import("firebase-admin/app");
-    const { getFirestore } = await import("firebase-admin/firestore");
     if (getApps().length === 0) {
       initializeApp({ credential: applicationDefault() });
     }
