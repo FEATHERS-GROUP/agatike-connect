@@ -2,14 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
-import { OAuth2Client } from "google-auth-library";
 import { hasuraRequest } from "./graphql.server";
 
-const googleClient = new OAuth2Client(
-  process.env.GOOGLE_AUTH_CLIENT_ID,
-  process.env.GOOGLE_AUTH_SECRET,
-  "postmessage",
-);
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
@@ -607,6 +601,8 @@ export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(
 });
 
 export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { getGoogleClient } = await import("@/lib/auth.server");
+  const googleClient = getGoogleClient();
   const { code } = ctx.data as unknown as { code: string };
   const { tokens } = await googleClient.getToken(code);
   const ticket = await googleClient.verifyIdToken({
@@ -697,6 +693,8 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
 });
 
 export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { getGoogleClient } = await import("@/lib/auth.server");
+  const googleClient = getGoogleClient();
   const { code } = ctx.data as unknown as { code: string };
   const { tokens } = await googleClient.getToken(code);
   const ticket = await googleClient.verifyIdToken({
