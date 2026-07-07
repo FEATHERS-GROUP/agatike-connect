@@ -71,8 +71,8 @@ function CheckoutPage() {
 
   // Calculate pricing
   const [finalUSDPrice, setFinalUSDPrice] = useState(0);
-  const userCurrency = activeWorkspace?.currency || "USD";
-  const [selectedCurrency, setSelectedCurrency] = useState<string>(userCurrency);
+  const userCurrency = activeWorkspace?.currency;
+  const [selectedCurrency, setSelectedCurrency] = useState(userCurrency);
 
   // Available currencies
   const availableCurrencies = Array.from(new Set([userCurrency, "USD", "EUR"]));
@@ -543,7 +543,7 @@ function CheckoutPage() {
             </SelectTrigger>
             <SelectContent>
               {availableCurrencies.map((c) => (
-                <SelectItem key={c} value={c}>
+                <SelectItem key={c} value={c as any}>
                   {c}
                 </SelectItem>
               ))}
