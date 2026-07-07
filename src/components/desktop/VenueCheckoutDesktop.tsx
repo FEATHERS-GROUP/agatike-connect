@@ -18,7 +18,7 @@ import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createVenueBooking } from "@/api/venue_bookings";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
@@ -348,9 +348,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               const fallbackPdf = generateFallbackReceipt({
                 entityName: venue?.name || "Event/Venue",
                 ticket,
-                bookingRef: ticket.booking_ref || bookingRef,
+                bookingRef: ticket.booking_ref || ticket.otp || "",
                 customerName:
-                  customerName || (attendees && attendees[0] ? attendees[0].firstName : "Guest"),
+                  name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
               });
               attachments.push(fallbackPdf);
             }
@@ -436,7 +436,16 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           </div>
           <Button
             variant="outline"
-            onClick={() => setIsPollingPawaPay(false)}
+            onClick={async () => {
+              setIsPollingPawaPay(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
+                }
+              }
+            }}
             className="rounded-2xl h-12 px-8"
           >
             Cancel Payment

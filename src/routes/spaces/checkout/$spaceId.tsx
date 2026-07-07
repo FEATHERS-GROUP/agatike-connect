@@ -14,7 +14,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { Smartphone } from "lucide-react";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -951,9 +951,16 @@ function CheckoutPage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => {
+                      onClick={async () => {
               setIsPollingPawaPay(false);
               setIsProcessing(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
+                }
+              }
             }}
             className="rounded-2xl h-12 px-8"
           >
