@@ -40,7 +40,10 @@ const serverExternalDeps = [
   "firebase-admin",
   "firebase-admin/app",
   "firebase-admin/messaging",
-  "firebase-admin/firestore"
+  "firebase-admin/firestore",
+  "google-auth-library",
+  "jspdf",
+  "xlsx"
 ];
 
 export default defineConfig({
