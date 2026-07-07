@@ -2,22 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import type { MulticastMessage } from "firebase-admin/messaging";
 import { hasuraRequest } from "./graphql.server";
 
-import { initializeApp, applicationDefault, getApps } from "firebase-admin/app";
-import { getMessaging } from "firebase-admin/messaging";
-
 export const sendPushNotification = createServerFn({ method: "POST" })
   .validator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
   .handler(async (ctx) => {
-    // Initialize Firebase Admin (Only once)
-    if (getApps().length === 0) {
-      try {
-        initializeApp({
-          credential: applicationDefault(),
-        });
-      } catch (error) {
-        console.warn("Firebase Admin Initialization Warning:", error);
-      }
-    }
+    const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+    const { messaging } = getFirebaseAdmin();
 
     const { userIds, title, body, data } = ctx.data as any;
 
@@ -77,7 +66,7 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         },
       };
 
-      const response = await getMessaging().sendEachForMulticast(message);
+      const response = await messaging.sendEachForMulticast(message);
 
       // Clean up invalid tokens if needed
       const failedTokens: string[] = [];

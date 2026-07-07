@@ -2,17 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie, deleteCookie } from "@tanstack/react-start/server";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
-import { OAuth2Client } from "google-auth-library";
 import { hasuraRequest } from "./graphql.server";
 
-import { getApps, initializeApp, applicationDefault } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-
-const googleClient = new OAuth2Client(
-  process.env.GOOGLE_AUTH_CLIENT_ID,
-  process.env.GOOGLE_AUTH_SECRET,
-  "postmessage",
-);
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
@@ -59,10 +50,8 @@ export const loginOrganizer = createServerFn({ method: "POST" }).handler(async (
   });
 
   try {
-    if (getApps().length === 0) {
-      initializeApp({ credential: applicationDefault() });
-    }
-    const db = getFirestore();
+    const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+    const { db } = getFirebaseAdmin();
     await db
       .collection("organizer_sessions")
       .doc(organizer.id)
@@ -612,6 +601,8 @@ export const deactivateUserAccount = createServerFn({ method: "POST" }).handler(
 });
 
 export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { getGoogleClient } = await import("@/lib/auth.server");
+  const googleClient = getGoogleClient();
   const { code } = ctx.data as unknown as { code: string };
   const { tokens } = await googleClient.getToken(code);
   const ticket = await googleClient.verifyIdToken({
@@ -702,6 +693,8 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
 });
 
 export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { getGoogleClient } = await import("@/lib/auth.server");
+  const googleClient = getGoogleClient();
   const { code } = ctx.data as unknown as { code: string };
   const { tokens } = await googleClient.getToken(code);
   const ticket = await googleClient.verifyIdToken({
@@ -741,10 +734,8 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
   });
 
   try {
-    if (getApps().length === 0) {
-      initializeApp({ credential: applicationDefault() });
-    }
-    const db = getFirestore();
+    const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+    const { db } = getFirebaseAdmin();
     await db
       .collection("organizer_sessions")
       .doc(organizer.id)
