@@ -2,12 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import type { MulticastMessage } from "firebase-admin/messaging";
 import { hasuraRequest } from "./graphql.server";
 
+import { initializeApp, applicationDefault, getApps } from "firebase-admin/app";
+import { getMessaging } from "firebase-admin/messaging";
 
 export const sendPushNotification = createServerFn({ method: "POST" })
   .validator((d: { userIds: string[]; title: string; body: string; data?: any }) => d)
   .handler(async (ctx) => {
-    const { initializeApp, applicationDefault, getApps } = await import(/* @vite-ignore */ "firebase-admin/app");
-    const { getMessaging } = await import(/* @vite-ignore */ "firebase-admin/messaging");
 
     // Initialize Firebase Admin (Only once)
     if (getApps().length === 0) {
