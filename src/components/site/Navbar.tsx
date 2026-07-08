@@ -77,7 +77,7 @@ export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
               style={{ background: "var(--gradient-primary)" }}
             >
               <Plus className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline-block text-sm font-medium">Create event</span>
+              <span className="hidden sm:inline-block text-sm font-medium">Create & Host</span>
             </Button>
           </Link>
 

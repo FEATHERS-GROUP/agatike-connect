@@ -29,7 +29,7 @@ export function Footer() {
         </div>
         {[
           { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
-          { title: "Organizers", links: ["Create event", "Pricing", "Scanning", "Analytics"] },
+          { title: "Organizers", links: ["Create & Host", "Pricing", "Scanning", "Analytics"] },
           { title: "Legal", links: ["Terms", "Privacy", "Cookies", "Refunds"] },
         ].map((col) => (
           <div key={col.title}>
