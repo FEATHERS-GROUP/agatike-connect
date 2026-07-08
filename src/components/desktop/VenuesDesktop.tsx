@@ -104,6 +104,11 @@ export function VenuesDesktop() {
                   <div className="absolute top-4 right-4 bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold shadow-sm">
                     {venue.type}
                   </div>
+                  {venue.country && venue.source === "mock_venue" && (
+                    <div className="absolute bottom-4 left-4 bg-black/70 text-white rounded-full px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-sm">
+                      📍 {venue.country}
+                    </div>
+                  )}
                   {venue.status === "Maintenance" && (
                     <div className="absolute top-4 left-4 bg-orange-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-sm">
                       Maintenance
@@ -142,6 +147,13 @@ export function VenuesDesktop() {
                         className="rounded-xl px-6 bg-muted text-muted-foreground cursor-not-allowed border border-border"
                       >
                         Maintenance
+                      </Button>
+                    ) : venue.bookingDisabled ? (
+                      <Button
+                        disabled
+                        className="rounded-xl px-6 bg-muted text-muted-foreground cursor-not-allowed border border-border text-xs"
+                      >
+                        Coming Soon
                       </Button>
                     ) : venue.source === "space" ? (
                       <Link to="/spaces/$spaceId" params={{ spaceId: venue.id }}>

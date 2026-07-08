@@ -74,9 +74,10 @@ export function VenuesMobile() {
         ) : (
           filteredVenues.map((venue) => {
             const isMaintenance = venue.status === "Maintenance";
+            const isDisabled = isMaintenance || venue.bookingDisabled;
             const CardContent = (
               <div
-                className={`rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm ${isMaintenance ? "opacity-75" : ""}`}
+                className={`rounded-2xl border border-border/40 bg-card overflow-hidden shadow-sm ${isDisabled ? "opacity-75" : ""}`}
               >
                 <div className="aspect-[16/9] relative">
                   <img
@@ -90,6 +91,11 @@ export function VenuesMobile() {
                   {isMaintenance && (
                     <div className="absolute top-3 left-3 bg-orange-500 text-white rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm">
                       Maintenance
+                    </div>
+                  )}
+                  {venue.bookingDisabled && !isMaintenance && venue.country && (
+                    <div className="absolute bottom-3 left-3 bg-black/70 text-white rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-sm backdrop-blur-sm">
+                      📍 {venue.country}
                     </div>
                   )}
                 </div>
@@ -115,6 +121,10 @@ export function VenuesMobile() {
                       <div className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground border border-border">
                         Maintenance
                       </div>
+                    ) : venue.bookingDisabled ? (
+                      <div className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground border border-border">
+                        Coming Soon
+                      </div>
                     ) : (
                       <div
                         className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)]"
@@ -128,7 +138,7 @@ export function VenuesMobile() {
               </div>
             );
 
-            if (isMaintenance) {
+            if (isDisabled) {
               return (
                 <div key={venue.id} className="block cursor-not-allowed">
                   {CardContent}
