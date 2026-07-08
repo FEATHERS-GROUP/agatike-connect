@@ -17,6 +17,7 @@ import { Route as SubscriptionsRouteImport } from './routes/subscriptions'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ScanningRouteImport } from './routes/scanning'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -241,6 +242,11 @@ const SigninRoute = SigninRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanningRoute = ScanningRouteImport.update({
+  id: '/scanning',
+  path: '/scanning',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RefundsRoute = RefundsRouteImport.update({
@@ -1326,6 +1332,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refunds': typeof RefundsRoute
+  '/scanning': typeof ScanningRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -1521,6 +1528,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refunds': typeof RefundsRoute
+  '/scanning': typeof ScanningRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -1713,6 +1721,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/refunds': typeof RefundsRoute
+  '/scanning': typeof ScanningRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -1910,6 +1919,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/refunds'
+    | '/scanning'
     | '/settings'
     | '/signin'
     | '/signup'
@@ -2105,6 +2115,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/refunds'
+    | '/scanning'
     | '/settings'
     | '/signin'
     | '/signup'
@@ -2296,6 +2307,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/refunds'
+    | '/scanning'
     | '/settings'
     | '/signin'
     | '/signup'
@@ -2492,6 +2504,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   RefundsRoute: typeof RefundsRoute
+  ScanningRoute: typeof ScanningRoute
   SettingsRoute: typeof SettingsRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
@@ -2586,6 +2599,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scanning': {
+      id: '/scanning'
+      path: '/scanning'
+      fullPath: '/scanning'
+      preLoaderRoute: typeof ScanningRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/refunds': {
@@ -4364,6 +4384,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   RefundsRoute: RefundsRoute,
+  ScanningRoute: ScanningRoute,
   SettingsRoute: SettingsRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,

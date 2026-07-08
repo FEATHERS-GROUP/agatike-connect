@@ -87,3 +87,40 @@ export const deleteAdminLead = createServerFn({ method: "POST" })
     await hasuraRequest(query, ctx.data);
     return { success: true };
   });
+
+export const submitPublicContactLead = createServerFn({ method: "POST" })
+  .validator(
+    (d: {
+      name: string;
+      email: string;
+      subject: string;
+      message: string;
+    }) => d,
+  )
+  .handler(async (ctx) => {
+    const { name, email, subject, message } = ctx.data;
+
+    const mutation = `
+      mutation SubmitPublicLead($name: String!, $email: String!, $notes: String, $message: String) {
+        insert_leads_one(object: {
+          organizer_id: "00000000-0000-0000-0000-000000000000",
+          name: $name,
+          email: $email,
+          notes: $notes,
+          message: $message,
+          status: "new"
+        }) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest(mutation, {
+      name,
+      email,
+      notes: \`Subject: \${subject}\`,
+      message,
+    });
+
+    return { success: true };
+  });

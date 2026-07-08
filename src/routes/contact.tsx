@@ -5,6 +5,9 @@ import { Mail, MapPin, Send, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { submitPublicContactLead } from "@/api/admin_leads";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -16,6 +19,37 @@ export const Route = createFileRoute("/contact")({
 // Trigger router generation
 
 function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+
+  const { mutate: submitLead, isPending } = useMutation({
+    mutationFn: submitPublicContactLead,
+    onSuccess: () => {
+      alert("Thank you for contacting us! We will get back to you shortly.");
+      setFormData({ firstName: "", lastName: "", email: "", subject: "", message: "" });
+    },
+    onError: () => {
+      alert("Something went wrong. Please try again later.");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitLead({
+      data: {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+      },
+    } as any);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
@@ -87,12 +121,7 @@ function ContactPage() {
             <div className="md:col-span-3 bg-card p-8 md:p-10 rounded-3xl border border-border/60 shadow-[var(--shadow-card)]">
               <form
                 className="space-y-6"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  // Simple visual feedback since we don't have a backend endpoint specific for this yet
-                  alert("Thank you for contacting us! We will get back to you shortly.");
-                  (e.target as HTMLFormElement).reset();
-                }}
+                onSubmit={handleSubmit}
               >
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -101,6 +130,8 @@ function ContactPage() {
                       id="first-name"
                       required
                       placeholder="John"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       className="bg-background/50 rounded-xl"
                     />
                   </div>
@@ -110,6 +141,8 @@ function ContactPage() {
                       id="last-name"
                       required
                       placeholder="Doe"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                       className="bg-background/50 rounded-xl"
                     />
                   </div>
@@ -122,6 +155,8 @@ function ContactPage() {
                     type="email"
                     required
                     placeholder="john@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="bg-background/50 rounded-xl"
                   />
                 </div>
@@ -132,6 +167,8 @@ function ContactPage() {
                     id="subject"
                     required
                     placeholder="How can we help?"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     className="bg-background/50 rounded-xl"
                   />
                 </div>
@@ -143,16 +180,19 @@ function ContactPage() {
                     required
                     rows={5}
                     placeholder="Tell us more about your inquiry..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="flex w-full rounded-xl border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
 
                 <Button
                   type="submit"
+                  disabled={isPending}
                   className="w-full h-12 rounded-xl shadow-[var(--shadow-glow)] group"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  Send Message
+                  {isPending ? "Sending..." : "Send Message"}
                   <Send className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </form>
