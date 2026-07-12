@@ -217,7 +217,7 @@ function NotesPage() {
               await deleteMutation.mutateAsync(id);
             }
           }}
-          filterItem={(item, searchStr) => 
+          filterItem={(item: any, searchStr: string) => 
             (item.title?.toLowerCase().includes(searchStr.toLowerCase()) || 
              item.content?.toLowerCase().includes(searchStr.toLowerCase()))
           }

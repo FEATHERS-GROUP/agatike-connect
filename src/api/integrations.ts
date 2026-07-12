@@ -416,15 +416,65 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
     const { fileName, fileContentBase64, mimeType } = ctx.data;
     const accessToken = await getValidGoogleToken(organizerId, "drive");
 
+    const organizer = await getOrganizer(organizerId);
+    const exportFolderKey = organizer?.integrations?.drive?.settings?.exportFolder || "root";
+
+    let parentFolderId = "root";
+    if (exportFolderKey !== "root") {
+      let folderName = exportFolderKey;
+      if (exportFolderKey === "agatike-exports") folderName = "Agatike Exports";
+      else if (exportFolderKey === "agatike-events") folderName = "Agatike Events";
+
+      const query = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and trashed=false`;
+      const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`;
+      
+      const searchRes = await fetch(searchUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      
+      let foundId = null;
+      if (searchRes.ok) {
+        const data = await searchRes.json();
+        if (data.files && data.files.length > 0) {
+          foundId = data.files[0].id;
+        }
+      }
+
+      if (foundId) {
+        parentFolderId = foundId;
+      } else {
+        const createRes = await fetch("https://www.googleapis.com/drive/v3/files", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: folderName,
+            mimeType: "application/vnd.google-apps.folder",
+            parents: ["root"]
+          })
+        });
+
+        if (createRes.ok) {
+          const createData = await createRes.json();
+          parentFolderId = createData.id;
+        }
+      }
+    }
+
     // Prepare multipart upload body
     const boundary = "-------314159265358979323846";
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
 
-    const metadata = {
+    const metadata: any = {
       name: fileName,
       mimeType: mimeType
     };
+    if (parentFolderId && parentFolderId !== "root") {
+      metadata.parents = [parentFolderId];
+    }
 
     const multipartRequestBody =
       delimiter +

@@ -2092,6 +2092,31 @@ flowchart TD
 
 ---
 
+## 28. Google Workspace Integrations
+
+The system allows organizers to connect their workspace to Google Drive and Google Calendar via OAuth2 to automate event management workflows.
+
+### 28.1 OAuth2 Flow & Token Management
+
+- **Authentication:** The `SettingsIntegrationsTab` uses `@react-oauth/google` with popup flow to authenticate users without leaving the dashboard.
+- **Storage:** Access tokens, refresh tokens, and expiration dates are securely stored in the Hasura database under the `organizers.integrations` JSONB column.
+- **Token Refreshing:** The system includes a utility function (`getValidGoogleToken` in `src/api/integrations.ts`) that checks the token's expiration date before any API request. If the token is within 5 minutes of expiration, it automatically uses the refresh token to get a new access token and updates the database, ensuring seamless background operations.
+
+### 28.2 Google Drive Integration
+
+Organizers can export generated documents (like Procurement Invoices or Attendee Lists) directly to their Google Drive.
+
+- **Automated Folder Management:** Users can define a default export folder in their settings (e.g., "Agatike Exports"). When an export is triggered via `exportToGoogleDrive`, the system searches the user's Drive for this folder. If it doesn't exist, it creates the folder automatically before uploading the file.
+- **File Uploading:** Uses multipart/related HTTP uploads to send both file metadata and the base64-encoded file content directly to the Google Drive API.
+
+### 28.3 Google Calendar Integration
+
+Organizers can automatically sync event schedules with their primary Google Calendar.
+
+- **Event Syncing:** When `syncEventToGoogleCalendar` is invoked, it pushes the event's summary, description, start time, end time, and location directly to the user's primary calendar.
+
+---
+
 ## 19. Architecture & Vercel Deployment Rules
 
 To guarantee successful builds on Vercel (avoiding `SIGKILL` memory exhaustion and `ERR_MODULE_NOT_FOUND` runtime errors), the following strict architectural patterns **MUST** be adhered to:
