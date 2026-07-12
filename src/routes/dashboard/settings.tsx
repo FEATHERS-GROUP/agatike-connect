@@ -1,64 +1,45 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getOrganizerProfile, updateOrganizerProfile, changeOrganizerPassword } from "@/api/organizers";
+import { disableDatabaseWorkspace } from "@/api/workspaces";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { getWorkspaceWallet, getWalletTransactions } from "@/api/wallet";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { formatDistanceToNow } from "date-fns";
+import { WorkspaceWizard } from "@/components/dashboard/workspaces/WorkspaceWizard";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "@tanstack/react-router";
 import {
-  getOrganizerProfile,
-  updateOrganizerProfile,
-  changeOrganizerPassword,
-} from "@/api/organizers";
-import {
-  ArrowLeft,
-  Save,
+  MoreHorizontal,
+  Phone,
+  Mail,
+  MapPin,
+  Building2,
+  Calendar,
+  CreditCard,
   User,
-  Link as LinkIcon,
   Instagram,
   Twitter,
   Youtube,
-  Building2,
-  LayoutList,
-  Heart,
-  MessageSquare,
-  Send,
-  Pencil,
-  Share,
-  Trash2,
-  MapPin,
-  Tag,
-  AlertTriangle,
-  Upload,
   Lock,
+  Camera,
+  Globe,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
-import { updateDatabaseWorkspace, disableDatabaseWorkspace } from "@/api/workspaces";
-import { useWorkspace } from "@/contexts/WorkspaceContext";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { StoryViewer } from "@/components/site/StoryViewer";
-import { usePlatformModules } from "@/hooks/usePlatformModules";
-
-// Stubbed mock data
-const defaultStories: any[] = [];
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/dashboard/settings")({
-  head: () => ({
-    meta: [
-      { title: "Organizer Profile — Agatike Dashboard" },
-      { name: "description", content: "Manage your organizer profile settings." },
-    ],
-  }),
-  component: OrganizerSettings,
+  component: SettingsPage,
 });
 
 const formSchema = z.object({
@@ -71,882 +52,576 @@ const formSchema = z.object({
   twitter: z.string().optional(),
   youtube: z.string().optional(),
 });
-
 type FormValues = z.infer<typeof formSchema>;
 
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(6, "New password must be at least 6 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
-function OrganizerSettings() {
+const CATEGORIES = [
+  { id: "bottts", label: "Robots" }, { id: "shapes", label: "Shapes" },
+  { id: "identicon", label: "Patterns" }, { id: "adventurer", label: "Characters" },
+  { id: "fun-emoji", label: "Emojis" }, { id: "micah", label: "Stylized" },
+];
+
+const generateAvatars = (category: string) => {
+  const bg = ["b6e3f4", "c0aede", "ffdfbf", "ffd5dc", "d1d4f9"];
+  return Array.from({ length: 12 }).map(() => {
+    const color = bg[Math.floor(Math.random() * bg.length)];
+    const seed = Math.random().toString(36).substring(7);
+    return `https://api.dicebear.com/7.x/${category}/svg?seed=${seed}&backgroundColor=${color}`;
+  });
+};
+
+function EditableInput({ icon: Icon, ...props }: any) {
+  return (
+    <div className="flex items-start gap-3 group">
+      {Icon && <Icon className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />}
+      <div className="flex-1">
+        <input
+          {...props}
+          className={`w-full bg-transparent border border-transparent hover:bg-muted focus:bg-background focus:border-input focus:ring-2 focus:ring-ring px-2 py-1.5 -ml-2 rounded-md transition-all text-sm text-foreground font-medium placeholder:text-muted-foreground focus:outline-none ${props.className || ""}`}
+        />
+        {props.error && <p className="text-[10px] text-destructive ml-1">{props.error}</p>}
+      </div>
+    </div>
+  );
+}
+
+function SettingsPage() {
   const navigate = useNavigate();
+  const { workspaces, activeWorkspace } = useWorkspace();
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showAllActivities, setShowAllActivities] = useState(false);
+  const [showAllEarnings, setShowAllEarnings] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
-  const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"posts" | "workspaces">("posts");
-  const [activePost, setActivePost] = useState<any>(null);
-  const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "social" | "security">("overview");
   const [avatar, setAvatar] = useState("");
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("bottts");
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const CATEGORIES = [
-    { id: "bottts", label: "Robots" },
-    { id: "shapes", label: "Shapes" },
-    { id: "identicon", label: "Patterns" },
-    { id: "adventurer", label: "Characters" },
-    { id: "fun-emoji", label: "Emojis" },
-    { id: "micah", label: "Stylized" },
-    { id: "avataaars", label: "People" },
-    { id: "big-smile", label: "Smiles" },
-    { id: "lorelei", label: "Cute" },
-    { id: "pixel-art", label: "8-Bit" },
-    { id: "initials", label: "Initials" },
-    { id: "rings", label: "Rings" },
-  ];
-
-  const generateAvatarsForCategory = (category: string) => {
-    const BACKGROUND_COLORS = [
-      "b6e3f4",
-      "c0aede",
-      "ffdfbf",
-      "ffd5dc",
-      "d1d4f9",
-      "c0aede",
-      "b6e3f4",
-      "ffdfbf",
-    ];
-    return Array.from({ length: 12 }).map(() => {
-      const bg = BACKGROUND_COLORS[Math.floor(Math.random() * BACKGROUND_COLORS.length)];
-      const seed = Math.random().toString(36).substring(7);
-      return `https://api.dicebear.com/7.x/${category}/svg?seed=${seed}&backgroundColor=${bg}`;
-    });
-  };
-
-  useEffect(() => {
-    if (isAvatarModalOpen) {
-      setAvatarOptions(generateAvatarsForCategory(activeCategory));
-    }
-  }, [activeCategory, isAvatarModalOpen]);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result as string);
-        // Optionally close modal immediately when they upload their own photo
-        setIsAvatarModalOpen(false);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const [editingWorkspace, setEditingWorkspace] = useState<any>(null);
-  const [disableConfirmWorkspace, setDisableConfirmWorkspace] = useState<any>(null);
+  const [activeCategory, setActiveCategory] = useState("identicon");
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["organizerProfile"],
     queryFn: async () => await getOrganizerProfile(),
   });
 
-  const { data: platformModules = [] } = usePlatformModules();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-    setValue,
-  } = useForm<FormValues>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { isDirty, errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      handle: "",
-      email: "",
-      phone: "",
-      bio: "",
-      instagram: "",
-      twitter: "",
-      youtube: "",
-    },
   });
 
-  const passwordForm = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
-
-  const nameValue = watch("name");
-  useEffect(() => {
-    if (nameValue !== undefined) {
-      const computedHandle = nameValue.toLowerCase().replace(/[^a-z0-9]/g, "");
-      setValue("handle", computedHandle, { shouldValidate: true });
-    }
-  }, [nameValue, setValue]);
+  const passwordForm = useForm<PasswordFormValues>({ resolver: zodResolver(passwordSchema) });
 
   useEffect(() => {
     if (profile) {
       reset({
-        name: profile.name || "",
-        handle: profile.handle || "",
-        email: profile.email || "",
-        phone: profile.phone || "",
-        bio: profile.bio || "",
-        instagram: profile.socials?.instagram || "",
-        twitter: profile.socials?.twitter || "",
-        youtube: profile.socials?.youtube || "",
+        name: profile.name || "", handle: profile.handle || "",
+        email: profile.email || "", phone: profile.phone || "",
+        bio: profile.bio || "", instagram: profile.socials?.instagram || "",
+        twitter: profile.socials?.twitter || "", youtube: profile.socials?.youtube || "",
       });
-      // Use real image if available, else dicebear
-      if (profile.image) {
-        setAvatar(profile.image);
-      } else {
-        setAvatar(
-          `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
-        );
-      }
+      setAvatar(profile.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`);
     }
   }, [profile, reset]);
+
+  useEffect(() => {
+    if (isAvatarModalOpen) setAvatarOptions(generateAvatars(activeCategory));
+  }, [activeCategory, isAvatarModalOpen]);
+
+  const nameValue = watch("name");
+  useEffect(() => {
+    if (nameValue && !isDirty) {
+      setValue("handle", nameValue.toLowerCase().replace(/[^a-z0-9]/g, ""), { shouldValidate: true });
+    }
+  }, [nameValue, setValue, isDirty]);
+
+  useEffect(() => {
+    if (!activeWorkspace?.orgnizer_id) return;
+
+    const q = query(
+      collection(db, "agatike_notifications"),
+      where("organizerId", "==", activeWorkspace.orgnizer_id),
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifs = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((n: any) => n.actorId !== activeWorkspace.orgnizer_id);
+
+      notifs.sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      setNotifications(notifs.slice(0, 20)); // Keep latest 20
+    });
+
+    return () => unsubscribe();
+  }, [activeWorkspace?.orgnizer_id]);
+
+  const { data: transactions } = useQuery({
+    queryKey: ["platform-earnings", activeWorkspace?.id],
+    queryFn: async () => {
+      if (!activeWorkspace?.id) return [];
+      const wallet = await getWorkspaceWallet({ data: { workspace_id: activeWorkspace.id } } as any);
+      if (!wallet || !wallet.id) return [];
+      const txs = await getWalletTransactions({ data: { wallet_id: wallet.id } } as any);
+      return txs.slice(0, 20);
+    },
+    enabled: !!activeWorkspace?.id,
+  });
 
   const updateMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const { instagram, twitter, youtube, ...core } = values;
       return await updateOrganizerProfile({
-        data: {
-          ...core,
-          image: avatar,
-          socials: { instagram, twitter, youtube },
-        } as any,
+        data: { ...core, image: avatar, socials: { instagram, twitter, youtube } } as any,
       });
     },
     onSuccess: () => {
       toast.success("Profile updated successfully!");
-      setIsEditing(false);
       queryClient.invalidateQueries({ queryKey: ["organizerProfile"] });
     },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update profile.");
-    },
+    onError: (err) => toast.error(err.message || "Failed to update profile"),
   });
 
   const changePasswordMutation = useMutation({
     mutationFn: async (values: PasswordFormValues) => {
       return await changeOrganizerPassword({
-        data: {
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-        } as any,
+        data: { currentPassword: values.currentPassword, newPassword: values.newPassword } as any,
       });
     },
     onSuccess: () => {
-      toast.success("Password changed successfully!");
+      toast.success("Password changed!");
       passwordForm.reset();
     },
-    onError: (error) => {
-      toast.error(
-        error.message || "Failed to change password. Please check your current password.",
-      );
-    },
+    onError: (err) => toast.error(err.message || "Failed to change password"),
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  const disableWorkspaceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await disableDatabaseWorkspace({ data: { id } } as any);
+    },
+    onSuccess: () => {
+      toast.success("Workspace disabled.");
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    },
+    onError: (err) => toast.error(err.message || "Failed to disable workspace"),
+  });
 
-  // --- MOCK DATA ---
-  const mockHighlights = defaultStories.slice(0, 5);
-  const mockPosts = Array.from({ length: 5 }).map((_, i) => ({
-    id: `post-${i}`,
-    title: `Event Announcement ${i + 1}`,
-    description:
-      "Get ready for the biggest event of the year! We are bringing the heat with amazing performances and unbeatable vibes. Tickets dropping soon!",
-    image: `https://picsum.photos/seed/${i + 200}/600/400`,
-    likes: Math.floor(Math.random() * 1000) + 120,
-    comments: Math.floor(Math.random() * 50) + 5,
-    date: "2 days ago",
-  }));
+  const handleSaveAll = () => {
+    if (activeTab === "security") passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))();
+    else handleSubmit((d) => updateMutation.mutate(d))();
+  };
 
-  const mockComments = [
-    { id: 1, user: "johndoe", text: "Can't wait for this! 🔥" },
-    { id: 2, user: "sarah_m", text: "Are VIP tickets available yet?" },
-    { id: 3, user: "kigali_vibes", text: "This is going to be epic!" },
-    { id: 4, user: "alex.b", text: "Who is the surprise guest???" },
-  ];
+  if (isLoading) return <div className="p-8 text-sm text-muted-foreground">Loading profile...</div>;
+
+  const isSaving = updateMutation.isPending || changePasswordMutation.isPending;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-md border-b border-border/40">
-        <div className="mx-auto max-w-4xl px-4 md:px-8 h-16 flex items-center justify-between">
+      <div className="px-6 md:px-10 py-6 max-w-[1400px] mx-auto">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={() => {
-                if (isEditing) setIsEditing(false);
-                else navigate({ to: "/dashboard/workspaces" });
-              }}
-            >
+            <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={() => window.history.back()}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex flex-col">
-              <h1
-                className={`text-xl font-bold transition-colors duration-300 ${!isEditing && scrolled ? "text-orange-500" : ""}`}
-              >
-                {isEditing ? "Edit Profile" : profile?.handle || "Profile"}
-              </h1>
-              {!isEditing && scrolled && (
-                <span className="text-xs text-muted-foreground animate-in fade-in slide-in-from-top-1 duration-300">
-                  {profile?.followers || 0} followers
-                </span>
-              )}
+            <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
+          </div>
+          <button
+            onClick={handleSaveAll}
+            disabled={isSaving}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shrink-0"
+          >
+            {isSaving ? "Saving..." : "+ Save Changes"}
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-8 border-b border-border">
+          {[
+            { id: "overview", label: "Overview" },
+            { id: "social", label: "Social Links" },
+            { id: "security", label: "Security" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`pb-3 text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col md:flex-row mt-8">
+          {/* Left Column */}
+          <div className="w-full md:w-[320px] md:pr-8 md:border-r border-border flex-shrink-0">
+            {/* Identity Card */}
+            <div className="flex items-start justify-between mb-8 group">
+              <div className="flex items-center gap-4">
+                <div 
+                  className="relative h-[72px] w-[72px] rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-border"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                >
+                  <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <input
+                    {...register("name")}
+                    className="font-bold text-lg text-foreground bg-transparent border-transparent hover:border-border focus:border-input focus:bg-muted px-1 py-0.5 -ml-1 rounded w-full outline-none transition-colors"
+                    placeholder="Organizer Name"
+                  />
+                  <div className="flex items-center text-sm text-muted-foreground font-medium px-1 mt-0.5">
+                    #<input
+                      {...register("handle")}
+                      className="bg-transparent border-transparent hover:border-border focus:border-input focus:bg-muted rounded outline-none w-[120px] transition-colors"
+                      placeholder="handle"
+                    />
+                  </div>
+                </div>
+              </div>
+              <button className="text-muted-foreground hover:text-foreground p-1">
+                <MoreHorizontal className="h-5 w-5" />
+              </button>
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* About / Contact */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-[15px] mb-4">Contact</h3>
+              <div className="space-y-1">
+                <EditableInput
+                  icon={Phone}
+                  {...register("phone")}
+                  placeholder="Add phone number"
+                  error={errors.phone?.message}
+                />
+                <EditableInput
+                  icon={Mail}
+                  {...register("email")}
+                  placeholder="Add email address"
+                  error={errors.email?.message}
+                />
+              </div>
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* Address / Bio */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-[15px] mb-4">About</h3>
+              <div className="flex items-start gap-3">
+                <User className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />
+                <textarea
+                  {...register("bio")}
+                  placeholder="Write a short bio..."
+                  className="w-full bg-transparent border border-transparent hover:bg-muted focus:bg-background focus:border-input focus:ring-2 focus:ring-ring px-2 py-1.5 -ml-2 rounded-md transition-all text-sm text-foreground font-medium placeholder:text-muted-foreground focus:outline-none min-h-[100px] resize-none"
+                />
+              </div>
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* Platform Stats (mimicking Employee details) */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-[15px] mb-4">Platform Details</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground w-24">Joined:</span>
+                  <span className="font-medium text-foreground">Jan 05, 2023</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground w-24">Status:</span>
+                  <span className="font-medium text-foreground">Verified Partner</span>
+                </div>
+              </div>
             </div>
           </div>
-          {isEditing && (
-            <Button
-              onClick={handleSubmit((d) => updateMutation.mutate(d))}
-              disabled={updateMutation.isPending}
-              className="rounded-full gap-2"
-            >
-              {updateMutation.isPending ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save className="h-4 w-4" /> Save
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </header>
 
-      <main className="mx-auto max-w-4xl px-4 md:px-8 py-8">
-        {!isEditing ? (
-          /* =========================================
-             VIEW MODE
-             ========================================= */
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Top Stats Section */}
-            <div className="flex items-center gap-6 md:gap-10">
-              <div className="relative shrink-0">
-                <div className="h-20 w-20 md:h-28 md:w-28 rounded-full overflow-hidden border border-border/40 bg-secondary">
-                  {avatar && (
-                    <img src={avatar} alt={profile?.name} className="w-full h-full object-cover" />
-                  )}
-                </div>
-              </div>
-              <div className="flex-1 flex items-center justify-around md:justify-start md:gap-10">
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-lg md:text-xl">
-                    {profile?.numberOfEvents || 0}
-                  </span>
-                  <span className="text-xs md:text-sm text-muted-foreground">Posts</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-lg md:text-xl">{profile?.followers || 0}</span>
-                  <span className="text-xs md:text-sm text-muted-foreground">Followers</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Bio Section */}
-            <div className="space-y-2">
-              <div className="flex flex-col gap-0.5">
-                <h2 className="font-bold text-base md:text-lg">{profile?.name}</h2>
-                {profile?.handle && (
-                  <p className="text-sm font-medium text-primary">@{profile.handle}</p>
-                )}
-              </div>
-              <p className="text-sm whitespace-pre-wrap leading-relaxed max-w-lg">
-                {profile?.bio || "No bio added yet. Click Edit Profile to add one!"}
-              </p>
-
-              {/* Social Links rendering */}
-              {profile?.socials && Object.values(profile.socials).some((val) => val) && (
-                <div className="flex items-center gap-3 pt-1">
-                  {profile.socials.instagram && (
-                    <a
-                      href={profile.socials.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
-                    >
-                      <Instagram className="h-4 w-4" /> Instagram
-                    </a>
-                  )}
-                  {profile.socials.twitter && (
-                    <a
-                      href={profile.socials.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
-                    >
-                      <Twitter className="h-4 w-4" /> Twitter
-                    </a>
-                  )}
-                  {profile.socials.youtube && (
-                    <a
-                      href={profile.socials.youtube}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium"
-                    >
-                      <Youtube className="h-4 w-4" /> YouTube
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                className="flex-1 font-semibold rounded-xl h-10 bg-orange-500 hover:bg-orange-600 text-white border-transparent shadow-sm gap-2"
-                onClick={() => setIsEditing(true)}
-              >
-                <Pencil className="h-4 w-4" /> Edit Profile
-              </Button>
-              <Button
-                variant="default"
-                className="flex-1 font-semibold rounded-xl h-10 bg-orange-500 hover:bg-orange-600 text-white border-transparent shadow-sm gap-2"
-              >
-                <Share className="h-4 w-4" /> Share Profile
-              </Button>
-            </div>
-
-            {/* Highlights Section */}
-            <div className="pt-4">
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
-                {mockHighlights.map((highlight, index) => (
-                  <div
-                    key={highlight.id}
-                    className="flex shrink-0 flex-col items-center gap-2 cursor-pointer"
-                    onClick={() => setActiveStoryIndex(index)}
-                  >
-                    <div className="rounded-full overflow-hidden border border-border/40">
-                      <img
-                        src={highlight.avatar}
-                        alt={highlight.name}
-                        className="h-16 w-16 md:h-20 md:w-20 object-cover"
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-foreground">{highlight.name}</span>
+          {/* Right Column */}
+          <div className="flex-1 md:pl-10 pb-20">
+            {activeTab === "overview" && (
+              <div className="animate-in fade-in duration-500">
+                {/* Workspaces Table */}
+                <div className="mb-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-[17px] font-bold">Workspaces</h2>
+                    <button onClick={() => setIsWizardOpen(true)} className="text-[#D93F3C] font-semibold text-sm hover:text-red-700 transition-colors">
+                      + Create Workspace
+                    </button>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-border/40 mt-4">
-              <button
-                onClick={() => setActiveTab("posts")}
-                className={`flex-1 flex justify-center py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "posts" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-              >
-                <LayoutList className="h-5 w-5 mr-2" /> Updates
-              </button>
-              <button
-                onClick={() => setActiveTab("workspaces")}
-                className={`flex-1 flex justify-center py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === "workspaces" ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-              >
-                <Building2 className="h-5 w-5 mr-2" /> Workspaces
-              </button>
-            </div>
-
-            {/* Tab Content */}
-            {activeTab === "posts" && (
-              <div className="space-y-6 pt-2">
-                {mockPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex flex-col bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden cursor-pointer hover:border-primary/50 transition-colors"
-                    onClick={() => setActivePost(post)}
-                  >
-                    <div className="p-4 flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full overflow-hidden border border-border/40 shrink-0">
-                        <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-bold text-sm leading-tight">
-                          {profile?.name || "Organizer"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{post.date}</p>
-                      </div>
-                    </div>
-
-                    <div className="px-4 pb-2">
-                      <p className="text-sm line-clamp-2">{post.description}</p>
-                    </div>
-
-                    <div className="w-full aspect-video bg-muted relative">
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-
-                    <div className="p-4 flex items-center gap-6">
-                      <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Heart className="h-5 w-5" />{" "}
-                        <span className="text-sm font-medium">{post.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <MessageSquare className="h-5 w-5" />{" "}
-                        <span className="text-sm font-medium">{post.comments}</span>
-                      </div>
-                    </div>
+                  
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead>
+                        <tr className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase border-b border-border">
+                          <th className="pb-3 font-medium">NAME</th>
+                          <th className="pb-3 font-medium">TYPE</th>
+                          <th className="pb-3 font-medium">OWNER</th>
+                          <th className="pb-3 font-medium">CREATED</th>
+                          <th className="pb-3 font-medium">LOCATION</th>
+                          <th className="pb-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60">
+                        {workspaces.map((w, i) => (
+                          <tr key={i} className="group hover:bg-muted/50 transition-colors">
+                            <td className="py-4 font-medium text-foreground pr-4 flex items-center gap-2">
+                              {w.logo ? <img src={w.logo} alt="" className="h-6 w-6 rounded-md object-cover" /> : <div className="h-6 w-6 rounded-md bg-muted flex items-center justify-center text-xs">{w.icon}</div>}
+                              {w.name}
+                            </td>
+                            <td className="py-4 text-muted-foreground font-medium pr-4">{w.type}</td>
+                            <td className="py-4 text-muted-foreground font-medium pr-4">{w.city || "Not specified"}</td>
+                            <td className="py-4 text-muted-foreground font-medium pr-4">{w.created_at ? new Date(w.created_at).toLocaleDateString() : "Unknown"}</td>
+                            <td className="py-4 text-muted-foreground font-medium pr-4">{w.country || "Not specified"}</td>
+                            <td className="py-4 text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => navigate({ to: `/dashboard/${w.slug}` as any })}>
+                                    Open Workspace
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => disableWorkspaceMutation.mutate(w.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    Disable Workspace
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
 
-            {activeTab === "workspaces" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                {workspaces.length === 0 ? (
-                  <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed border-border/60 rounded-2xl">
-                    No workspaces created yet.
-                  </div>
-                ) : (
-                  workspaces.map((w) => {
-                    return (
-                      <div
-                        key={w.id}
-                        className="flex flex-col rounded-3xl border bg-card p-5 shadow-sm transition-all border-border/60 hover:border-primary/50 relative group"
-                      >
-                        <div className="flex items-start gap-4 mb-4 pr-20">
-                          <div className="grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden bg-secondary text-secondary-foreground">
-                            {w.icon?.startsWith("http") || w.icon?.startsWith("data:") ? (
-                              <img src={w.icon} alt="Logo" className="w-full h-full object-cover" />
-                            ) : (
-                              w.icon || <Building2 className="h-5 w-5" />
-                            )}
+                {/* Bottom Split Section */}
+                <div className="grid md:grid-cols-2 gap-12 mt-12">
+                  {/* Activity */}
+                  <div>
+                    <h2 className="text-[17px] font-bold mb-6">Recent Activity</h2>
+                    <div className="space-y-6">
+                      {notifications.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No recent activity.</p>
+                      ) : (showAllActivities ? notifications : notifications.slice(0, 5)).map((item, i) => (
+                        <div key={i} className="flex gap-4">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 bg-primary/10 text-primary`}>
+                            {item.title?.charAt(0) || "N"}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="font-bold text-base truncate">{w.name}</p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
-                              <Tag className="h-3 w-3 shrink-0" /> {w.type || "General Workspace"}
+                          <div>
+                            <p className="text-[13px] text-foreground font-semibold line-clamp-1">
+                              {item.title || "Notification"} <span className="text-muted-foreground font-normal">{item.content}</span>
                             </p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
-                              <MapPin className="h-3 w-3 shrink-0" /> {w.city}
-                              {w.country ? `, ${w.country}` : ""}
+                            <p className="text-[12px] text-muted-foreground mt-0.5">
+                              {item.createdAt ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true }) : "Just now"}
                             </p>
                           </div>
                         </div>
+                      ))}
+                    </div>
+                    {notifications.length > 5 && (
+                      <button 
+                        onClick={() => setShowAllActivities(!showAllActivities)} 
+                        className="text-[#D93F3C] font-semibold text-sm hover:text-red-700 transition-colors mt-6"
+                      >
+                        {showAllActivities ? "Show less" : "View all"}
+                      </button>
+                    )}
+                  </div>
 
-                        {w.address && (
-                          <div className="text-sm bg-secondary/30 p-3 rounded-xl border border-border/40 mt-auto">
-                            <p className="font-medium mb-1">Address Details</p>
-                            <p className="text-xs text-muted-foreground">{w.address}</p>
-                          </div>
+                  {/* Compensation / Platform Stats */}
+                  <div>
+                    <h2 className="text-[17px] font-bold mb-6">Platform Earnings</h2>
+                    <div className="space-y-6">
+                      {!transactions || transactions.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No recent transactions.</p>
+                      ) : (showAllEarnings ? transactions : transactions.slice(0, 5)).map((item: any, i: number) => (
+                        <div key={i} className="border-b border-border pb-4 last:border-0 last:pb-0">
+                          <p className="text-[14px] text-foreground font-bold">
+                            {item.amount || 0} {item.currency || "RWF"} <span className="font-medium text-muted-foreground">{item.transaction_type === "withdrawal" ? "Withdrawn" : "Earned"}</span>
+                          </p>
+                          <p className="text-[12px] text-muted-foreground mt-1">
+                            {item.description || "Platform transaction"} on <span className="font-medium text-muted-foreground">{new Date(item.created_at).toLocaleDateString()}</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    {transactions && transactions.length > 5 && (
+                      <button 
+                        onClick={() => setShowAllEarnings(!showAllEarnings)} 
+                        className="text-[#D93F3C] font-semibold text-sm hover:text-red-700 transition-colors mt-6"
+                      >
+                        {showAllEarnings ? "Show less" : "View all"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "social" && (
+              <div className="animate-in fade-in duration-500 max-w-2xl">
+                <div className="mb-10">
+                  <h2 className="text-[17px] font-bold mb-6">Social Links</h2>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Instagram className="h-4 w-4 text-pink-500" /> Instagram Profile
+                      </Label>
+                      <Input
+                        {...register("instagram")}
+                        placeholder="https://instagram.com/yourhandle"
+                        className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Twitter className="h-4 w-4 text-blue-400" /> Twitter Profile
+                      </Label>
+                      <Input
+                        {...register("twitter")}
+                        placeholder="https://twitter.com/yourhandle"
+                        className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <Youtube className="h-4 w-4 text-red-500" /> YouTube Channel
+                      </Label>
+                      <Input
+                        {...register("youtube")}
+                        placeholder="https://youtube.com/c/yourchannel"
+                        className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "security" && (
+              <div className="animate-in fade-in duration-500 max-w-2xl">
+                <div className="mb-10">
+                  <h2 className="text-[17px] font-bold mb-6">Change Password</h2>
+                  <div className="space-y-6">
+                    <div className="space-y-2 max-w-md">
+                      <Label className="text-sm font-semibold text-foreground">Current Password</Label>
+                      <Input
+                        {...passwordForm.register("currentPassword")}
+                        type="password"
+                        className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
+                      />
+                      {passwordForm.formState.errors.currentPassword && (
+                        <p className="text-xs text-destructive">{passwordForm.formState.errors.currentPassword.message}</p>
+                      )}
+                    </div>
+                    <Separator className="max-w-md" />
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-foreground">New Password</Label>
+                        <Input
+                          {...passwordForm.register("newPassword")}
+                          type="password"
+                          className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
+                        />
+                        {passwordForm.formState.errors.newPassword && (
+                          <p className="text-xs text-destructive">{passwordForm.formState.errors.newPassword.message}</p>
                         )}
                       </div>
-                    );
-                  })
-                )}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-foreground">Confirm Password</Label>
+                        <Input
+                          {...passwordForm.register("confirmPassword")}
+                          type="password"
+                          className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
+                        />
+                        {passwordForm.formState.errors.confirmPassword && (
+                          <p className="text-xs text-destructive">{passwordForm.formState.errors.confirmPassword.message}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        ) : (
-          /* =========================================
-             EDIT MODE 
-             ========================================= */
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 shadow-sm">
-              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" /> Core Information
-              </h2>
+        </div>
+      </div>
 
-              <div className="flex-1 w-full space-y-4">
-                <div className="flex justify-center mb-8">
-                  <div
-                    className="relative group cursor-pointer"
-                    onClick={() => setIsAvatarModalOpen(true)}
-                  >
-                    <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-primary bg-secondary">
-                      {avatar && (
-                        <img src={avatar} alt="Profile" className="h-full w-full object-cover" />
-                      )}
-                    </div>
-                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Pencil className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Organizer Name</Label>
-                    <Input
-                      {...register("name")}
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    />
-                    {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Handle / Username</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">
-                        @
-                      </span>
-                      <Input
-                        {...register("handle")}
-                        disabled
-                        className="pl-7 rounded-xl bg-secondary/50 border-transparent focus:border-primary font-mono text-sm opacity-70 cursor-not-allowed"
-                      />
-                    </div>
-                    {errors.handle && (
-                      <p className="text-xs text-red-500">{errors.handle.message}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      {...register("email")}
-                      type="email"
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number</Label>
-                    <Input
-                      {...register("phone")}
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Bio / Description</Label>
-                  <Textarea
-                    {...register("bio")}
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary min-h-[100px]"
-                    placeholder="Tell your audience about your brand..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 shadow-sm">
-              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <LinkIcon className="h-5 w-5 text-primary" /> Social Links
-              </h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Instagram URL</Label>
-                  <Input
-                    {...register("instagram")}
-                    placeholder="https://instagram.com/..."
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Twitter / X URL</Label>
-                  <Input
-                    {...register("twitter")}
-                    placeholder="https://twitter.com/..."
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>YouTube URL</Label>
-                  <Input
-                    {...register("youtube")}
-                    placeholder="https://youtube.com/..."
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-border/60 bg-card p-6 md:p-8 shadow-sm">
-              <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <Lock className="h-5 w-5 text-primary" /> Security
-              </h2>
-
-              <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="font-medium text-foreground block mb-1">Optional Section</span>
-                  You do not need to fill this out unless you want to change your password. Leave
-                  these fields blank to keep your current password.
-                </p>
-              </div>
-
-              <div className="flex-1 w-full space-y-4 max-w-2xl">
-                <div className="space-y-2">
-                  <Label>Current Password</Label>
-                  <Input
-                    {...passwordForm.register("currentPassword")}
-                    type="password"
-                    placeholder="Verify your current password"
-                    className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                  />
-                  {passwordForm.formState.errors.currentPassword && (
-                    <p className="text-xs text-red-500">
-                      {passwordForm.formState.errors.currentPassword.message}
-                    </p>
-                  )}
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>New Password</Label>
-                    <Input
-                      {...passwordForm.register("newPassword")}
-                      type="password"
-                      placeholder="New secure password"
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    />
-                    {passwordForm.formState.errors.newPassword && (
-                      <p className="text-xs text-red-500">
-                        {passwordForm.formState.errors.newPassword.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Confirm New Password</Label>
-                    <Input
-                      {...passwordForm.register("confirmPassword")}
-                      type="password"
-                      placeholder="Confirm new password"
-                      className="rounded-xl bg-secondary/50 border-transparent focus:border-primary"
-                    />
-                    {passwordForm.formState.errors.confirmPassword && (
-                      <p className="text-xs text-red-500">
-                        {passwordForm.formState.errors.confirmPassword.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <Button
-                    onClick={passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))}
-                    disabled={changePasswordMutation.isPending}
-                    variant="secondary"
-                    className="rounded-xl"
-                  >
-                    {changePasswordMutation.isPending ? "Updating..." : "Update Password"}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Post Conversation Viewer Dialog */}
-      <Dialog open={!!activePost} onOpenChange={(open) => !open && setActivePost(null)}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl bg-background border-border/60 sm:max-h-[85vh] flex flex-col md:flex-row">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Post View</DialogTitle>
-            <DialogDescription>Viewing conversation for post</DialogDescription>
-          </DialogHeader>
-
-          {activePost && (
-            <>
-              {/* Image side (Desktop) / Top (Mobile) */}
-              <div className="w-full md:w-1/2 bg-black flex items-center justify-center">
-                <img
-                  src={activePost.image}
-                  alt={activePost.title}
-                  className="w-full h-auto max-h-[40vh] md:max-h-full object-contain"
-                />
-              </div>
-
-              {/* Conversation side */}
-              <div className="w-full md:w-1/2 flex flex-col h-[50vh] md:h-auto max-h-full bg-card">
-                {/* Header */}
-                <div className="p-4 border-b border-border/40 flex items-center gap-3 shrink-0">
-                  <div className="h-8 w-8 rounded-full overflow-hidden border border-border/40 shrink-0">
-                    <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate">{profile?.name}</p>
-                  </div>
-                </div>
-
-                {/* Scrollable Comments */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  <div className="flex gap-3">
-                    <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 mt-1">
-                      <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm">
-                        <span className="font-bold mr-2">{profile?.handle || "organizer"}</span>
-                        {activePost.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">{activePost.date}</p>
-                    </div>
-                  </div>
-
-                  <hr className="border-border/40" />
-
-                  {mockComments.map((c) => (
-                    <div key={c.id} className="flex gap-3">
-                      <div className="h-8 w-8 rounded-full bg-secondary shrink-0 overflow-hidden flex items-center justify-center">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-bold mr-2">{c.user}</span>
-                          {c.text}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">Reply</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Action Bar */}
-                <div className="p-4 border-t border-border/40 shrink-0">
-                  <div className="flex items-center gap-4 mb-4">
-                    <Heart className="h-6 w-6 text-foreground cursor-pointer hover:text-primary transition-colors" />
-                    <MessageSquare className="h-6 w-6 text-foreground cursor-pointer hover:text-primary transition-colors" />
-                    <Send className="h-6 w-6 text-foreground cursor-pointer hover:text-primary transition-colors" />
-                  </div>
-                  <p className="font-bold text-sm mb-1">{activePost.likes} likes</p>
-                  <p className="text-xs text-muted-foreground mb-4">{activePost.date}</p>
-
-                  <div className="relative">
-                    <Input
-                      placeholder="Add a comment..."
-                      className="pr-10 rounded-full bg-secondary/50 border-transparent focus:border-border"
-                    />
-                    <button className="absolute right-3 top-1/2 -translate-y-1/2 text-primary text-sm font-bold opacity-70 hover:opacity-100">
-                      Post
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Avatar Selection Modal */}
+      {/* Avatar Modal */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
-        <DialogContent className="sm:max-w-2xl rounded-3xl bg-card border-border/60">
-          <DialogHeader>
-            <DialogTitle>Choose Profile Image</DialogTitle>
-            <DialogDescription>Select an avatar for your profile.</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 pt-4 w-full min-w-0">
-            {/* Category Tabs & Upload */}
-            <div className="w-full overflow-hidden">
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none items-center w-full">
-                <Button
-                  variant="outline"
-                  className="rounded-full shrink-0 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => document.getElementById("avatar-upload")?.click()}
+        <DialogContent className="sm:max-w-2xl rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="p-6 border-b border-border">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">Update Profile Picture</DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-6 bg-muted/50">
+            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-none">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
+                    activeCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-background text-foreground border border-border hover:border-input"
+                  }`}
                 >
-                  <Upload className="h-4 w-4" /> Upload Custom
-                </Button>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-
-                {/* Divider */}
-                <div className="h-6 w-px bg-border/60 mx-1 shrink-0" />
-
-                {CATEGORIES.map((cat) => (
-                  <Button
-                    key={cat.id}
-                    variant={activeCategory === cat.id ? "default" : "secondary"}
-                    className={`rounded-full shrink-0 ${activeCategory === cat.id ? "bg-primary" : "bg-secondary/60 hover:bg-secondary"}`}
-                    onClick={() => setActiveCategory(cat.id)}
-                  >
-                    {cat.label}
-                  </Button>
-                ))}
-              </div>
+                  {cat.label}
+                </button>
+              ))}
             </div>
-
-            {/* Avatar Grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
+            <div className="grid grid-cols-4 gap-4 max-h-[300px] overflow-y-auto">
               {avatarOptions.map((opt, i) => (
                 <div
                   key={i}
-                  className={`cursor-pointer rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 ${avatar === opt ? "border-primary ring-2 ring-primary/20" : "border-transparent"}`}
+                  className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
+                    avatar === opt ? "border-primary ring-4 ring-primary/10" : "border-transparent bg-background shadow-sm hover:shadow"
+                  }`}
                   onClick={() => setAvatar(opt)}
                 >
-                  <img
-                    src={opt}
-                    alt="Avatar option"
-                    className="w-full aspect-square object-cover bg-secondary/30"
-                  />
+                  <img src={opt} alt="Avatar" className="w-full aspect-square object-cover mix-blend-multiply dark:mix-blend-normal" />
                 </div>
               ))}
             </div>
-
-            <div className="pt-4 flex gap-3 border-t border-border/40">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl"
-                onClick={() => setIsAvatarModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 rounded-xl bg-primary text-primary-foreground"
-                onClick={() => setIsAvatarModalOpen(false)}
-              >
-                Confirm Selection
-              </Button>
-            </div>
+          </div>
+          <div className="p-4 border-t border-border flex justify-end gap-3 bg-background">
+            <Button variant="ghost" onClick={() => setIsAvatarModalOpen(false)}>Cancel</Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setIsAvatarModalOpen(false)}>Confirm</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Story Viewer Modal */}
-      {activeStoryIndex !== null && (
-        <StoryViewer
-          stories={mockHighlights}
-          initialIndex={activeStoryIndex}
-          onClose={() => setActiveStoryIndex(null)}
-        />
-      )}
-
-      {/* Hide Scrollbar Style for Highlights */}
       <style>{`
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
+      {isWizardOpen && <WorkspaceWizard onClose={() => setIsWizardOpen(false)} />}
     </div>
   );
 }
