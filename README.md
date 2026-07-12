@@ -2117,6 +2117,22 @@ Organizers can automatically sync event schedules with their primary Google Cale
 
 ---
 
+## 29. SMS Notifications & Communication
+
+The system integrates with the **Pindo API** for delivering critical transactional SMS messages to users and organizers. This is handled via the isolated `src/api/pindo.ts` utility.
+
+### 29.1 Organizer OTP & Verification
+- When an organizer creates an account, they provide an email and phone number.
+- The `sendSignupOtp` function sends the One-Time Password to both their email (via Resend) and their phone number (via Pindo).
+
+### 29.2 Payment Confirmation & Ticket Access
+- **Logic:** After a successful transaction via Mobile Money (PawaPay), the asynchronous webhook (`handlePawaPayWebhook`) intercepts the `COMPLETED` payload.
+- It dynamically extracts the payer's mobile money phone number (`payer.address.value`).
+- **Activation Link:** The system automatically dispatches an SMS via Pindo confirming the transaction amount and providing a direct link for the user to view their ticket: `https://agatike.com/profile`.
+- *Note:* This public `profile` route acts as the attendee's activation/check-in hub, completely separated from the organizer dashboard (`/dashboard/...`).
+
+---
+
 ## 19. Architecture & Vercel Deployment Rules
 
 To guarantee successful builds on Vercel (avoiding `SIGKILL` memory exhaustion and `ERR_MODULE_NOT_FOUND` runtime errors), the following strict architectural patterns **MUST** be adhered to:
