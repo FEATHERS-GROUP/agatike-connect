@@ -30,8 +30,9 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
   const { isLoading: isWorkspaceLoading } = useWorkspace();
 
   // Check if any queries are currently in their initial 'pending' (fetching) state
+  // Exclude background queries (like the command menu search) from triggering the full-page loader
   const pendingQueriesCount = useIsFetching({
-    predicate: (query) => query.state.status === "pending",
+    predicate: (query) => query.state.status === "pending" && !query.meta?.isBackground,
   });
 
   const isDashboard = pathname.startsWith("/dashboard");
