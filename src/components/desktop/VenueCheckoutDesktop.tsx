@@ -16,9 +16,14 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createVenueBooking } from "@/api/venue_bookings";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
@@ -36,6 +41,8 @@ const countries = COUNTRIES.map((c) => c.name).sort();
 export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
   const storageKey = `venue_checkout_desktop_${venue?.id}`;
   const [date, setDate] = useState("");
@@ -349,8 +356,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 entityName: venue?.name || "Event/Venue",
                 ticket,
                 bookingRef: ticket.booking_ref || ticket.otp || "",
-                customerName:
-                  name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
               });
               attachments.push(fallbackPdf);
             }
@@ -401,9 +407,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isStep1Valid || !isStep2Valid) return;
-    if (!user) {
-      sessionStorage.setItem(`returning_from_login_${venue?.id}`, "true");
-      navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
+    if (!user && !hasSkippedAuth) {
+      setIsAuthSuggestionOpen(true);
       return;
     }
     setIsPaymentModalOpen(true);
@@ -982,6 +987,15 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           ))}
         </div>
       )}
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

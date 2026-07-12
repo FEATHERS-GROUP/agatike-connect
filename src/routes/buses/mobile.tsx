@@ -12,7 +12,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { mockBusTrips } from "@/lib/mock-bus-data";
+const mockBusTrips: any[] = [];
 import { formatCurrency } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 

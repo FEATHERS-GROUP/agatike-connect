@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
@@ -14,14 +14,17 @@ import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { Smartphone } from "lucide-react";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   ChevronLeft,
   CheckCircle2,
   Building2,
-  CreditCard,
   Loader2,
   Plus,
   Trash2,
@@ -29,6 +32,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { z } from "zod";
 
 const checkoutSearchSchema = z.object({
@@ -54,6 +58,8 @@ function CheckoutPage() {
   });
 
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
   const [formData, setFormData] = useState({
     name: user?.username || "",
@@ -340,7 +346,10 @@ function CheckoutPage() {
           return;
         }
       }
-      setErrorMsg("");
+      if (!user && !hasSkippedAuth) {
+        setIsAuthSuggestionOpen(true);
+        return;
+      }
       setIsPaymentModalOpen(true);
     }
   };
@@ -920,6 +929,15 @@ function CheckoutPage() {
         </div>
       </div>
 
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
+
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onOpenChange={setIsPaymentModalOpen}
@@ -951,7 +969,7 @@ function CheckoutPage() {
           </div>
           <Button
             variant="outline"
-                      onClick={async () => {
+            onClick={async () => {
               setIsPollingPawaPay(false);
               setIsProcessing(false);
               if (pawapayDepositId) {

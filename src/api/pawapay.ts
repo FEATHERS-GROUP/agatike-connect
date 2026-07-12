@@ -675,19 +675,21 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
               ticket: event_tickets_by_pk(id: $id) { id sold remaining }
             }`,
             { id: ticketId },
-          ).then(async (r: any) => {
-            const currentSold = parseInt(r?.ticket?.sold || "0");
-            const currentRemaining = parseInt(r?.ticket?.remaining || "0");
-            const newSold = Math.max(0, currentSold - (qty as number));
-            // Bug fix 2: also restore `remaining` so spaces-left is correctly updated
-            const newRemaining = currentRemaining + (qty as number);
-            await hasuraRequest(
-              `mutation RestoreTicketCounts($id: uuid!, $sold: String!, $remaining: String!) {
+          )
+            .then(async (r: any) => {
+              const currentSold = parseInt(r?.ticket?.sold || "0");
+              const currentRemaining = parseInt(r?.ticket?.remaining || "0");
+              const newSold = Math.max(0, currentSold - (qty as number));
+              // Bug fix 2: also restore `remaining` so spaces-left is correctly updated
+              const newRemaining = currentRemaining + (qty as number);
+              await hasuraRequest(
+                `mutation RestoreTicketCounts($id: uuid!, $sold: String!, $remaining: String!) {
                 update_event_tickets_by_pk(pk_columns: { id: $id }, _set: { sold: $sold, remaining: $remaining }) { id }
               }`,
-              { id: ticketId, sold: String(newSold), remaining: String(newRemaining) },
-            );
-          }).catch(console.error);
+                { id: ticketId, sold: String(newSold), remaining: String(newRemaining) },
+              );
+            })
+            .catch(console.error);
         }
       }
     } else if (tx.type === "venue_booking" && tx.reference_id) {
@@ -744,7 +746,7 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
             }`,
             {
               schedule_id: booking.schedule_id,
-              qty: -(booking.quantity), // negative to decrement
+              qty: -booking.quantity, // negative to decrement
               ticket_tier_id: booking.ticket_tier_id || null,
             },
           ).catch(console.error);

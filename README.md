@@ -2097,11 +2097,13 @@ flowchart TD
 To guarantee successful builds on Vercel (avoiding `SIGKILL` memory exhaustion and `ERR_MODULE_NOT_FOUND` runtime errors), the following strict architectural patterns **MUST** be adhered to:
 
 ### The Problem with Server-Side Rendering (SSR) Leaks
+
 If heavy backend Node dependencies (like `firebase-admin` or `google-auth-library`) are imported at the top level of shared API files (e.g., `src/api/auth.ts`), they will be injected into the React Component tree during the SSR build. This causes the bundler to traverse massive cyclical Node dependencies, resulting in OOM crashes on Vercel.
 
 If you attempt to fix this by modifying `vite.config.ts` with `rollupConfig.external`, you will successfully stop the crash, but you will break Vercel's Node File Trace (NFT). The tracer will silently drop the modules from the serverless function, causing 500 errors in production.
 
 ### The Solution: Server-Only Isolation
+
 1. **Never use top-level imports for heavy backend SDKs** in shared API files (like `src/api/auth.ts`) that are imported by React components.
 2. **Isolate SDK initialization** in dedicated `.server.ts` files (e.g., `src/lib/firebase.server.ts`, `src/lib/auth.server.ts`).
 3. **Import dynamically inside Server Function Handlers:**

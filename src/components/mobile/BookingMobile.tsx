@@ -17,13 +17,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
@@ -50,6 +55,8 @@ import {
 export function BookingMobile({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -930,7 +937,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           </Button>
         ) : (
           <Button
-            onClick={() => setIsPaymentModalOpen(true)}
+            onClick={() => {
+              if (!user && !hasSkippedAuth) {
+                setIsAuthSuggestionOpen(true);
+              } else {
+                setIsPaymentModalOpen(true);
+              }
+            }}
             disabled={!isFormValid || isCheckingOut || isGenerating}
             className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
             style={{ background: "var(--gradient-primary)" }}
@@ -942,6 +955,15 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout
         </div>
       </div>
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       {/* Payment Modal */}
       <PaymentModal

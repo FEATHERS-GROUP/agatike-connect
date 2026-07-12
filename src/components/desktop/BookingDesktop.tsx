@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
@@ -12,7 +13,11 @@ import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
@@ -27,6 +32,8 @@ import { HiddenPDFGenerator } from "@/components/desktop/booking/HiddenPDFGenera
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -696,11 +703,26 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 setIsGenerating(true);
                 setIsPaymentModalOpen(true);
               }}
-              onPay={() => setIsPaymentModalOpen(true)}
+              onPay={() => {
+                if (!user && !hasSkippedAuth) {
+                  setIsAuthSuggestionOpen(true);
+                } else {
+                  setIsPaymentModalOpen(true);
+                }
+              }}
             />
           </div>
         </div>
       </main>
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       {/* Payment Modal */}
       <PaymentModal

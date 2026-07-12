@@ -15,7 +15,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { mockBusTrips } from "@/lib/mock-bus-data";
+const mockBusTrips: any[] = [];
 
 export const Route = createFileRoute("/buses/")({
   head: () => ({

@@ -145,6 +145,21 @@ export const createSupportTicket = createServerFn({ method: "POST" })
       },
     );
 
+    const slackUrl = process.env.SLACK_WEBHOOK_URL;
+    if (slackUrl) {
+      try {
+        await fetch(slackUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `*New Support Ticket Raised From Agatike!*\n*Ticket ID:* ${ticketId}\n*Organizer:* ${organizerName} (${organizerId})\n*Plan:* ${planName || "Free"}\n*Category:* ${category}\n*Priority:* ${priority}\n*Subject:* ${subject}\n*Description:* ${description}`,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to send Slack notification for support ticket:", err);
+      }
+    }
+
     return res.insert_support_tickets_one;
   });
 

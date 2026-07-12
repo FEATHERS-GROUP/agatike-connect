@@ -9,15 +9,38 @@ import {
   Calendar,
   MapPin,
   Users,
+  User,
+  X,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
 
-import { categories } from "@/lib/mock-data";
+const categories = [
+  "Music",
+  "Sports",
+  "Cinema",
+  "Conferences",
+  "Nightlife",
+  "Festivals",
+  "Comedy",
+  "Workshop",
+  "Hiking",
+  "Running",
+  "Surf",
+  "Wellness",
+  "Drawing",
+  "Art",
+  "Trips",
+  "Bike Rides",
+  "Yoga",
+  "Book Clubs",
+  "Tourism",
+];
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -143,6 +166,8 @@ function EventCard({ event }: { event: any }) {
 function EventsBrowse() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const { isLoggedIn } = useUserAuth();
 
   const { data: dbEvents = [], isLoading } = useQuery({
     queryKey: ["public-events"],
@@ -194,20 +219,69 @@ function EventsBrowse() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none">
+    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0">
       <div className="hidden md:block">
         <Navbar />
       </div>
 
       {/* Mobile Header */}
-      <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-3">
-        <button
-          onClick={() => router.history.back()}
-          className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <h1 className="font-bold text-lg tracking-tight">All Events</h1>
+      <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center justify-between gap-3">
+        {isLoggedIn ? (
+          <>
+            <button
+              onClick={() => router.history.back()}
+              className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <h1 className="font-bold text-lg tracking-tight">All Events</h1>
+          </>
+        ) : isMobileSearchOpen ? (
+          <div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-right-5 duration-200">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search events, cities..."
+                className="pl-9 pr-8 rounded-full bg-secondary/60 border-transparent text-sm h-9 w-full"
+                autoFocus
+              />
+              {q && (
+                <button
+                  onClick={() => setQ("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                setIsMobileSearchOpen(false);
+                setQ("");
+              }}
+              className="text-sm font-semibold text-primary px-1 shrink-0"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/agatike-logo.png" alt="Agatike" className="h-7 w-auto object-contain" />
+            </Link>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsMobileSearchOpen(true)}
+                className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mx-auto max-w-7xl px-4 md:px-6 py-6 md:py-10">
@@ -235,20 +309,22 @@ function EventsBrowse() {
         </header>
 
         {/* Mobile Search */}
-        <div className="md:hidden flex w-full gap-2 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search title, city..."
-              className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm"
-            />
+        {isLoggedIn && (
+          <div className="md:hidden flex w-full gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search title, city..."
+                className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm"
+              />
+            </div>
+            <Button variant="outline" size="icon" className="rounded-full shrink-0">
+              <SlidersHorizontal className="h-4 w-4" />
+            </Button>
           </div>
-          <Button variant="outline" size="icon" className="rounded-full shrink-0">
-            <SlidersHorizontal className="h-4 w-4" />
-          </Button>
-        </div>
+        )}
 
         <div className="mt-2 md:mt-6 flex overflow-x-auto hide-scrollbar gap-2 pb-2">
           <button
