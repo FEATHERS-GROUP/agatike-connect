@@ -24,6 +24,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { isLoggedIn, isLoading } = useUserAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !isLoading) {
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      if (isMobile && !isLoggedIn) {
+        navigate({ to: "/events", replace: true });
+      }
+    }
+  }, [isLoggedIn, isLoading, navigate]);
+
   return (
     <>
       <div className="md:hidden">

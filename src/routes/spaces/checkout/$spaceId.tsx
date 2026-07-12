@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
 import { createSpaceSubscription } from "@/api/space_subscriptions";
@@ -21,7 +21,6 @@ import {
   ChevronLeft,
   CheckCircle2,
   Building2,
-  CreditCard,
   Loader2,
   Plus,
   Trash2,
@@ -220,10 +219,10 @@ function CheckoutPage() {
 
       const formattedStart = formData.startDate
         ? new Date(formData.startDate).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          })
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
         : formData.startDate;
 
       if (bookingType === "group") {
@@ -966,7 +965,7 @@ function CheckoutPage() {
           </div>
           <Button
             variant="outline"
-                      onClick={async () => {
+            onClick={async () => {
               setIsPollingPawaPay(false);
               setIsProcessing(false);
               if (pawapayDepositId) {

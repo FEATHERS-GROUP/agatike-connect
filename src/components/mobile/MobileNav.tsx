@@ -24,19 +24,31 @@ export function MobileNav() {
   const [moreOpen, setMoreOpen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  const tabs = [
-    { name: "Home", href: "/", icon: Home },
-    { name: "Explore", href: "/explore", icon: Compass },
-    { name: "Events", href: "/events", icon: CalendarDays },
-    { name: "Spaces", href: "/venues", icon: Building2 },
-  ];
+  const tabs = isLoggedIn
+    ? [
+        { name: "Home", href: "/", icon: Home },
+        { name: "Explore", href: "/explore", icon: Compass },
+        { name: "Events", href: "/events", icon: CalendarDays },
+        { name: "Spaces", href: "/venues", icon: Building2 },
+      ]
+    : [
+        { name: "Home", href: "/events", icon: Home },
+        { name: "Movies", href: "/movies", icon: Film },
+        { name: "Trips", href: "/buses/mobile", icon: Bus },
+        { name: "Spaces", href: "/venues", icon: Building2 },
+      ];
 
-  const moreMenuLinks = [
-    { name: "Trips", href: "/buses/mobile", icon: Bus },
-    { name: "Movies & Cinemas", href: "/movies", icon: Film },
-    { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
-    { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
-  ];
+  const moreMenuLinks = isLoggedIn
+    ? [
+        { name: "Trips", href: "/buses/mobile", icon: Bus },
+        { name: "Movies & Cinemas", href: "/movies", icon: Film },
+        { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
+        { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
+      ]
+    : [
+        { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
+        { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
+      ];
 
   const { data: staffAssignments = [] } = useQuery({
     queryKey: ["user-staff-assignments", user?.id],
@@ -226,7 +238,11 @@ export function MobileNav() {
             )}
           >
             <div className="relative flex items-center justify-center">
-              <Menu className="h-6 w-6 stroke-2 transition-all duration-300" />
+              {isLoggedIn ? (
+                <Menu className="h-6 w-6 stroke-2 transition-all duration-300" />
+              ) : (
+                <User className="h-6 w-6 stroke-2 transition-all duration-300" />
+              )}
             </div>
           </button>
         </div>
