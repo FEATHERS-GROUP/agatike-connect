@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
 
-import { categories, events } from "@/lib/mock-data";
+import { categories } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -71,22 +71,6 @@ function EventCard({ event }: { event: any }) {
     ? event.organizer || event.host || event.cinema
     : event.workspaces?.organizer?.name || event.workspaces?.name || "Organizer";
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  let isEnded = false;
-  let isFutureMock = false;
-  if (dateStr && dateStr !== "TBD") {
-    // Note: JS Date parsing might assume current year if not provided.
-    const eventDate = new Date(dateStr);
-    if (!isNaN(eventDate.getTime())) {
-      if (eventDate < today) {
-        isEnded = true;
-      } else if (isMock && eventDate > today) {
-        isFutureMock = true;
-      }
-    }
-  }
-
   return (
     <Link
       to="/events/$eventId"
@@ -110,7 +94,7 @@ function EventCard({ event }: { event: any }) {
             {event.category}
           </span>
         </div>
-        {tourStopsCount > 1 && !isUpcoming && !isEnded && !isFutureMock && (
+        {tourStopsCount > 1 && !isUpcoming && (
           <div className="absolute top-3 right-3 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
             {tourStopsCount} stops
           </div>
@@ -118,16 +102,6 @@ function EventCard({ event }: { event: any }) {
         {isUpcoming && (
           <div className="absolute top-3 right-3 rounded-full bg-blue-500/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur shadow-sm">
             Upcoming
-          </div>
-        )}
-        {isEnded && !isUpcoming && (
-          <div className="absolute top-3 right-3 rounded-full bg-red-500/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur shadow-sm">
-            Ended
-          </div>
-        )}
-        {isFutureMock && !isUpcoming && !isEnded && (
-          <div className="absolute top-3 right-3 rounded-full bg-emerald-500/90 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur shadow-sm">
-            Coming {dateStr.includes("Dec") ? "in December" : "Soon"}
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -176,7 +150,7 @@ function EventsBrowse() {
   });
 
   const allEvents = useMemo(() => {
-    return [...dbEvents, ...events];
+    return [...dbEvents];
   }, [dbEvents]);
 
   const filtered = useMemo(() => {
@@ -200,7 +174,20 @@ function EventsBrowse() {
         !q || `${e.title} ${organizerName} ${city}`.toLowerCase().includes(q.toLowerCase());
       const matchesCat = !cat || e.category === cat;
 
-      return matchesQ && matchesCat;
+      const dateStr = getVal("date") || e.event_requency?.date;
+      let isPastLimit = false;
+      if (dateStr && dateStr !== "TBD") {
+        const eventDate = new Date(dateStr);
+        if (!isNaN(eventDate.getTime())) {
+          const oneMonthAgo = new Date(today);
+          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+          if (eventDate < oneMonthAgo) {
+            isPastLimit = true;
+          }
+        }
+      }
+
+      return matchesQ && matchesCat && !isPastLimit;
     });
   }, [q, cat, allEvents]);
 

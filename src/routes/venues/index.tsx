@@ -3,7 +3,6 @@ import { VenuesMobile } from "@/components/mobile/VenuesMobile";
 import { VenuesDesktop } from "@/components/desktop/VenuesDesktop";
 import { getPublicSpaces } from "@/api/spaces";
 import { getPublicRentableVenues } from "@/api/rentable_venues";
-import { mockVenues } from "@/lib/mock-venue-data";
 
 export const Route = createFileRoute("/venues/")({
   head: () => ({
@@ -45,13 +44,6 @@ export const Route = createFileRoute("/venues/")({
         currency: v.workspace?.currency || v.currency,
       })),
       ...formattedSpaces,
-      // Inject mock venues from other countries (booking disabled)
-      ...mockVenues
-        .filter((m) => m.isMock)
-        .map((m) => ({
-          ...m,
-          source: "mock_venue",
-        })),
     ];
   },
   component: VenuesIndex,
