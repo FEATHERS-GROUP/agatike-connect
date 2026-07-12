@@ -95,7 +95,9 @@ export function VenuesMobile() {
                 </div>
                 <div className="p-3 flex flex-col flex-1 justify-between">
                   <div>
-                    <h3 className="font-bold text-sm leading-snug mb-1 line-clamp-1">{venue.name}</h3>
+                    <h3 className="font-bold text-sm leading-snug mb-1 line-clamp-1">
+                      {venue.name}
+                    </h3>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium mb-2">
                       <MapPin className="w-2.5 h-2.5 shrink-0" />{" "}
                       <span className="truncate">{venue.city || venue.address}</span>

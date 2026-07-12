@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Ticket, Zap, Clock, ShieldCheck, ArrowRight } from "lucide-react";
@@ -59,7 +65,9 @@ export function AuthSuggestionModal({
             </div>
             <div>
               <h4 className="font-semibold text-sm text-foreground">Access Tickets Offline</h4>
-              <p className="text-xs text-muted-foreground">Keep tickets safely stored in your dashboard and wallet.</p>
+              <p className="text-xs text-muted-foreground">
+                Keep tickets safely stored in your dashboard and wallet.
+              </p>
             </div>
           </div>
 
@@ -69,7 +77,9 @@ export function AuthSuggestionModal({
             </div>
             <div>
               <h4 className="font-semibold text-sm text-foreground">Faster Future Checkout</h4>
-              <p className="text-xs text-muted-foreground">Pre-fill phone number, name, and email details next time.</p>
+              <p className="text-xs text-muted-foreground">
+                Pre-fill phone number, name, and email details next time.
+              </p>
             </div>
           </div>
 
@@ -79,7 +89,9 @@ export function AuthSuggestionModal({
             </div>
             <div>
               <h4 className="font-semibold text-sm text-foreground">Manage Bookings & Refunds</h4>
-              <p className="text-xs text-muted-foreground">Easy support access, transaction records, and cancellations.</p>
+              <p className="text-xs text-muted-foreground">
+                Easy support access, transaction records, and cancellations.
+              </p>
             </div>
           </div>
         </div>

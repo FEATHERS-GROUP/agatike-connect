@@ -21,7 +21,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { getSpaceFeedback, submitSpaceFeedback } from "@/api/feedback";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -165,8 +171,12 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedP
   const avgRating = aggregate.avg?.rating ? Number(aggregate.avg.rating).toFixed(1) : "0.0";
 
   const submitFeedbackMutation = useMutation({
-    mutationFn: (values: { reviewer_name: string; reviewer_email: string; rating: number; body: string }) =>
-      submitSpaceFeedback({ data: { space_id: space.id, ...values } }),
+    mutationFn: (values: {
+      reviewer_name: string;
+      reviewer_email: string;
+      rating: number;
+      body: string;
+    }) => submitSpaceFeedback({ data: { space_id: space.id, ...values } }),
     onSuccess: () => {
       toast.success("Review submitted! Thank you.");
       refetchFeedback();
@@ -660,7 +670,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedP
           </DialogHeader>
           <form onSubmit={handleReviewSubmit} className="space-y-4 mt-4">
             <div>
-              <Label htmlFor="review-name" className="text-sm font-semibold">Your Name</Label>
+              <Label htmlFor="review-name" className="text-sm font-semibold">
+                Your Name
+              </Label>
               <Input
                 id="review-name"
                 value={reviewName}
@@ -671,7 +683,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedP
               />
             </div>
             <div>
-              <Label htmlFor="review-email" className="text-sm font-semibold">Your Email</Label>
+              <Label htmlFor="review-email" className="text-sm font-semibold">
+                Your Email
+              </Label>
               <Input
                 id="review-email"
                 type="email"
@@ -702,7 +716,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedP
               </div>
             </div>
             <div>
-              <Label htmlFor="review-body" className="text-sm font-semibold">Review Message</Label>
+              <Label htmlFor="review-body" className="text-sm font-semibold">
+                Review Message
+              </Label>
               <textarea
                 id="review-body"
                 value={reviewBody}

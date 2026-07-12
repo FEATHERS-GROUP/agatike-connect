@@ -14,7 +14,11 @@ import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { Smartphone } from "lucide-react";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -219,10 +223,10 @@ function CheckoutPage() {
 
       const formattedStart = formData.startDate
         ? new Date(formData.startDate).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })
         : formData.startDate;
 
       if (bookingType === "group") {

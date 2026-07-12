@@ -6,24 +6,24 @@ import { getSession } from "./auth";
 export const submitEventFeedback = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-  const input = ctx.data as unknown as {
-    event_id: string;
-    attendee_id?: string;
-    reviewer_name: string;
-    reviewer_email: string;
-    rating: number;
-    title?: string;
-    body?: string;
-    category_scores?: Record<string, number>;
-    tags?: string[];
-    media_urls?: string[];
-    source?: string;
-  };
+    const input = ctx.data as unknown as {
+      event_id: string;
+      attendee_id?: string;
+      reviewer_name: string;
+      reviewer_email: string;
+      rating: number;
+      title?: string;
+      body?: string;
+      category_scores?: Record<string, number>;
+      tags?: string[];
+      media_urls?: string[];
+      source?: string;
+    };
 
-  // Verify attendee belongs to this event if attendee_id is provided
-  let is_verified = false;
-  if (input.attendee_id) {
-    const checkQuery = `
+    // Verify attendee belongs to this event if attendee_id is provided
+    let is_verified = false;
+    if (input.attendee_id) {
+      const checkQuery = `
       query CheckAttendee($id: uuid!) {
         event_attendees_by_pk(id: $id) {
           id
@@ -32,48 +32,48 @@ export const submitEventFeedback = createServerFn({ method: "POST" })
         }
       }
     `;
-    const checkData = await hasuraRequest<{ event_attendees_by_pk: any }>(checkQuery, {
-      id: input.attendee_id,
-    });
-    const att = checkData.event_attendees_by_pk;
-    if (att && att.event_id === input.event_id) {
-      is_verified = true;
+      const checkData = await hasuraRequest<{ event_attendees_by_pk: any }>(checkQuery, {
+        id: input.attendee_id,
+      });
+      const att = checkData.event_attendees_by_pk;
+      if (att && att.event_id === input.event_id) {
+        is_verified = true;
+      }
     }
-  }
 
-  // Build the insert object — only include attendee_id when we actually have one
-  // because the DB column is NON_NULL uuid and rejects explicit null values.
-  // user_id is nullable in the DB — we intentionally omit it here to avoid FK
-  // violations when the reviewer is not a registered platform user.
-  let finalRating = input.rating;
-  if (input.category_scores && Object.keys(input.category_scores).length > 0) {
-    const scores = Object.values(input.category_scores);
-    const total = scores.reduce((acc, val) => acc + val, 0);
-    finalRating = (input.rating + total) / (scores.length + 1);
-  }
+    // Build the insert object — only include attendee_id when we actually have one
+    // because the DB column is NON_NULL uuid and rejects explicit null values.
+    // user_id is nullable in the DB — we intentionally omit it here to avoid FK
+    // violations when the reviewer is not a registered platform user.
+    let finalRating = input.rating;
+    if (input.category_scores && Object.keys(input.category_scores).length > 0) {
+      const scores = Object.values(input.category_scores);
+      const total = scores.reduce((acc, val) => acc + val, 0);
+      finalRating = (input.rating + total) / (scores.length + 1);
+    }
 
-  const insertObject: Record<string, any> = {
-    event_id: input.event_id,
-    reviewer_name: input.reviewer_name,
-    reviewer_email: input.reviewer_email,
-    rating: finalRating,
-    title: input.title || null,
-    body: input.body || null,
-    category_scores: input.category_scores || null,
-    tags: input.tags?.length ? JSON.stringify(input.tags) : "[]",
-    media_urls: input.media_urls?.length ? JSON.stringify(input.media_urls) : "[]",
-    source: input.source || "web",
-    is_verified,
-    is_featured: false,
-    is_public: true,
-  };
+    const insertObject: Record<string, any> = {
+      event_id: input.event_id,
+      reviewer_name: input.reviewer_name,
+      reviewer_email: input.reviewer_email,
+      rating: finalRating,
+      title: input.title || null,
+      body: input.body || null,
+      category_scores: input.category_scores || null,
+      tags: input.tags?.length ? JSON.stringify(input.tags) : "[]",
+      media_urls: input.media_urls?.length ? JSON.stringify(input.media_urls) : "[]",
+      source: input.source || "web",
+      is_verified,
+      is_featured: false,
+      is_public: true,
+    };
 
-  // Only include attendee_id when it's a real value
-  if (input.attendee_id) {
-    insertObject.attendee_id = input.attendee_id;
-  }
+    // Only include attendee_id when it's a real value
+    if (input.attendee_id) {
+      insertObject.attendee_id = input.attendee_id;
+    }
 
-  const mutation = `
+    const mutation = `
     mutation SubmitEventFeedback($object: event_feedback_insert_input!) {
       insert_event_feedback_one(object: $object) {
         id
@@ -83,22 +83,22 @@ export const submitEventFeedback = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ insert_event_feedback_one: any }>(mutation, {
-    object: insertObject,
+    const data = await hasuraRequest<{ insert_event_feedback_one: any }>(mutation, {
+      object: insertObject,
+    });
+    return data.insert_event_feedback_one;
   });
-  return data.insert_event_feedback_one;
-});
 
 // ─── Get Event Feedback (dashboard — auth required) ───────────────────────────
 export const getEventFeedback = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { event_id } = ctx.data as unknown as { event_id: string };
+    const { event_id } = ctx.data as unknown as { event_id: string };
 
-  const query = `
+    const query = `
     query GetEventFeedback($event_id: uuid!) {
       event_feedback(
         where: { event_id: { _eq: $event_id } },
@@ -128,33 +128,33 @@ export const getEventFeedback = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{
-    event_feedback: any[];
-    event_feedback_aggregate: any;
-  }>(query, { event_id });
+    const data = await hasuraRequest<{
+      event_feedback: any[];
+      event_feedback_aggregate: any;
+    }>(query, { event_id });
 
-  return {
-    reviews:
-      data.event_feedback?.map((r) => ({
-        ...r,
-        tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
-        media_urls: r.media_urls
-          ? typeof r.media_urls === "string"
-            ? JSON.parse(r.media_urls)
-            : r.media_urls
-          : [],
-      })) || [],
-    aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
-  };
-});
+    return {
+      reviews:
+        data.event_feedback?.map((r) => ({
+          ...r,
+          tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+          media_urls: r.media_urls
+            ? typeof r.media_urls === "string"
+              ? JSON.parse(r.media_urls)
+              : r.media_urls
+            : [],
+        })) || [],
+      aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
+    };
+  });
 
 // ─── Get Public Feedback Summary ──────────────────────────────────────────────
 export const getEventFeedbackPublic = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
+    const { event_id } = ctx.data as unknown as { event_id: string };
 
-  const query = `
+    const query = `
     query GetPublicFeedback($event_id: uuid!) {
       event_feedback(
         where: { event_id: { _eq: $event_id }, is_public: { _eq: true } },
@@ -180,40 +180,40 @@ export const getEventFeedbackPublic = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{
-    event_feedback: any[];
-    event_feedback_aggregate: any;
-  }>(query, { event_id });
+    const data = await hasuraRequest<{
+      event_feedback: any[];
+      event_feedback_aggregate: any;
+    }>(query, { event_id });
 
-  return {
-    reviews:
-      data.event_feedback?.map((r) => ({
-        ...r,
-        tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
-        media_urls: r.media_urls
-          ? typeof r.media_urls === "string"
-            ? JSON.parse(r.media_urls)
-            : r.media_urls
-          : [],
-      })) || [],
-    aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
-  };
-});
+    return {
+      reviews:
+        data.event_feedback?.map((r) => ({
+          ...r,
+          tags: r.tags ? (typeof r.tags === "string" ? JSON.parse(r.tags) : r.tags) : [],
+          media_urls: r.media_urls
+            ? typeof r.media_urls === "string"
+              ? JSON.parse(r.media_urls)
+              : r.media_urls
+            : [],
+        })) || [],
+      aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
+    };
+  });
 
 // ─── Update Feedback (organizer actions: feature, hide) ───────────────────────
 export const updateFeedback = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { id, is_featured, is_public } = ctx.data as unknown as {
-    id: string;
-    is_featured?: boolean;
-    is_public?: boolean;
-  };
+    const { id, is_featured, is_public } = ctx.data as unknown as {
+      id: string;
+      is_featured?: boolean;
+      is_public?: boolean;
+    };
 
-  const mutation = `
+    const mutation = `
     mutation UpdateFeedback($id: uuid!, $is_featured: Boolean, $is_public: Boolean) {
       update_event_feedback_by_pk(
         pk_columns: { id: $id },
@@ -226,13 +226,13 @@ export const updateFeedback = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ update_event_feedback_by_pk: any }>(mutation, {
-    id,
-    is_featured,
-    is_public,
+    const data = await hasuraRequest<{ update_event_feedback_by_pk: any }>(mutation, {
+      id,
+      is_featured,
+      is_public,
+    });
+    return data.update_event_feedback_by_pk;
   });
-  return data.update_event_feedback_by_pk;
-});
 
 // ─── Get Ratings for All Organizers (across all their events) ─────────────────
 export const getOrganizersRatings = createServerFn({ method: "GET" })
@@ -290,12 +290,12 @@ export const getOrganizersRatings = createServerFn({ method: "GET" })
 export const checkFeedbackExists = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-  const { event_id, reviewer_email } = ctx.data as unknown as {
-    event_id: string;
-    reviewer_email: string;
-  };
+    const { event_id, reviewer_email } = ctx.data as unknown as {
+      event_id: string;
+      reviewer_email: string;
+    };
 
-  const query = `
+    const query = `
     query CheckFeedback($event_id: uuid!, $reviewer_email: String!) {
       event_feedback(where: {
         event_id: { _eq: $event_id },
@@ -306,41 +306,50 @@ export const checkFeedbackExists = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ event_feedback: any[] }>(query, {
-    event_id,
-    reviewer_email,
+    const data = await hasuraRequest<{ event_feedback: any[] }>(query, {
+      event_id,
+      reviewer_email,
+    });
+    return data.event_feedback.length > 0;
   });
-  return data.event_feedback.length > 0;
-});
 
 // ─── Submit Space Feedback (public — no auth required) ────────────────────────
 export const submitSpaceFeedback = createServerFn({ method: "POST" })
-  .validator((d: { space_id: string; reviewer_name: string; reviewer_email: string; rating: number; title?: string; body?: string }) => d)
+  .validator(
+    (d: {
+      space_id: string;
+      reviewer_name: string;
+      reviewer_email: string;
+      rating: number;
+      title?: string;
+      body?: string;
+    }) => d,
+  )
   .handler(async (ctx) => {
-  const input = ctx.data as unknown as {
-    space_id: string;
-    reviewer_name: string;
-    reviewer_email: string;
-    rating: number;
-    title?: string;
-    body?: string;
-  };
+    const input = ctx.data as unknown as {
+      space_id: string;
+      reviewer_name: string;
+      reviewer_email: string;
+      rating: number;
+      title?: string;
+      body?: string;
+    };
 
-  const insertObject = {
-    event_id: null,
-    reviewer_name: input.reviewer_name,
-    reviewer_email: input.reviewer_email,
-    rating: input.rating,
-    title: input.title || null,
-    body: input.body || null,
-    tags: `space_${input.space_id}`,
-    is_public: true,
-    is_verified: false,
-    is_featured: false,
-    source: "web"
-  };
+    const insertObject = {
+      event_id: null,
+      reviewer_name: input.reviewer_name,
+      reviewer_email: input.reviewer_email,
+      rating: input.rating,
+      title: input.title || null,
+      body: input.body || null,
+      tags: `space_${input.space_id}`,
+      is_public: true,
+      is_verified: false,
+      is_featured: false,
+      source: "web",
+    };
 
-  const mutation = `
+    const mutation = `
     mutation SubmitSpaceFeedback($object: event_feedback_insert_input!) {
       insert_event_feedback_one(object: $object) {
         id
@@ -350,19 +359,19 @@ export const submitSpaceFeedback = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{ insert_event_feedback_one: any }>(mutation, {
-    object: insertObject,
+    const data = await hasuraRequest<{ insert_event_feedback_one: any }>(mutation, {
+      object: insertObject,
+    });
+    return data.insert_event_feedback_one;
   });
-  return data.insert_event_feedback_one;
-});
 
 // ─── Get Space Feedback (public) ──────────────────────────────────────────────
 export const getSpaceFeedback = createServerFn({ method: "POST" })
   .validator((d: { space_id: string }) => d)
   .handler(async (ctx) => {
-  const { space_id } = ctx.data as unknown as { space_id: string };
+    const { space_id } = ctx.data as unknown as { space_id: string };
 
-  const query = `
+    const query = `
     query GetSpaceFeedback($tag: String!) {
       event_feedback(
         where: { 
@@ -398,13 +407,13 @@ export const getSpaceFeedback = createServerFn({ method: "POST" })
     }
   `;
 
-  const data = await hasuraRequest<{
-    event_feedback: any[];
-    event_feedback_aggregate: any;
-  }>(query, { tag: `space_${space_id}` });
+    const data = await hasuraRequest<{
+      event_feedback: any[];
+      event_feedback_aggregate: any;
+    }>(query, { tag: `space_${space_id}` });
 
-  return {
-    reviews: data.event_feedback || [],
-    aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
-  };
-});
+    return {
+      reviews: data.event_feedback || [],
+      aggregate: data.event_feedback_aggregate?.aggregate || { count: 0, avg: { rating: 0 } },
+    };
+  });

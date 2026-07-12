@@ -126,7 +126,8 @@ function ContactPage() {
                   </div>
                   <h3 className="text-2xl font-bold">Message Sent!</h3>
                   <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                    Thank you for reaching out to us. Our team will review your message and get back to you shortly.
+                    Thank you for reaching out to us. Our team will review your message and get back
+                    to you shortly.
                   </p>
                   <Button
                     onClick={() => setSubmitted(false)}
@@ -137,10 +138,7 @@ function ContactPage() {
                   </Button>
                 </div>
               ) : (
-                <form
-                  className="space-y-6"
-                  onSubmit={handleSubmit}
-                >
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="first-name">First name</Label>

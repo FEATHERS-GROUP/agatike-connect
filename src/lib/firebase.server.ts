@@ -15,13 +15,13 @@ export function getFirebaseAdmin() {
       console.warn("Firebase Admin Initialization Warning:", error);
     }
   }
-  
+
   if (!db) {
     db = getFirestore();
   }
   if (!messaging) {
     messaging = getMessaging();
   }
-  
+
   return { db, messaging };
 }

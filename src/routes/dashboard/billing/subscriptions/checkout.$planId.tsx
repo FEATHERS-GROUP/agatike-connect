@@ -496,7 +496,9 @@ function CheckoutPage() {
                         setIsPollingPawaPay(false);
                         if (pawapayDepositId) {
                           try {
-                            await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                            await cancelPendingPayment({
+                              data: { depositId: pawapayDepositId },
+                            } as any);
                           } catch (e) {
                             console.error("Cancel cleanup failed:", e);
                           }

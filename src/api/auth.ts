@@ -4,7 +4,6 @@ import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { hasuraRequest } from "./graphql.server";
 
-
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
 /* ─────────────────────────────────────────────

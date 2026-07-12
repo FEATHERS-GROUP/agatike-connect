@@ -270,7 +270,6 @@ function EventsBrowse() {
           <div className="flex items-center justify-between w-full">
             <Link to="/" className="flex items-center gap-2">
               <img src="/agatike-logo.png" alt="Agatike" className="h-7 w-auto object-contain" />
-
             </Link>
             <div className="flex items-center gap-1">
               <button

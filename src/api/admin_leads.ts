@@ -89,14 +89,7 @@ export const deleteAdminLead = createServerFn({ method: "POST" })
   });
 
 export const submitPublicContactLead = createServerFn({ method: "POST" })
-  .validator(
-    (d: {
-      name: string;
-      email: string;
-      subject: string;
-      message: string;
-    }) => d,
-  )
+  .validator((d: { name: string; email: string; subject: string; message: string }) => d)
   .handler(async (ctx) => {
     const { name, email, subject, message } = ctx.data;
 
