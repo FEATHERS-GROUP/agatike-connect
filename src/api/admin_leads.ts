@@ -122,5 +122,20 @@ export const submitPublicContactLead = createServerFn({ method: "POST" })
       message,
     });
 
+    const slackUrl = process.env.SLACK_WEBHOOK_URL;
+    if (slackUrl) {
+      try {
+        await fetch(slackUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `*New Contact Lead Received From Agatike!*\n*Name:* ${name}\n*Email:* ${email}\n*Subject:* ${subject}\n*Message:* ${message}`,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to send Slack notification:", err);
+      }
+    }
+
     return { success: true };
   });
