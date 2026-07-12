@@ -104,6 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "manifest",
         href: "/manifest.json",
+        crossOrigin: "use-credentials",
       },
       {
         rel: "icon",
