@@ -7154,6 +7154,11 @@ picomatch@^4.0.2, picomatch@^4.0.3, picomatch@^4.0.4:
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-4.0.4.tgz"
   integrity sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==
 
+pindo-sms@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/pindo-sms/-/pindo-sms-1.0.5.tgz#81420caf04c547fac3c90a9c06fdc858e81d98b0"
+  integrity sha512-ZGM4XL5GpuCBkCt5lVYXEhbaLLTOZymyY/WX8b8av9ZtDLn00SZaW9u72dcLo5miIm85vN8Fy6nmEQsv+W+lZA==
+
 pkg-types@^1.3.1:
   version "1.3.1"
   resolved "https://registry.npmjs.org/pkg-types/-/pkg-types-1.3.1.tgz"

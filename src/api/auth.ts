@@ -214,7 +214,7 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 });
 
 export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { email } = ctx.data as unknown as { email: string };
+  const { email, phone } = ctx.data as unknown as { email: string; phone?: string };
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedOtp = await bcrypt.hash(otp, 10);
@@ -259,6 +259,15 @@ export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (c
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.message || "Failed to send OTP via email");
+  }
+
+  if (phone) {
+    try {
+      const { sendSMS } = await import("./pindo");
+      await sendSMS(phone, `Your Agatike Connect verification code is: ${otp}`);
+    } catch (err) {
+      console.error("Failed to send SMS OTP:", err);
+    }
   }
 
   return { success: true, token };
