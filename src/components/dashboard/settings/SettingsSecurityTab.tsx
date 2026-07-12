@@ -21,7 +21,9 @@ export function SettingsSecurityTab({ passwordForm }: SettingsSecurityTabProps) 
               className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
             />
             {passwordForm.formState.errors.currentPassword && (
-              <p className="text-xs text-destructive">{passwordForm.formState.errors.currentPassword.message as string}</p>
+              <p className="text-xs text-destructive">
+                {passwordForm.formState.errors.currentPassword.message as string}
+              </p>
             )}
           </div>
           <Separator className="max-w-md" />
@@ -34,7 +36,9 @@ export function SettingsSecurityTab({ passwordForm }: SettingsSecurityTabProps) 
                 className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
               />
               {passwordForm.formState.errors.newPassword && (
-                <p className="text-xs text-destructive">{passwordForm.formState.errors.newPassword.message as string}</p>
+                <p className="text-xs text-destructive">
+                  {passwordForm.formState.errors.newPassword.message as string}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -45,7 +49,9 @@ export function SettingsSecurityTab({ passwordForm }: SettingsSecurityTabProps) 
                 className="rounded-md border-border focus:border-primary focus:ring-primary h-10"
               />
               {passwordForm.formState.errors.confirmPassword && (
-                <p className="text-xs text-destructive">{passwordForm.formState.errors.confirmPassword.message as string}</p>
+                <p className="text-xs text-destructive">
+                  {passwordForm.formState.errors.confirmPassword.message as string}
+                </p>
               )}
             </div>
           </div>

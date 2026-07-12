@@ -35,11 +35,15 @@ export function SettingsProfileSidebar({
       {/* Identity Card */}
       <div className="flex items-start justify-between mb-8 group">
         <div className="flex items-center gap-4">
-          <div 
+          <div
             className="relative h-[72px] w-[72px] rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-border bg-muted flex items-center justify-center"
             onClick={() => setIsAvatarModalOpen(true)}
           >
-            {avatar ? <img src={avatar} alt="Avatar" className="w-full h-full object-cover" /> : <User className="h-8 w-8 text-muted-foreground" />}
+            {avatar ? (
+              <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <User className="h-8 w-8 text-muted-foreground" />
+            )}
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Camera className="h-5 w-5 text-white" />
             </div>
@@ -51,7 +55,8 @@ export function SettingsProfileSidebar({
               placeholder="Organizer Name"
             />
             <div className="flex items-center text-sm text-muted-foreground font-medium px-1 mt-0.5">
-              #<input
+              #
+              <input
                 {...register("handle")}
                 className="bg-transparent border-transparent hover:border-border focus:border-input focus:bg-muted rounded outline-none w-[120px] transition-colors"
                 placeholder="handle"

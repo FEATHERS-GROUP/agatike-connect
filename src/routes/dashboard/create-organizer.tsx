@@ -310,7 +310,9 @@ function CreateOrganizerPage() {
     if (!otpStep) {
       setIsSendingOtp(true);
       try {
-        const result = await sendSignupOtp({ data: { email: values.email, phone: values.phone } } as any);
+        const result = await sendSignupOtp({
+          data: { email: values.email, phone: values.phone },
+        } as any);
         if (result.success && result.token) {
           setOtpToken(result.token);
           setOtpStep(true);

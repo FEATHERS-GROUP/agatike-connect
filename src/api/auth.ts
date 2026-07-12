@@ -80,7 +80,13 @@ export const getSession = createServerFn({ method: "POST" }).handler(async () =>
           }
         }
       `;
-      const res = await hasuraRequest<{ workspace_users_by_pk: { status: string; is_temporary: boolean; expires_at: string | null } | null }>(query, {
+      const res = await hasuraRequest<{
+        workspace_users_by_pk: {
+          status: string;
+          is_temporary: boolean;
+          expires_at: string | null;
+        } | null;
+      }>(query, {
         id: session.sub,
       });
       const user = res.workspace_users_by_pk;

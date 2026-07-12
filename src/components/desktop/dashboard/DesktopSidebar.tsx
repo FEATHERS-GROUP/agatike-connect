@@ -302,7 +302,8 @@ export function DesktopSidebar() {
         </div>
       </nav>
 
-      {currentUser && currentUser.role === "organizer" &&
+      {currentUser &&
+        currentUser.role === "organizer" &&
         (currentUser.isBasic || currentUser.isExpiringSoon || currentUser.isExpired) && (
           <div className="mt-4 relative rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
             {currentUser.isBasic ? (

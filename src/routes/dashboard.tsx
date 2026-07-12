@@ -68,7 +68,7 @@ function DashboardLayout() {
   const navigate = useNavigate();
   const { currentUser, isLoaded, workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const { data: platformModules = [] } = usePlatformModules();
-  
+
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -129,13 +129,15 @@ function DashboardLayout() {
   const getDynamicAddAction = () => {
     const p = location.pathname;
     const base = `/dashboard/${activeWorkspace?.slug}`;
-    if (p.includes("/events")) return { label: "Create Event", route: `${base}/events/create-event` };
+    if (p.includes("/events"))
+      return { label: "Create Event", route: `${base}/events/create-event` };
     if (p.includes("/venues")) return { label: "Add Venue", route: `${base}/venues/create-venue` };
     if (p.includes("/spaces")) return { label: "Add Space", route: `${base}/spaces/create-space` };
     if (p.includes("/Cinema")) return { label: "Add Movie", route: `${base}/Cinema/create-movie` };
     if (p.includes("/trips")) return { label: "Add Trip", route: `${base}/trips/create-trip` };
     if (p.includes("/users")) return { label: "Add User", route: `${base}/users/add-user` };
-    if (p.includes("/page-builder")) return { label: "Create Page", route: `${base}/page-builder/editor` };
+    if (p.includes("/page-builder"))
+      return { label: "Create Page", route: `${base}/page-builder/editor` };
     return null;
   };
   const dynamicAddAction = getDynamicAddAction();
@@ -458,12 +460,12 @@ function DashboardLayout() {
                     <ContextMenuSeparator />
                   </>
                 )}
-                
+
                 <ContextMenuItem onClick={handleRefresh}>
                   <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
                   Refresh Data
                 </ContextMenuItem>
-                
+
                 <ContextMenuItem onClick={() => navigate({ to: "/dashboard/support" })}>
                   <LifeBuoy className="mr-2 h-4 w-4" />
                   Raise Support Ticket

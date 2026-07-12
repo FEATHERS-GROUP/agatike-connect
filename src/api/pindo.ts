@@ -1,4 +1,4 @@
-import { PindoSMS, SMSPayload } from 'pindo-sms';
+import { PindoSMS, SMSPayload } from "pindo-sms";
 
 const pindoToken = process.env.PINDO_API_TOKEN;
 
@@ -6,14 +6,14 @@ const pindoToken = process.env.PINDO_API_TOKEN;
 const pindo = pindoToken ? new PindoSMS(pindoToken) : null;
 
 const formatPhoneForPindo = (phone: string) => {
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (!phone.startsWith('+')) {
-    if (cleanPhone.startsWith('0')) {
-      return '+250' + cleanPhone.substring(1);
-    } else if (!cleanPhone.startsWith('250')) {
-      return '+250' + cleanPhone;
+  const cleanPhone = phone.replace(/\D/g, "");
+  if (!phone.startsWith("+")) {
+    if (cleanPhone.startsWith("0")) {
+      return "+250" + cleanPhone.substring(1);
+    } else if (!cleanPhone.startsWith("250")) {
+      return "+250" + cleanPhone;
     } else {
-      return '+' + cleanPhone;
+      return "+" + cleanPhone;
     }
   }
   return phone;
@@ -21,7 +21,7 @@ const formatPhoneForPindo = (phone: string) => {
 
 export const sendSMS = async (to: string, text: string) => {
   if (!pindoToken || !pindo) {
-    return { status: 'mocked' };
+    return { status: "mocked" };
   }
 
   try {
@@ -29,14 +29,13 @@ export const sendSMS = async (to: string, text: string) => {
     const payload: SMSPayload = {
       to: formattedTo,
       text,
-      sender: 'PindoTest', // Default sender ID
+      sender: "PindoTest", // Default sender ID
     };
 
     const response = await pindo.sendSMS(payload);
     return response;
   } catch (error: any) {
-    console.error('[PindoLib] Failed to send SMS:', error);
-    return { error: error.message || 'Unknown error' };
+    console.error("[PindoLib] Failed to send SMS:", error);
+    return { error: error.message || "Unknown error" };
   }
 };
-

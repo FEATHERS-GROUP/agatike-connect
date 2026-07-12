@@ -1,15 +1,47 @@
 import { useState } from "react";
 import { createFileRoute, Link, useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, FileSpreadsheet, HardDrive, Download, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, Folder, Eye, Plus, FileText, Presentation, Sparkles, Receipt } from "lucide-react";
+import {
+  ArrowLeft,
+  FileSpreadsheet,
+  HardDrive,
+  Download,
+  AlertCircle,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Folder,
+  Eye,
+  Plus,
+  FileText,
+  Presentation,
+  Sparkles,
+  Receipt,
+} from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listGoogleDriveFiles, getOrganizerIntegrations, createGoogleDriveFile, readGoogleDriveFileContent } from "@/api/integrations";
+import {
+  listGoogleDriveFiles,
+  getOrganizerIntegrations,
+  createGoogleDriveFile,
+  readGoogleDriveFileContent,
+} from "@/api/integrations";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -20,7 +52,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/book/drive")({
     return {
       path: search.path as string | undefined,
       pageToken: search.pageToken as string | undefined,
-    }
+    };
   },
   component: DriveHub,
 });
@@ -35,7 +67,7 @@ function DriveHub() {
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFileName, setNewFileName] = useState("");
   const [newFileType, setNewFileType] = useState<"folder" | "doc" | "sheet" | "slide" | null>(null);
-  
+
   const [projectFile, setProjectFile] = useState<any>(null);
   const [projectContent, setProjectContent] = useState<any>(null);
 
@@ -54,15 +86,22 @@ function DriveHub() {
     queryFn: () => getOrganizerIntegrations(),
   });
 
-  const { data: driveResponse, isLoading: loadingFiles, refetch, isRefetching } = useQuery({
+  const {
+    data: driveResponse,
+    isLoading: loadingFiles,
+    refetch,
+    isRefetching,
+  } = useQuery({
     queryKey: ["drive-files", pageToken, currentFolderId],
     queryFn: () => listGoogleDriveFiles({ data: { pageToken, folderId: currentFolderId } }),
     enabled: !!integrations?.google?.drive,
   });
 
   const createFileMutation = useMutation({
-    mutationFn: (data: { name: string; mimeType: string }) => 
-      createGoogleDriveFile({ data: { name: data.name, mimeType: data.mimeType, parentFolderId: currentFolderId } }),
+    mutationFn: (data: { name: string; mimeType: string }) =>
+      createGoogleDriveFile({
+        data: { name: data.name, mimeType: data.mimeType, parentFolderId: currentFolderId },
+      }),
     onSuccess: (res) => {
       if (!res.success) {
         toast.error(`Failed to create: ${res.error}`);
@@ -72,12 +111,16 @@ function DriveHub() {
       setNewFolderOpen(false);
       setNewFileName("");
       queryClient.invalidateQueries({ queryKey: ["drive-files", pageToken, currentFolderId] });
-      
+
       if (newFileType !== "folder") {
         if (res.file.webViewLink) {
           window.open(res.file.webViewLink, "_blank", "width=1000,height=800,noopener,noreferrer");
         } else {
-          window.open(`https://drive.google.com/file/d/${res.file.id}/view`, "_blank", "width=1000,height=800,noopener,noreferrer");
+          window.open(
+            `https://drive.google.com/file/d/${res.file.id}/view`,
+            "_blank",
+            "width=1000,height=800,noopener,noreferrer",
+          );
         }
       }
       setNewFileType(null);
@@ -132,7 +175,7 @@ function DriveHub() {
 
   const handleCreateNew = () => {
     if (!newFileName.trim() || !newFileType) return;
-    
+
     const mimeTypes = {
       folder: "application/vnd.google-apps.folder",
       doc: "application/vnd.google-apps.document",
@@ -181,7 +224,8 @@ function DriveHub() {
           </div>
           <h2 className="text-xl font-bold mb-2">Google Drive Not Connected</h2>
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
-            You need to connect your Google Drive account in Organizer Settings before you can browse and import files.
+            You need to connect your Google Drive account in Organizer Settings before you can
+            browse and import files.
           </p>
           <Link to="/dashboard/settings" search={{ tab: "integrations" }}>
             <Button>Go to Integrations</Button>
@@ -210,7 +254,7 @@ function DriveHub() {
             Browse your files and pull data into Agatike from Google Drive.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -233,12 +277,12 @@ function DriveHub() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button 
-            variant="outline" 
-            onClick={() => refetch()} 
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
             disabled={loadingFiles || isRefetching}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
@@ -258,12 +302,12 @@ function DriveHub() {
         <div className="p-4 border-b border-border/40 bg-muted/20 flex items-center overflow-x-auto">
           {folderPath.map((folder, index) => (
             <div key={folder.id} className="flex items-center whitespace-nowrap">
-              <Link 
-                to="." 
+              <Link
+                to="."
                 search={{ path: JSON.stringify(folderPath.slice(0, index + 1)) }}
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
-                  index === folderPath.length - 1 
-                    ? "font-semibold text-foreground" 
+                  index === folderPath.length - 1
+                    ? "font-semibold text-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -276,21 +320,23 @@ function DriveHub() {
             </div>
           ))}
         </div>
-        
+
         <div className="divide-y divide-border/40">
           {loadingFiles ? (
-            Array(5).fill(0).map((_, i) => (
-              <div key={i} className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Skeleton className="h-10 w-10 rounded-lg" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-3 w-24" />
+            Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
                   </div>
+                  <Skeleton className="h-9 w-24 rounded-lg" />
                 </div>
-                <Skeleton className="h-9 w-24 rounded-lg" />
-              </div>
-            ))
+              ))
           ) : files.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <HardDrive className="h-12 w-12 mx-auto mb-4 opacity-20" />
@@ -300,13 +346,18 @@ function DriveHub() {
             files.map((file: any) => {
               const isFolder = file.mimeType === "application/vnd.google-apps.folder";
               const isAgatikeProject = file.name.includes(".agatike");
-              
+
               return (
-                <div key={file.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
+                <div
+                  key={file.id}
+                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/30 transition-colors"
+                >
                   {isFolder ? (
                     <Link
                       to="."
-                      search={{ path: JSON.stringify([...folderPath, { id: file.id, name: file.name }]) }}
+                      search={{
+                        path: JSON.stringify([...folderPath, { id: file.id, name: file.name }]),
+                      }}
                       className="flex items-center gap-4 cursor-pointer hover:opacity-80 flex-1"
                     >
                       <div className="h-10 w-10 rounded-lg bg-background border flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
@@ -321,7 +372,9 @@ function DriveHub() {
                           {file.name}
                         </h4>
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span>{format(new Date(file.modifiedTime), "MMM d, yyyy 'at' h:mm a")}</span>
+                          <span>
+                            {format(new Date(file.modifiedTime), "MMM d, yyyy 'at' h:mm a")}
+                          </span>
                         </div>
                       </div>
                     </Link>
@@ -339,24 +392,36 @@ function DriveHub() {
                       <div>
                         <h4 className="font-medium">{file.name}</h4>
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span>{format(new Date(file.modifiedTime), "MMM d, yyyy 'at' h:mm a")}</span>
+                          <span>
+                            {format(new Date(file.modifiedTime), "MMM d, yyyy 'at' h:mm a")}
+                          </span>
                           <span>•</span>
-                          <span>{isAgatikeProject ? "Agatike Project" : formatFileSize(file.size)}</span>
+                          <span>
+                            {isAgatikeProject ? "Agatike Project" : formatFileSize(file.size)}
+                          </span>
                         </div>
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center gap-2">
                     {!isFolder && !isAgatikeProject && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           if (file.webViewLink) {
-                            window.open(file.webViewLink, "_blank", "width=1000,height=800,noopener,noreferrer");
+                            window.open(
+                              file.webViewLink,
+                              "_blank",
+                              "width=1000,height=800,noopener,noreferrer",
+                            );
                           } else {
-                            window.open(`https://drive.google.com/file/d/${file.id}/view`, "_blank", "width=1000,height=800,noopener,noreferrer");
+                            window.open(
+                              `https://drive.google.com/file/d/${file.id}/view`,
+                              "_blank",
+                              "width=1000,height=800,noopener,noreferrer",
+                            );
                           }
                         }}
                       >
@@ -365,22 +430,42 @@ function DriveHub() {
                       </Button>
                     )}
                     {isAgatikeProject && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => openProjectMutation.mutate(file)}
-                        disabled={openProjectMutation.isPending && openProjectMutation.variables?.id === file.id}
+                        disabled={
+                          openProjectMutation.isPending &&
+                          openProjectMutation.variables?.id === file.id
+                        }
                       >
                         <Sparkles className="h-4 w-4 mr-2" />
                         Open Project
                       </Button>
                     )}
-                    <Button 
+                    <Button
                       variant={isFolder ? "outline" : "secondary"}
                       size="sm"
-                      onClick={() => isFolder ? navigate({ search: { path: JSON.stringify([...folderPath, { id: file.id, name: file.name }]) } }) : handleImport(file.id, file.name)}
+                      onClick={() =>
+                        isFolder
+                          ? navigate({
+                              search: {
+                                path: JSON.stringify([
+                                  ...folderPath,
+                                  { id: file.id, name: file.name },
+                                ]),
+                              },
+                            })
+                          : handleImport(file.id, file.name)
+                      }
                     >
-                      {isFolder ? "Open Folder" : <><Download className="h-4 w-4 mr-2" /> Pull Data</>}
+                      {isFolder ? (
+                        "Open Folder"
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" /> Pull Data
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -388,27 +473,25 @@ function DriveHub() {
             })
           )}
         </div>
-        
+
         {/* Pagination Controls */}
         {(pageToken || nextPageToken) && (
           <div className="p-4 border-t border-border/40 bg-muted/10 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              {pageToken ? "Page X" : "Page 1"}
-            </span>
+            <span className="text-sm text-muted-foreground">{pageToken ? "Page X" : "Page 1"}</span>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handlePrevPage} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevPage}
                 disabled={!pageToken || loadingFiles}
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Start
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleNextPage} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
                 disabled={!nextPageToken || loadingFiles}
               >
                 Next
@@ -423,17 +506,19 @@ function DriveHub() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-indigo-500" /> 
+              <Sparkles className="h-5 w-5 text-indigo-500" />
               {projectFile?.name} (Read-Only Preview)
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
             {projectContent?.projectType === "note" && (
               <div className="border rounded-xl p-6 bg-muted/20">
-                <h2 className="text-2xl font-bold mb-4">{projectContent.payload.title || "Untitled Note"}</h2>
-                <div 
-                  className="prose prose-sm dark:prose-invert" 
-                  dangerouslySetInnerHTML={{ __html: projectContent.payload.content }} 
+                <h2 className="text-2xl font-bold mb-4">
+                  {projectContent.payload.title || "Untitled Note"}
+                </h2>
+                <div
+                  className="prose prose-sm dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: projectContent.payload.content }}
                 />
               </div>
             )}
@@ -444,10 +529,24 @@ function DriveHub() {
                   Invoice #{projectContent.payload.invoice_number}
                 </h2>
                 <div className="text-sm space-y-2 mt-4">
-                  <p><strong>Type:</strong> <span className="uppercase">{projectContent.payload.invoice_type}</span></p>
-                  <p><strong>Created:</strong> {format(new Date(projectContent.payload.created_at), "PPP")}</p>
-                  <p><strong>Items:</strong> {projectContent.payload.items?.length || 0}</p>
-                  <p><strong>Subtotal:</strong> {projectContent.payload.currency} {projectContent.payload.items?.reduce((s: number, i: any) => s + Number(i.quantity) * Number(i.unit_price), 0)}</p>
+                  <p>
+                    <strong>Type:</strong>{" "}
+                    <span className="uppercase">{projectContent.payload.invoice_type}</span>
+                  </p>
+                  <p>
+                    <strong>Created:</strong>{" "}
+                    {format(new Date(projectContent.payload.created_at), "PPP")}
+                  </p>
+                  <p>
+                    <strong>Items:</strong> {projectContent.payload.items?.length || 0}
+                  </p>
+                  <p>
+                    <strong>Subtotal:</strong> {projectContent.payload.currency}{" "}
+                    {projectContent.payload.items?.reduce(
+                      (s: number, i: any) => s + Number(i.quantity) * Number(i.unit_price),
+                      0,
+                    )}
+                  </p>
                 </div>
               </div>
             )}
@@ -462,27 +561,35 @@ function DriveHub() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {newFileType === "folder" ? "Create New Folder" : 
-               newFileType === "doc" ? "Create New Google Doc" :
-               newFileType === "sheet" ? "Create New Google Sheet" :
-               "Create New Google Slide"}
+              {newFileType === "folder"
+                ? "Create New Folder"
+                : newFileType === "doc"
+                  ? "Create New Google Doc"
+                  : newFileType === "sheet"
+                    ? "Create New Google Sheet"
+                    : "Create New Google Slide"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input 
+              <Input
                 autoFocus
-                placeholder="Enter a name..." 
-                value={newFileName} 
-                onChange={(e) => setNewFileName(e.target.value)} 
+                placeholder="Enter a name..."
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreateNew()}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateNew} disabled={createFileMutation.isPending || !newFileName.trim()}>
+            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateNew}
+              disabled={createFileMutation.isPending || !newFileName.trim()}
+            >
               {createFileMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>

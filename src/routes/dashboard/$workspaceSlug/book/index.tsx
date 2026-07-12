@@ -8,7 +8,7 @@ import {
   FileText,
   ArrowRight,
   Sparkles,
-  HardDrive
+  HardDrive,
 } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";

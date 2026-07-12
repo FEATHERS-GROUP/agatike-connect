@@ -32,7 +32,9 @@ async function getOrganizer(organizerId: string) {
       }
     }
   `;
-  const result = await hasuraRequest<{ organizers_by_pk: { integrations: any } }>(query, { id: organizerId });
+  const result = await hasuraRequest<{ organizers_by_pk: { integrations: any } }>(query, {
+    id: organizerId,
+  });
   return result.organizers_by_pk;
 }
 
@@ -51,7 +53,7 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
       if (session.type === "workspace_user") {
         const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-          { id: session.sub }
+          { id: session.sub },
         );
         organizerId = meData.workspace_users_by_pk?.organizer_id;
       }
@@ -65,7 +67,7 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
 
       const { type, tokenData } = ctx.data;
       const integrations = organizer.integrations || {};
-      
+
       let tokensToSave = tokenData;
 
       // Exchange authorization code for tokens
@@ -81,8 +83,8 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
             client_id: clientId || "",
             client_secret: clientSecret || "",
             redirect_uri: "postmessage",
-            grant_type: "authorization_code"
-          })
+            grant_type: "authorization_code",
+          }),
         });
 
         if (!tokenResponse.ok) {
@@ -95,7 +97,7 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
           access_token: tokens.access_token,
           refresh_token: tokens.refresh_token,
           expires_in: tokens.expires_in,
-          expiry_date: Date.now() + (tokens.expires_in * 1000),
+          expiry_date: Date.now() + tokens.expires_in * 1000,
           scope: tokens.scope,
           token_type: tokens.token_type,
         };
@@ -104,11 +106,11 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
       if (!integrations.google) {
         integrations.google = {};
       }
-      
+
       integrations.google[type] = {
         ...(integrations.google[type] || {}), // preserve existing refresh token if any
         ...tokensToSave,
-        connected_at: new Date().toISOString()
+        connected_at: new Date().toISOString(),
       };
 
       await updateOrganizerIntegrations(organizerId, integrations);
@@ -130,7 +132,7 @@ export const disconnectGoogleIntegration = createServerFn({ method: "POST" })
     if (session.type === "workspace_user") {
       const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
         `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-        { id: session.sub }
+        { id: session.sub },
       );
       organizerId = meData.workspace_users_by_pk?.organizer_id;
     }
@@ -141,7 +143,7 @@ export const disconnectGoogleIntegration = createServerFn({ method: "POST" })
     if (!organizer) throw new Error("Organizer not found");
 
     const integrations = organizer.integrations || {};
-    
+
     if (integrations.google && integrations.google[type]) {
       delete integrations.google[type];
       await updateOrganizerIntegrations(organizerId, integrations);
@@ -161,7 +163,7 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
       if (session.type === "workspace_user") {
         const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-          { id: session.sub }
+          { id: session.sub },
         );
         organizerId = meData.workspace_users_by_pk?.organizer_id;
       }
@@ -171,7 +173,7 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
       if (!organizer) return { success: false, error: "Organizer not found" };
 
       const integrations = organizer.integrations || {};
-      
+
       if (!integrations.google || !integrations.google[type]) {
         return { success: false, error: "Integration not connected" };
       }
@@ -180,8 +182,8 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
         ...integrations.google[type],
         settings: {
           ...(integrations.google[type].settings || {}),
-          ...settings
-        }
+          ...settings,
+        },
       };
 
       await updateOrganizerIntegrations(organizerId, integrations);
@@ -192,27 +194,29 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
     }
   });
 
-export const getOrganizerIntegrations = createServerFn({ method: "GET" })
-  .handler(async (ctx) => {
-    const session = await getSession();
-    if (!session || !session.sub) throw new Error("unauthenticated");
+export const getOrganizerIntegrations = createServerFn({ method: "GET" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
 
-    let organizerId = session.sub;
-    if (session.type === "workspace_user") {
-      const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
-        `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-        { id: session.sub }
-      );
-      organizerId = meData.workspace_users_by_pk?.organizer_id;
-    }
+  let organizerId = session.sub;
+  if (session.type === "workspace_user") {
+    const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+      `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+      { id: session.sub },
+    );
+    organizerId = meData.workspace_users_by_pk?.organizer_id;
+  }
 
-    const organizer = await getOrganizer(organizerId);
-    if (!organizer) return {};
+  const organizer = await getOrganizer(organizerId);
+  if (!organizer) return {};
 
-    return organizer.integrations || {};
-  });
+  return organizer.integrations || {};
+});
 
-export async function getValidGoogleToken(organizerId: string, type: "drive" | "calendar"): Promise<string> {
+export async function getValidGoogleToken(
+  organizerId: string,
+  type: "drive" | "calendar",
+): Promise<string> {
   const organizer = await getOrganizer(organizerId);
   if (!organizer) throw new Error("Organizer not found");
 
@@ -225,7 +229,7 @@ export async function getValidGoogleToken(organizerId: string, type: "drive" | "
 
   const expiryDate = integrationData.expiry_date;
   // Buffer of 5 minutes before actual expiration
-  const isExpired = !expiryDate || Date.now() >= (expiryDate - 5 * 60 * 1000);
+  const isExpired = !expiryDate || Date.now() >= expiryDate - 5 * 60 * 1000;
 
   if (isExpired && integrationData.refresh_token) {
     const clientId = process.env.GOOGLE_AUTH_CLIENT_ID;
@@ -238,8 +242,8 @@ export async function getValidGoogleToken(organizerId: string, type: "drive" | "
         client_id: clientId || "",
         client_secret: clientSecret || "",
         refresh_token: integrationData.refresh_token,
-        grant_type: "refresh_token"
-      })
+        grant_type: "refresh_token",
+      }),
     });
 
     if (!tokenResponse.ok) {
@@ -247,13 +251,13 @@ export async function getValidGoogleToken(organizerId: string, type: "drive" | "
     }
 
     const tokens = await tokenResponse.json();
-    
+
     integrationData.access_token = tokens.access_token;
     if (tokens.refresh_token) {
       integrationData.refresh_token = tokens.refresh_token;
     }
-    integrationData.expiry_date = Date.now() + (tokens.expires_in * 1000);
-    
+    integrationData.expiry_date = Date.now() + tokens.expires_in * 1000;
+
     await updateOrganizerIntegrations(organizerId, integrations);
 
     return integrationData.access_token;
@@ -273,7 +277,7 @@ export const listGoogleDriveFiles = createServerFn({ method: "GET" })
       if (session.type === "workspace_user") {
         const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-          { id: session.sub }
+          { id: session.sub },
         );
         organizerId = meData.workspace_users_by_pk?.organizer_id;
       }
@@ -281,24 +285,33 @@ export const listGoogleDriveFiles = createServerFn({ method: "GET" })
       const accessToken = await getValidGoogleToken(organizerId, "drive");
 
       const query = new URLSearchParams({
-        q: ctx.data?.folderId ? `'${ctx.data.folderId}' in parents and trashed=false` : "'root' in parents and trashed=false",
-        fields: "nextPageToken, files(id, name, mimeType, iconLink, webViewLink, modifiedTime, size)",
+        q: ctx.data?.folderId
+          ? `'${ctx.data.folderId}' in parents and trashed=false`
+          : "'root' in parents and trashed=false",
+        fields:
+          "nextPageToken, files(id, name, mimeType, iconLink, webViewLink, modifiedTime, size)",
         pageSize: "50",
-        orderBy: "folder,modifiedTime desc"
+        orderBy: "folder,modifiedTime desc",
       });
       if (ctx.data?.pageToken) query.append("pageToken", ctx.data.pageToken);
 
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files?${query.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files?${query.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error("[API] Google Drive error:", errorText);
         if (response.status === 401) {
-          return { success: false, error: "Google Drive access token expired. Please disconnect and reconnect." };
+          return {
+            success: false,
+            error: "Google Drive access token expired. Please disconnect and reconnect.",
+          };
         }
         return { success: false, error: `Google API Error: ${response.statusText}` };
       }
@@ -322,18 +335,21 @@ export const readGoogleDriveFileContent = createServerFn({ method: "GET" })
       if (session.type === "workspace_user") {
         const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-          { id: session.sub }
+          { id: session.sub },
         );
         organizerId = meData.workspace_users_by_pk?.organizer_id;
       }
 
       const accessToken = await getValidGoogleToken(organizerId, "drive");
 
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${ctx.data.fileId}?alt=media`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${ctx.data.fileId}?alt=media`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -360,7 +376,7 @@ export const createGoogleDriveFile = createServerFn({ method: "POST" })
       if (session.type === "workspace_user") {
         const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-          { id: session.sub }
+          { id: session.sub },
         );
         organizerId = meData.workspace_users_by_pk?.organizer_id;
       }
@@ -375,14 +391,17 @@ export const createGoogleDriveFile = createServerFn({ method: "POST" })
         parents: parentFolderId !== "root" ? [parentFolderId] : undefined,
       };
 
-      const response = await fetch("https://www.googleapis.com/drive/v3/files?fields=id,name,mimeType,webViewLink", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://www.googleapis.com/drive/v3/files?fields=id,name,mimeType,webViewLink",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -408,7 +427,7 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
     if (session.type === "workspace_user") {
       const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
         `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-        { id: session.sub }
+        { id: session.sub },
       );
       organizerId = meData.workspace_users_by_pk?.organizer_id;
     }
@@ -427,11 +446,11 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
 
       const query = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and trashed=false`;
       const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id)`;
-      
+
       const searchRes = await fetch(searchUrl, {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-      
+
       let foundId = null;
       if (searchRes.ok) {
         const data = await searchRes.json();
@@ -447,13 +466,13 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             name: folderName,
             mimeType: "application/vnd.google-apps.folder",
-            parents: ["root"]
-          })
+            parents: ["root"],
+          }),
         });
 
         if (createRes.ok) {
@@ -470,7 +489,7 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
 
     const metadata: any = {
       name: fileName,
-      mimeType: mimeType
+      mimeType: mimeType,
     };
     if (parentFolderId && parentFolderId !== "root") {
       metadata.parents = [parentFolderId];
@@ -481,19 +500,24 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
       "Content-Type: application/json; charset=UTF-8\r\n\r\n" +
       JSON.stringify(metadata) +
       delimiter +
-      "Content-Type: " + mimeType + "\r\n" +
+      "Content-Type: " +
+      mimeType +
+      "\r\n" +
       "Content-Transfer-Encoding: base64\r\n\r\n" +
       fileContentBase64 +
       close_delim;
 
-    const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": `multipart/related; boundary=${boundary}`
+    const response = await fetch(
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": `multipart/related; boundary=${boundary}`,
+        },
+        body: multipartRequestBody,
       },
-      body: multipartRequestBody
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -505,7 +529,18 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
   });
 
 export const syncEventToGoogleCalendar = createServerFn({ method: "POST" })
-  .validator((d: { workspaceId: string; eventDetails: { summary: string; description: string; start: string; end: string; location: string } }) => d)
+  .validator(
+    (d: {
+      workspaceId: string;
+      eventDetails: {
+        summary: string;
+        description: string;
+        start: string;
+        end: string;
+        location: string;
+      };
+    }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getSession();
     if (!session || !session.sub) throw new Error("unauthenticated");
@@ -520,13 +555,15 @@ export const syncEventToGoogleCalendar = createServerFn({ method: "POST" })
         }
       }
     `;
-    const wsData = await hasuraRequest<{ workspaces_by_pk: { orgnizer_id: string } }>(wsQuery, { id: workspaceId });
+    const wsData = await hasuraRequest<{ workspaces_by_pk: { orgnizer_id: string } }>(wsQuery, {
+      id: workspaceId,
+    });
     const orgId = wsData?.workspaces_by_pk?.orgnizer_id;
 
     if (!orgId) return { success: false, reason: "Organizer not found for workspace" };
 
     const accessToken = await getValidGoogleToken(orgId, "calendar");
-    
+
     const payload = {
       summary: eventDetails.summary,
       location: eventDetails.location,
@@ -541,14 +578,17 @@ export const syncEventToGoogleCalendar = createServerFn({ method: "POST" })
       },
     };
 
-    const response = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
+    const response = await fetch(
+      "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload)
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -24,7 +24,7 @@ import {
   StickyNote,
   FileText,
   ShoppingCart,
-  Film
+  Film,
 } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -92,16 +92,28 @@ export function GlobalCommandMenu() {
     return legacyId && userModuleIds.includes(legacyId);
   });
 
-  const studioLabels = ["Badge Designer", "Venue Designer", "Tickets", "Page Builder", "Ticket Designer"];
-  const mainNav = nav.filter((m: any) => !studioLabels.includes(m.label) && m.label !== "Agatike Book");
+  const studioLabels = [
+    "Badge Designer",
+    "Venue Designer",
+    "Tickets",
+    "Page Builder",
+    "Ticket Designer",
+  ];
+  const mainNav = nav.filter(
+    (m: any) => !studioLabels.includes(m.label) && m.label !== "Agatike Book",
+  );
   const studioNav = nav.filter((m: any) => studioLabels.includes(m.label));
 
   const hasEvents = nav.some((m: any) => m.label === "Events" || m.label === "Event Management");
   const hasVenues = nav.some((m: any) => m.label === "Venue Listings" || m.label === "Venues");
   const hasSpaces = nav.some((m: any) => m.label === "Spaces");
-  const hasCinema = nav.some((m: any) => m.label === "Cinema / Theater" || m.label === "Cinema" || m.label === "Cinemas");
+  const hasCinema = nav.some(
+    (m: any) => m.label === "Cinema / Theater" || m.label === "Cinema" || m.label === "Cinemas",
+  );
   const hasBook = nav.some((m: any) => m.label === "Agatike Book");
-  const hasForms = nav.some((m: any) => m.label === "RSVPs" || m.label === "Forms" || m.label === "Attendees");
+  const hasForms = nav.some(
+    (m: any) => m.label === "RSVPs" || m.label === "Forms" || m.label === "Attendees",
+  );
   const hasBilling = currentUser?.role === "organizer";
 
   const workspaceId = activeWorkspace?.id;
@@ -169,7 +181,16 @@ export function GlobalCommandMenu() {
     meta: { isBackground: true },
   });
 
-  const isLoadingData = isEventsLoading || isVenuesLoading || isSpacesLoading || isTasksLoading || isNotesLoading || isBooksLoading || isInvoicesLoading || isFormsLoading || isCinemasLoading;
+  const isLoadingData =
+    isEventsLoading ||
+    isVenuesLoading ||
+    isSpacesLoading ||
+    isTasksLoading ||
+    isNotesLoading ||
+    isBooksLoading ||
+    isInvoicesLoading ||
+    isFormsLoading ||
+    isCinemasLoading;
 
   const runCommand = React.useCallback((command: () => unknown) => {
     setOpen(false);
@@ -221,12 +242,16 @@ export function GlobalCommandMenu() {
           </CommandGroup>
         )}
         {!isLoadingData && <CommandEmpty>No results found.</CommandEmpty>}
-        
+
         {slug && mainNav.length > 0 && (
           <CommandGroup heading="Navigation">
             {mainNav.map((n: any) => renderCommandItem(n))}
             {hasBilling && (
-              <CommandItem onSelect={() => runCommand(() => navigate({ to: `/dashboard/billing/subscriptions` }))}>
+              <CommandItem
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/billing/subscriptions` }))
+                }
+              >
                 <CreditCard className="mr-2 h-4 w-4 shrink-0" />
                 <span>Billing & Subscriptions</span>
               </CommandItem>
@@ -249,7 +274,9 @@ export function GlobalCommandMenu() {
             {events.map((event: any) => (
               <CommandItem
                 key={event.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/events/${event.id}` }))}
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/${slug}/events/${event.id}` }))
+                }
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 <span>{event.title}</span>
@@ -263,7 +290,9 @@ export function GlobalCommandMenu() {
             {venues.map((venue: any) => (
               <CommandItem
                 key={venue.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/venues/${venue.id}` }))}
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/${slug}/venues/${venue.id}` }))
+                }
               >
                 <MapPin className="mr-2 h-4 w-4" />
                 <span>{venue.name}</span>
@@ -277,7 +306,9 @@ export function GlobalCommandMenu() {
             {spaces.map((space: any) => (
               <CommandItem
                 key={space.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/spaces/${space.id}` }))}
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/${slug}/spaces/${space.id}` }))
+                }
               >
                 <Building2 className="mr-2 h-4 w-4" />
                 <span>{space.name}</span>
@@ -305,7 +336,9 @@ export function GlobalCommandMenu() {
             {notes.map((note: any) => (
               <CommandItem
                 key={note.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/book/notes/${note.id}` }))}
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/${slug}/book/notes/${note.id}` }))
+                }
               >
                 <StickyNote className="mr-2 h-4 w-4" />
                 <span>{note.title}</span>
@@ -333,7 +366,11 @@ export function GlobalCommandMenu() {
             {invoices.map((invoice: any) => (
               <CommandItem
                 key={invoice.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/book/procurement/${invoice.id}` }))}
+                onSelect={() =>
+                  runCommand(() =>
+                    navigate({ to: `/dashboard/${slug}/book/procurement/${invoice.id}` }),
+                  )
+                }
               >
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 <span>{invoice.invoice_number || "Draft Invoice"}</span>
@@ -347,7 +384,9 @@ export function GlobalCommandMenu() {
             {forms.map((form: any) => (
               <CommandItem
                 key={form.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/rsvps/${form.id}` }))}
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/${slug}/rsvps/${form.id}` }))
+                }
               >
                 <FileText className="mr-2 h-4 w-4" />
                 <span>{form.title}</span>
@@ -361,7 +400,9 @@ export function GlobalCommandMenu() {
             {cinemas.map((cinema: any) => (
               <CommandItem
                 key={cinema.id}
-                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/Cinema/${cinema.id}` }))}
+                onSelect={() =>
+                  runCommand(() => navigate({ to: `/dashboard/${slug}/Cinema/${cinema.id}` }))
+                }
               >
                 <Film className="mr-2 h-4 w-4" />
                 <span>{cinema.name}</span>

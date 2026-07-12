@@ -79,10 +79,11 @@ export const createSupportTicket = createServerFn({ method: "POST" })
     let organizerName = "Organizer";
 
     if (session.type === "workspace_user") {
-      const wsuRes = await hasuraRequest<{ workspace_users_by_pk: { name: string, organizer_id: string } | null }>(
-        `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { name, organizer_id } }`,
-        { id: session.sub }
-      );
+      const wsuRes = await hasuraRequest<{
+        workspace_users_by_pk: { name: string; organizer_id: string } | null;
+      }>(`query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { name, organizer_id } }`, {
+        id: session.sub,
+      });
       if (wsuRes.workspace_users_by_pk) {
         organizerId = wsuRes.workspace_users_by_pk.organizer_id;
         organizerName = `${wsuRes.workspace_users_by_pk.name} (Workspace User)`;
@@ -182,7 +183,7 @@ export const getOrganizerTickets = createServerFn({ method: "POST" }).handler(as
   if (session.type === "workspace_user") {
     const res = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } | null }>(
       `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-      { id: session.sub }
+      { id: session.sub },
     );
     if (!res.workspace_users_by_pk) throw new Error("Workspace user not found");
     organizerId = res.workspace_users_by_pk.organizer_id;
@@ -231,7 +232,7 @@ export const getOrganizerTicketWithComments = createServerFn({ method: "POST" })
     if (session.type === "workspace_user") {
       const res = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } | null }>(
         `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
-        { id: session.sub }
+        { id: session.sub },
       );
       if (!res.workspace_users_by_pk) throw new Error("Workspace user not found");
       organizerId = res.workspace_users_by_pk.organizer_id;
@@ -285,10 +286,11 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
     let organizerName = "Organizer";
 
     if (session.type === "workspace_user") {
-      const wsuRes = await hasuraRequest<{ workspace_users_by_pk: { name: string, organizer_id: string } | null }>(
-        `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { name, organizer_id } }`,
-        { id: session.sub }
-      );
+      const wsuRes = await hasuraRequest<{
+        workspace_users_by_pk: { name: string; organizer_id: string } | null;
+      }>(`query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { name, organizer_id } }`, {
+        id: session.sub,
+      });
       if (!wsuRes.workspace_users_by_pk) throw new Error("Workspace user not found");
       organizerId = wsuRes.workspace_users_by_pk.organizer_id;
       organizerName = `${wsuRes.workspace_users_by_pk.name} (Workspace User)`;

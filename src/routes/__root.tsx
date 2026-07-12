@@ -276,7 +276,7 @@ function AuthRedirect() {
         "/wallet",
       ];
       const needsAuth = authRequiredPaths.some(
-        (p) => location.pathname === p || location.pathname.startsWith(`${p}/`)
+        (p) => location.pathname === p || location.pathname.startsWith(`${p}/`),
       );
       if (needsAuth) {
         navigate({ to: "/signin", replace: true });

@@ -29,22 +29,24 @@ function InvoicePreviewPage() {
     mutationFn: async () => {
       if (!activeWorkspace?.orgnizer_id) throw new Error("No organizer ID");
       if (!invoice) throw new Error("No invoice loaded");
-      
+
       const payload = {
         version: "1.0",
         projectType: "procurement",
         workspaceSlug: activeWorkspace.slug,
         payload: invoice,
       };
-      
-      const fileContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-      
+
+      const fileContentBase64 = btoa(
+        unescape(encodeURIComponent(JSON.stringify(payload, null, 2))),
+      );
+
       return exportToGoogleDrive({
         data: {
           fileName: `${invoice.invoice_number}.agatike_procurement`,
           mimeType: "application/json",
           fileContentBase64,
-        }
+        },
       });
     },
     onSuccess: () => toast.success("Saved to Google Drive successfully!"),
@@ -167,7 +169,11 @@ function InvoicePreviewPage() {
             onClick={() => exportMutation.mutate()}
             disabled={exportMutation.isPending}
           >
-            {exportMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <HardDrive className="h-4 w-4" />}
+            {exportMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <HardDrive className="h-4 w-4" />
+            )}
             Save to Drive
           </Button>
           <Button

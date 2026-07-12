@@ -111,15 +111,17 @@ function NotesPage() {
         workspaceSlug: activeWorkspace.slug,
         payload: { title: note.title, content: note.content, tags: note.tags, id: note.id },
       };
-      
-      const fileContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-      
+
+      const fileContentBase64 = btoa(
+        unescape(encodeURIComponent(JSON.stringify(payload, null, 2))),
+      );
+
       return exportToGoogleDrive({
         data: {
           fileName: `${note.title || "Untitled"}.agatike_note`,
           mimeType: "application/json",
           fileContentBase64,
-        }
+        },
       });
     },
     onSuccess: () => toast.success("Saved to Google Drive successfully!"),
@@ -218,9 +220,9 @@ function NotesPage() {
               await deleteMutation.mutateAsync(id);
             }
           }}
-          filterItem={(item: any, searchStr: string) => 
-            (item.title?.toLowerCase().includes(searchStr.toLowerCase()) || 
-             item.content?.toLowerCase().includes(searchStr.toLowerCase()))
+          filterItem={(item: any, searchStr: string) =>
+            item.title?.toLowerCase().includes(searchStr.toLowerCase()) ||
+            item.content?.toLowerCase().includes(searchStr.toLowerCase())
           }
           customContextItems={(itemId) => {
             const note = notes?.find((n: any) => n.id === itemId);
@@ -241,7 +243,7 @@ function NotesPage() {
           {({ filteredItems, currentFolderId, ItemMenu }) => {
             const pinned = filteredItems.filter((n: any) => n.pinned);
             const unpinned = filteredItems.filter((n: any) => !n.pinned);
-            
+
             return (
               <div className="space-y-10">
                 {pinned.length > 0 && (
@@ -256,7 +258,9 @@ function NotesPage() {
                             <NoteCard
                               note={note}
                               onClick={() => setActiveNote(note)}
-                              onPin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })}
+                              onPin={() =>
+                                updateMutation.mutate({ id: note.id, pinned: !note.pinned })
+                              }
                             />
                           </div>
                         </ItemMenu>
@@ -277,7 +281,9 @@ function NotesPage() {
                             <NoteCard
                               note={note}
                               onClick={() => setActiveNote(note)}
-                              onPin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })}
+                              onPin={() =>
+                                updateMutation.mutate({ id: note.id, pinned: !note.pinned })
+                              }
                             />
                           </div>
                         </ItemMenu>
@@ -457,15 +463,17 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
         workspaceSlug: activeWorkspace.slug,
         payload: { title, content, tags, id: note.id },
       };
-      
-      const fileContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-      
+
+      const fileContentBase64 = btoa(
+        unescape(encodeURIComponent(JSON.stringify(payload, null, 2))),
+      );
+
       return exportToGoogleDrive({
         data: {
           fileName: `${title || "Untitled"}.agatike_note`,
           mimeType: "application/json",
           fileContentBase64,
-        }
+        },
       });
     },
     onSuccess: () => toast.success("Saved to Google Drive successfully!"),
@@ -486,13 +494,17 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
   return (
     <div className="flex flex-col h-full w-full px-10 py-10 overflow-y-auto relative">
       <div className="absolute top-6 right-8 flex gap-2 z-20">
-        <Button 
-          variant="secondary" 
-          size="sm" 
-          onClick={() => exportMutation.mutate()} 
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => exportMutation.mutate()}
           disabled={exportMutation.isPending}
         >
-          {exportMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <HardDrive className="h-4 w-4 mr-2" />}
+          {exportMutation.isPending ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <HardDrive className="h-4 w-4 mr-2" />
+          )}
           Save to Drive
         </Button>
       </div>

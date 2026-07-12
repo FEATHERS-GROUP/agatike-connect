@@ -91,8 +91,8 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
             start: eventData.date,
             end: eventData.end_date || eventData.date,
             location: eventData.location || "TBA",
-          }
-        } as any
+          },
+        } as any,
       });
     } catch (e) {
       console.error("Failed to sync event to Google Calendar:", e);

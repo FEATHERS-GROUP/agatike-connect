@@ -4,7 +4,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrganizerProfile, updateOrganizerProfile, changeOrganizerPassword } from "@/api/organizers";
+import {
+  getOrganizerProfile,
+  updateOrganizerProfile,
+  changeOrganizerPassword,
+} from "@/api/organizers";
 import { disableDatabaseWorkspace } from "@/api/workspaces";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceWallet, getWalletTransactions } from "@/api/wallet";
@@ -12,7 +16,12 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { formatDistanceToNow } from "date-fns";
 import { WorkspaceWizard } from "@/components/dashboard/workspaces/WorkspaceWizard";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useNavigate } from "@tanstack/react-router";
 import { SettingsOverviewTab } from "@/components/dashboard/settings/SettingsOverviewTab";
 import { SettingsSocialTab } from "@/components/dashboard/settings/SettingsSocialTab";
@@ -40,20 +49,25 @@ const formSchema = z.object({
 });
 type FormValues = z.infer<typeof formSchema>;
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters"),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const passwordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(6, "New password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const CATEGORIES = [
-  { id: "bottts", label: "Robots" }, { id: "shapes", label: "Shapes" },
-  { id: "identicon", label: "Patterns" }, { id: "adventurer", label: "Characters" },
-  { id: "fun-emoji", label: "Emojis" }, { id: "micah", label: "Stylized" },
+  { id: "bottts", label: "Robots" },
+  { id: "shapes", label: "Shapes" },
+  { id: "identicon", label: "Patterns" },
+  { id: "adventurer", label: "Characters" },
+  { id: "fun-emoji", label: "Emojis" },
+  { id: "micah", label: "Stylized" },
 ];
 
 const generateAvatars = (category: string) => {
@@ -73,7 +87,9 @@ function SettingsPage() {
   const [showAllEarnings, setShowAllEarnings] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"overview" | "social" | "security" | "integrations">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "social" | "security" | "integrations">(
+    "overview",
+  );
   const [avatar, setAvatar] = useState("");
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
@@ -84,7 +100,14 @@ function SettingsPage() {
     queryFn: async () => await getOrganizerProfile(),
   });
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { isDirty, errors } } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { isDirty, errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
 
@@ -93,12 +116,19 @@ function SettingsPage() {
   useEffect(() => {
     if (profile) {
       reset({
-        name: profile.name || "", handle: profile.handle || "",
-        email: profile.email || "", phone: profile.phone || "",
-        bio: profile.bio || "", instagram: profile.socials?.instagram || "",
-        twitter: profile.socials?.twitter || "", youtube: profile.socials?.youtube || "",
+        name: profile.name || "",
+        handle: profile.handle || "",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        bio: profile.bio || "",
+        instagram: profile.socials?.instagram || "",
+        twitter: profile.socials?.twitter || "",
+        youtube: profile.socials?.youtube || "",
       });
-      setAvatar(profile.image || `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`);
+      setAvatar(
+        profile.image ||
+          `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
+      );
     }
   }, [profile, reset]);
 
@@ -109,7 +139,9 @@ function SettingsPage() {
   const nameValue = watch("name");
   useEffect(() => {
     if (nameValue && !isDirty) {
-      setValue("handle", nameValue.toLowerCase().replace(/[^a-z0-9]/g, ""), { shouldValidate: true });
+      setValue("handle", nameValue.toLowerCase().replace(/[^a-z0-9]/g, ""), {
+        shouldValidate: true,
+      });
     }
   }, [nameValue, setValue, isDirty]);
 
@@ -142,7 +174,9 @@ function SettingsPage() {
     queryKey: ["platform-earnings", activeWorkspace?.id],
     queryFn: async () => {
       if (!activeWorkspace?.id) return [];
-      const wallet = await getWorkspaceWallet({ data: { workspace_id: activeWorkspace.id } } as any);
+      const wallet = await getWorkspaceWallet({
+        data: { workspace_id: activeWorkspace.id },
+      } as any);
       if (!wallet || !wallet.id) return [];
       const txs = await getWalletTransactions({ data: { wallet_id: wallet.id } } as any);
       return txs.slice(0, 20);
@@ -189,7 +223,8 @@ function SettingsPage() {
   });
 
   const handleSaveAll = () => {
-    if (activeTab === "security") passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))();
+    if (activeTab === "security")
+      passwordForm.handleSubmit((d) => changePasswordMutation.mutate(d))();
     else handleSubmit((d) => updateMutation.mutate(d))();
   };
 
@@ -203,7 +238,12 @@ function SettingsPage() {
       <div className="px-6 md:px-10 py-6 max-w-[1400px] mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="rounded-full shrink-0" onClick={() => window.history.back()}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full shrink-0"
+              onClick={() => window.history.back()}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <img src="/agatike-logo.svg" alt="Agatike" className="h-6" />
@@ -242,11 +282,11 @@ function SettingsPage() {
 
         <div className="flex flex-col md:flex-row mt-8">
           {/* Left Column */}
-          <SettingsProfileSidebar 
-            avatar={avatar} 
-            setIsAvatarModalOpen={setIsAvatarModalOpen} 
-            register={register} 
-            errors={errors} 
+          <SettingsProfileSidebar
+            avatar={avatar}
+            setIsAvatarModalOpen={setIsAvatarModalOpen}
+            register={register}
+            errors={errors}
           />
 
           {/* Right Column */}
@@ -266,17 +306,11 @@ function SettingsPage() {
               />
             )}
 
-            {activeTab === "social" && (
-              <SettingsSocialTab register={register} />
-            )}
+            {activeTab === "social" && <SettingsSocialTab register={register} />}
 
-            {activeTab === "security" && (
-              <SettingsSecurityTab passwordForm={passwordForm} />
-            )}
+            {activeTab === "security" && <SettingsSecurityTab passwordForm={passwordForm} />}
 
-            {activeTab === "integrations" && (
-              <SettingsIntegrationsTab />
-            )}
+            {activeTab === "integrations" && <SettingsIntegrationsTab />}
           </div>
         </div>
       </div>
@@ -296,7 +330,9 @@ function SettingsPage() {
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
-                    activeCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-background text-foreground border border-border hover:border-input"
+                    activeCategory === cat.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background text-foreground border border-border hover:border-input"
                   }`}
                 >
                   {cat.label}
@@ -308,18 +344,31 @@ function SettingsPage() {
                 <div
                   key={i}
                   className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
-                    avatar === opt ? "border-primary ring-4 ring-primary/10" : "border-transparent bg-background shadow-sm hover:shadow"
+                    avatar === opt
+                      ? "border-primary ring-4 ring-primary/10"
+                      : "border-transparent bg-background shadow-sm hover:shadow"
                   }`}
                   onClick={() => setAvatar(opt)}
                 >
-                  <img src={opt} alt="Avatar" className="w-full aspect-square object-cover mix-blend-multiply dark:mix-blend-normal" />
+                  <img
+                    src={opt}
+                    alt="Avatar"
+                    className="w-full aspect-square object-cover mix-blend-multiply dark:mix-blend-normal"
+                  />
                 </div>
               ))}
             </div>
           </div>
           <div className="p-4 border-t border-border flex justify-end gap-3 bg-background">
-            <Button variant="ghost" onClick={() => setIsAvatarModalOpen(false)}>Cancel</Button>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => setIsAvatarModalOpen(false)}>Confirm</Button>
+            <Button variant="ghost" onClick={() => setIsAvatarModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => setIsAvatarModalOpen(false)}
+            >
+              Confirm
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

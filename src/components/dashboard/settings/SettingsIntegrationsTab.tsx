@@ -2,23 +2,34 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  HardDrive, 
-  Calendar, 
-  LayoutGrid, 
-  Palette, 
-  CheckCircle2, 
-  Link2, 
-  Unlink, 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  HardDrive,
+  Calendar,
+  LayoutGrid,
+  Palette,
+  CheckCircle2,
+  Link2,
+  Unlink,
   AlertCircle,
   FolderSync,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrganizerIntegrations, saveGoogleCredentials, disconnectGoogleIntegration, updateIntegrationSettings } from "@/api/integrations";
+import {
+  getOrganizerIntegrations,
+  saveGoogleCredentials,
+  disconnectGoogleIntegration,
+  updateIntegrationSettings,
+} from "@/api/integrations";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 function IntegrationsContent() {
@@ -32,7 +43,7 @@ function IntegrationsContent() {
 
   const driveConnected = !!integrations?.google?.drive;
   const calendarConnected = !!integrations?.google?.calendar;
-  
+
   const driveSettings = integrations?.google?.drive?.settings || {};
   const [driveSyncFolders, setDriveSyncFolders] = useState(driveSettings.syncFolders || false);
 
@@ -50,7 +61,7 @@ function IntegrationsContent() {
     },
     onError: (error) => {
       toast.error(`Request Error: ${error.message}`);
-    }
+    },
   });
 
   const saveCredsMutation = useMutation({
@@ -72,7 +83,7 @@ function IntegrationsContent() {
     onError: (error) => {
       console.error("[saveCredsMutation] Failed to save credentials to database:", error);
       toast.error(`Request Error: ${error.message}`);
-    }
+    },
   });
 
   const disconnectMutation = useMutation({
@@ -94,15 +105,15 @@ function IntegrationsContent() {
     onError: (error) => {
       console.error("[disconnectMutation] Failed to disconnect:", error);
       toast.error(`Request Error: ${error.message}`);
-    }
+    },
   });
 
-  const isDriveLoading = 
-    (saveCredsMutation.isPending && saveCredsMutation.variables?.data?.type === "drive") || 
+  const isDriveLoading =
+    (saveCredsMutation.isPending && saveCredsMutation.variables?.data?.type === "drive") ||
     (disconnectMutation.isPending && disconnectMutation.variables?.data?.type === "drive");
 
-  const isCalendarLoading = 
-    (saveCredsMutation.isPending && saveCredsMutation.variables?.data?.type === "calendar") || 
+  const isCalendarLoading =
+    (saveCredsMutation.isPending && saveCredsMutation.variables?.data?.type === "calendar") ||
     (disconnectMutation.isPending && disconnectMutation.variables?.data?.type === "calendar");
 
   const driveLogin = useGoogleLogin({
@@ -112,8 +123,8 @@ function IntegrationsContent() {
       saveCredsMutation.mutate({
         data: {
           type: "drive",
-          tokenData: tokenResponse
-        }
+          tokenData: tokenResponse,
+        },
       } as any);
     },
     onError: (error) => {
@@ -121,7 +132,8 @@ function IntegrationsContent() {
       toast.error("Google Drive connection failed in popup");
     },
     flow: "auth-code",
-    scope: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly"
+    scope:
+      "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly",
   });
 
   const calendarLogin = useGoogleLogin({
@@ -131,8 +143,8 @@ function IntegrationsContent() {
       saveCredsMutation.mutate({
         data: {
           type: "calendar",
-          tokenData: tokenResponse
-        }
+          tokenData: tokenResponse,
+        },
       } as any);
     },
     onError: (error) => {
@@ -140,7 +152,7 @@ function IntegrationsContent() {
       toast.error("Google Calendar connection failed in popup");
     },
     flow: "auth-code",
-    scope: "https://www.googleapis.com/auth/calendar.events"
+    scope: "https://www.googleapis.com/auth/calendar.events",
   });
 
   const handleConnectDrive = () => {
@@ -166,8 +178,8 @@ function IntegrationsContent() {
     updateSettingsMutation.mutate({
       data: {
         type: "drive",
-        settings: { syncFolders: checked }
-      }
+        settings: { syncFolders: checked },
+      },
     } as any);
   };
 
@@ -175,8 +187,8 @@ function IntegrationsContent() {
     updateSettingsMutation.mutate({
       data: {
         type: "drive",
-        settings: { exportFolder: value }
-      }
+        settings: { exportFolder: value },
+      },
     } as any);
   };
 
@@ -185,17 +197,22 @@ function IntegrationsContent() {
       <div>
         <h2 className="text-xl font-bold mb-2">Global Integrations</h2>
         <p className="text-sm text-muted-foreground">
-          Connect your workspace with third-party tools to automate your workflows. These settings apply globally across your organizer workspace.
+          Connect your workspace with third-party tools to automate your workflows. These settings
+          apply globally across your organizer workspace.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
         {/* Google Drive Integration */}
-        <div className={`rounded-xl border transition-all duration-300 ${driveConnected ? "border-primary/50 shadow-md bg-primary/5" : "border-border bg-card"}`}>
+        <div
+          className={`rounded-xl border transition-all duration-300 ${driveConnected ? "border-primary/50 shadow-md bg-primary/5" : "border-border bg-card"}`}
+        >
           <div className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex gap-4">
-                <div className={`p-3 rounded-xl shrink-0 ${driveConnected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
+                <div
+                  className={`p-3 rounded-xl shrink-0 ${driveConnected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+                >
                   <HardDrive className="w-6 h-6" />
                 </div>
                 <div>
@@ -209,22 +226,34 @@ function IntegrationsContent() {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground max-w-lg">
-                    Export excel files, backup folders, and seamlessly move information from Agatike to your Google Drive.
+                    Export excel files, backup folders, and seamlessly move information from Agatike
+                    to your Google Drive.
                   </p>
                 </div>
               </div>
-              <Button 
-                variant={driveConnected ? "outline" : "default"} 
+              <Button
+                variant={driveConnected ? "outline" : "default"}
                 onClick={handleConnectDrive}
                 disabled={isDriveLoading}
-                className={driveConnected ? "text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10" : ""}
+                className={
+                  driveConnected
+                    ? "text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10"
+                    : ""
+                }
               >
                 {isDriveLoading ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {driveConnected ? "Disconnecting..." : "Connecting..."}</>
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />{" "}
+                    {driveConnected ? "Disconnecting..." : "Connecting..."}
+                  </>
                 ) : driveConnected ? (
-                  <><Unlink className="w-4 h-4 mr-2" /> Disconnect</>
+                  <>
+                    <Unlink className="w-4 h-4 mr-2" /> Disconnect
+                  </>
                 ) : (
-                  <><Link2 className="w-4 h-4 mr-2" /> Connect</>
+                  <>
+                    <Link2 className="w-4 h-4 mr-2" /> Connect
+                  </>
                 )}
               </Button>
             </div>
@@ -234,14 +263,19 @@ function IntegrationsContent() {
                 <div className="flex items-start gap-3 p-3 mb-6 bg-blue-500/10 text-blue-600 rounded-lg text-sm">
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <p>
-                    <strong>Note:</strong> Files can only be added or modified by Agatike. We cannot delete files or folders from your Google Drive account to ensure your data remains safe.
+                    <strong>Note:</strong> Files can only be added or modified by Agatike. We cannot
+                    delete files or folders from your Google Drive account to ensure your data
+                    remains safe.
                   </p>
                 </div>
-                
+
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold">Default Export Folder</Label>
-                    <Select defaultValue={driveSettings.exportFolder || "agatike-exports"} onValueChange={handleFolderChange}>
+                    <Select
+                      defaultValue={driveSettings.exportFolder || "agatike-exports"}
+                      onValueChange={handleFolderChange}
+                    >
                       <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Select folder" />
                       </SelectTrigger>
@@ -251,15 +285,23 @@ function IntegrationsContent() {
                         <SelectItem value="agatike-events">/Agatike Events</SelectItem>
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">Choose where exported Excel files will be saved.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Choose where exported Excel files will be saved.
+                    </p>
                   </div>
 
                   <div className="flex items-center justify-between p-4 rounded-lg bg-background border">
                     <div className="space-y-0.5">
                       <Label className="text-sm font-semibold">Enable Folder Sync</Label>
-                      <p className="text-xs text-muted-foreground">Automatically backup event folders</p>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically backup event folders
+                      </p>
                     </div>
-                    <Switch checked={driveSyncFolders} onCheckedChange={handleToggleSync} disabled={updateSettingsMutation.isPending} />
+                    <Switch
+                      checked={driveSyncFolders}
+                      onCheckedChange={handleToggleSync}
+                      disabled={updateSettingsMutation.isPending}
+                    />
                   </div>
                 </div>
               </div>
@@ -268,11 +310,15 @@ function IntegrationsContent() {
         </div>
 
         {/* Google Calendar Integration */}
-        <div className={`rounded-xl border transition-all duration-300 ${calendarConnected ? "border-primary/50 shadow-md bg-primary/5" : "border-border bg-card"}`}>
+        <div
+          className={`rounded-xl border transition-all duration-300 ${calendarConnected ? "border-primary/50 shadow-md bg-primary/5" : "border-border bg-card"}`}
+        >
           <div className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex gap-4">
-                <div className={`p-3 rounded-xl shrink-0 ${calendarConnected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
+                <div
+                  className={`p-3 rounded-xl shrink-0 ${calendarConnected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+                >
                   <Calendar className="w-6 h-6" />
                 </div>
                 <div>
@@ -286,22 +332,34 @@ function IntegrationsContent() {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground max-w-lg">
-                    Automatically sync all your workspace events and meetings directly to your Google Calendar.
+                    Automatically sync all your workspace events and meetings directly to your
+                    Google Calendar.
                   </p>
                 </div>
               </div>
-              <Button 
-                variant={calendarConnected ? "outline" : "default"} 
+              <Button
+                variant={calendarConnected ? "outline" : "default"}
                 onClick={handleConnectCalendar}
                 disabled={isCalendarLoading}
-                className={calendarConnected ? "text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10" : ""}
+                className={
+                  calendarConnected
+                    ? "text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10"
+                    : ""
+                }
               >
                 {isCalendarLoading ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {calendarConnected ? "Disconnecting..." : "Connecting..."}</>
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />{" "}
+                    {calendarConnected ? "Disconnecting..." : "Connecting..."}
+                  </>
                 ) : calendarConnected ? (
-                  <><Unlink className="w-4 h-4 mr-2" /> Disconnect</>
+                  <>
+                    <Unlink className="w-4 h-4 mr-2" /> Disconnect
+                  </>
                 ) : (
-                  <><Link2 className="w-4 h-4 mr-2" /> Connect</>
+                  <>
+                    <Link2 className="w-4 h-4 mr-2" /> Connect
+                  </>
                 )}
               </Button>
             </div>
@@ -315,7 +373,8 @@ function IntegrationsContent() {
                   <div>
                     <h4 className="text-sm font-semibold">Automatic Sync Enabled</h4>
                     <p className="text-xs text-muted-foreground">
-                      Events created in Agatike will be automatically pushed to your primary Google Calendar.
+                      Events created in Agatike will be automatically pushed to your primary Google
+                      Calendar.
                     </p>
                   </div>
                 </div>
@@ -333,7 +392,9 @@ function IntegrationsContent() {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-lg font-semibold text-muted-foreground">Microsoft Office 365</h3>
+                  <h3 className="text-lg font-semibold text-muted-foreground">
+                    Microsoft Office 365
+                  </h3>
                   <span className="text-[10px] font-bold tracking-wider uppercase bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
                     Coming Soon
                   </span>
@@ -343,7 +404,9 @@ function IntegrationsContent() {
                 </p>
               </div>
             </div>
-            <Button variant="outline" disabled>Connect</Button>
+            <Button variant="outline" disabled>
+              Connect
+            </Button>
           </div>
         </div>
 
@@ -365,10 +428,11 @@ function IntegrationsContent() {
                 </p>
               </div>
             </div>
-            <Button variant="outline" disabled>Connect</Button>
+            <Button variant="outline" disabled>
+              Connect
+            </Button>
           </div>
         </div>
-
       </div>
     </div>
   );
