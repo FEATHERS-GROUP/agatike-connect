@@ -153,7 +153,7 @@ export function VenuesDesktop() {
                         disabled
                         className="rounded-xl px-6 bg-muted text-muted-foreground cursor-not-allowed border border-border text-xs"
                       >
-                        Coming Soon
+                        Not in your location
                       </Button>
                     ) : venue.source === "space" ? (
                       <Link to="/spaces/$spaceId" params={{ spaceId: venue.id }}>

@@ -122,8 +122,8 @@ export function VenuesMobile() {
                         Maintenance
                       </div>
                     ) : venue.bookingDisabled ? (
-                      <div className="h-8 px-4 rounded-lg flex items-center justify-center text-xs font-bold bg-muted text-muted-foreground border border-border">
-                        Coming Soon
+                      <div className="h-8 px-4 rounded-lg flex items-center justify-center text-[10px] font-bold bg-muted text-muted-foreground border border-border">
+                        Not in your location
                       </div>
                     ) : (
                       <div

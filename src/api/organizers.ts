@@ -123,7 +123,9 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
       }
     `;
 
-  const payload = { ...data };
+  const payload = { ...data } as any;
+  delete payload.otpToken;
+  delete payload.otp;
   if (!payload.user_id) {
     payload.user_id = null;
   }
