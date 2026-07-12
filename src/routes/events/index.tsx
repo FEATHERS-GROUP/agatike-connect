@@ -17,7 +17,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
 
-import { categories } from "@/lib/mock-data";
+const categories = [
+  "Music",
+  "Sports",
+  "Cinema",
+  "Conferences",
+  "Nightlife",
+  "Festivals",
+  "Comedy",
+  "Workshop",
+  "Hiking",
+  "Running",
+  "Surf",
+  "Wellness",
+  "Drawing",
+  "Art",
+  "Trips",
+  "Bike Rides",
+  "Yoga",
+  "Book Clubs",
+  "Tourism",
+];
 
 export const Route = createFileRoute("/events/")({
   head: () => ({

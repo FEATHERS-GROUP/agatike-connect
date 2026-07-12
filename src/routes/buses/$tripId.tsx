@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/currency";
 import { Label } from "@/components/ui/label";
-import { mockBusTrips } from "@/lib/mock-bus-data";
+const mockBusTrips: any[] = [];
 
 export const Route = createFileRoute("/buses/$tripId")({
   component: BusTripDetails,

@@ -12,7 +12,8 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
 import { useState, useMemo, useEffect } from "react";
 import { isWeekendEvent } from "@/lib/utils";
-import { mockSubscriptionPlans, mockBusTickets } from "@/lib/mock-data-search";
+const mockSubscriptionPlans: any[] = [];
+const mockBusTickets: any[] = [];
 
 // Stubbed mock data
 const categories: any[] = [];
