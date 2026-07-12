@@ -230,59 +230,61 @@ export function DesktopSidebar() {
           </div>
         )}
 
-        <div className="mt-2 space-y-0.5">
-          <button
-            onClick={() => setIsBillingGroupOpen(!isBillingGroupOpen)}
-            className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors text-muted-foreground hover:bg-secondary hover:text-foreground"
-          >
-            <div className="flex items-center gap-2.5">
-              <LucideIcons.CreditCard className="h-4 w-4 shrink-0" />
-              <span className="truncate font-medium">Billing & Plans</span>
-            </div>
-            {isBillingGroupOpen ? (
-              <LucideIcons.ChevronDown className="h-4 w-4 shrink-0" />
-            ) : (
-              <LucideIcons.ChevronRight className="h-4 w-4 shrink-0" />
+        {currentUser?.role === "organizer" && (
+          <div className="mt-2 space-y-0.5">
+            <button
+              onClick={() => setIsBillingGroupOpen(!isBillingGroupOpen)}
+              className="flex w-full items-center justify-between gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <div className="flex items-center gap-2.5">
+                <LucideIcons.CreditCard className="h-4 w-4 shrink-0" />
+                <span className="truncate font-medium">Billing & Plans</span>
+              </div>
+              {isBillingGroupOpen ? (
+                <LucideIcons.ChevronDown className="h-4 w-4 shrink-0" />
+              ) : (
+                <LucideIcons.ChevronRight className="h-4 w-4 shrink-0" />
+              )}
+            </button>
+            {isBillingGroupOpen && (
+              <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
+                <Link
+                  to="/dashboard/billing"
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname === "/dashboard/billing"
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.LayoutDashboard className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Overview</span>
+                </Link>
+                <Link
+                  to="/dashboard/billing/subscriptions"
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.startsWith("/dashboard/billing/subscriptions")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.Zap className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Subscriptions</span>
+                </Link>
+                <Link
+                  to="/dashboard/billing/invoices"
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    location.pathname.startsWith("/dashboard/billing/invoices")
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <LucideIcons.Receipt className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">Invoices</span>
+                </Link>
+              </div>
             )}
-          </button>
-          {isBillingGroupOpen && (
-            <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
-              <Link
-                to="/dashboard/billing"
-                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                  location.pathname === "/dashboard/billing"
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <LucideIcons.LayoutDashboard className="h-4 w-4 shrink-0" />
-                <span className="truncate flex-1">Overview</span>
-              </Link>
-              <Link
-                to="/dashboard/billing/subscriptions"
-                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                  location.pathname.startsWith("/dashboard/billing/subscriptions")
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <LucideIcons.Zap className="h-4 w-4 shrink-0" />
-                <span className="truncate flex-1">Subscriptions</span>
-              </Link>
-              <Link
-                to="/dashboard/billing/invoices"
-                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                  location.pathname.startsWith("/dashboard/billing/invoices")
-                    ? "bg-accent text-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                }`}
-              >
-                <LucideIcons.Receipt className="h-4 w-4 shrink-0" />
-                <span className="truncate flex-1">Invoices</span>
-              </Link>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Help & Support */}
         <div className="mt-2 pt-2 border-t border-border/40">
@@ -300,7 +302,7 @@ export function DesktopSidebar() {
         </div>
       </nav>
 
-      {currentUser &&
+      {currentUser && currentUser.role === "organizer" &&
         (currentUser.isBasic || currentUser.isExpiringSoon || currentUser.isExpired) && (
           <div className="mt-4 relative rounded-xl border border-border/60 bg-accent/20 p-3.5 shrink-0">
             {currentUser.isBasic ? (
@@ -359,9 +361,11 @@ export function DesktopSidebar() {
         )}
 
       {/* Add Billing Banner to the bottom of the sidebar */}
-      <div className="mt-4 px-2 shrink-0">
-        <BillingBanner />
-      </div>
+      {currentUser?.role === "organizer" && (
+        <div className="mt-4 px-2 shrink-0">
+          <BillingBanner />
+        </div>
+      )}
     </aside>
   );
 }

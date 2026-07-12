@@ -247,6 +247,8 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
         id
         password
         status
+        is_temporary
+        expires_at
       }
     }
   `;
@@ -258,6 +260,12 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
   if (user.status === "disabled" || user.status === "deleted")
     throw new Error("This account has been disabled or no longer exists.");
   if (user.status !== "active") throw new Error("Please activate your account first");
+
+  if (user.is_temporary && user.expires_at) {
+    if (new Date(user.expires_at).getTime() < Date.now()) {
+      throw new Error("This temporary account has expired.");
+    }
+  }
 
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) throw new Error("Invalid email or password");

@@ -34,7 +34,8 @@ export const Route = createFileRoute("/dashboard")({
   beforeLoad: async ({ location }) => {
     if (
       location.pathname === "/dashboard/login" ||
-      location.pathname === "/dashboard/create-organizer"
+      location.pathname === "/dashboard/create-organizer" ||
+      location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/)
     ) {
       return;
     }
@@ -99,6 +100,7 @@ function DashboardLayout() {
     location.pathname === "/dashboard/settings" ||
     location.pathname === "/dashboard/billing/subscriptions/pricingplans" ||
     location.pathname.startsWith("/dashboard/billing/subscriptions/checkout") ||
+    !!location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/) ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
@@ -148,7 +150,7 @@ function DashboardLayout() {
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
       location.pathname === "/dashboard/support" ||
-      location.pathname === "/dashboard/workspace-user/activate" ||
+      location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/) ||
       location.pathname.startsWith("/dashboard/billing")
     )
       return;

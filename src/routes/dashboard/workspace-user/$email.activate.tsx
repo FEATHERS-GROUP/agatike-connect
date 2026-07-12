@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect, useRouter } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { activateWorkspaceUser } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
@@ -52,11 +52,16 @@ function ActivatePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const router = useRouter();
+
   const activateMutation = useMutation({
     mutationFn: (input: any) => activateWorkspaceUser(input),
     onSuccess: () => {
       toast.success("Account activated successfully! Logging you in...");
-      navigate({ to: "/dashboard" }); // Navigate to the dashboard after activation
+      setTimeout(async () => {
+        await router.invalidate();
+        navigate({ to: "/dashboard" }); // Navigate to the dashboard after activation
+      }, 1000);
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to activate account");
