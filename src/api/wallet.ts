@@ -557,6 +557,21 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       network_fee: networkFee,
     });
 
+    try {
+      const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `🚨 *New Withdrawal Request (Requires Admin Approval)*\n*Workspace ID:* ${workspace_id}\n*Amount:* ${amount} ${currency}\n*Method:* ${payout_method} (${payout_account})\n<https://agatike.com/admin/withdrawals|Review in Admin Panel>`,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Slack notification failed:", e);
+    }
+
     return {
       success: true,
       requestId: reqData.insert_withdrawal_requests_one?.id,
@@ -645,6 +660,21 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       console.error("Failed to automatically trigger PawaPay payout:", e);
       // We do not throw here to avoid rolling back the DB insert,
       // but it will remain 'pending' and admins can retry it.
+    }
+
+    try {
+      const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `💸 *New Self-Serve Withdrawal*\n*Workspace ID:* ${workspace_id}\n*Amount:* ${amount} ${currency}\n*Method:* ${payout_method} (${payout_account})\n<https://agatike.com/admin/withdrawals|View in Admin Panel>`,
+          }),
+        });
+      }
+    } catch (e) {
+      console.error("Slack notification failed:", e);
     }
 
     return {
