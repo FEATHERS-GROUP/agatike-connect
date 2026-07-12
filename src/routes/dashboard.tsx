@@ -17,10 +17,18 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, PlusCircle, Ticket, LifeBuoy } from "lucide-react";
 import { getSession, logout } from "@/api/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { GlobalCommandMenu } from "@/components/dashboard/GlobalCommandMenu";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: async ({ location }) => {
@@ -114,6 +122,21 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
+
+  // Determine dynamic "Add" action for context menu based on route
+  const getDynamicAddAction = () => {
+    const p = location.pathname;
+    const base = `/dashboard/${activeWorkspace?.slug}`;
+    if (p.includes("/events")) return { label: "Create Event", route: `${base}/events/create-event` };
+    if (p.includes("/venues")) return { label: "Add Venue", route: `${base}/venues/create-venue` };
+    if (p.includes("/spaces")) return { label: "Add Space", route: `${base}/spaces/create-space` };
+    if (p.includes("/Cinema")) return { label: "Add Movie", route: `${base}/Cinema/create-movie` };
+    if (p.includes("/trips")) return { label: "Add Trip", route: `${base}/trips/create-trip` };
+    if (p.includes("/users")) return { label: "Add User", route: `${base}/users/add-user` };
+    if (p.includes("/page-builder")) return { label: "Create Page", route: `${base}/page-builder/editor` };
+    return null;
+  };
+  const dynamicAddAction = getDynamicAddAction();
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -413,26 +436,42 @@ function DashboardLayout() {
             ))}
 
           {/* Main Content Area */}
-          <main
-            className={`flex-1 min-w-0 relative ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
-          >
-            <Outlet />
-            
-            {/* Global Refresh Button */}
-            {currentUser && !hideSidebar && !isDesigner && (
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="fixed top-6 left-[calc(50%+150px)] -translate-x-1/2 z-50 px-4 py-2 bg-primary text-primary-foreground rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2 print:hidden group text-sm font-medium cursor-pointer disabled:cursor-not-allowed"
-                title="Refresh Data"
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <main
+                className={`flex-1 min-w-0 relative ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
               >
-                <RefreshCw className={`w-4 h-4 transition-transform ${isRefreshing ? "animate-spin" : "group-hover:rotate-180 duration-500"}`} />
-                <span>Refresh Data</span>
-              </button>
+                <Outlet />
+              </main>
+            </ContextMenuTrigger>
+
+            {currentUser && !isDesigner && (
+              <ContextMenuContent className="w-56">
+                {dynamicAddAction && (
+                  <>
+                    <ContextMenuItem onClick={() => navigate({ to: dynamicAddAction.route })}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      {dynamicAddAction.label}
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                  </>
+                )}
+                
+                <ContextMenuItem onClick={handleRefresh}>
+                  <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  Refresh Data
+                </ContextMenuItem>
+                
+                <ContextMenuItem onClick={() => navigate({ to: "/dashboard/support" })}>
+                  <LifeBuoy className="mr-2 h-4 w-4" />
+                  Raise Support Ticket
+                </ContextMenuItem>
+              </ContextMenuContent>
             )}
-          </main>
+          </ContextMenu>
         </div>
       </div>
+      <GlobalCommandMenu />
     </>
   );
 }
