@@ -91,6 +91,14 @@ export default defineConfig({
     nitro({
       preset: process.env.VERCEL ? "vercel" : "node-server",
       sourcemap: false,
+      routeRules: {
+        "/**": {
+          headers: {
+            "Cross-Origin-Opener-Policy": "unsafe-none",
+            "Cross-Origin-Embedder-Policy": "unsafe-none",
+          },
+        },
+      },
     }),
     viteReact(),
     tsConfigPaths({

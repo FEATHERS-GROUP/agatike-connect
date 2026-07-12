@@ -17,6 +17,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { SettingsOverviewTab } from "@/components/dashboard/settings/SettingsOverviewTab";
 import { SettingsSocialTab } from "@/components/dashboard/settings/SettingsSocialTab";
 import { SettingsSecurityTab } from "@/components/dashboard/settings/SettingsSecurityTab";
+import { SettingsIntegrationsTab } from "@/components/dashboard/settings/SettingsIntegrationsTab";
 import { SettingsProfileSidebar } from "@/components/dashboard/settings/SettingsProfileSidebar";
 import { Camera, Globe, ArrowLeft, X, Dices } from "lucide-react";
 import { toast } from "sonner";
@@ -72,7 +73,7 @@ function SettingsPage() {
   const [showAllEarnings, setShowAllEarnings] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"overview" | "social" | "security">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "social" | "security" | "integrations">("overview");
   const [avatar, setAvatar] = useState("");
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
@@ -223,6 +224,7 @@ function SettingsPage() {
             { id: "overview", label: "Overview" },
             { id: "social", label: "Social Links" },
             { id: "security", label: "Security" },
+            { id: "integrations", label: "Integrations" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -270,6 +272,10 @@ function SettingsPage() {
 
             {activeTab === "security" && (
               <SettingsSecurityTab passwordForm={passwordForm} />
+            )}
+
+            {activeTab === "integrations" && (
+              <SettingsIntegrationsTab />
             )}
           </div>
         </div>

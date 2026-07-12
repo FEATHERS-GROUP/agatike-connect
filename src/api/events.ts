@@ -4,6 +4,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { getSession } from "./auth";
 import { sendPushNotification } from "./push";
+import { syncEventToGoogleCalendar } from "./integrations";
 
 const CREATE_EVENT = `
   mutation CreateEvent($object: events_insert_input!) {
@@ -77,6 +78,24 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
       }
     } catch (e) {
       console.error("Failed to push new_event notification:", e);
+    }
+
+    try {
+      // Sync to Google Calendar if configured
+      await syncEventToGoogleCalendar({
+        data: {
+          workspaceId: eventData.workspace_id,
+          eventDetails: {
+            summary: eventData.name,
+            description: eventData.description || "",
+            start: eventData.date,
+            end: eventData.end_date || eventData.date,
+            location: eventData.location || "TBA",
+          }
+        } as any
+      });
+    } catch (e) {
+      console.error("Failed to sync event to Google Calendar:", e);
     }
   }
 
