@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 type FolderPathItem = { id: string; name: string };
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/drive")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { path?: string; pageToken?: string } => {
     return {
       path: search.path as string | undefined,
       pageToken: search.pageToken as string | undefined,
@@ -163,7 +163,8 @@ function DriveHub() {
       <div className="space-y-6 max-w-4xl">
         <div>
           <Link
-            to={`/dashboard/${workspaceSlug}/book`}
+            to="/dashboard/$workspaceSlug/book"
+            params={{ workspaceSlug }}
             className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -195,7 +196,8 @@ function DriveHub() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <Link
-            to={`/dashboard/${workspaceSlug}/book`}
+            to="/dashboard/$workspaceSlug/book"
+            params={{ workspaceSlug }}
             className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

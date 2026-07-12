@@ -149,7 +149,8 @@ function InvoicePreviewPage() {
       <div className="flex items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3">
           <Link
-            to={`/dashboard/${workspaceSlug}/book/procurement`}
+            to="/dashboard/$workspaceSlug/book/procurement"
+            params={{ workspaceSlug }}
             className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-secondary/50 hover:bg-secondary"
           >
             <ArrowLeft className="h-4 w-4" />
