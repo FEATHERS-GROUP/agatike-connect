@@ -118,6 +118,7 @@ import { Route as DashboardWorkspaceSlugBookProcurementRouteImport } from './rou
 import { Route as DashboardWorkspaceSlugBookNotesRouteImport } from './routes/dashboard/$workspaceSlug/book/notes'
 import { Route as DashboardWorkspaceSlugBookNewFinanceRequestRouteImport } from './routes/dashboard/$workspaceSlug/book/new-finance-request'
 import { Route as DashboardWorkspaceSlugBookFinanceRouteImport } from './routes/dashboard/$workspaceSlug/book/finance'
+import { Route as DashboardWorkspaceSlugBookDriveRouteImport } from './routes/dashboard/$workspaceSlug/book/drive'
 import { Route as DashboardWorkspaceSlugBookBooksRouteImport } from './routes/dashboard/$workspaceSlug/book/books'
 import { Route as DashboardWorkspaceSlugBadgeDesignerProjectIdRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/$projectId'
 import { Route as DashboardWorkspaceSlugCinemaTicketTiersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/ticket-tiers'
@@ -801,6 +802,12 @@ const DashboardWorkspaceSlugBookFinanceRoute =
     path: '/$workspaceSlug/book/finance',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugBookDriveRoute =
+  DashboardWorkspaceSlugBookDriveRouteImport.update({
+    id: '/$workspaceSlug/book/drive',
+    path: '/$workspaceSlug/book/drive',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugBookBooksRoute =
   DashboardWorkspaceSlugBookBooksRouteImport.update({
     id: '/$workspaceSlug/book/books',
@@ -1393,6 +1400,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/book/books': typeof DashboardWorkspaceSlugBookBooksRoute
+  '/dashboard/$workspaceSlug/book/drive': typeof DashboardWorkspaceSlugBookDriveRoute
   '/dashboard/$workspaceSlug/book/finance': typeof DashboardWorkspaceSlugBookFinanceRoute
   '/dashboard/$workspaceSlug/book/new-finance-request': typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   '/dashboard/$workspaceSlug/book/notes': typeof DashboardWorkspaceSlugBookNotesRoute
@@ -1587,6 +1595,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/book/books': typeof DashboardWorkspaceSlugBookBooksRoute
+  '/dashboard/$workspaceSlug/book/drive': typeof DashboardWorkspaceSlugBookDriveRoute
   '/dashboard/$workspaceSlug/book/finance': typeof DashboardWorkspaceSlugBookFinanceRoute
   '/dashboard/$workspaceSlug/book/new-finance-request': typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   '/dashboard/$workspaceSlug/book/notes': typeof DashboardWorkspaceSlugBookNotesRoute
@@ -1782,6 +1791,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/Cinema/ticket-tiers': typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   '/dashboard/$workspaceSlug/badge-designer/$projectId': typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/book/books': typeof DashboardWorkspaceSlugBookBooksRoute
+  '/dashboard/$workspaceSlug/book/drive': typeof DashboardWorkspaceSlugBookDriveRoute
   '/dashboard/$workspaceSlug/book/finance': typeof DashboardWorkspaceSlugBookFinanceRoute
   '/dashboard/$workspaceSlug/book/new-finance-request': typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   '/dashboard/$workspaceSlug/book/notes': typeof DashboardWorkspaceSlugBookNotesRoute
@@ -1980,6 +1990,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/book/books'
+    | '/dashboard/$workspaceSlug/book/drive'
     | '/dashboard/$workspaceSlug/book/finance'
     | '/dashboard/$workspaceSlug/book/new-finance-request'
     | '/dashboard/$workspaceSlug/book/notes'
@@ -2174,6 +2185,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/book/books'
+    | '/dashboard/$workspaceSlug/book/drive'
     | '/dashboard/$workspaceSlug/book/finance'
     | '/dashboard/$workspaceSlug/book/new-finance-request'
     | '/dashboard/$workspaceSlug/book/notes'
@@ -2368,6 +2380,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/ticket-tiers'
     | '/dashboard/$workspaceSlug/badge-designer/$projectId'
     | '/dashboard/$workspaceSlug/book/books'
+    | '/dashboard/$workspaceSlug/book/drive'
     | '/dashboard/$workspaceSlug/book/finance'
     | '/dashboard/$workspaceSlug/book/new-finance-request'
     | '/dashboard/$workspaceSlug/book/notes'
@@ -3308,6 +3321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugBookFinanceRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/book/drive': {
+      id: '/dashboard/$workspaceSlug/book/drive'
+      path: '/$workspaceSlug/book/drive'
+      fullPath: '/dashboard/$workspaceSlug/book/drive'
+      preLoaderRoute: typeof DashboardWorkspaceSlugBookDriveRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/book/books': {
       id: '/dashboard/$workspaceSlug/book/books'
       path: '/$workspaceSlug/book/books'
@@ -4043,6 +4063,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugCinemaTicketTiersRoute: typeof DashboardWorkspaceSlugCinemaTicketTiersRoute
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute: typeof DashboardWorkspaceSlugBadgeDesignerProjectIdRoute
   DashboardWorkspaceSlugBookBooksRoute: typeof DashboardWorkspaceSlugBookBooksRoute
+  DashboardWorkspaceSlugBookDriveRoute: typeof DashboardWorkspaceSlugBookDriveRoute
   DashboardWorkspaceSlugBookFinanceRoute: typeof DashboardWorkspaceSlugBookFinanceRoute
   DashboardWorkspaceSlugBookNewFinanceRequestRoute: typeof DashboardWorkspaceSlugBookNewFinanceRequestRoute
   DashboardWorkspaceSlugBookNotesRoute: typeof DashboardWorkspaceSlugBookNotesRoute
@@ -4138,6 +4159,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardWorkspaceSlugBadgeDesignerProjectIdRoute:
     DashboardWorkspaceSlugBadgeDesignerProjectIdRoute,
   DashboardWorkspaceSlugBookBooksRoute: DashboardWorkspaceSlugBookBooksRoute,
+  DashboardWorkspaceSlugBookDriveRoute: DashboardWorkspaceSlugBookDriveRoute,
   DashboardWorkspaceSlugBookFinanceRoute:
     DashboardWorkspaceSlugBookFinanceRoute,
   DashboardWorkspaceSlugBookNewFinanceRequestRoute:

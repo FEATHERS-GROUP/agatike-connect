@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrganizerIntegrations, saveGoogleCredentials, disconnectGoogleIntegration } from "@/api/integrations";
+import { getOrganizerIntegrations, saveGoogleCredentials, disconnectGoogleIntegration, updateIntegrationSettings } from "@/api/integrations";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 function IntegrationsContent() {
@@ -32,7 +32,26 @@ function IntegrationsContent() {
 
   const driveConnected = !!integrations?.google?.drive;
   const calendarConnected = !!integrations?.google?.calendar;
-  const [driveSyncFolders, setDriveSyncFolders] = useState(false);
+  
+  const driveSettings = integrations?.google?.drive?.settings || {};
+  const [driveSyncFolders, setDriveSyncFolders] = useState(driveSettings.syncFolders || false);
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (input: any) => {
+      return await updateIntegrationSettings(input);
+    },
+    onSuccess: (data: any) => {
+      if (data && data.success === false) {
+        toast.error(`Error saving settings: ${data.error}`);
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["organizer-integrations"] });
+      toast.success("Settings saved");
+    },
+    onError: (error) => {
+      toast.error(`Request Error: ${error.message}`);
+    }
+  });
 
   const saveCredsMutation = useMutation({
     mutationFn: async (input: any) => {
@@ -140,6 +159,25 @@ function IntegrationsContent() {
     }
   };
 
+  const handleToggleSync = (checked: boolean) => {
+    setDriveSyncFolders(checked);
+    updateSettingsMutation.mutate({
+      data: {
+        type: "drive",
+        settings: { syncFolders: checked }
+      }
+    } as any);
+  };
+
+  const handleFolderChange = (value: string) => {
+    updateSettingsMutation.mutate({
+      data: {
+        type: "drive",
+        settings: { exportFolder: value }
+      }
+    } as any);
+  };
+
   return (
     <div className="animate-in fade-in duration-500 max-w-4xl space-y-8">
       <div>
@@ -201,7 +239,7 @@ function IntegrationsContent() {
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold">Default Export Folder</Label>
-                    <Select defaultValue="agatike-exports">
+                    <Select defaultValue={driveSettings.exportFolder || "agatike-exports"} onValueChange={handleFolderChange}>
                       <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Select folder" />
                       </SelectTrigger>
@@ -219,7 +257,7 @@ function IntegrationsContent() {
                       <Label className="text-sm font-semibold">Enable Folder Sync</Label>
                       <p className="text-xs text-muted-foreground">Automatically backup event folders</p>
                     </div>
-                    <Switch checked={driveSyncFolders} onCheckedChange={setDriveSyncFolders} />
+                    <Switch checked={driveSyncFolders} onCheckedChange={handleToggleSync} disabled={updateSettingsMutation.isPending} />
                   </div>
                 </div>
               </div>

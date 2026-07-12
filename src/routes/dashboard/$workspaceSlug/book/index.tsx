@@ -8,6 +8,7 @@ import {
   FileText,
   ArrowRight,
   Sparkles,
+  HardDrive
 } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";
@@ -126,6 +127,19 @@ function AgatikeBookHub() {
           : draftInvoices > 0
             ? "text-amber-500"
             : "text-rose-500",
+    },
+    {
+      id: "drive",
+      label: "Drive Manager",
+      description: "Browse exported Excel files and pull data from Google Drive.",
+      icon: HardDrive,
+      color: "text-indigo-500",
+      bg: "bg-indigo-500/10",
+      border: "border-indigo-500/20",
+      gradient: "from-indigo-500/10 to-indigo-600/5",
+      href: `/dashboard/${workspaceSlug}/book/drive`,
+      stat: "Connected",
+      statColor: "text-indigo-500",
     },
   ];
 

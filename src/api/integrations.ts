@@ -115,6 +115,48 @@ export const disconnectGoogleIntegration = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const updateIntegrationSettings = createServerFn({ method: "POST" })
+  .validator((d: { type: "drive" | "calendar"; settings: any }) => d)
+  .handler(async (ctx) => {
+    try {
+      const session = await getSession();
+      if (!session || !session.sub) return { success: false, error: "Unauthenticated" };
+
+      let organizerId = session.sub;
+      if (session.type === "workspace_user") {
+        const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+          `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+          { id: session.sub }
+        );
+        organizerId = meData.workspace_users_by_pk?.organizer_id;
+      }
+
+      const { type, settings } = ctx.data;
+      const organizer = await getOrganizer(organizerId);
+      if (!organizer) return { success: false, error: "Organizer not found" };
+
+      const integrations = organizer.integrations || {};
+      
+      if (!integrations.google || !integrations.google[type]) {
+        return { success: false, error: "Integration not connected" };
+      }
+
+      integrations.google[type] = {
+        ...integrations.google[type],
+        settings: {
+          ...(integrations.google[type].settings || {}),
+          ...settings
+        }
+      };
+
+      await updateOrganizerIntegrations(organizerId, integrations);
+      return { success: true };
+    } catch (e: any) {
+      console.error("[API] updateIntegrationSettings caught error:", e);
+      return { success: false, error: e.message || String(e) };
+    }
+  });
+
 export const getOrganizerIntegrations = createServerFn({ method: "GET" })
   .handler(async (ctx) => {
     const session = await getSession();
@@ -133,6 +175,59 @@ export const getOrganizerIntegrations = createServerFn({ method: "GET" })
     if (!organizer) return {};
 
     return organizer.integrations || {};
+  });
+
+export const listGoogleDriveFiles = createServerFn({ method: "GET" })
+  .handler(async (ctx) => {
+    try {
+      const session = await getSession();
+      if (!session || !session.sub) return { success: false, error: "Unauthenticated" };
+
+      let organizerId = session.sub;
+      if (session.type === "workspace_user") {
+        const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+          `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+          { id: session.sub }
+        );
+        organizerId = meData.workspace_users_by_pk?.organizer_id;
+      }
+
+      const organizer = await getOrganizer(organizerId);
+      if (!organizer) return { success: false, error: "Organizer not found" };
+
+      const driveInt = organizer.integrations?.google?.drive;
+      if (!driveInt || !driveInt.access_token) {
+        return { success: false, error: "Google Drive is not connected" };
+      }
+
+      // Fetch files from Google Drive
+      const queryParams = new URLSearchParams({
+        q: "mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'", // only excel files
+        fields: "files(id, name, mimeType, modifiedTime, size)",
+        orderBy: "modifiedTime desc",
+      });
+
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files?${queryParams.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${driveInt.access_token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[API] Google Drive error:", errorText);
+        if (response.status === 401) {
+          return { success: false, error: "Google Drive access token expired. Please disconnect and reconnect." };
+        }
+        return { success: false, error: `Google API Error: ${response.statusText}` };
+      }
+
+      const data = await response.json();
+      return { success: true, files: data.files || [] };
+    } catch (e: any) {
+      console.error("[API] listGoogleDriveFiles error:", e);
+      return { success: false, error: e.message || String(e) };
+    }
   });
 
 export const exportToGoogleDrive = createServerFn({ method: "POST" })
