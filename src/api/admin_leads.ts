@@ -118,7 +118,7 @@ export const submitPublicContactLead = createServerFn({ method: "POST" })
     await hasuraRequest(mutation, {
       name,
       email,
-      notes: \`Subject: \${subject}\`,
+      notes: `Subject: ${subject}`,
       message,
     });
 
