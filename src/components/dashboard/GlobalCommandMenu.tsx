@@ -196,7 +196,7 @@ export function GlobalCommandMenu() {
                 onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/events/${event.id}` }))}
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                <span>{event.name}</span>
+                <span>{event.title}</span>
               </CommandItem>
             ))}
           </CommandGroup>
