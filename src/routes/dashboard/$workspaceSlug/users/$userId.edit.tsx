@@ -380,6 +380,9 @@ function EditUserPage() {
         <p className="text-muted-foreground mt-1">
           Modify access and permissions for {existingUser.name}
         </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          User ID: <span className="font-mono">{existingUser.id}</span>
+        </p>
       </div>
 
       <div className="space-y-12">
