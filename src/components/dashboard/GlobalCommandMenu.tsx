@@ -19,7 +19,12 @@ import {
   LogOut,
   RefreshCw,
   Search,
-  LifeBuoy
+  LifeBuoy,
+  CheckSquare,
+  StickyNote,
+  FileText,
+  ShoppingCart,
+  Film
 } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +32,12 @@ import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { getWorkspaceEvents } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { getSpaces } from "@/api/spaces";
+import { getWorkspaceTasks } from "@/api/tasks";
+import { getWorkspaceNotes } from "@/api/notes";
+import { getAgatikeBooksByWorkspace } from "@/api/book";
+import { getProcurementInvoices } from "@/api/procurement";
+import { getWorkspaceForms } from "@/api/rsvps";
+import { getCinemas } from "@/api/cinemas";
 import { logout } from "@/api/auth";
 
 export function GlobalCommandMenu() {
@@ -88,6 +99,9 @@ export function GlobalCommandMenu() {
   const hasEvents = nav.some((m: any) => m.label === "Events" || m.label === "Event Management");
   const hasVenues = nav.some((m: any) => m.label === "Venue Listings" || m.label === "Venues");
   const hasSpaces = nav.some((m: any) => m.label === "Spaces");
+  const hasCinema = nav.some((m: any) => m.label === "Cinema / Theater" || m.label === "Cinema" || m.label === "Cinemas");
+  const hasBook = nav.some((m: any) => m.label === "Agatike Book");
+  const hasForms = nav.some((m: any) => m.label === "RSVPs" || m.label === "Forms" || m.label === "Attendees");
   const hasBilling = currentUser?.role === "organizer";
 
   const workspaceId = activeWorkspace?.id;
@@ -113,7 +127,49 @@ export function GlobalCommandMenu() {
     meta: { isBackground: true },
   });
 
-  const isLoadingData = isEventsLoading || isVenuesLoading || isSpacesLoading;
+  const { data: tasks = [], isLoading: isTasksLoading } = useQuery({
+    queryKey: ["workspace-tasks", workspaceId],
+    queryFn: () => getWorkspaceTasks({ data: { workspace_id: workspaceId } } as any),
+    enabled: !!workspaceId && open && hasBook,
+    meta: { isBackground: true },
+  });
+
+  const { data: notes = [], isLoading: isNotesLoading } = useQuery({
+    queryKey: ["workspace-notes", workspaceId],
+    queryFn: () => getWorkspaceNotes({ data: { workspace_id: workspaceId } } as any),
+    enabled: !!workspaceId && open && hasBook,
+    meta: { isBackground: true },
+  });
+
+  const { data: books = [], isLoading: isBooksLoading } = useQuery({
+    queryKey: ["workspace-books", workspaceId],
+    queryFn: () => getAgatikeBooksByWorkspace({ data: { workspace_id: workspaceId } } as any),
+    enabled: !!workspaceId && open && hasBook,
+    meta: { isBackground: true },
+  });
+
+  const { data: invoices = [], isLoading: isInvoicesLoading } = useQuery({
+    queryKey: ["workspace-procurement-invoices", workspaceId],
+    queryFn: () => getProcurementInvoices({ data: { workspace_id: workspaceId } } as any),
+    enabled: !!workspaceId && open && hasBook,
+    meta: { isBackground: true },
+  });
+
+  const { data: forms = [], isLoading: isFormsLoading } = useQuery({
+    queryKey: ["workspace-forms", workspaceId],
+    queryFn: () => getWorkspaceForms({ data: { workspace_id: workspaceId } } as any),
+    enabled: !!workspaceId && open && hasForms,
+    meta: { isBackground: true },
+  });
+
+  const { data: cinemas = [], isLoading: isCinemasLoading } = useQuery({
+    queryKey: ["workspace-cinemas", workspaceId],
+    queryFn: () => getCinemas({ data: { workspace_id: workspaceId } } as any),
+    enabled: !!workspaceId && open && hasCinema,
+    meta: { isBackground: true },
+  });
+
+  const isLoadingData = isEventsLoading || isVenuesLoading || isSpacesLoading || isTasksLoading || isNotesLoading || isBooksLoading || isInvoicesLoading || isFormsLoading || isCinemasLoading;
 
   const runCommand = React.useCallback((command: () => unknown) => {
     setOpen(false);
@@ -230,14 +286,98 @@ export function GlobalCommandMenu() {
           </CommandGroup>
         )}
 
+        {tasks.length > 0 && (
+          <CommandGroup heading="Tasks">
+            {tasks.map((task: any) => (
+              <CommandItem
+                key={task.id}
+                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/book/tasks` }))}
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                <span>{task.title}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {notes.length > 0 && (
+          <CommandGroup heading="Notes">
+            {notes.map((note: any) => (
+              <CommandItem
+                key={note.id}
+                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/book/notes/${note.id}` }))}
+              >
+                <StickyNote className="mr-2 h-4 w-4" />
+                <span>{note.title}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {books.length > 0 && (
+          <CommandGroup heading="Custom Books">
+            {books.map((book: any) => (
+              <CommandItem
+                key={book.id}
+                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/book/books` }))}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                <span>{book.name}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {invoices.length > 0 && (
+          <CommandGroup heading="Invoices & Procurement">
+            {invoices.map((invoice: any) => (
+              <CommandItem
+                key={invoice.id}
+                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/book/procurement/${invoice.id}` }))}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                <span>{invoice.invoice_number || "Draft Invoice"}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {forms.length > 0 && (
+          <CommandGroup heading="Custom Forms (RSVPs)">
+            {forms.map((form: any) => (
+              <CommandItem
+                key={form.id}
+                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/rsvps/${form.id}` }))}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                <span>{form.title}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {cinemas.length > 0 && (
+          <CommandGroup heading="Cinemas & Theaters">
+            {cinemas.map((cinema: any) => (
+              <CommandItem
+                key={cinema.id}
+                onSelect={() => runCommand(() => navigate({ to: `/dashboard/${slug}/Cinema/${cinema.id}` }))}
+              >
+                <Film className="mr-2 h-4 w-4" />
+                <span>{cinema.name}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
         <CommandGroup heading="System Actions">
           <CommandItem onSelect={() => runCommand(handleRefresh)}>
             <RefreshCw className="mr-2 h-4 w-4" />
             <span>Refresh Data</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(handleLogout)}>
-            <LogOut className="mr-2 h-4 w-4 text-red-500" />
-            <span className="text-red-500">Log out</span>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>
