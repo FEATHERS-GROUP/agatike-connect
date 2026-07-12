@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
-import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+
 import { getSession } from "./auth";
 import { sendPushNotification } from "./push";
 import { syncEventToGoogleCalendar } from "./integrations";
@@ -56,7 +55,9 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
 
           if (targetUsers.length > 0) {
             const session = await getSession();
-            await addDoc(collection(db, "agatike_notifications"), {
+            const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+            const { db } = getFirebaseAdmin();
+            await db.collection("agatike_notifications").add({
               type: "new_event",
               eventId: eventId,
               organizerId: eventData.workspace_id, // Front-end might need workspace_id or org_id

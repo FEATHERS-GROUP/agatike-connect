@@ -2,8 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession, getUserSession } from "./auth";
 import { deleteFiles } from "./storage";
-import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+
 import { sendPushNotification } from "./push";
 
 // ─── STORIES ──────────────────────────────────────────────────────────────────
@@ -83,7 +82,9 @@ export const createEventStory = createServerFn({ method: "POST" }).handler(async
           const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
 
           if (targetUsers.length > 0) {
-            await addDoc(collection(db, "agatike_notifications"), {
+            const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+            const { db } = getFirebaseAdmin();
+            await db.collection("agatike_notifications").add({
               type: "new_story",
               storyId: result.id,
               eventId: input.event_id,
@@ -283,7 +284,9 @@ export const createEventPost = createServerFn({ method: "POST" }).handler(async 
           const targetUsers = userIds.map((u: any) => String(u).replace(/"/g, ""));
 
           if (targetUsers.length > 0) {
-            await addDoc(collection(db, "agatike_notifications"), {
+            const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+            const { db } = getFirebaseAdmin();
+            await db.collection("agatike_notifications").add({
               type: "new_post",
               postId: result.id,
               eventId: input.event_id,
@@ -559,7 +562,9 @@ export const likeEventPost = createServerFn({ method: "POST" })
 
     if (affected > 0 && updatedPost?.workspace_id) {
       try {
-        await addDoc(collection(db, "agatike_notifications"), {
+        const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+        const { db } = getFirebaseAdmin();
+        await db.collection("agatike_notifications").add({
           type: "like",
           postId: post_id,
           eventId: updatedPost.event_id,
@@ -738,7 +743,9 @@ export const addPostComment = createServerFn({ method: "POST" })
         );
 
         if (workspaceId) {
-          await addDoc(collection(db, "agatike_notifications"), {
+          const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+          const { db } = getFirebaseAdmin();
+          await db.collection("agatike_notifications").add({
             type: "comment",
             postId: post_id,
             eventId: eventId,

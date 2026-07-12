@@ -2,8 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 import { getAdminSession } from "./admin_auth";
-import { db } from "@/lib/firebase";
-import { collection, addDoc } from "firebase/firestore";
+
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -348,7 +347,9 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
 
     if (check.support_tickets_by_pk?.assigned_to) {
       try {
-        await addDoc(collection(db, "agatike_notifications"), {
+        const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+        const { db } = getFirebaseAdmin();
+        await db.collection("agatike_notifications").add({
           type: "comment",
           content: `Organizer replied to ticket: ${check.support_tickets_by_pk.subject || "Support Ticket"}`,
           adminId: check.support_tickets_by_pk.assigned_to,
@@ -639,7 +640,9 @@ export const addAdminComment = createServerFn({ method: "POST" })
 
     if (orgId) {
       try {
-        await addDoc(collection(db, "agatike_notifications"), {
+        const { getFirebaseAdmin } = await import("@/lib/firebase.server");
+        const { db } = getFirebaseAdmin();
+        await db.collection("agatike_notifications").add({
           type: "comment",
           content: `Admin replied to your ticket: ${subject}`,
           organizerId: orgId,
