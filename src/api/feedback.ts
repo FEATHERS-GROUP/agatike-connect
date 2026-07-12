@@ -315,7 +315,7 @@ export const checkFeedbackExists = createServerFn({ method: "POST" })
 
 // ─── Submit Space Feedback (public — no auth required) ────────────────────────
 export const submitSpaceFeedback = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
+  .validator((d: { space_id: string; reviewer_name: string; reviewer_email: string; rating: number; title?: string; body?: string }) => d)
   .handler(async (ctx) => {
   const input = ctx.data as unknown as {
     space_id: string;
@@ -358,7 +358,7 @@ export const submitSpaceFeedback = createServerFn({ method: "POST" })
 
 // ─── Get Space Feedback (public) ──────────────────────────────────────────────
 export const getSpaceFeedback = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
+  .validator((d: { space_id: string }) => d)
   .handler(async (ctx) => {
   const { space_id } = ctx.data as unknown as { space_id: string };
 
