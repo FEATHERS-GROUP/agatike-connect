@@ -161,7 +161,8 @@ function NotesPage() {
     <div className="pb-16 max-w-6xl mx-auto space-y-6">
       <div className="mb-2">
         <Link
-          to={`/dashboard/${activeWorkspace?.slug}/book`}
+          to="/dashboard/$workspaceSlug/book"
+          params={{ workspaceSlug: activeWorkspace?.slug as string }}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
