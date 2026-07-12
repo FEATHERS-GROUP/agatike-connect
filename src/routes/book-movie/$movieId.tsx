@@ -1,6 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useUserAuth } from "@/contexts/UserAuthContext";
-import { useEffect } from "react";
 import { MovieBookingDesktop } from "@/components/desktop/MovieBookingDesktop";
 import { MovieBookingMobile } from "@/components/mobile/MovieBookingMobile";
 

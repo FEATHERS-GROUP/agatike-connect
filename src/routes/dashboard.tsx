@@ -15,7 +15,9 @@ import { TheatresSidebar } from "@/components/desktop/dashboard/TheatresSidebar"
 import { TransportSidebar } from "@/components/desktop/dashboard/TransportSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
 import { getSession, logout } from "@/api/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -55,9 +57,17 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } =
-    useWorkspace() as any;
+  const { currentUser, isLoaded, workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const { data: platformModules = [] } = usePlatformModules();
+  
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
@@ -404,9 +414,22 @@ function DashboardLayout() {
 
           {/* Main Content Area */}
           <main
-            className={`flex-1 min-w-0 ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
+            className={`flex-1 min-w-0 relative ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
           >
             <Outlet />
+            
+            {/* Global Refresh Button */}
+            {currentUser && !hideSidebar && !isDesigner && (
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="fixed top-6 left-[calc(50%+150px)] -translate-x-1/2 z-50 px-4 py-2 bg-primary text-primary-foreground rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2 print:hidden group text-sm font-medium cursor-pointer disabled:cursor-not-allowed"
+                title="Refresh Data"
+              >
+                <RefreshCw className={`w-4 h-4 transition-transform ${isRefreshing ? "animate-spin" : "group-hover:rotate-180 duration-500"}`} />
+                <span>Refresh Data</span>
+              </button>
+            )}
           </main>
         </div>
       </div>
