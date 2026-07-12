@@ -19,6 +19,13 @@ import {
 import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { getSpaceFeedback, submitSpaceFeedback } from "@/api/feedback";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const SPACE_TYPE_LABELS: Record<string, string> = {
   gym: "Fitness Center",
@@ -111,24 +118,57 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPa
 
   const firstLocation = locations.length > 0 ? locations[0] : null;
 
-  const mockReviews = [
-    {
-      id: "rev1",
-      reviewer_name: "Sarah M.",
-      rating: 5,
-      created_at: "2026-05-12T10:00:00Z",
-      body: "Incredible facilities and super clean. Highly recommended for any professional.",
-      is_verified: true,
+  const { user } = useUserAuth();
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewName, setReviewName] = useState("");
+  const [reviewEmail, setReviewEmail] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewBody, setReviewBody] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setReviewName(user.username || "");
+      setReviewEmail(user.email || "");
+    }
+  }, [user]);
+
+  const { data: feedbackData, refetch: refetchFeedback } = useQuery({
+    queryKey: ["space-feedback", space?.id],
+    queryFn: () => getSpaceFeedback({ data: { space_id: space?.id } }),
+    enabled: !!space?.id,
+  });
+
+  const reviews = feedbackData?.reviews || [];
+  const aggregate = feedbackData?.aggregate || { count: 0, avg: { rating: 0 } };
+  const avgRating = aggregate.avg?.rating ? Number(aggregate.avg.rating).toFixed(1) : "0.0";
+
+  const submitFeedbackMutation = useMutation({
+    mutationFn: (values: { reviewer_name: string; reviewer_email: string; rating: number; body: string }) =>
+      submitSpaceFeedback({ data: { space_id: space.id, ...values } }),
+    onSuccess: () => {
+      toast.success("Review submitted! Thank you.");
+      refetchFeedback();
+      setIsReviewModalOpen(false);
+      setReviewBody("");
     },
-    {
-      id: "rev2",
-      reviewer_name: "Kevin D.",
-      rating: 4,
-      created_at: "2026-04-20T14:30:00Z",
-      body: "Great atmosphere. Sometimes it gets busy, but the team is very welcoming.",
-      is_verified: false,
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to submit review");
     },
-  ];
+  });
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewName || !reviewEmail || !reviewBody) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    submitFeedbackMutation.mutate({
+      reviewer_name: reviewName,
+      reviewer_email: reviewEmail,
+      rating: reviewRating,
+      body: reviewBody,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-[280px]">
@@ -354,43 +394,54 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPa
               <h2 className="text-lg font-bold">Community reviews</h2>
               <div className="flex items-center gap-1.5 mt-0.5 text-sm font-medium text-muted-foreground">
                 <Star className="h-4 w-4 fill-primary text-primary" />
-                <span className="text-foreground">4.5</span>
-                <span>({mockReviews.length} reviews)</span>
+                <span className="text-foreground">{avgRating}</span>
+                <span>({aggregate.count} reviews)</span>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-full h-8 text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full h-8 text-xs"
+              onClick={() => setIsReviewModalOpen(true)}
+            >
               Leave a Review
             </Button>
           </div>
           <div className="space-y-3">
-            {mockReviews.map((r: any) => (
-              <div
-                key={r.id}
-                className="rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur"
-              >
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  {r.reviewer_name}
-                  {r.is_verified && (
-                    <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold tracking-wide uppercase">
-                      Verified
+            {reviews.length > 0 ? (
+              reviews.map((r: any) => (
+                <div
+                  key={r.id}
+                  className="rounded-3xl border border-border/40 bg-card/60 p-4 backdrop-blur"
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    {r.reviewer_name}
+                    {r.is_verified && (
+                      <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 text-[10px] font-semibold tracking-wide uppercase">
+                        Verified
+                      </span>
+                    )}
+                    <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <Star className="h-3 w-3 fill-primary text-primary" /> {r.rating.toFixed(1)}
                     </span>
-                  )}
-                  <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Star className="h-3 w-3 fill-primary text-primary" /> {r.rating.toFixed(1)}
-                  </span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 mb-2">
+                    {new Date(r.created_at).toLocaleDateString("en-GB", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                    {r.body}
+                  </p>
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5 mb-2">
-                  {new Date(r.created_at).toLocaleDateString("en-GB", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                  {r.body}
-                </p>
+              ))
+            ) : (
+              <div className="rounded-3xl border border-border/40 border-dashed bg-card/40 p-6 text-center text-muted-foreground text-sm">
+                No reviews yet. Be the first to leave one!
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -559,6 +610,91 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPa
           )}
         </div>
       </div>
+
+      {/* Dialog for Review */}
+      <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+        <DialogContent className="max-w-md mx-auto rounded-3xl p-6 border border-white/10 dark:border-white/5 bg-background/95 backdrop-blur-2xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Leave a Review</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground mt-1">
+              Share your experience at {space.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleReviewSubmit} className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="review-name" className="text-sm font-semibold">Your Name</Label>
+              <Input
+                id="review-name"
+                value={reviewName}
+                onChange={(e) => setReviewName(e.target.value)}
+                placeholder="e.g. John Doe"
+                className="mt-1 rounded-xl h-10"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="review-email" className="text-sm font-semibold">Your Email</Label>
+              <Input
+                id="review-email"
+                type="email"
+                value={reviewEmail}
+                onChange={(e) => setReviewEmail(e.target.value)}
+                placeholder="e.g. john@example.com"
+                className="mt-1 rounded-xl h-10"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold block mb-2">Rating</Label>
+              <div className="flex items-center gap-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setReviewRating(i + 1)}
+                    className="p-1 transition-transform hover:scale-110 active:scale-95"
+                  >
+                    <Star
+                      className={`h-7 w-7 ${
+                        i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="review-body" className="text-sm font-semibold">Review Message</Label>
+              <textarea
+                id="review-body"
+                value={reviewBody}
+                onChange={(e) => setReviewBody(e.target.value)}
+                placeholder="What did you think of the space?"
+                className="w-full h-24 mt-1 rounded-xl p-3 border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+                required
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReviewModalOpen(false)}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitFeedbackMutation.isPending}
+                className="rounded-xl shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                {submitFeedbackMutation.isPending ? "Submitting..." : "Submit Review"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
