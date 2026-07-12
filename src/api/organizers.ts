@@ -205,6 +205,22 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
     }
   }
 
+  // Send Slack notification for account creation / verification pending
+  const slackUrl = process.env.SLACK_WEBHOOK_URL;
+  if (slackUrl && newOrgId) {
+    try {
+      await fetch(slackUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: `*New Organizer Registration Received!*\n*Organizer ID:* ${newOrgId}\n*Name:* ${payload.name || "N/A"}\n*Handle:* @${payload.handle || "N/A"}\n*Email:* ${payload.email || "N/A"}\n*Phone:* ${payload.phone || "N/A"}\n*Business:* ${payload.business ? "Yes" : "No"}\n*Business Cert:* ${payload.business_cert || "None provided"}\n*Status:* Pending Admin Approval / Verification`,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to send Slack notification for organizer creation:", err);
+    }
+  }
+
   return { affected_rows: result.insert_organizers?.returning?.length || 0 };
 });
 

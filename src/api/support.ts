@@ -92,7 +92,7 @@ export const createSupportTicket = createServerFn({ method: "POST" })
         { id: organizerId },
       );
       planName = planRes.subscriptions[0]?.pricing_plan?.name || null;
-    } catch (_) {}
+    } catch (_) { }
 
     // Fetch organizer name for the comment
     let organizerName = "Organizer";
@@ -102,7 +102,7 @@ export const createSupportTicket = createServerFn({ method: "POST" })
         { id: organizerId },
       );
       organizerName = orgRes.organizers_by_pk?.name || "Organizer";
-    } catch (_) {}
+    } catch (_) { }
 
     const mutation = `
       mutation CreateTicket($object: support_tickets_insert_input!) {
@@ -144,6 +144,21 @@ export const createSupportTicket = createServerFn({ method: "POST" })
         },
       },
     );
+
+    const slackUrl = process.env.SLACK_WEBHOOK_URL;
+    if (slackUrl) {
+      try {
+        await fetch(slackUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: `*New Support Ticket Raised From Agatike!*\n*Ticket ID:* ${ticketId}\n*Organizer:* ${organizerName} (${organizerId})\n*Plan:* ${planName || "Free"}\n*Category:* ${category}\n*Priority:* ${priority}\n*Subject:* ${subject}\n*Description:* ${description}`,
+          }),
+        });
+      } catch (err) {
+        console.error("Failed to send Slack notification for support ticket:", err);
+      }
+    }
 
     return res.insert_support_tickets_one;
   });
@@ -260,7 +275,7 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
         { id: session.sub },
       );
       organizerName = orgRes.organizers_by_pk?.name || "Organizer";
-    } catch (_) {}
+    } catch (_) { }
 
     // Reopen ticket if resolved/closed when organizer replies
     await hasuraRequest(
@@ -376,7 +391,7 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
           { ids: orgIds },
         );
         orgMap = Object.fromEntries((orgRes.organizers || []).map((o: any) => [o.id, o]));
-      } catch (_) {}
+      } catch (_) { }
 
       if (adminIds.length > 0) {
         try {
@@ -385,7 +400,7 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
             { ids: adminIds },
           );
           adminMap = Object.fromEntries((adminRes.admin_users || []).map((a: any) => [a.id, a]));
-        } catch (_) {}
+        } catch (_) { }
       }
 
       return tickets.map((t: any) => ({
@@ -447,7 +462,7 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
         id: ticket.organizer_id,
       });
       (ticket as any).organizer = orgRes.organizers_by_pk;
-    } catch (_) {}
+    } catch (_) { }
 
     return ticket;
   });
@@ -551,7 +566,7 @@ export const addAdminComment = createServerFn({ method: "POST" })
         { id: session.sub },
       );
       adminName = adminRes.admin_users_by_pk?.email?.split("@")[0] || "Support Team";
-    } catch (_) {}
+    } catch (_) { }
 
     // Update ticket status to pending_customer_response when admin replies
     await hasuraRequest(
