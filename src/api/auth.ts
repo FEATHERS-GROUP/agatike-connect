@@ -75,10 +75,18 @@ export const getSession = createServerFn({ method: "POST" }).handler(async () =>
         query GetStatus($id: uuid!) {
           workspace_users_by_pk(id: $id) {
             status
+            is_temporary
+            expires_at
           }
         }
       `;
-      const res = await hasuraRequest<{ workspace_users_by_pk: { status: string } | null }>(query, {
+      const res = await hasuraRequest<{
+        workspace_users_by_pk: {
+          status: string;
+          is_temporary: boolean;
+          expires_at: string | null;
+        } | null;
+      }>(query, {
         id: session.sub,
       });
       const user = res.workspace_users_by_pk;
@@ -86,6 +94,13 @@ export const getSession = createServerFn({ method: "POST" }).handler(async () =>
       if (!user || user.status === "disabled" || user.status === "deleted") {
         deleteCookie("agatike_auth", { path: "/" });
         return null;
+      }
+
+      if (user.is_temporary && user.expires_at) {
+        if (new Date(user.expires_at).getTime() < Date.now()) {
+          deleteCookie("agatike_auth", { path: "/" });
+          return null;
+        }
       }
     } else if (session.type === "organizer") {
       // Sliding session: if token has less than 2.9 days left, refresh it back to 3 days
@@ -205,7 +220,7 @@ export const loginUser = createServerFn({ method: "POST" }).handler(async (ctx) 
 });
 
 export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { email } = ctx.data as unknown as { email: string };
+  const { email, phone } = ctx.data as unknown as { email: string; phone?: string };
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedOtp = await bcrypt.hash(otp, 10);
@@ -250,6 +265,15 @@ export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (c
   const data = await res.json();
   if (!res.ok) {
     throw new Error(data.message || "Failed to send OTP via email");
+  }
+
+  if (phone) {
+    try {
+      const { sendSMS } = await import("./pindo");
+      await sendSMS(phone, `Your Agatike Connect verification code is: ${otp}`);
+    } catch (err) {
+      console.error("Failed to send SMS OTP:", err);
+    }
   }
 
   return { success: true, token };

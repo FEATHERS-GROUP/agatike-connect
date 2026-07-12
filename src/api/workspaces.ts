@@ -85,9 +85,6 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
         const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
 
         if (diffDays <= 14) {
-          if (session.type === "workspace_user") {
-            allowedModules = null; // Unlock for workspace user
-          }
           currentUser.isTrialActive = true;
           currentUser.trialDaysLeft = Math.max(1, Math.ceil(14 - diffDays));
         } else {

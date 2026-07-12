@@ -11,6 +11,7 @@ import {
   Tag,
   Maximize2,
   ArrowLeft,
+  HardDrive,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ import {
   updateWorkspaceNote,
   deleteWorkspaceNote,
 } from "@/api/notes";
+import { exportToGoogleDrive } from "@/api/integrations";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { FolderManager } from "@/components/ui/FolderManager";
+import { ContextMenuItem } from "@/components/ui/context-menu";
 import { TagSelector, type Tag as TagType, TAG_COLORS } from "./components/-TagSelector";
 import { lazy, Suspense } from "react";
 const BlockNoteEditor = lazy(() => import("./components/-BlockNoteEditor"));
@@ -98,6 +102,32 @@ function NotesPage() {
     },
   });
 
+  const exportMutation = useMutation({
+    mutationFn: async (note: any) => {
+      if (!activeWorkspace?.orgnizer_id) throw new Error("No organizer ID");
+      const payload = {
+        version: "1.0",
+        projectType: "note",
+        workspaceSlug: activeWorkspace.slug,
+        payload: { title: note.title, content: note.content, tags: note.tags, id: note.id },
+      };
+
+      const fileContentBase64 = btoa(
+        unescape(encodeURIComponent(JSON.stringify(payload, null, 2))),
+      );
+
+      return exportToGoogleDrive({
+        data: {
+          fileName: `${note.title || "Untitled"}.agatike_note`,
+          mimeType: "application/json",
+          fileContentBase64,
+        },
+      });
+    },
+    onSuccess: () => toast.success("Saved to Google Drive successfully!"),
+    onError: (err: any) => toast.error(`Export failed: ${err.message}`),
+  });
+
   const filtered = (notes as any[]).filter(
     (n) =>
       n.title?.toLowerCase().includes(search.toLowerCase()) ||
@@ -133,7 +163,8 @@ function NotesPage() {
     <div className="pb-16 max-w-6xl mx-auto space-y-6">
       <div className="mb-2">
         <Link
-          to={`/dashboard/${activeWorkspace?.slug}/book`}
+          to="/dashboard/$workspaceSlug/book"
+          params={{ workspaceSlug: activeWorkspace?.slug as string }}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
@@ -174,50 +205,103 @@ function NotesPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="space-y-10">
-          {pinned.length > 0 && (
-            <section>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-                <Pin className="h-4 w-4" /> Pinned
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pinned.map((note: any) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onClick={() => setActiveNote(note)}
-                    onPin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+        <FolderManager
+          moduleType="notes"
+          items={notes || []}
+          getItemId={(n) => n.id}
+          getFolderId={(n) => n.folder_id}
+          onMoveItems={async (itemIds, folderId) => {
+            for (const id of itemIds) {
+              await updateMutation.mutateAsync({ id, folder_id: folderId });
+            }
+          }}
+          onDeleteItems={async (itemIds) => {
+            for (const id of itemIds) {
+              await deleteMutation.mutateAsync(id);
+            }
+          }}
+          filterItem={(item: any, searchStr: string) =>
+            item.title?.toLowerCase().includes(searchStr.toLowerCase()) ||
+            item.content?.toLowerCase().includes(searchStr.toLowerCase())
+          }
+          customContextItems={(itemId) => {
+            const note = notes?.find((n: any) => n.id === itemId);
+            return (
+              <ContextMenuItem
+                className="gap-2"
+                onClick={async () => {
+                  if (!note) return;
+                  exportMutation.mutate(note);
+                }}
+              >
+                <HardDrive className="h-4 w-4" />
+                Move to Google Drive
+              </ContextMenuItem>
+            );
+          }}
+        >
+          {({ filteredItems, currentFolderId, ItemMenu }) => {
+            const pinned = filteredItems.filter((n: any) => n.pinned);
+            const unpinned = filteredItems.filter((n: any) => !n.pinned);
 
-          {unpinned.length > 0 && (
-            <section>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
-                <StickyNote className="h-4 w-4" /> All Notes
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {unpinned.map((note: any) => (
-                  <NoteCard
-                    key={note.id}
-                    note={note}
-                    onClick={() => setActiveNote(note)}
-                    onPin={() => updateMutation.mutate({ id: note.id, pinned: !note.pinned })}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+            return (
+              <div className="space-y-10">
+                {pinned.length > 0 && (
+                  <section>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
+                      <Pin className="h-4 w-4" /> Pinned
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {pinned.map((note: any) => (
+                        <ItemMenu key={note.id} itemId={note.id} folderId={note.folder_id}>
+                          <div className="h-full">
+                            <NoteCard
+                              note={note}
+                              onClick={() => setActiveNote(note)}
+                              onPin={() =>
+                                updateMutation.mutate({ id: note.id, pinned: !note.pinned })
+                              }
+                            />
+                          </div>
+                        </ItemMenu>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-          {!isLoading && filtered.length === 0 && (
-            <div className="py-24 flex flex-col items-center justify-center text-muted-foreground gap-4 border border-dashed border-border/60 rounded-3xl">
-              <StickyNote className="h-10 w-10 opacity-20" />
-              <p className="text-sm font-medium">No notes found.</p>
-            </div>
-          )}
-        </div>
+                {unpinned.length > 0 && (
+                  <section>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-4 flex items-center gap-2">
+                      <StickyNote className="h-4 w-4" /> Notes
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {unpinned.map((note: any) => (
+                        <ItemMenu key={note.id} itemId={note.id} folderId={note.folder_id}>
+                          <div className="h-full">
+                            <NoteCard
+                              note={note}
+                              onClick={() => setActiveNote(note)}
+                              onPin={() =>
+                                updateMutation.mutate({ id: note.id, pinned: !note.pinned })
+                              }
+                            />
+                          </div>
+                        </ItemMenu>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {filteredItems.length === 0 && (
+                  <div className="py-24 flex flex-col items-center justify-center text-muted-foreground gap-4 border border-dashed border-border/60 rounded-3xl">
+                    <StickyNote className="h-10 w-10 opacity-20" />
+                    <p className="text-sm font-medium">No notes found.</p>
+                  </div>
+                )}
+              </div>
+            );
+          }}
+        </FolderManager>
       )}
 
       {/* ── Dialogs: Peek view & Create view ──────────────── */}
@@ -363,11 +447,38 @@ function NoteCard({ note, onClick, onPin }: any) {
 }
 
 function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: any) {
+  const { activeWorkspace } = useWorkspace();
   const [title, setTitle] = useState(note.title || "");
   const [content, setContent] = useState(note.content || "");
   const [tags, setTags] = useState<TagType[]>(note.tags || []);
   const [dirty, setDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const exportMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeWorkspace?.orgnizer_id) throw new Error("No organizer ID");
+      const payload = {
+        version: "1.0",
+        projectType: "note",
+        workspaceSlug: activeWorkspace.slug,
+        payload: { title, content, tags, id: note.id },
+      };
+
+      const fileContentBase64 = btoa(
+        unescape(encodeURIComponent(JSON.stringify(payload, null, 2))),
+      );
+
+      return exportToGoogleDrive({
+        data: {
+          fileName: `${title || "Untitled"}.agatike_note`,
+          mimeType: "application/json",
+          fileContentBase64,
+        },
+      });
+    },
+    onSuccess: () => toast.success("Saved to Google Drive successfully!"),
+    onError: (err: any) => toast.error(`Export failed: ${err.message}`),
+  });
 
   useEffect(() => {
     if (!note || !dirty) return;
@@ -381,8 +492,22 @@ function NoteEditor({ note, onSave, onDelete, onPin, onExpand, availableTags }: 
   }, [title, content, tags, dirty, note, onSave]);
 
   return (
-    <div className="flex flex-col h-full w-full px-10 py-10 overflow-y-auto">
-      {/* Top action bar removed per user request */}
+    <div className="flex flex-col h-full w-full px-10 py-10 overflow-y-auto relative">
+      <div className="absolute top-6 right-8 flex gap-2 z-20">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => exportMutation.mutate()}
+          disabled={exportMutation.isPending}
+        >
+          {exportMutation.isPending ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <HardDrive className="h-4 w-4 mr-2" />
+          )}
+          Save to Drive
+        </Button>
+      </div>
 
       <input
         className="text-4xl md:text-5xl font-extrabold bg-transparent border-0 outline-none w-full placeholder:text-muted-foreground/30 mb-6"

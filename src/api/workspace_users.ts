@@ -35,6 +35,13 @@ export const getWorkspaceUsers = createServerFn({ method: "GET" }).handler(async
       }
     `;
     variables = { organizer_id: session.sub };
+    const data = await hasuraRequest<{ workspace_users: any[] }>(query, variables);
+    return data.workspace_users.map((u) => {
+      if (u.is_temporary && u.expires_at && new Date(u.expires_at).getTime() < Date.now()) {
+        return { ...u, status: "expired" };
+      }
+      return u;
+    });
   } else if (session.type === "workspace_user") {
     // 1. Fetch current workspace_user to see their scope
     const meQuery = `
@@ -55,7 +62,9 @@ export const getWorkspaceUsers = createServerFn({ method: "GET" }).handler(async
 
     // Check if they have access to the Users module
     const modules = me.modules || [];
-    if (!modules.includes("Users")) {
+    const hasUsersModule =
+      modules.includes("users") || modules.includes("Users") || modules.includes("ALL");
+    if (!hasUsersModule) {
       return []; // Return empty if no permission to view users
     }
 
@@ -83,23 +92,23 @@ export const getWorkspaceUsers = createServerFn({ method: "GET" }).handler(async
     const data = await hasuraRequest<{ workspace_users: any[] }>(query, variables);
     let allOrgUsers = data.workspace_users;
 
-    // Filter out users who don't share any workspaces with the requester
     if (me.workspaces && !me.workspaces.includes("ALL")) {
       allOrgUsers = allOrgUsers.filter((u) => {
         if (!u.workspaces) return false;
         if (u.workspaces.includes("ALL")) return true;
-        // check intersection
         return u.workspaces.some((ws: string) => me.workspaces.includes(ws));
       });
     }
 
-    return allOrgUsers;
+    return allOrgUsers.map((u) => {
+      if (u.is_temporary && u.expires_at && new Date(u.expires_at).getTime() < Date.now()) {
+        return { ...u, status: "expired" };
+      }
+      return u;
+    });
   } else {
     throw new Error("Invalid session type");
   }
-
-  const data = await hasuraRequest<{ workspace_users: any[] }>(query, variables);
-  return data.workspace_users;
 });
 
 export const addWorkspaceUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -247,6 +256,8 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
         id
         password
         status
+        is_temporary
+        expires_at
       }
     }
   `;
@@ -258,6 +269,12 @@ export const loginWorkspaceUser = createServerFn({ method: "POST" }).handler(asy
   if (user.status === "disabled" || user.status === "deleted")
     throw new Error("This account has been disabled or no longer exists.");
   if (user.status !== "active") throw new Error("Please activate your account first");
+
+  if (user.is_temporary && user.expires_at) {
+    if (new Date(user.expires_at).getTime() < Date.now()) {
+      throw new Error("This temporary account has expired.");
+    }
+  }
 
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) throw new Error("Invalid email or password");

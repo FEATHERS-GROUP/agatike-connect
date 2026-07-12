@@ -2092,6 +2092,47 @@ flowchart TD
 
 ---
 
+## 28. Google Workspace Integrations
+
+The system allows organizers to connect their workspace to Google Drive and Google Calendar via OAuth2 to automate event management workflows.
+
+### 28.1 OAuth2 Flow & Token Management
+
+- **Authentication:** The `SettingsIntegrationsTab` uses `@react-oauth/google` with popup flow to authenticate users without leaving the dashboard.
+- **Storage:** Access tokens, refresh tokens, and expiration dates are securely stored in the Hasura database under the `organizers.integrations` JSONB column.
+- **Token Refreshing:** The system includes a utility function (`getValidGoogleToken` in `src/api/integrations.ts`) that checks the token's expiration date before any API request. If the token is within 5 minutes of expiration, it automatically uses the refresh token to get a new access token and updates the database, ensuring seamless background operations.
+
+### 28.2 Google Drive Integration
+
+Organizers can export generated documents (like Procurement Invoices or Attendee Lists) directly to their Google Drive.
+
+- **Automated Folder Management:** Users can define a default export folder in their settings (e.g., "Agatike Exports"). When an export is triggered via `exportToGoogleDrive`, the system searches the user's Drive for this folder. If it doesn't exist, it creates the folder automatically before uploading the file.
+- **File Uploading:** Uses multipart/related HTTP uploads to send both file metadata and the base64-encoded file content directly to the Google Drive API.
+
+### 28.3 Google Calendar Integration
+
+Organizers can automatically sync event schedules with their primary Google Calendar.
+
+- **Event Syncing:** When `syncEventToGoogleCalendar` is invoked, it pushes the event's summary, description, start time, end time, and location directly to the user's primary calendar.
+
+---
+
+## 29. SMS Notifications & Communication
+
+The system integrates with the **Pindo API** for delivering critical transactional SMS messages to users and organizers. This is handled via the isolated `src/api/pindo.ts` utility.
+
+### 29.1 Organizer OTP & Verification
+- When an organizer creates an account, they provide an email and phone number.
+- The `sendSignupOtp` function sends the One-Time Password to both their email (via Resend) and their phone number (via Pindo).
+
+### 29.2 Payment Confirmation & Ticket Access
+- **Logic:** After a successful transaction via Mobile Money (PawaPay), the asynchronous webhook (`handlePawaPayWebhook`) intercepts the `COMPLETED` payload.
+- It dynamically extracts the payer's mobile money phone number (`payer.address.value`).
+- **Activation Link:** The system automatically dispatches an SMS via Pindo confirming the transaction amount and providing a direct link for the user to view their ticket: `https://agatike.com/profile`.
+- *Note:* This public `profile` route acts as the attendee's activation/check-in hub, completely separated from the organizer dashboard (`/dashboard/...`).
+
+---
+
 ## 19. Architecture & Vercel Deployment Rules
 
 To guarantee successful builds on Vercel (avoiding `SIGKILL` memory exhaustion and `ERR_MODULE_NOT_FOUND` runtime errors), the following strict architectural patterns **MUST** be adhered to:

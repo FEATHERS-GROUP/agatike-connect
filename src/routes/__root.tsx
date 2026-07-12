@@ -104,6 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "manifest",
         href: "/manifest.json",
+        crossOrigin: "use-credentials",
       },
       {
         rel: "icon",
@@ -273,10 +274,10 @@ function AuthRedirect() {
         "/dashboard",
         "/ticket",
         "/wallet",
-        "/scanning",
-        "/staff",
       ];
-      const needsAuth = authRequiredPaths.some((p) => location.pathname.startsWith(p));
+      const needsAuth = authRequiredPaths.some(
+        (p) => location.pathname === p || location.pathname.startsWith(`${p}/`),
+      );
       if (needsAuth) {
         navigate({ to: "/signin", replace: true });
       }

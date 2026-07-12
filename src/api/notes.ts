@@ -13,6 +13,7 @@ const GET_NOTES = `
       content
       pinned
       tags
+      folder_id
       created_at
       updated_at
     }
@@ -34,6 +35,7 @@ const GET_NOTE_BY_ID = `
       content
       pinned
       tags
+      folder_id
       created_at
       updated_at
     }
@@ -51,6 +53,7 @@ const CREATE_NOTE = `
     insert_workspace_notes_one(object: $object) {
       id
       title
+      folder_id
     }
   }
 `;
@@ -69,6 +72,7 @@ const UPDATE_NOTE = `
       content
       pinned
       tags
+      folder_id
       updated_at
     }
   }

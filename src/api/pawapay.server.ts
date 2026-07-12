@@ -134,6 +134,18 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             },
           } as any);
         }
+
+        // Send SMS Confirmation via Pindo
+        if (body?.payer?.address?.value) {
+          const phone = body.payer.address.value;
+          const { sendSMS } = await import("./pindo");
+          const msg = `Payment of ${tx.amount} confirmed! Thank you for your purchase. View your ticket/receipt at: https://agatike.com/profile`;
+          try {
+            await sendSMS(phone, msg);
+          } catch (e) {
+            console.error("[Pindo SMS] Failed to send payment confirmation:", e);
+          }
+        }
       }
 
       // 3. Handle Failed Withdrawals (Refund the wallet)

@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPendingWithdrawals } from "@/api/wallet";
 import { triggerPawaPayPayout } from "@/api/pawapay";
+import { getAdminSession } from "@/api/admin_auth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -15,6 +16,18 @@ import {
 } from "@/components/ui/table";
 
 export const Route = createFileRoute("/admin/withdrawals/")({
+  beforeLoad: async () => {
+    try {
+      const session = await getAdminSession();
+      if (!session) {
+        throw new Error("unauthenticated");
+      }
+    } catch {
+      throw redirect({
+        to: "/internal/control/admin/login",
+      });
+    }
+  },
   component: AdminWithdrawalsPage,
 });
 

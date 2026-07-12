@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function BoxOfficeWidget({
@@ -28,7 +28,7 @@ export function BoxOfficeWidget({
   workspaceSlug: string;
 }) {
   const navigate = useNavigate();
-  const searchParams = useRouterState({ select: (s) => s.location.search as any });
+  const searchParams = useSearch({ strict: false }) as any;
   const { activeWorkspace } = useWorkspace();
   const workspaceCurrency = activeWorkspace?.currency || activeWorkspace?.wallet?.currency || "RWF";
 
@@ -37,7 +37,7 @@ export function BoxOfficeWidget({
   const onOpenChange = (open: boolean) => {
     navigate({
       search: (prev: any) => ({ ...prev, pos: open ? "true" : undefined }),
-    });
+    } as any);
   };
 
   const [selectedScheduleId, setSelectedScheduleId] = useState("");
@@ -133,7 +133,7 @@ export function BoxOfficeWidget({
       </button>
 
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent className="w-full sm:max-w-xl md:max-w-3xl lg:max-w-5xl p-0 flex flex-col gap-0 border-l border-border/60 z-[60] bg-background">
+        <SheetContent className="w-full sm:max-w-xl md:max-w-3xl lg:max-w-5xl p-0 flex flex-col gap-0 border-l border-border/60 bg-background">
           <SheetHeader className="p-6 border-b border-border/60 bg-secondary/10 shrink-0">
             <SheetTitle className="text-2xl font-black text-left">Box Office POS</SheetTitle>
           </SheetHeader>

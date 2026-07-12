@@ -20,10 +20,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const app = typeof window !== "undefined" 
+  ? (getApps().length > 0 ? getApp() : initializeApp(firebaseConfig))
+  : undefined;
 
 // Initialize Firestore
-export const db = getFirestore(app);
+export const db = (app ? getFirestore(app) : null) as any;
 
 export async function deleteChannelMessages(channelId: string) {
   try {

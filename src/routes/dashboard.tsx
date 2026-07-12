@@ -15,16 +15,27 @@ import { TheatresSidebar } from "@/components/desktop/dashboard/TheatresSidebar"
 import { TransportSidebar } from "@/components/desktop/dashboard/TransportSidebar";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { RefreshCw, PlusCircle, Ticket, LifeBuoy } from "lucide-react";
 import { getSession, logout } from "@/api/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { GlobalCommandMenu } from "@/components/dashboard/GlobalCommandMenu";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: async ({ location }) => {
     if (
       location.pathname === "/dashboard/login" ||
-      location.pathname === "/dashboard/create-organizer"
+      location.pathname === "/dashboard/create-organizer" ||
+      location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/)
     ) {
       return;
     }
@@ -55,9 +66,17 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardLayout() {
   const location = useRouterState({ select: (s) => s.location });
   const navigate = useNavigate();
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoaded, currentUser } =
-    useWorkspace() as any;
+  const { currentUser, isLoaded, workspaces, activeWorkspace, setActiveWorkspace } = useWorkspace();
   const { data: platformModules = [] } = usePlatformModules();
+
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
@@ -81,6 +100,7 @@ function DashboardLayout() {
     location.pathname === "/dashboard/settings" ||
     location.pathname === "/dashboard/billing/subscriptions/pricingplans" ||
     location.pathname.startsWith("/dashboard/billing/subscriptions/checkout") ||
+    !!location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/) ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
@@ -105,6 +125,23 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
 
+  // Determine dynamic "Add" action for context menu based on route
+  const getDynamicAddAction = () => {
+    const p = location.pathname;
+    const base = `/dashboard/${activeWorkspace?.slug}`;
+    if (p.includes("/events"))
+      return { label: "Create Event", route: `${base}/events/create-event` };
+    if (p.includes("/venues")) return { label: "Add Venue", route: `${base}/venues/create-venue` };
+    if (p.includes("/spaces")) return { label: "Add Space", route: `${base}/spaces/create-space` };
+    if (p.includes("/Cinema")) return { label: "Add Movie", route: `${base}/Cinema/create-movie` };
+    if (p.includes("/trips")) return { label: "Add Trip", route: `${base}/trips/create-trip` };
+    if (p.includes("/users")) return { label: "Add User", route: `${base}/users/add-user` };
+    if (p.includes("/page-builder"))
+      return { label: "Create Page", route: `${base}/page-builder/editor` };
+    return null;
+  };
+  const dynamicAddAction = getDynamicAddAction();
+
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -115,7 +152,7 @@ function DashboardLayout() {
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
       location.pathname === "/dashboard/support" ||
-      location.pathname === "/dashboard/workspace-user/activate" ||
+      location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/) ||
       location.pathname.startsWith("/dashboard/billing")
     )
       return;
@@ -403,13 +440,42 @@ function DashboardLayout() {
             ))}
 
           {/* Main Content Area */}
-          <main
-            className={`flex-1 min-w-0 ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
-          >
-            <Outlet />
-          </main>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <main
+                className={`flex-1 min-w-0 relative ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
+              >
+                <Outlet />
+              </main>
+            </ContextMenuTrigger>
+
+            {currentUser && !isDesigner && (
+              <ContextMenuContent className="w-56">
+                {dynamicAddAction && (
+                  <>
+                    <ContextMenuItem onClick={() => navigate({ to: dynamicAddAction.route })}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      {dynamicAddAction.label}
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                  </>
+                )}
+
+                <ContextMenuItem onClick={handleRefresh}>
+                  <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  Refresh Data
+                </ContextMenuItem>
+
+                <ContextMenuItem onClick={() => navigate({ to: "/dashboard/support" })}>
+                  <LifeBuoy className="mr-2 h-4 w-4" />
+                  Raise Support Ticket
+                </ContextMenuItem>
+              </ContextMenuContent>
+            )}
+          </ContextMenu>
         </div>
       </div>
+      <GlobalCommandMenu />
     </>
   );
 }
