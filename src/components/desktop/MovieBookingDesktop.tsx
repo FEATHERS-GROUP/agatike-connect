@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
@@ -36,6 +37,8 @@ import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/Ti
 export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
   const { date: searchDate } = useSearch({ from: "/book-movie/$movieId" }) as any;
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
@@ -761,7 +764,13 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 onClick={() => {
                   if (step === 1) setStep(2);
                   else if (step === 2) setStep(3);
-                  else setIsPaymentModalOpen(true);
+                  else {
+                    if (!user && !hasSkippedAuth) {
+                      setIsAuthSuggestionOpen(true);
+                    } else {
+                      setIsPaymentModalOpen(true);
+                    }
+                  }
                 }}
               >
                 {step === 1 ? (
@@ -803,6 +812,15 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
         </div>
       </main>
       <Footer />
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

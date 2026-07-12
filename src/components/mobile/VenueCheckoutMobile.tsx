@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createVenueBooking } from "@/api/venue_bookings";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
@@ -35,6 +36,8 @@ const countries = COUNTRIES.map((c) => c.name).sort();
 export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
   const storageKey = `venue_checkout_mobile_${venue?.id}`;
   const [date, setDate] = useState("");
@@ -376,8 +379,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isStep1Valid || !isStep2Valid) return;
-    if (!user) {
-      navigate({ to: "/signin", search: { redirect: `/venues/checkout/${venue.id}` } as any });
+    if (!user && !hasSkippedAuth) {
+      setIsAuthSuggestionOpen(true);
       return;
     }
     setIsPaymentModalOpen(true);
@@ -923,6 +926,15 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           ))}
         </div>
       )}
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

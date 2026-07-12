@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
@@ -36,6 +37,8 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
   const router = useRouter();
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
   const { date: searchDate } = useSearch({ from: "/book-movie/$movieId" }) as any;
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
@@ -701,7 +704,13 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           onClick={() => {
             if (step === 1) setStep(2);
             else if (step === 2) setStep(3);
-            else setIsPaymentModalOpen(true);
+            else {
+              if (!user && !hasSkippedAuth) {
+                setIsAuthSuggestionOpen(true);
+              } else {
+                setIsPaymentModalOpen(true);
+              }
+            }
           }}
         >
           {step === 1 ? (
@@ -727,6 +736,15 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           )}
         </Button>
       </div>
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

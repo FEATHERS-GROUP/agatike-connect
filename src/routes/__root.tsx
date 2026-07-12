@@ -264,10 +264,22 @@ function AuthRedirect() {
   useEffect(() => {
     if (typeof window === "undefined" || isLoading) return;
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    const publicPaths = ["/signin", "/signup", "/onboarding", "/v"];
-    const isPublic = publicPaths.some((p) => location.pathname.startsWith(p));
-    if (isMobile && !isLoggedIn && !isPublic) {
-      navigate({ to: "/signin", replace: true });
+    if (isMobile && !isLoggedIn) {
+      const authRequiredPaths = [
+        "/feed",
+        "/profile",
+        "/settings",
+        "/community",
+        "/dashboard",
+        "/ticket",
+        "/wallet",
+        "/scanning",
+        "/staff",
+      ];
+      const needsAuth = authRequiredPaths.some((p) => location.pathname.startsWith(p));
+      if (needsAuth) {
+        navigate({ to: "/signin", replace: true });
+      }
     }
   }, [isLoading, isLoggedIn, location.pathname, navigate]);
 

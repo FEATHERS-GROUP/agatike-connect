@@ -29,6 +29,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { z } from "zod";
 
 const checkoutSearchSchema = z.object({
@@ -54,6 +55,8 @@ function CheckoutPage() {
   });
 
   const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
   const [formData, setFormData] = useState({
     name: user?.username || "",
@@ -340,7 +343,10 @@ function CheckoutPage() {
           return;
         }
       }
-      setErrorMsg("");
+      if (!user && !hasSkippedAuth) {
+        setIsAuthSuggestionOpen(true);
+        return;
+      }
       setIsPaymentModalOpen(true);
     }
   };
@@ -919,6 +925,15 @@ function CheckoutPage() {
           </Button>
         </div>
       </div>
+
+      <AuthSuggestionModal
+        isOpen={isAuthSuggestionOpen}
+        onOpenChange={setIsAuthSuggestionOpen}
+        onSkip={() => {
+          setHasSkippedAuth(true);
+          setIsPaymentModalOpen(true);
+        }}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}

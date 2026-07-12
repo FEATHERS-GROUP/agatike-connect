@@ -24,17 +24,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { isLoggedIn, isLoading: authLoading } = useUserAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isMobile = window.matchMedia("(max-width: 767px)").matches;
-      if (!authLoading && !isLoggedIn && isMobile) {
-        navigate({ to: "/signin", replace: true });
-      }
-    }
-  }, [authLoading, isLoggedIn, navigate]);
   return (
     <>
       <div className="md:hidden">

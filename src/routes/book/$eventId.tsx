@@ -12,17 +12,7 @@ export const Route = createFileRoute("/book/$eventId")({
 });
 
 function BookingRoute() {
-  const { isLoggedIn, isLoading } = useUserAuth();
-  const navigate = useNavigate();
   const { eventId } = Route.useParams();
-
-  useEffect(() => {
-    if (typeof window === "undefined" || isLoading) return;
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    if (isDesktop && !isLoggedIn) {
-      navigate({ to: "/signin", replace: true });
-    }
-  }, [isLoading, isLoggedIn, navigate]);
 
   return (
     <>
