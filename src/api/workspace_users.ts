@@ -62,7 +62,8 @@ export const getWorkspaceUsers = createServerFn({ method: "GET" }).handler(async
 
     // Check if they have access to the Users module
     const modules = me.modules || [];
-    if (!modules.includes("Users")) {
+    const hasUsersModule = modules.includes("users") || modules.includes("Users") || modules.includes("ALL");
+    if (!hasUsersModule) {
       return []; // Return empty if no permission to view users
     }
 
