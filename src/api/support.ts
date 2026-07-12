@@ -75,7 +75,28 @@ export const createSupportTicket = createServerFn({ method: "POST" })
     const session = await getSession();
     if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const organizerId = session.sub;
+    let organizerId = session.sub;
+    let organizerName = "Organizer";
+
+    if (session.type === "workspace_user") {
+      const wsuRes = await hasuraRequest<{ workspace_users_by_pk: { name: string, organizer_id: string } | null }>(
+        `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { name, organizer_id } }`,
+        { id: session.sub }
+      );
+      if (wsuRes.workspace_users_by_pk) {
+        organizerId = wsuRes.workspace_users_by_pk.organizer_id;
+        organizerName = `${wsuRes.workspace_users_by_pk.name} (Workspace User)`;
+      }
+    } else {
+      try {
+        const orgRes = await hasuraRequest<{ organizers_by_pk: { name: string } | null }>(
+          `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name } }`,
+          { id: organizerId },
+        );
+        organizerName = orgRes.organizers_by_pk?.name || "Organizer";
+      } catch (_) {}
+    }
+
     const { subject, description, category, priority } = ctx.data;
 
     // Fetch organizer's active subscription plan name
@@ -92,16 +113,6 @@ export const createSupportTicket = createServerFn({ method: "POST" })
         { id: organizerId },
       );
       planName = planRes.subscriptions[0]?.pricing_plan?.name || null;
-    } catch (_) {}
-
-    // Fetch organizer name for the comment
-    let organizerName = "Organizer";
-    try {
-      const orgRes = await hasuraRequest<{ organizers_by_pk: { name: string } | null }>(
-        `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name } }`,
-        { id: organizerId },
-      );
-      organizerName = orgRes.organizers_by_pk?.name || "Organizer";
     } catch (_) {}
 
     const mutation = `
@@ -167,6 +178,16 @@ export const getOrganizerTickets = createServerFn({ method: "POST" }).handler(as
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
+  let organizerId = session.sub;
+  if (session.type === "workspace_user") {
+    const res = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } | null }>(
+      `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+      { id: session.sub }
+    );
+    if (!res.workspace_users_by_pk) throw new Error("Workspace user not found");
+    organizerId = res.workspace_users_by_pk.organizer_id;
+  }
+
   const query = `
     query GetOrgTickets($organizer_id: uuid!) {
       support_tickets(
@@ -194,7 +215,7 @@ export const getOrganizerTickets = createServerFn({ method: "POST" }).handler(as
   `;
 
   const res = await hasuraRequest<{ support_tickets: SupportTicket[] }>(query, {
-    organizer_id: session.sub,
+    organizer_id: organizerId,
   });
 
   return res.support_tickets || [];
@@ -205,6 +226,16 @@ export const getOrganizerTicketWithComments = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const session = await getSession();
     if (!session || !session.sub) throw new Error("unauthenticated");
+
+    let organizerId = session.sub;
+    if (session.type === "workspace_user") {
+      const res = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } | null }>(
+        `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+        { id: session.sub }
+      );
+      if (!res.workspace_users_by_pk) throw new Error("Workspace user not found");
+      organizerId = res.workspace_users_by_pk.organizer_id;
+    }
 
     const query = `
       query GetTicket($id: uuid!) {
@@ -237,7 +268,7 @@ export const getOrganizerTicketWithComments = createServerFn({ method: "POST" })
     });
 
     const ticket = res.support_tickets_by_pk;
-    if (!ticket || ticket.organizer_id !== session.sub) {
+    if (!ticket || ticket.organizer_id !== organizerId) {
       throw new Error("Ticket not found");
     }
 
@@ -249,6 +280,27 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const session = await getSession();
     if (!session || !session.sub) throw new Error("unauthenticated");
+
+    let organizerId = session.sub;
+    let organizerName = "Organizer";
+
+    if (session.type === "workspace_user") {
+      const wsuRes = await hasuraRequest<{ workspace_users_by_pk: { name: string, organizer_id: string } | null }>(
+        `query GetWsu($id: uuid!) { workspace_users_by_pk(id: $id) { name, organizer_id } }`,
+        { id: session.sub }
+      );
+      if (!wsuRes.workspace_users_by_pk) throw new Error("Workspace user not found");
+      organizerId = wsuRes.workspace_users_by_pk.organizer_id;
+      organizerName = `${wsuRes.workspace_users_by_pk.name} (Workspace User)`;
+    } else {
+      try {
+        const orgRes = await hasuraRequest<{ organizers_by_pk: { name: string } | null }>(
+          `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name } }`,
+          { id: session.sub },
+        );
+        organizerName = orgRes.organizers_by_pk?.name || "Organizer";
+      } catch (_) {}
+    }
 
     const { ticketId, body } = ctx.data;
 
@@ -263,19 +315,9 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
       `query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id assigned_to subject } }`,
       { id: ticketId },
     );
-    if (check.support_tickets_by_pk?.organizer_id !== session.sub) {
+    if (check.support_tickets_by_pk?.organizer_id !== organizerId) {
       throw new Error("Unauthorized");
     }
-
-    // Get organizer name
-    let organizerName = "Organizer";
-    try {
-      const orgRes = await hasuraRequest<{ organizers_by_pk: { name: string } | null }>(
-        `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name } }`,
-        { id: session.sub },
-      );
-      organizerName = orgRes.organizers_by_pk?.name || "Organizer";
-    } catch (_) {}
 
     // Reopen ticket if resolved/closed when organizer replies
     await hasuraRequest(
@@ -295,7 +337,7 @@ export const addOrganizerComment = createServerFn({ method: "POST" })
         object: {
           ticket_id: ticketId,
           author_type: "organizer",
-          author_id: session.sub,
+          author_id: session.sub, // Keep author_id as the actual user (organizer or workspace user) who posted
           author_name: organizerName,
           body,
         },
