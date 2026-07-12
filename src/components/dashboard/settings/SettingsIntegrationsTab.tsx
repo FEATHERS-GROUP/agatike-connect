@@ -120,7 +120,8 @@ function IntegrationsContent() {
       console.error("[driveLogin] OAuth Popup Failed:", error);
       toast.error("Google Drive connection failed in popup");
     },
-    scope: "https://www.googleapis.com/auth/drive.file"
+    flow: "auth-code",
+    scope: "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly"
   });
 
   const calendarLogin = useGoogleLogin({
@@ -138,6 +139,7 @@ function IntegrationsContent() {
       console.error("[calendarLogin] OAuth Popup Failed:", error);
       toast.error("Google Calendar connection failed in popup");
     },
+    flow: "auth-code",
     scope: "https://www.googleapis.com/auth/calendar.events"
   });
 

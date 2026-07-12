@@ -2,9 +2,12 @@ import { createFileRoute, useNavigate, useParams, Link } from "@tanstack/react-r
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getProcurementInvoiceById } from "@/api/procurement";
+import { exportToGoogleDrive } from "@/api/integrations";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { Loader2, HardDrive } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/procurement_/$id")({
   component: InvoicePreviewPage,
@@ -20,6 +23,32 @@ function InvoicePreviewPage() {
     queryKey: ["procurement-invoice", id],
     queryFn: () => getProcurementInvoiceById({ data: { id } } as any),
     enabled: !!id,
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: async () => {
+      if (!activeWorkspace?.orgnizer_id) throw new Error("No organizer ID");
+      if (!invoice) throw new Error("No invoice loaded");
+      
+      const payload = {
+        version: "1.0",
+        projectType: "procurement",
+        workspaceSlug: activeWorkspace.slug,
+        payload: invoice,
+      };
+      
+      const fileContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+      
+      return exportToGoogleDrive({
+        data: {
+          fileName: `${invoice.invoice_number}.agatike_procurement`,
+          mimeType: "application/json",
+          fileContentBase64,
+        }
+      });
+    },
+    onSuccess: () => toast.success("Saved to Google Drive successfully!"),
+    onError: (err: any) => toast.error(`Export failed: ${err.message}`),
   });
 
   if (isLoading) {
@@ -131,6 +160,15 @@ function InvoicePreviewPage() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="rounded-xl gap-2 h-10"
+            onClick={() => exportMutation.mutate()}
+            disabled={exportMutation.isPending}
+          >
+            {exportMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <HardDrive className="h-4 w-4" />}
+            Save to Drive
+          </Button>
           <Button
             variant="outline"
             className="rounded-xl gap-2 h-10"

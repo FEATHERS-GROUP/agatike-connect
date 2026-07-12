@@ -65,6 +65,7 @@ interface FolderManagerProps<T> {
       children: React.ReactNode;
     }) => React.ReactElement;
   }) => React.ReactNode;
+  customContextItems?: (itemId: string) => React.ReactNode;
 }
 
 export function FolderManager<T>({
@@ -76,6 +77,7 @@ export function FolderManager<T>({
   onDeleteItems,
   filterItem,
   children,
+  customContextItems,
 }: FolderManagerProps<T>) {
   const { activeWorkspace } = useWorkspace();
   const wsId = activeWorkspace?.id;
@@ -243,7 +245,6 @@ export function FolderManager<T>({
             Create New Folder
           </ContextMenuItem>
 
-          {/* Delete item */}
           {onDeleteItems && (
             <>
               <ContextMenuSeparator />
@@ -257,6 +258,13 @@ export function FolderManager<T>({
                 <Trash2 className="h-4 w-4" />
                 Delete Item
               </ContextMenuItem>
+            </>
+          )}
+
+          {customContextItems && (
+            <>
+              <ContextMenuSeparator />
+              {customContextItems(itemId)}
             </>
           )}
         </ContextMenuContent>

@@ -66,13 +66,48 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
       const { type, tokenData } = ctx.data;
       const integrations = organizer.integrations || {};
       
-      // Save token data (in a production app, refresh tokens should be encrypted)
+      let tokensToSave = tokenData;
+
+      // Exchange authorization code for tokens
+      if (tokenData.code) {
+        const clientId = process.env.GOOGLE_AUTH_CLIENT_ID;
+        const clientSecret = process.env.GOOGLE_AUTH_SECRET;
+
+        const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            code: tokenData.code,
+            client_id: clientId || "",
+            client_secret: clientSecret || "",
+            redirect_uri: "postmessage",
+            grant_type: "authorization_code"
+          })
+        });
+
+        if (!tokenResponse.ok) {
+          const err = await tokenResponse.text();
+          throw new Error(`Failed to exchange token: ${err}`);
+        }
+
+        const tokens = await tokenResponse.json();
+        tokensToSave = {
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          expires_in: tokens.expires_in,
+          expiry_date: Date.now() + (tokens.expires_in * 1000),
+          scope: tokens.scope,
+          token_type: tokens.token_type,
+        };
+      }
+
       if (!integrations.google) {
         integrations.google = {};
       }
       
       integrations.google[type] = {
-        ...tokenData,
+        ...(integrations.google[type] || {}), // preserve existing refresh token if any
+        ...tokensToSave,
         connected_at: new Date().toISOString()
       };
 
@@ -177,7 +212,58 @@ export const getOrganizerIntegrations = createServerFn({ method: "GET" })
     return organizer.integrations || {};
   });
 
+export async function getValidGoogleToken(organizerId: string, type: "drive" | "calendar"): Promise<string> {
+  const organizer = await getOrganizer(organizerId);
+  if (!organizer) throw new Error("Organizer not found");
+
+  const integrations = organizer.integrations || {};
+  const integrationData = integrations.google?.[type];
+
+  if (!integrationData || !integrationData.access_token) {
+    throw new Error(`Google ${type} is not connected for this workspace.`);
+  }
+
+  const expiryDate = integrationData.expiry_date;
+  // Buffer of 5 minutes before actual expiration
+  const isExpired = !expiryDate || Date.now() >= (expiryDate - 5 * 60 * 1000);
+
+  if (isExpired && integrationData.refresh_token) {
+    const clientId = process.env.GOOGLE_AUTH_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_AUTH_SECRET;
+
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId || "",
+        client_secret: clientSecret || "",
+        refresh_token: integrationData.refresh_token,
+        grant_type: "refresh_token"
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error("Failed to refresh Google token. Please reconnect the integration.");
+    }
+
+    const tokens = await tokenResponse.json();
+    
+    integrationData.access_token = tokens.access_token;
+    if (tokens.refresh_token) {
+      integrationData.refresh_token = tokens.refresh_token;
+    }
+    integrationData.expiry_date = Date.now() + (tokens.expires_in * 1000);
+    
+    await updateOrganizerIntegrations(organizerId, integrations);
+
+    return integrationData.access_token;
+  }
+
+  return integrationData.access_token;
+}
+
 export const listGoogleDriveFiles = createServerFn({ method: "GET" })
+  .validator((d?: { pageToken?: string; folderId?: string }) => d)
   .handler(async (ctx) => {
     try {
       const session = await getSession();
@@ -192,24 +278,19 @@ export const listGoogleDriveFiles = createServerFn({ method: "GET" })
         organizerId = meData.workspace_users_by_pk?.organizer_id;
       }
 
-      const organizer = await getOrganizer(organizerId);
-      if (!organizer) return { success: false, error: "Organizer not found" };
+      const accessToken = await getValidGoogleToken(organizerId, "drive");
 
-      const driveInt = organizer.integrations?.google?.drive;
-      if (!driveInt || !driveInt.access_token) {
-        return { success: false, error: "Google Drive is not connected" };
-      }
-
-      // Fetch files from Google Drive
-      const queryParams = new URLSearchParams({
-        q: "mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'", // only excel files
-        fields: "files(id, name, mimeType, modifiedTime, size)",
-        orderBy: "modifiedTime desc",
+      const query = new URLSearchParams({
+        q: ctx.data?.folderId ? `'${ctx.data.folderId}' in parents and trashed=false` : "'root' in parents and trashed=false",
+        fields: "nextPageToken, files(id, name, mimeType, iconLink, webViewLink, modifiedTime, size)",
+        pageSize: "50",
+        orderBy: "folder,modifiedTime desc"
       });
+      if (ctx.data?.pageToken) query.append("pageToken", ctx.data.pageToken);
 
-      const response = await fetch(`https://www.googleapis.com/drive/v3/files?${queryParams.toString()}`, {
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files?${query.toString()}`, {
         headers: {
-          Authorization: `Bearer ${driveInt.access_token}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
 
@@ -223,26 +304,117 @@ export const listGoogleDriveFiles = createServerFn({ method: "GET" })
       }
 
       const data = await response.json();
-      return { success: true, files: data.files || [] };
+      return { success: true, files: data.files || [], nextPageToken: data.nextPageToken };
     } catch (e: any) {
       console.error("[API] listGoogleDriveFiles error:", e);
       return { success: false, error: e.message || String(e) };
     }
   });
 
+export const readGoogleDriveFileContent = createServerFn({ method: "GET" })
+  .validator((d: { fileId: string }) => d)
+  .handler(async (ctx) => {
+    try {
+      const session = await getSession();
+      if (!session || !session.sub) return { success: false, error: "Unauthenticated" };
+
+      let organizerId = session.sub;
+      if (session.type === "workspace_user") {
+        const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+          `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+          { id: session.sub }
+        );
+        organizerId = meData.workspace_users_by_pk?.organizer_id;
+      }
+
+      const accessToken = await getValidGoogleToken(organizerId, "drive");
+
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${ctx.data.fileId}?alt=media`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[API] Google Drive read error:", errorText);
+        return { success: false, error: `Google API Error: ${response.statusText}` };
+      }
+
+      const text = await response.text();
+      return { success: true, content: text };
+    } catch (e: any) {
+      console.error("[API] readGoogleDriveFileContent error:", e);
+      return { success: false, error: e.message || String(e) };
+    }
+  });
+
+export const createGoogleDriveFile = createServerFn({ method: "POST" })
+  .validator((d: { name: string; mimeType: string; parentFolderId: string }) => d)
+  .handler(async (ctx) => {
+    try {
+      const session = await getSession();
+      if (!session || !session.sub) return { success: false, error: "Unauthenticated" };
+
+      let organizerId = session.sub;
+      if (session.type === "workspace_user") {
+        const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+          `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+          { id: session.sub }
+        );
+        organizerId = meData.workspace_users_by_pk?.organizer_id;
+      }
+
+      const accessToken = await getValidGoogleToken(organizerId, "drive");
+
+      const { name, mimeType, parentFolderId } = ctx.data;
+
+      const body = {
+        name,
+        mimeType,
+        parents: parentFolderId !== "root" ? [parentFolderId] : undefined,
+      };
+
+      const response = await fetch("https://www.googleapis.com/drive/v3/files?fields=id,name,mimeType,webViewLink", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[API] Google Drive creation error:", errorText);
+        return { success: false, error: `Google API Error: ${response.statusText}` };
+      }
+
+      const file = await response.json();
+      return { success: true, file };
+    } catch (e: any) {
+      console.error("[API] createGoogleDriveFile error:", e);
+      return { success: false, error: e.message || String(e) };
+    }
+  });
+
 export const exportToGoogleDrive = createServerFn({ method: "POST" })
-  .validator((d: { organizerId: string; fileName: string; fileContentBase64: string; mimeType: string }) => d)
+  .validator((d: { fileName: string; fileContentBase64: string; mimeType: string }) => d)
   .handler(async (ctx) => {
     const session = await getSession();
     if (!session || !session.sub) throw new Error("unauthenticated");
 
-    const { organizerId, fileName, fileContentBase64, mimeType } = ctx.data;
-    const organizer = await getOrganizer(organizerId);
-
-    const accessToken = organizer?.integrations?.google?.drive?.access_token;
-    if (!accessToken) {
-      throw new Error("Google Drive is not connected for this workspace.");
+    let organizerId = session.sub;
+    if (session.type === "workspace_user") {
+      const meData = await hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+        `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
+        { id: session.sub }
+      );
+      organizerId = meData.workspace_users_by_pk?.organizer_id;
     }
+
+    const { fileName, fileContentBase64, mimeType } = ctx.data;
+    const accessToken = await getValidGoogleToken(organizerId, "drive");
 
     // Prepare multipart upload body
     const boundary = "-------314159265358979323846";
@@ -303,14 +475,8 @@ export const syncEventToGoogleCalendar = createServerFn({ method: "POST" })
 
     if (!orgId) return { success: false, reason: "Organizer not found for workspace" };
 
-    const organizer = await getOrganizer(orgId);
-
-    const accessToken = organizer?.integrations?.google?.calendar?.access_token;
-    if (!accessToken) {
-      // Return gracefully if calendar is not connected, since it's an automatic sync.
-      return { success: false, reason: "Calendar not connected" };
-    }
-
+    const accessToken = await getValidGoogleToken(orgId, "calendar");
+    
     const payload = {
       summary: eventDetails.summary,
       location: eventDetails.location,
