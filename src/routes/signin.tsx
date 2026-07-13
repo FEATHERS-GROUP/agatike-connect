@@ -203,9 +203,9 @@ function SignIn() {
               <div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="signin-pw">Password</Label>
-                  <button type="button" className="text-xs text-primary hover:underline">
+                  <Link to="/forgot-password" className="text-xs text-primary hover:underline">
                     Forgot?
-                  </button>
+                  </Link>
                 </div>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

@@ -26,6 +26,7 @@ import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -289,6 +290,11 @@ const MoviesRoute = MoviesRouteImport.update({
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -1337,6 +1343,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
@@ -1535,6 +1542,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
@@ -1730,6 +1738,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
@@ -1930,6 +1939,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/feed'
+    | '/forgot-password'
     | '/map'
     | '/movies'
     | '/onboarding'
@@ -2128,6 +2138,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/feed'
+    | '/forgot-password'
     | '/map'
     | '/movies'
     | '/onboarding'
@@ -2322,6 +2333,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/feed'
+    | '/forgot-password'
     | '/map'
     | '/movies'
     | '/onboarding'
@@ -2521,6 +2533,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
   ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   MapRoute: typeof MapRoute
   MoviesRoute: typeof MoviesRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -2687,6 +2700,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/map'
       preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -4419,6 +4439,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
   ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   MapRoute: MapRoute,
   MoviesRoute: MoviesRoute,
   OnboardingRoute: OnboardingRoute,
