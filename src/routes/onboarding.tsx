@@ -70,7 +70,7 @@ function OnboardingPage() {
 
   // Step 1: Personal Details
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [gender, setGender] = useState("prefer_not_to_say");
+  const [gender, setGender] = useState("");
   const [phone, setPhone] = useState<string | undefined>("");
 
   // Step 2: Interests
@@ -108,8 +108,8 @@ function OnboardingPage() {
   };
 
   const handleNextStep2 = () => {
-    if (selectedInterests.length === 0) {
-      toast.error("Please select at least one interest!");
+    if (selectedInterests.length < 5) {
+      toast.error("Please select at least 5 interests!");
       return;
     }
     setStep(3);
@@ -221,7 +221,7 @@ function OnboardingPage() {
                       onChange={(e) => setGender(e.target.value)}
                       className="h-12 w-full rounded-xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none focus:ring-1 focus:ring-primary transition-all"
                     >
-                      <option value="prefer_not_to_say">Prefer not to say</option>
+                      <option value="" disabled>Select gender</option>
                       <option value="female">Female</option>
                       <option value="male">Male</option>
                       <option value="other">Other</option>
@@ -308,7 +308,7 @@ function OnboardingPage() {
                 </Button>
                 <Button
                   onClick={handleNextStep2}
-                  disabled={selectedInterests.length === 0}
+                  disabled={selectedInterests.length < 5}
                   className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[var(--shadow-glow)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:shadow-none disabled:hover:scale-100"
                   style={{ background: "var(--gradient-primary)" }}
                 >
