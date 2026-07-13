@@ -13,8 +13,6 @@ export interface CommunityChannel {
   created_at: string;
 }
 
-
-
 export const getCommunityChannels = createServerFn({ method: "POST" })
   .validator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
@@ -110,15 +108,20 @@ export const getCommunityChannels = createServerFn({ method: "POST" })
               { id: channel.id },
             ).catch(console.error);
 
-            import("@/lib/firebase.server").then(async ({ getFirebaseAdmin }) => {
-              const { db } = getFirebaseAdmin();
-              const snapshot = await db.collection("agatike_messages").where("channelId", "==", channel.id).get();
-              const batch = db.batch();
-              snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-              batch.delete(db.collection("agatike_channels").doc(channel.id));
-              await batch.commit();
-              console.log(`Deleted Firestore data for channel ${channel.id}`);
-            }).catch(console.error);
+            import("@/lib/firebase.server")
+              .then(async ({ getFirebaseAdmin }) => {
+                const { db } = getFirebaseAdmin();
+                const snapshot = await db
+                  .collection("agatike_messages")
+                  .where("channelId", "==", channel.id)
+                  .get();
+                const batch = db.batch();
+                snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+                batch.delete(db.collection("agatike_channels").doc(channel.id));
+                await batch.commit();
+                console.log(`Deleted Firestore data for channel ${channel.id}`);
+              })
+              .catch(console.error);
 
             continue; // skip pushing to validChannels
           }

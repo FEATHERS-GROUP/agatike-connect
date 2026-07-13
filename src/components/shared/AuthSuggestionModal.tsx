@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Ticket, Zap, Clock, ShieldCheck, ArrowRight } from "lucide-react";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface AuthSuggestionModalProps {
   isOpen: boolean;
@@ -41,6 +42,71 @@ export function AuthSuggestionModal({
       search: { redirect: destination } as any,
     });
   };
+
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+
+  if (isMobile) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-none w-screen h-[100dvh] m-0 p-0 rounded-none border-none bg-white [&>button]:hidden flex flex-col">
+          {/* Top half: Orange with Hero Image */}
+          <div className="relative h-[55dvh] w-full bg-[#F2571D] rounded-b-[40px] overflow-hidden flex items-center justify-center p-6 shadow-sm">
+            <div className="absolute inset-0 opacity-20 pointer-events-none"></div>
+            <img
+              src="/assets/hero-event.jpg"
+              alt="Event Culture"
+              className="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-60"
+            />
+            <div className="relative z-10 animate-in fade-in zoom-in duration-700">
+              <img
+                src="/icon.svg"
+                alt="Agatike"
+                className="h-28 w-28 object-contain brightness-0 invert mx-auto drop-shadow-xl"
+              />
+            </div>
+          </div>
+
+          {/* Bottom half: Content and Action */}
+          <div className="flex flex-1 flex-col px-8 py-10 justify-between">
+            <div className="space-y-4 animate-in slide-in-from-bottom-6 fade-in duration-700 delay-150">
+              <h2 className="text-4xl font-bold tracking-tight text-slate-900 leading-[1.15]">
+                Experience the best events.
+              </h2>
+              <p className="text-base text-muted-foreground pr-4">
+                More than tracking, transform your nights into unforgettable memories.
+              </p>
+            </div>
+
+            <div className="animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300 mb-6 space-y-3">
+              <Button
+                onClick={handleSignIn}
+                className="w-full h-14 rounded-full bg-[#F2571D] hover:bg-[#d64c18] text-white text-lg font-semibold shadow-lg shadow-[#F2571D]/30"
+              >
+                Log in
+              </Button>
+              <Button
+                onClick={handleSignUp}
+                variant="outline"
+                className="w-full h-14 rounded-full border-slate-200 hover:bg-slate-50 text-slate-700 text-lg font-semibold"
+              >
+                Create account
+              </Button>
+              <button
+                onClick={() => {
+                  onOpenChange(false);
+                  onSkip();
+                }}
+                className="w-full text-center py-3 text-sm font-medium text-muted-foreground hover:text-slate-900 transition-colors flex items-center justify-center gap-1"
+              >
+                Skip and checkout as guest
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

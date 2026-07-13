@@ -35,6 +35,7 @@ export const Route = createFileRoute("/dashboard")({
     if (
       location.pathname === "/dashboard/login" ||
       location.pathname === "/dashboard/create-organizer" ||
+      location.pathname === "/dashboard/forgot-password" ||
       location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/)
     ) {
       return;
@@ -95,6 +96,7 @@ function DashboardLayout() {
 
   const hideSidebar =
     location.pathname === "/dashboard/login" ||
+    location.pathname === "/dashboard/forgot-password" ||
     location.pathname === "/dashboard/workspaces" ||
     location.pathname === "/dashboard/create-organizer" ||
     location.pathname === "/dashboard/settings" ||
@@ -148,6 +150,7 @@ function DashboardLayout() {
     // Exempt routes that don't require workspace selection
     if (
       location.pathname === "/dashboard/login" ||
+      location.pathname === "/dashboard/forgot-password" ||
       location.pathname === "/dashboard/create-organizer" ||
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||

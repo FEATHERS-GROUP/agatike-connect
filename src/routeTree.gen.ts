@@ -26,6 +26,7 @@ import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -48,6 +49,7 @@ import { Route as DashboardSupportRouteImport } from './routes/dashboard/support
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardPricingRouteImport } from './routes/dashboard/pricing'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
+import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community/$postId'
 import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
@@ -290,6 +292,11 @@ const MapRoute = MapRouteImport.update({
   path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedRoute = FeedRouteImport.update({
   id: '/feed',
   path: '/feed',
@@ -398,6 +405,11 @@ const DashboardPricingRoute = DashboardPricingRouteImport.update({
 const DashboardLoginRoute = DashboardLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardForgotPasswordRoute = DashboardForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardCreateOrganizerRoute =
@@ -1331,6 +1343,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
@@ -1358,6 +1371,7 @@ export interface FileRoutesByFullPath {
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -1528,6 +1542,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
@@ -1555,6 +1570,7 @@ export interface FileRoutesByTo {
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -1722,6 +1738,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/explore': typeof ExploreRoute
   '/feed': typeof FeedRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
@@ -1749,6 +1766,7 @@ export interface FileRoutesById {
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -1921,6 +1939,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/feed'
+    | '/forgot-password'
     | '/map'
     | '/movies'
     | '/onboarding'
@@ -1948,6 +1967,7 @@ export interface FileRouteTypes {
     | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
@@ -2118,6 +2138,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/feed'
+    | '/forgot-password'
     | '/map'
     | '/movies'
     | '/onboarding'
@@ -2145,6 +2166,7 @@ export interface FileRouteTypes {
     | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
@@ -2311,6 +2333,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/explore'
     | '/feed'
+    | '/forgot-password'
     | '/map'
     | '/movies'
     | '/onboarding'
@@ -2338,6 +2361,7 @@ export interface FileRouteTypes {
     | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
@@ -2509,6 +2533,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
   ExploreRoute: typeof ExploreRoute
   FeedRoute: typeof FeedRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   MapRoute: typeof MapRoute
   MoviesRoute: typeof MoviesRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -2677,6 +2702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feed': {
       id: '/feed'
       path: '/feed'
@@ -2829,6 +2861,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/dashboard/login'
       preLoaderRoute: typeof DashboardLoginRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forgot-password': {
+      id: '/dashboard/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/dashboard/forgot-password'
+      preLoaderRoute: typeof DashboardForgotPasswordRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/create-organizer': {
@@ -4039,6 +4078,7 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
 
 interface DashboardRouteChildren {
   DashboardCreateOrganizerRoute: typeof DashboardCreateOrganizerRoute
+  DashboardForgotPasswordRoute: typeof DashboardForgotPasswordRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
   DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
@@ -4125,6 +4165,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCreateOrganizerRoute: DashboardCreateOrganizerRoute,
+  DashboardForgotPasswordRoute: DashboardForgotPasswordRoute,
   DashboardLoginRoute: DashboardLoginRoute,
   DashboardPricingRoute: DashboardPricingRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
@@ -4398,6 +4439,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
   ExploreRoute: ExploreRoute,
   FeedRoute: FeedRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   MapRoute: MapRoute,
   MoviesRoute: MoviesRoute,
   OnboardingRoute: OnboardingRoute,

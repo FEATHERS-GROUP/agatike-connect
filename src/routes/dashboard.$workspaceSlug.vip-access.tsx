@@ -103,7 +103,7 @@ function VipAccessPage() {
     enabled: !!activeWorkspace,
   });
 
-  const { data: usageTickets = [], isLoading: isLoadingUsage } = useQuery({
+  const { data: usageData = { tickets: [], events: [] }, isLoading: isLoadingUsage } = useQuery({
     queryKey: ["vip_tickets_usage", activeWorkspace?.id],
     queryFn: () => getVipTicketsUsage({ data: { workspace_id: activeWorkspace!.id } } as any),
     enabled: !!activeWorkspace,
@@ -303,18 +303,28 @@ function VipAccessPage() {
           )}
           {!isLoadingUsage &&
             privileges.map((privilege) => {
-              // Find all tickets that have this privilege assigned
-              const associatedTickets = usageTickets.filter(
+              // Find all tickets and events that have this privilege assigned
+              const associatedTickets = (usageData.tickets || []).filter(
                 (t: any) =>
                   Array.isArray(t.vip_privilege_ids) && t.vip_privilege_ids.includes(privilege.id),
               );
 
+              const associatedEvents = (usageData.events || []).filter(
+                (e: any) =>
+                  Array.isArray(e.vip_privilege_ids) && e.vip_privilege_ids.includes(privilege.id),
+              );
+
               // Group tickets by event
-              const eventsMap = new Map<string, { event: any; tickets: any[] }>();
+              const eventsMap = new Map<string, { event: any; tickets: any[], eventLevel: boolean }>();
+              
+              associatedEvents.forEach((e: any) => {
+                eventsMap.set(e.id, { event: e, tickets: [], eventLevel: true });
+              });
+
               associatedTickets.forEach((t: any) => {
                 if (!t.event) return;
                 if (!eventsMap.has(t.event.id)) {
-                  eventsMap.set(t.event.id, { event: t.event, tickets: [] });
+                  eventsMap.set(t.event.id, { event: t.event, tickets: [], eventLevel: false });
                 }
                 eventsMap.get(t.event.id)!.tickets.push(t);
               });
@@ -341,7 +351,7 @@ function VipAccessPage() {
 
                   {groupedEvents.length > 0 && (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {groupedEvents.map(({ event, tickets }) => (
+                      {groupedEvents.map(({ event, tickets, eventLevel }) => (
                         <div
                           key={event.id}
                           className="rounded-xl border border-border/40 bg-secondary/10 p-4"
@@ -363,11 +373,16 @@ function VipAccessPage() {
                                 {event.title || "Untitled Event"}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {tickets.length} ticket tier(s)
+                                {tickets.length > 0 ? `${tickets.length} ticket tier(s)` : 'Event-level privilege'}
                               </p>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
+                            {eventLevel && (
+                               <span className="px-2 py-1 bg-primary/10 text-primary border border-primary/20 text-xs rounded-md shadow-sm">
+                                 Event Level
+                               </span>
+                            )}
                             {tickets.map((t: any) => (
                               <span
                                 key={t.id}

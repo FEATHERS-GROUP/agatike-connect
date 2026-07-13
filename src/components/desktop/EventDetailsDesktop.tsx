@@ -15,6 +15,7 @@ import { EventLineup } from "@/components/shared/event-details/EventLineup";
 import { EventMerch } from "@/components/shared/event-details/EventMerch";
 import { EventIncluded } from "@/components/shared/event-details/EventIncluded";
 import { EventReviews } from "@/components/shared/event-details/EventReviews";
+import { EventVipPrivileges } from "@/components/shared/event-details/EventVipPrivileges";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
@@ -73,6 +74,11 @@ export function EventDetailsDesktop({
           <EventMerch activeMerch={d.activeMerch} currencyCode={d.currencyCode} />
 
           <EventIncluded isExperience={d.isExperience} included={d.included} />
+
+          <EventVipPrivileges
+            vipPrivileges={d.eventVipPrivileges || []}
+            vipPerks={d.ev.vipPerks}
+          />
 
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">

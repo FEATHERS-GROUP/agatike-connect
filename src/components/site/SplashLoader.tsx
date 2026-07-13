@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 
 export function SplashLoader() {
+  const { isLoading } = useUserAuth();
   const [isVisible, setIsVisible] = useState(true);
   const [isFading, setIsFading] = useState(false);
 
   useEffect(() => {
-    // Only show splash screen on mobile, and specifically standalone PWA mode if possible
-    // But to make it feel like an app, we can show it for a short duration on all mobile loads
+    // Only show splash screen on mobile
     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       window.navigator.userAgent,
     );
@@ -17,14 +18,20 @@ export function SplashLoader() {
       return;
     }
 
-    // Keep it visible for 1.5 seconds, then fade out
+    if (isLoading) {
+      // While auth is loading, keep it visible
+      setIsFading(false);
+      return;
+    }
+
+    // Once loading is done, keep it visible for a short time to ensure smooth transition
     const timer = setTimeout(() => {
       setIsFading(true);
       setTimeout(() => setIsVisible(false), 500); // 500ms fade transition
-    }, 1500);
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isLoading]);
 
   if (!isVisible) return null;
 

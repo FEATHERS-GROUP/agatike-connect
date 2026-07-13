@@ -769,3 +769,322 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
 
   return { success: true, id: organizer.id };
 });
+
+export const sendDashboardPasswordResetOtp = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { email } = ctx.data as unknown as { email: string };
+
+    let userType: "organizer" | "workspace_user" | null = null;
+    let userId: string | null = null;
+
+    // Check organizer
+    const orgQuery = `
+    query CheckOrg($email: String!) {
+      organizers(where: { email: { _ilike: $email } }) {
+        id
+      }
+    }
+  `;
+    const orgResult = await hasuraRequest<{ organizers: { id: string }[] }>(orgQuery, { email });
+
+    if (orgResult.organizers.length > 0) {
+      userType = "organizer";
+      userId = orgResult.organizers[0].id;
+    } else {
+      // Check workspace user
+      const wsQuery = `
+      query CheckWsUser($email: String!) {
+        workspace_users(where: { email: { _ilike: $email } }) {
+          id
+        }
+      }
+    `;
+      const wsResult = await hasuraRequest<{ workspace_users: { id: string }[] }>(wsQuery, {
+        email,
+      });
+      if (wsResult.workspace_users.length > 0) {
+        userType = "workspace_user";
+        userId = wsResult.workspace_users[0].id;
+      }
+    }
+
+    if (!userType || !userId) {
+      throw new Error("No account found with this email address");
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    const token = await new SignJWT({
+      email,
+      userId,
+      userType,
+      otp: hashedOtp,
+      type: "dashboard_password_reset",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("15m")
+      .sign(SECRET);
+
+    const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Password Reset</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p>You requested a password reset for your Agatike Dashboard account. Please use the following One-Time Password (OTP):</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #F2571D; padding: 24px; background: #fff5f2; border-radius: 12px; display: inline-block; margin: 24px 0;">
+          ${otp}
+        </div>
+        <p style="font-size: 14px; color: #666;">This code will expire in 15 minutes.</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
+      </div>
+    </div>
+  `;
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Agatike Connect <hello@agatike.rw>",
+        to: [email],
+        subject: `Dashboard Password Reset OTP: ${otp}`,
+        html: html,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to send OTP via email");
+    }
+
+    return { success: true, token };
+  },
+);
+
+export const verifyDashboardPasswordResetOtp = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { otpToken, otp } = ctx.data as unknown as {
+      otpToken: string;
+      otp: string;
+    };
+
+    if (!otpToken || !otp) {
+      throw new Error("Missing OTP verification details");
+    }
+
+    try {
+      const verified = await jwtVerify(otpToken, SECRET);
+      const payload = verified.payload;
+      if (payload.type !== "dashboard_password_reset") {
+        throw new Error("Invalid OTP token");
+      }
+
+      const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+      if (!isValidOtp) {
+        throw new Error("Incorrect OTP provided");
+      }
+    } catch (e: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    return { success: true };
+  },
+);
+
+export const resetDashboardPassword = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { otpToken, otp, password } = ctx.data as unknown as {
+    otpToken: string;
+    otp: string;
+    password: string;
+  };
+
+  if (!otpToken || !otp) {
+    throw new Error("Missing OTP verification details");
+  }
+
+  let payload: any;
+  try {
+    const verified = await jwtVerify(otpToken, SECRET);
+    payload = verified.payload;
+    if (payload.type !== "dashboard_password_reset") {
+      throw new Error("Invalid OTP token");
+    }
+
+    const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+    if (!isValidOtp) {
+      throw new Error("Incorrect OTP provided");
+    }
+  } catch (e: any) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const { userId, userType } = payload;
+
+  if (userType === "organizer") {
+    const updateQuery = `
+      mutation UpdateOrganizerPassword($id: uuid!, $password: String!) {
+        update_organizers_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(updateQuery, { id: userId, password: hashedPassword });
+  } else if (userType === "workspace_user") {
+    const updateQuery = `
+      mutation UpdateWorkspaceUserPassword($id: uuid!, $password: String!) {
+        update_workspace_users_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(updateQuery, { id: userId, password: hashedPassword });
+  } else {
+    throw new Error("Invalid user type");
+  }
+
+  return { success: true };
+});
+
+export const sendUserPasswordResetOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { email } = ctx.data as unknown as { email: string };
+
+  const query = `
+    query GetUser($email: String!) {
+      users(where: { email: { _ilike: $email } }) {
+        id
+      }
+    }
+  `;
+  const result = await hasuraRequest<{ users: { id: string }[] }>(query, { email });
+
+  if (result.users.length === 0) {
+    throw new Error("No account found with this email address");
+  }
+
+  const userId = result.users[0].id;
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+
+  const token = await new SignJWT({ email, userId, otp: hashedOtp, type: "user_password_reset" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("15m")
+    .sign(SECRET);
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Password Reset</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p>You requested a password reset for your Agatike account. Please use the following One-Time Password (OTP):</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #F2571D; padding: 24px; background: #fff5f2; border-radius: 12px; display: inline-block; margin: 24px 0;">
+          ${otp}
+        </div>
+        <p style="font-size: 14px; color: #666;">This code will expire in 15 minutes.</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike</strong></p>
+      </div>
+    </div>
+  `;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike <hello@agatike.rw>",
+      to: [email],
+      subject: `Password Reset OTP: ${otp}`,
+      html: html,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send OTP via email");
+  }
+
+  return { success: true, token };
+});
+
+export const verifyUserPasswordResetOtp = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { otpToken, otp } = ctx.data as unknown as {
+      otpToken: string;
+      otp: string;
+    };
+
+    if (!otpToken || !otp) {
+      throw new Error("Missing OTP verification details");
+    }
+
+    try {
+      const verified = await jwtVerify(otpToken, SECRET);
+      const payload = verified.payload;
+      if (payload.type !== "user_password_reset") {
+        throw new Error("Invalid OTP token");
+      }
+
+      const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+      if (!isValidOtp) {
+        throw new Error("Incorrect OTP provided");
+      }
+    } catch (e: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    return { success: true };
+  },
+);
+
+export const resetUserPassword = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { otpToken, otp, password } = ctx.data as unknown as {
+    otpToken: string;
+    otp: string;
+    password: string;
+  };
+
+  if (!otpToken || !otp) {
+    throw new Error("Missing OTP verification details");
+  }
+
+  let payload: any;
+  try {
+    const verified = await jwtVerify(otpToken, SECRET);
+    payload = verified.payload;
+    if (payload.type !== "user_password_reset") {
+      throw new Error("Invalid OTP token");
+    }
+
+    const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+    if (!isValidOtp) {
+      throw new Error("Incorrect OTP provided");
+    }
+  } catch (e: any) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const { userId } = payload;
+
+  const updateQuery = `
+    mutation UpdateUserPasswordReset($id: uuid!, $password: String!) {
+      update_users_by_pk(pk_columns: { id: $id }, _set: { password: $password }) {
+        id
+      }
+    }
+  `;
+  await hasuraRequest(updateQuery, { id: userId, password: hashedPassword });
+
+  return { success: true };
+});
