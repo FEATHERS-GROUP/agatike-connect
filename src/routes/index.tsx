@@ -31,7 +31,7 @@ function Home() {
     if (typeof window !== "undefined" && !isLoading) {
       const isMobile = window.matchMedia("(max-width: 767px)").matches;
       if (isMobile && !isLoggedIn) {
-        navigate({ to: "/events", replace: true });
+        navigate({ to: "/signin", replace: true });
       }
     }
   }, [isLoggedIn, isLoading, navigate]);
