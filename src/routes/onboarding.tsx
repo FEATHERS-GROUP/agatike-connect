@@ -156,7 +156,6 @@ function OnboardingPage() {
     <div className="relative min-h-[100dvh] bg-slate-50 text-slate-900 overflow-hidden flex items-center justify-center p-4 py-12">
       {/* Clean White Card Container */}
       <div className="relative z-10 w-full max-w-2xl mx-auto rounded-[2rem] border border-slate-200/60 bg-white p-8 sm:p-12 shadow-2xl overflow-hidden">
-        
         {/* Logo/Icon */}
         <div className="mb-8 flex justify-center items-center gap-2">
           <img src="/icon.svg" alt="Agatike" className="h-8 w-8 object-contain" />
@@ -212,7 +211,10 @@ function OnboardingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="onboarding-gender" className="text-sm font-medium text-slate-700">
+                    <Label
+                      htmlFor="onboarding-gender"
+                      className="text-sm font-medium text-slate-700"
+                    >
                       Gender
                     </Label>
                     <select
@@ -221,7 +223,9 @@ function OnboardingPage() {
                       onChange={(e) => setGender(e.target.value)}
                       className="h-12 w-full rounded-xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none focus:ring-1 focus:ring-primary transition-all"
                     >
-                      <option value="" disabled>Select gender</option>
+                      <option value="" disabled>
+                        Select gender
+                      </option>
                       <option value="female">Female</option>
                       <option value="male">Male</option>
                       <option value="other">Other</option>
@@ -269,7 +273,8 @@ function OnboardingPage() {
                   What are you into?
                 </h1>
                 <p className="text-base text-slate-500 max-w-lg mx-auto">
-                  Select the categories you love. We'll use these to recommend events, drops, and organizers just for you.
+                  Select the categories you love. We'll use these to recommend events, drops, and
+                  organizers just for you.
                 </p>
               </div>
 

@@ -3,7 +3,6 @@ import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 import { getAdminSession } from "./admin_auth";
 
-
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────

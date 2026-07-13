@@ -52,13 +52,17 @@ export function AuthSuggestionModal({
           {/* Top half: Orange with Hero Image */}
           <div className="relative h-[55dvh] w-full bg-[#F2571D] rounded-b-[40px] overflow-hidden flex items-center justify-center p-6 shadow-sm">
             <div className="absolute inset-0 opacity-20 pointer-events-none"></div>
-            <img 
-              src="/assets/hero-event.jpg" 
-              alt="Event Culture" 
-              className="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-60" 
+            <img
+              src="/assets/hero-event.jpg"
+              alt="Event Culture"
+              className="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-60"
             />
             <div className="relative z-10 animate-in fade-in zoom-in duration-700">
-               <img src="/icon.svg" alt="Agatike" className="h-28 w-28 object-contain brightness-0 invert mx-auto drop-shadow-xl" />
+              <img
+                src="/icon.svg"
+                alt="Agatike"
+                className="h-28 w-28 object-contain brightness-0 invert mx-auto drop-shadow-xl"
+              />
             </div>
           </div>
 

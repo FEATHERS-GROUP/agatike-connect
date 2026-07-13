@@ -770,54 +770,63 @@ export const googleAuthOrganizer = createServerFn({ method: "POST" }).handler(as
   return { success: true, id: organizer.id };
 });
 
-export const sendDashboardPasswordResetOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { email } = ctx.data as unknown as { email: string };
+export const sendDashboardPasswordResetOtp = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { email } = ctx.data as unknown as { email: string };
 
-  let userType: "organizer" | "workspace_user" | null = null;
-  let userId: string | null = null;
+    let userType: "organizer" | "workspace_user" | null = null;
+    let userId: string | null = null;
 
-  // Check organizer
-  const orgQuery = `
+    // Check organizer
+    const orgQuery = `
     query CheckOrg($email: String!) {
       organizers(where: { email: { _ilike: $email } }) {
         id
       }
     }
   `;
-  const orgResult = await hasuraRequest<{ organizers: { id: string }[] }>(orgQuery, { email });
-  
-  if (orgResult.organizers.length > 0) {
-    userType = "organizer";
-    userId = orgResult.organizers[0].id;
-  } else {
-    // Check workspace user
-    const wsQuery = `
+    const orgResult = await hasuraRequest<{ organizers: { id: string }[] }>(orgQuery, { email });
+
+    if (orgResult.organizers.length > 0) {
+      userType = "organizer";
+      userId = orgResult.organizers[0].id;
+    } else {
+      // Check workspace user
+      const wsQuery = `
       query CheckWsUser($email: String!) {
         workspace_users(where: { email: { _ilike: $email } }) {
           id
         }
       }
     `;
-    const wsResult = await hasuraRequest<{ workspace_users: { id: string }[] }>(wsQuery, { email });
-    if (wsResult.workspace_users.length > 0) {
-      userType = "workspace_user";
-      userId = wsResult.workspace_users[0].id;
+      const wsResult = await hasuraRequest<{ workspace_users: { id: string }[] }>(wsQuery, {
+        email,
+      });
+      if (wsResult.workspace_users.length > 0) {
+        userType = "workspace_user";
+        userId = wsResult.workspace_users[0].id;
+      }
     }
-  }
 
-  if (!userType || !userId) {
-    throw new Error("No account found with this email address");
-  }
+    if (!userType || !userId) {
+      throw new Error("No account found with this email address");
+    }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const hashedOtp = await bcrypt.hash(otp, 10);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
 
-  const token = await new SignJWT({ email, userId, userType, otp: hashedOtp, type: "dashboard_password_reset" })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("15m")
-    .sign(SECRET);
+    const token = await new SignJWT({
+      email,
+      userId,
+      userType,
+      otp: hashedOtp,
+      type: "dashboard_password_reset",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("15m")
+      .sign(SECRET);
 
-  const html = `
+    const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Password Reset</h2>
@@ -835,56 +844,58 @@ export const sendDashboardPasswordResetOtp = createServerFn({ method: "POST" }).
     </div>
   `;
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [email],
-      subject: `Dashboard Password Reset OTP: ${otp}`,
-      html: html,
-    }),
-  });
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Agatike Connect <hello@agatike.rw>",
+        to: [email],
+        subject: `Dashboard Password Reset OTP: ${otp}`,
+        html: html,
+      }),
+    });
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to send OTP via email");
-  }
-
-  return { success: true, token };
-});
-
-export const verifyDashboardPasswordResetOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { otpToken, otp } = ctx.data as unknown as {
-    otpToken: string;
-    otp: string;
-  };
-
-  if (!otpToken || !otp) {
-    throw new Error("Missing OTP verification details");
-  }
-
-  try {
-    const verified = await jwtVerify(otpToken, SECRET);
-    const payload = verified.payload;
-    if (payload.type !== "dashboard_password_reset") {
-      throw new Error("Invalid OTP token");
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to send OTP via email");
     }
 
-    const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
-    if (!isValidOtp) {
-      throw new Error("Incorrect OTP provided");
+    return { success: true, token };
+  },
+);
+
+export const verifyDashboardPasswordResetOtp = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { otpToken, otp } = ctx.data as unknown as {
+      otpToken: string;
+      otp: string;
+    };
+
+    if (!otpToken || !otp) {
+      throw new Error("Missing OTP verification details");
     }
-  } catch (e: any) {
-    throw new Error("Invalid or expired OTP");
-  }
 
-  return { success: true };
-});
+    try {
+      const verified = await jwtVerify(otpToken, SECRET);
+      const payload = verified.payload;
+      if (payload.type !== "dashboard_password_reset") {
+        throw new Error("Invalid OTP token");
+      }
 
+      const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+      if (!isValidOtp) {
+        throw new Error("Incorrect OTP provided");
+      }
+    } catch (e: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    return { success: true };
+  },
+);
 
 export const resetDashboardPassword = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { otpToken, otp, password } = ctx.data as unknown as {
@@ -1006,33 +1017,35 @@ export const sendUserPasswordResetOtp = createServerFn({ method: "POST" }).handl
   return { success: true, token };
 });
 
-export const verifyUserPasswordResetOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { otpToken, otp } = ctx.data as unknown as {
-    otpToken: string;
-    otp: string;
-  };
+export const verifyUserPasswordResetOtp = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { otpToken, otp } = ctx.data as unknown as {
+      otpToken: string;
+      otp: string;
+    };
 
-  if (!otpToken || !otp) {
-    throw new Error("Missing OTP verification details");
-  }
-
-  try {
-    const verified = await jwtVerify(otpToken, SECRET);
-    const payload = verified.payload;
-    if (payload.type !== "user_password_reset") {
-      throw new Error("Invalid OTP token");
+    if (!otpToken || !otp) {
+      throw new Error("Missing OTP verification details");
     }
 
-    const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
-    if (!isValidOtp) {
-      throw new Error("Incorrect OTP provided");
-    }
-  } catch (e: any) {
-    throw new Error("Invalid or expired OTP");
-  }
+    try {
+      const verified = await jwtVerify(otpToken, SECRET);
+      const payload = verified.payload;
+      if (payload.type !== "user_password_reset") {
+        throw new Error("Invalid OTP token");
+      }
 
-  return { success: true };
-});
+      const isValidOtp = await bcrypt.compare(otp, payload.otp as string);
+      if (!isValidOtp) {
+        throw new Error("Incorrect OTP provided");
+      }
+    } catch (e: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    return { success: true };
+  },
+);
 
 export const resetUserPassword = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { otpToken, otp, password } = ctx.data as unknown as {

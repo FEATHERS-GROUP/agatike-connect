@@ -10,10 +10,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  sendUserPasswordResetOtp, 
+import {
+  sendUserPasswordResetOtp,
   verifyUserPasswordResetOtp,
-  resetUserPassword 
+  resetUserPassword,
 } from "@/api/auth";
 import hero from "@/assets/hero-event.jpg";
 
@@ -38,13 +38,15 @@ const verifyOtpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits"),
 });
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(6, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type RequestOtpValues = z.infer<typeof requestOtpSchema>;
 type VerifyOtpValues = z.infer<typeof verifyOtpSchema>;
@@ -141,10 +143,10 @@ function ForgotPassword() {
         <div className="relative h-[35vh] w-full shrink-0 lg:h-[640px] lg:overflow-hidden lg:rounded-3xl">
           <img src={hero} alt="Live event" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent lg:from-black/85 lg:via-black/30" />
-          
+
           {/* Back button overlay */}
           <div className="absolute top-6 left-6 z-10 hidden lg:block">
-            <Link 
+            <Link
               to="/signin"
               className="flex items-center text-sm font-medium text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/40 backdrop-blur-md px-4 py-2 rounded-full"
             >
@@ -170,9 +172,9 @@ function ForgotPassword() {
         <div className="relative -mt-6 flex flex-1 flex-col rounded-t-3xl bg-background px-6 pb-12 pt-8 lg:-mt-0 lg:mx-auto lg:w-full lg:max-w-md lg:rounded-none lg:bg-transparent lg:p-0">
           {/* Mobile Handle */}
           <div className="absolute left-1/2 top-3 h-1 w-12 -translate-x-1/2 rounded-full bg-border lg:hidden" />
-          
+
           <div className="lg:hidden mb-6">
-            <Link 
+            <Link
               to="/signin"
               className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -187,7 +189,7 @@ function ForgotPassword() {
                 <KeyRound className="h-6 w-6 text-primary" />
               </div>
             </div>
-            
+
             <h1 className="text-2xl font-semibold tracking-tight lg:mt-6 lg:text-center">
               {step === "request" && "Forgot Password"}
               {step === "verify" && "OTP Verification"}
@@ -216,7 +218,9 @@ function ForgotPassword() {
                       />
                     </div>
                     {requestForm.formState.errors.email && (
-                      <p className="mt-1.5 text-xs text-destructive">{requestForm.formState.errors.email.message}</p>
+                      <p className="mt-1.5 text-xs text-destructive">
+                        {requestForm.formState.errors.email.message}
+                      </p>
                     )}
                   </div>
 
@@ -226,7 +230,11 @@ function ForgotPassword() {
                     style={{ background: "var(--gradient-primary)" }}
                     disabled={requestOtpMutation.isPending}
                   >
-                    {requestOtpMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send Reset OTP"}
+                    {requestOtpMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      "Send Reset OTP"
+                    )}
                   </Button>
                 </form>
               )}
@@ -248,7 +256,9 @@ function ForgotPassword() {
                       />
                     </div>
                     {verifyForm.formState.errors.otp && (
-                      <p className="mt-1.5 text-xs text-destructive">{verifyForm.formState.errors.otp.message}</p>
+                      <p className="mt-1.5 text-xs text-destructive">
+                        {verifyForm.formState.errors.otp.message}
+                      </p>
                     )}
                   </div>
 
@@ -258,7 +268,11 @@ function ForgotPassword() {
                     style={{ background: "var(--gradient-primary)" }}
                     disabled={verifyOtpMutation.isPending}
                   >
-                    {verifyOtpMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify OTP"}
+                    {verifyOtpMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      "Verify OTP"
+                    )}
                   </Button>
                 </form>
               )}
@@ -286,7 +300,9 @@ function ForgotPassword() {
                       </button>
                     </div>
                     {resetForm.formState.errors.password && (
-                      <p className="mt-1.5 text-xs text-destructive">{resetForm.formState.errors.password.message}</p>
+                      <p className="mt-1.5 text-xs text-destructive">
+                        {resetForm.formState.errors.password.message}
+                      </p>
                     )}
                   </div>
 
@@ -307,11 +323,17 @@ function ForgotPassword() {
                         onClick={() => setShowConfirmPw(!showConfirmPw)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showConfirmPw ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                     {resetForm.formState.errors.confirmPassword && (
-                      <p className="mt-1.5 text-xs text-destructive">{resetForm.formState.errors.confirmPassword.message}</p>
+                      <p className="mt-1.5 text-xs text-destructive">
+                        {resetForm.formState.errors.confirmPassword.message}
+                      </p>
                     )}
                   </div>
 
@@ -321,7 +343,11 @@ function ForgotPassword() {
                     style={{ background: "var(--gradient-primary)" }}
                     disabled={resetPasswordMutation.isPending}
                   >
-                    {resetPasswordMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "Reset Password"}
+                    {resetPasswordMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      "Reset Password"
+                    )}
                   </Button>
                 </form>
               )}

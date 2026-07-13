@@ -131,9 +131,13 @@ function SignIn() {
         {/* Left Panel */}
         <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-black p-12 text-white lg:flex xl:w-5/12">
           {/* Abstract Image Background */}
-          <img src={hero} alt="Live event" className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-screen" />
+          <img
+            src={hero}
+            alt="Live event"
+            className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-screen"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
-          
+
           <div className="relative z-10 flex items-center gap-4 text-xs font-bold tracking-[0.2em] text-white/70 uppercase">
             THE PREMIUM PLATFORM
             <div className="h-px w-12 bg-white/50" />
@@ -144,7 +148,8 @@ function SignIn() {
               Where <br /> Culture Meets <br /> The Calendar
             </h2>
             <p className="mt-6 max-w-sm text-sm font-medium leading-relaxed text-white/70">
-              Sign in to save events, follow your favorite organizers, and unlock exclusive VIP drops.
+              Sign in to save events, follow your favorite organizers, and unlock exclusive VIP
+              drops.
             </p>
           </div>
         </div>
@@ -158,9 +163,7 @@ function SignIn() {
             </div>
 
             <div className="text-center">
-              <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-                Welcome Back
-              </h1>
+              <h1 className="text-4xl font-bold tracking-tight text-slate-900">Welcome Back</h1>
               <p className="mt-3 text-sm text-slate-500">
                 Enter your email and password to access your account
               </p>
@@ -168,7 +171,9 @@ function SignIn() {
 
             <form onSubmit={onSubmit} className="mt-10 space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="signin-email" className="text-sm font-medium text-slate-700">Email</Label>
+                <Label htmlFor="signin-email" className="text-sm font-medium text-slate-700">
+                  Email
+                </Label>
                 <div className="relative">
                   <Input
                     id="signin-email"
@@ -184,7 +189,9 @@ function SignIn() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signin-pw" className="text-sm font-medium text-slate-700">Password</Label>
+                <Label htmlFor="signin-pw" className="text-sm font-medium text-slate-700">
+                  Password
+                </Label>
                 <div className="relative">
                   <Input
                     id="signin-pw"
@@ -208,10 +215,22 @@ function SignIn() {
 
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" id="remember" className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary transition-all cursor-pointer" />
-                  <Label htmlFor="remember" className="text-xs font-medium text-slate-600 cursor-pointer">Remember me</Label>
+                  <input
+                    type="checkbox"
+                    id="remember"
+                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary transition-all cursor-pointer"
+                  />
+                  <Label
+                    htmlFor="remember"
+                    className="text-xs font-medium text-slate-600 cursor-pointer"
+                  >
+                    Remember me
+                  </Label>
                 </div>
-                <Link to="/forgot-password" className="text-xs font-medium text-slate-600 hover:text-primary transition-colors">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-medium text-slate-600 hover:text-primary transition-colors"
+                >
                   Forgot Password
                 </Link>
               </div>
@@ -241,10 +260,22 @@ function SignIn() {
                 className="h-12 w-full rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
               >
                 <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335"
+                  />
                 </svg>
                 Sign In with Google
               </Button>
@@ -261,10 +292,13 @@ function SignIn() {
               </Button>
             </div>
           </div>
-          
+
           <div className="mt-20 flex justify-center text-sm font-medium text-slate-500">
             Don't have an account?{" "}
-            <Link to="/signup" className="ml-1 text-slate-900 font-semibold hover:text-primary transition-colors hover:underline">
+            <Link
+              to="/signup"
+              className="ml-1 text-slate-900 font-semibold hover:text-primary transition-colors hover:underline"
+            >
               Sign Up
             </Link>
           </div>

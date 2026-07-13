@@ -14,7 +14,9 @@ async function updateOrganizerIntegrations(organizerId: string, integrations: an
     }
   `;
   try {
-    await (await import("./graphql.server")).hasuraRequest(mutation, { id: organizerId, integrations });
+    await (
+      await import("./graphql.server")
+    ).hasuraRequest(mutation, { id: organizerId, integrations });
     console.log(`[API] Successfully updated integrations for organizer ${organizerId}`);
   } catch (error) {
     console.error(`[API] Failed to update integrations for organizer ${organizerId}:`, error);
@@ -31,7 +33,9 @@ async function getOrganizer(organizerId: string) {
       }
     }
   `;
-  const result = await (await import("./graphql.server")).hasuraRequest<{ organizers_by_pk: { integrations: any } }>(query, {
+  const result = await (
+    await import("./graphql.server")
+  ).hasuraRequest<{ organizers_by_pk: { integrations: any } }>(query, {
     id: organizerId,
   });
   return result.organizers_by_pk;
@@ -50,7 +54,9 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
 
       let organizerId = session.sub;
       if (session.type === "workspace_user") {
-        const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+        const meData = await (
+          await import("./graphql.server")
+        ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
           { id: session.sub },
         );
@@ -129,7 +135,9 @@ export const disconnectGoogleIntegration = createServerFn({ method: "POST" })
 
     let organizerId = session.sub;
     if (session.type === "workspace_user") {
-      const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+      const meData = await (
+        await import("./graphql.server")
+      ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
         `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
         { id: session.sub },
       );
@@ -160,7 +168,9 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
 
       let organizerId = session.sub;
       if (session.type === "workspace_user") {
-        const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+        const meData = await (
+          await import("./graphql.server")
+        ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
           { id: session.sub },
         );
@@ -199,7 +209,9 @@ export const getOrganizerIntegrations = createServerFn({ method: "GET" }).handle
 
   let organizerId = session.sub;
   if (session.type === "workspace_user") {
-    const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+    const meData = await (
+      await import("./graphql.server")
+    ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
       `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
       { id: session.sub },
     );
@@ -274,7 +286,9 @@ export const listGoogleDriveFiles = createServerFn({ method: "GET" })
 
       let organizerId = session.sub;
       if (session.type === "workspace_user") {
-        const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+        const meData = await (
+          await import("./graphql.server")
+        ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
           { id: session.sub },
         );
@@ -332,7 +346,9 @@ export const readGoogleDriveFileContent = createServerFn({ method: "GET" })
 
       let organizerId = session.sub;
       if (session.type === "workspace_user") {
-        const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+        const meData = await (
+          await import("./graphql.server")
+        ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
           { id: session.sub },
         );
@@ -373,7 +389,9 @@ export const createGoogleDriveFile = createServerFn({ method: "POST" })
 
       let organizerId = session.sub;
       if (session.type === "workspace_user") {
-        const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+        const meData = await (
+          await import("./graphql.server")
+        ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
           `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
           { id: session.sub },
         );
@@ -424,7 +442,9 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
 
     let organizerId = session.sub;
     if (session.type === "workspace_user") {
-      const meData = await (await import("./graphql.server")).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
+      const meData = await (
+        await import("./graphql.server")
+      ).hasuraRequest<{ workspace_users_by_pk: { organizer_id: string } }>(
         `query GetMe($id: uuid!) { workspace_users_by_pk(id: $id) { organizer_id } }`,
         { id: session.sub },
       );
@@ -554,7 +574,9 @@ export const syncEventToGoogleCalendar = createServerFn({ method: "POST" })
         }
       }
     `;
-    const wsData = await (await import("./graphql.server")).hasuraRequest<{ workspaces_by_pk: { orgnizer_id: string } }>(wsQuery, {
+    const wsData = await (
+      await import("./graphql.server")
+    ).hasuraRequest<{ workspaces_by_pk: { orgnizer_id: string } }>(wsQuery, {
       id: workspaceId,
     });
     const orgId = wsData?.workspaces_by_pk?.orgnizer_id;

@@ -48,7 +48,11 @@ export function MobileLoginFlow({
       <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#F2571D] text-white">
         <div className="flex-1 flex flex-col items-center justify-center animate-pulse">
           {/* App Logo or Hero placeholder for splash */}
-          <img src="/icon.svg" alt="Agatike Logo" className="h-24 w-24 object-contain brightness-0 invert" />
+          <img
+            src="/icon.svg"
+            alt="Agatike Logo"
+            className="h-24 w-24 object-contain brightness-0 invert"
+          />
         </div>
         <div className="pb-10">
           <h1 className="text-2xl font-bold tracking-widest text-white">Agatike</h1>
@@ -65,13 +69,17 @@ export function MobileLoginFlow({
           <div className="absolute inset-0 opacity-20 pointer-events-none">
             {/* Decorative background clouds/stars can go here */}
           </div>
-          <img 
-            src={hero} 
-            alt="Event Culture" 
-            className="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-60" 
+          <img
+            src={hero}
+            alt="Event Culture"
+            className="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-60"
           />
           <div className="relative z-10 animate-in fade-in zoom-in duration-700">
-             <img src="/icon.svg" alt="Agatike" className="h-28 w-28 object-contain brightness-0 invert mx-auto drop-shadow-xl" />
+            <img
+              src="/icon.svg"
+              alt="Agatike"
+              className="h-28 w-28 object-contain brightness-0 invert mx-auto drop-shadow-xl"
+            />
           </div>
         </div>
 
@@ -111,7 +119,7 @@ export function MobileLoginFlow({
     <div className="flex min-h-[100dvh] flex-col bg-slate-50/50 px-6 py-6 animate-in slide-in-from-right fade-in duration-300">
       {/* Header */}
       <div className="pt-8 pb-6">
-        <button 
+        <button
           onClick={() => setScreen("onboarding")}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm border border-slate-100 text-slate-700 transition-colors hover:bg-slate-100"
         >
@@ -123,14 +131,22 @@ export function MobileLoginFlow({
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Log in</h1>
         <p className="text-sm text-muted-foreground">
           By logging in, you agree to our{" "}
-          <Link to="/" className="font-medium text-slate-900 underline">Terms of Use</Link>.
+          <Link to="/" className="font-medium text-slate-900 underline">
+            Terms of Use
+          </Link>
+          .
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-5 flex-1">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email-mobile" className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Email</Label>
+            <Label
+              htmlFor="email-mobile"
+              className="text-xs text-muted-foreground font-medium uppercase tracking-wider"
+            >
+              Email
+            </Label>
             <div className="relative">
               <Input
                 id="email-mobile"
@@ -147,8 +163,16 @@ export function MobileLoginFlow({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="pw-mobile" className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Password</Label>
-              <Link to="/forgot-password" className="text-xs font-medium text-[#F2571D] hover:underline">
+              <Label
+                htmlFor="pw-mobile"
+                className="text-xs text-muted-foreground font-medium uppercase tracking-wider"
+              >
+                Password
+              </Label>
+              <Link
+                to="/forgot-password"
+                className="text-xs font-medium text-[#F2571D] hover:underline"
+              >
                 Forgot?
               </Link>
             </div>
@@ -242,7 +266,11 @@ export function MobileLoginFlow({
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground pb-8">
-          For more information, please see our <Link to="/" className="font-medium text-slate-900 underline">Privacy policy</Link>.
+          For more information, please see our{" "}
+          <Link to="/" className="font-medium text-slate-900 underline">
+            Privacy policy
+          </Link>
+          .
         </p>
       </form>
     </div>

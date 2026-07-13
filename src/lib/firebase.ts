@@ -20,9 +20,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = typeof window !== "undefined" 
-  ? (getApps().length > 0 ? getApp() : initializeApp(firebaseConfig))
-  : undefined;
+const app =
+  typeof window !== "undefined"
+    ? getApps().length > 0
+      ? getApp()
+      : initializeApp(firebaseConfig)
+    : undefined;
 
 // Initialize Firestore
 export const db = (app ? getFirestore(app) : null) as any;

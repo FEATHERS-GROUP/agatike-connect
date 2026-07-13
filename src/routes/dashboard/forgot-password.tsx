@@ -8,18 +8,11 @@ import { useMutation } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Mail, Lock, Loader2, KeyRound, ArrowLeft, MousePointer2 } from "lucide-react";
 import {
-  Mail,
-  Lock,
-  Loader2,
-  KeyRound,
-  ArrowLeft,
-  MousePointer2,
-} from "lucide-react";
-import { 
-  sendDashboardPasswordResetOtp, 
+  sendDashboardPasswordResetOtp,
   verifyDashboardPasswordResetOtp,
-  resetDashboardPassword 
+  resetDashboardPassword,
 } from "@/api/auth";
 
 export const Route = createFileRoute("/dashboard/forgot-password")({
@@ -34,19 +27,21 @@ const verifyOtpSchema = z.object({
   otp: z.string().length(6, "OTP must be 6 digits"),
 });
 
-const resetPasswordSchema = z.object({
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
-    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
-  confirmPassword: z.string().min(6, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+    confirmPassword: z.string().min(6, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type RequestOtpValues = z.infer<typeof requestOtpSchema>;
 type VerifyOtpValues = z.infer<typeof verifyOtpSchema>;
@@ -62,7 +57,7 @@ const features = [
     title: "Stay Protected",
     desc: "Your data is encrypted and protected. Manage your events with peace of mind.",
     image: "/procurement-preview.png",
-  }
+  },
 ];
 
 function DashboardForgotPasswordPage() {
@@ -159,7 +154,7 @@ function DashboardForgotPasswordPage() {
     <div className="flex min-h-screen w-full bg-white dark:bg-[#0a0a0a] font-sans">
       {/* Left side: Forgot Password Form */}
       <div className="w-full lg:w-[45%] flex flex-col justify-center px-6 sm:px-16 lg:px-20 z-10 relative">
-        <Link 
+        <Link
           to="/dashboard/login"
           className="absolute top-8 left-6 sm:left-16 lg:left-20 flex items-center text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-white/50 dark:hover:text-white transition-colors"
         >
@@ -178,7 +173,8 @@ function DashboardForgotPasswordPage() {
               {step === "reset" && "Reset Password"}
             </h1>
             <p className="text-gray-600 dark:text-white/60 text-lg">
-              {step === "request" && "Enter your email address and we'll send you an OTP to reset your password."}
+              {step === "request" &&
+                "Enter your email address and we'll send you an OTP to reset your password."}
               {step === "verify" && `Enter the 6-digit OTP sent to ${email}.`}
               {step === "reset" && "Create a new password for your account."}
             </p>
@@ -201,7 +197,9 @@ function DashboardForgotPasswordPage() {
                     />
                   </div>
                   {requestForm.formState.errors.email && (
-                    <p className="text-xs text-red-400">{requestForm.formState.errors.email.message}</p>
+                    <p className="text-xs text-red-400">
+                      {requestForm.formState.errors.email.message}
+                    </p>
                   )}
                 </div>
 
@@ -237,7 +235,9 @@ function DashboardForgotPasswordPage() {
                     />
                   </div>
                   {verifyForm.formState.errors.otp && (
-                    <p className="text-xs text-red-400">{verifyForm.formState.errors.otp.message}</p>
+                    <p className="text-xs text-red-400">
+                      {verifyForm.formState.errors.otp.message}
+                    </p>
                   )}
                 </div>
 
@@ -272,10 +272,12 @@ function DashboardForgotPasswordPage() {
                     />
                   </div>
                   {resetForm.formState.errors.password && (
-                    <p className="text-xs text-red-400">{resetForm.formState.errors.password.message}</p>
+                    <p className="text-xs text-red-400">
+                      {resetForm.formState.errors.password.message}
+                    </p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label className="text-gray-700 dark:text-white/80">Confirm Password</Label>
                   <div className="relative">
@@ -290,7 +292,9 @@ function DashboardForgotPasswordPage() {
                     />
                   </div>
                   {resetForm.formState.errors.confirmPassword && (
-                    <p className="text-xs text-red-400">{resetForm.formState.errors.confirmPassword.message}</p>
+                    <p className="text-xs text-red-400">
+                      {resetForm.formState.errors.confirmPassword.message}
+                    </p>
                   )}
                 </div>
 

@@ -210,7 +210,6 @@ function DashboardLoginPage() {
                   >
                     Forgot password?
                   </Link>
-
                 </div>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white/50">
