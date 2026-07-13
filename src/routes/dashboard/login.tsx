@@ -204,12 +204,13 @@ function DashboardLoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-gray-700 dark:text-white/80">Password</Label>
-                  <a
-                    href="#"
+                  <Link
+                    to="/dashboard/forgot-password"
                     className="text-sm font-medium text-primary hover:text-primary/80 transition-colors drop-shadow-[0_0_5px_rgba(242,87,29,0.3)]"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
+
                 </div>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white/50">

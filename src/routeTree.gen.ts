@@ -48,6 +48,7 @@ import { Route as DashboardSupportRouteImport } from './routes/dashboard/support
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardPricingRouteImport } from './routes/dashboard/pricing'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
+import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
 import { Route as CommunityPostIdRouteImport } from './routes/community/$postId'
 import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
@@ -398,6 +399,11 @@ const DashboardPricingRoute = DashboardPricingRouteImport.update({
 const DashboardLoginRoute = DashboardLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardForgotPasswordRoute = DashboardForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardCreateOrganizerRoute =
@@ -1358,6 +1364,7 @@ export interface FileRoutesByFullPath {
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -1555,6 +1562,7 @@ export interface FileRoutesByTo {
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -1749,6 +1757,7 @@ export interface FileRoutesById {
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
+  '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
@@ -1948,6 +1957,7 @@ export interface FileRouteTypes {
     | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
@@ -2145,6 +2155,7 @@ export interface FileRouteTypes {
     | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
@@ -2338,6 +2349,7 @@ export interface FileRouteTypes {
     | '/cinemas/$cinemaId'
     | '/community/$postId'
     | '/dashboard/create-organizer'
+    | '/dashboard/forgot-password'
     | '/dashboard/login'
     | '/dashboard/pricing'
     | '/dashboard/settings'
@@ -2829,6 +2841,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/dashboard/login'
       preLoaderRoute: typeof DashboardLoginRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/forgot-password': {
+      id: '/dashboard/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/dashboard/forgot-password'
+      preLoaderRoute: typeof DashboardForgotPasswordRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/create-organizer': {
@@ -4039,6 +4058,7 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
 
 interface DashboardRouteChildren {
   DashboardCreateOrganizerRoute: typeof DashboardCreateOrganizerRoute
+  DashboardForgotPasswordRoute: typeof DashboardForgotPasswordRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
   DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
@@ -4125,6 +4145,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCreateOrganizerRoute: DashboardCreateOrganizerRoute,
+  DashboardForgotPasswordRoute: DashboardForgotPasswordRoute,
   DashboardLoginRoute: DashboardLoginRoute,
   DashboardPricingRoute: DashboardPricingRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
