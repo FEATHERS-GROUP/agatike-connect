@@ -79,7 +79,8 @@ function OnboardingPage() {
   // Step 3: Avatar
   const [selectedStyle, setSelectedStyle] = useState("micah");
   const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
-  const generatedAvatars = Array.from({ length: 30 }).map(
+  // Performance: Generate only 8 avatars initially
+  const generatedAvatars = Array.from({ length: 8 }).map(
     (_, i) => `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`,
   );
   const [selectedAvatar, setSelectedAvatar] = useState<string>("");
@@ -145,30 +146,30 @@ function OnboardingPage() {
 
   if (authLoading || !isLoggedIn) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#0a0a0a] text-white overflow-hidden flex items-center justify-center p-4 py-12">
-      {/* Immersive Background Glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-60 mix-blend-screen" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] opacity-40 mix-blend-screen" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[150px] opacity-30 mix-blend-screen" />
-      </div>
+    <div className="relative min-h-[100dvh] bg-slate-50 text-slate-900 overflow-hidden flex items-center justify-center p-4 py-12">
+      {/* Clean White Card Container */}
+      <div className="relative z-10 w-full max-w-2xl mx-auto rounded-[2rem] border border-slate-200/60 bg-white p-8 sm:p-12 shadow-2xl overflow-hidden">
+        
+        {/* Logo/Icon */}
+        <div className="mb-8 flex justify-center items-center gap-2">
+          <img src="/icon.svg" alt="Agatike" className="h-8 w-8 object-contain" />
+          <span className="text-xl font-bold tracking-tight">Agatike</span>
+        </div>
 
-      {/* Glassmorphism Card Container */}
-      <div className="relative z-10 w-full max-w-2xl mx-auto rounded-[2.5rem] border border-white/10 bg-black/40 backdrop-blur-2xl p-8 sm:p-12 shadow-2xl overflow-hidden">
         {/* Animated Progress Bars */}
         <div className="flex gap-2 mb-10">
           {[1, 2, 3].map((s) => (
             <div
               key={s}
               className={`h-1.5 flex-1 rounded-full transition-all duration-700 ease-in-out ${
-                step >= s ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.8)]" : "bg-white/10"
+                step >= s ? "bg-primary shadow-[0_0_12px_rgba(242,87,29,0.3)]" : "bg-slate-100"
               }`}
             />
           ))}
@@ -178,23 +179,22 @@ function OnboardingPage() {
           {step === 1 ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="text-center space-y-3">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
                   Welcome, {user?.username?.split(" ")[0]}!
                 </h1>
-                <p className="text-base text-white/60 max-w-md mx-auto">
-                  Let's finish setting up your profile. This helps us keep the community safe and
-                  personalized just for you.
+                <p className="text-base text-slate-500 max-w-md mx-auto">
+                  Let's finish setting up your profile. This helps us personalize your experience.
                 </p>
               </div>
 
               <div className="space-y-5 max-w-md mx-auto">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="onboarding-dob" className="text-white/80">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="onboarding-dob" className="text-sm font-medium text-slate-700">
                       Date of Birth
                     </Label>
                     <div className="relative">
-                      <Calendar className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+                      <Calendar className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <Input
                         id="onboarding-dob"
                         type="date"
@@ -207,38 +207,30 @@ function OnboardingPage() {
                             e.currentTarget.showPicker();
                           }
                         }}
-                        className="pl-10 h-12 w-full bg-white/5 border-white/10 text-white rounded-xl focus-visible:ring-primary focus-visible:border-primary [color-scheme:dark]"
+                        className="pl-10 h-12 w-full rounded-xl border-0 bg-slate-50 text-slate-900 shadow-sm focus-visible:ring-1 focus-visible:ring-primary"
                       />
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="onboarding-gender" className="text-white/80">
+                  <div className="space-y-2">
+                    <Label htmlFor="onboarding-gender" className="text-sm font-medium text-slate-700">
                       Gender
                     </Label>
                     <select
                       id="onboarding-gender"
                       value={gender}
                       onChange={(e) => setGender(e.target.value)}
-                      className="h-12 w-full bg-white/5 border border-white/10 text-white rounded-xl px-3 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all [color-scheme:dark]"
+                      className="h-12 w-full rounded-xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm outline-none focus:ring-1 focus:ring-primary transition-all"
                     >
-                      <option value="prefer_not_to_say" className="bg-[#111]">
-                        Prefer not to say
-                      </option>
-                      <option value="female" className="bg-[#111]">
-                        Female
-                      </option>
-                      <option value="male" className="bg-[#111]">
-                        Male
-                      </option>
-                      <option value="other" className="bg-[#111]">
-                        Other
-                      </option>
+                      <option value="prefer_not_to_say">Prefer not to say</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="onboarding-phone" className="text-white/80">
+                <div className="space-y-2">
+                  <Label htmlFor="onboarding-phone" className="text-sm font-medium text-slate-700">
                     Phone Number
                   </Label>
                   <div className="relative">
@@ -249,10 +241,10 @@ function OnboardingPage() {
                       limitMaxLength
                       value={phone}
                       onChange={setPhone}
-                      className="flex h-12 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-white focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-all"
+                      className="flex h-12 w-full rounded-xl border-0 bg-slate-50 px-3 text-slate-900 shadow-sm focus-within:ring-1 focus-within:ring-primary transition-all"
                       numberInputProps={{
                         className:
-                          "flex-1 bg-transparent border-none outline-none focus:ring-0 text-base ml-3 text-white placeholder-white/30",
+                          "flex-1 bg-transparent border-none outline-none focus:ring-0 text-base ml-3 text-slate-900 placeholder:text-slate-400",
                       }}
                     />
                   </div>
@@ -262,7 +254,8 @@ function OnboardingPage() {
               <div className="pt-4 max-w-md mx-auto">
                 <Button
                   onClick={handleNextStep1}
-                  className="h-14 w-full rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300"
+                  disabled={!dateOfBirth || !gender || !phone}
+                  className="h-14 w-full rounded-xl text-lg font-semibold shadow-[var(--shadow-glow)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:shadow-none disabled:hover:scale-100"
                   style={{ background: "var(--gradient-primary)" }}
                 >
                   Continue <ArrowRight className="ml-2 h-5 w-5" />
@@ -272,12 +265,11 @@ function OnboardingPage() {
           ) : step === 2 ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
               <div className="text-center space-y-3">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
                   What are you into?
                 </h1>
-                <p className="text-base text-white/60 max-w-lg mx-auto">
-                  Select the categories you love. We'll use these to recommend events, drops, and
-                  organizers specifically for you.
+                <p className="text-base text-slate-500 max-w-lg mx-auto">
+                  Select the categories you love. We'll use these to recommend events, drops, and organizers just for you.
                 </p>
               </div>
 
@@ -296,8 +288,8 @@ function OnboardingPage() {
                       onClick={() => toggleInterest(interest)}
                       className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all duration-300 ${
                         isSelected
-                          ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(242,87,29,0.4)] scale-[1.02]"
-                          : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white border"
+                          ? "bg-primary text-white shadow-[0_0_15px_rgba(242,87,29,0.3)] scale-[1.02]"
+                          : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60"
                       }`}
                     >
                       {interest}
@@ -310,14 +302,14 @@ function OnboardingPage() {
                 <Button
                   variant="outline"
                   onClick={() => setStep(1)}
-                  className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
+                  className="h-14 flex-1 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50"
                 >
                   Back
                 </Button>
                 <Button
                   onClick={handleNextStep2}
                   disabled={selectedInterests.length === 0}
-                  className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300 disabled:opacity-50 disabled:shadow-none"
+                  className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[var(--shadow-glow)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:shadow-none disabled:hover:scale-100"
                   style={{ background: "var(--gradient-primary)" }}
                 >
                   Continue <ArrowRight className="ml-2 h-5 w-5" />
@@ -327,23 +319,23 @@ function OnboardingPage() {
           ) : (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-700">
               <div className="text-center space-y-3">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
                   Pick your avatar
                 </h1>
-                <p className="text-base text-white/60 max-w-md mx-auto">
+                <p className="text-base text-slate-500 max-w-md mx-auto">
                   Choose how you want to be seen on Agatike.
                 </p>
               </div>
 
               <div className="flex justify-center py-4">
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl group-hover:bg-primary/60 transition-all duration-500" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl group-hover:bg-primary/30 transition-all duration-500" />
                   <img
                     src={selectedAvatar || generatedAvatars[0]}
                     alt="Selected profile"
-                    className="relative h-40 w-40 rounded-full border-[6px] border-black/40 bg-[#111] shadow-2xl object-cover"
+                    className="relative h-40 w-40 rounded-full border-[6px] border-slate-50 bg-white shadow-xl object-cover"
                   />
-                  <div className="absolute bottom-1 right-1 rounded-full bg-primary p-2.5 text-white shadow-lg border-2 border-black/50">
+                  <div className="absolute bottom-1 right-1 rounded-full bg-primary p-2.5 text-white shadow-lg border-2 border-white">
                     <Check className="h-6 w-6" />
                   </div>
                 </div>
@@ -358,7 +350,7 @@ function OnboardingPage() {
                       className={`text-sm px-4 py-2 rounded-full whitespace-nowrap capitalize transition-colors ${
                         selectedStyle === style
                           ? "bg-primary text-white font-semibold shadow-[0_0_10px_rgba(242,87,29,0.3)]"
-                          : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                          : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60"
                       }`}
                     >
                       {style}
@@ -366,15 +358,15 @@ function OnboardingPage() {
                   ))}
                 </div>
 
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 max-h-[220px] overflow-y-auto p-2 hide-scrollbar">
+                <div className="grid grid-cols-4 gap-3 p-2">
                   {generatedAvatars.map((url, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedAvatar(url)}
                       className={`relative aspect-square overflow-hidden rounded-2xl border-2 transition-all duration-200 active:scale-95 ${
                         selectedAvatar === url
-                          ? "border-primary shadow-[0_0_15px_rgba(242,87,29,0.4)] scale-105 z-10"
-                          : "border-transparent bg-white/5 opacity-60 hover:opacity-100 hover:bg-white/10"
+                          ? "border-primary shadow-[0_0_15px_rgba(242,87,29,0.2)] scale-105 z-10"
+                          : "border-transparent bg-slate-50 opacity-60 hover:opacity-100 hover:bg-slate-100"
                       }`}
                     >
                       <img src={url} alt={`Avatar ${idx}`} className="h-full w-full" />
@@ -387,7 +379,7 @@ function OnboardingPage() {
                 <Button
                   variant="outline"
                   onClick={() => setSeed(Math.random().toString(36).substring(7))}
-                  className="w-full rounded-xl h-12 bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white transition-all"
+                  className="w-full rounded-xl h-12 border-slate-200 text-slate-700 hover:bg-slate-50 transition-all"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" /> Generate New Avatars
                 </Button>
@@ -396,14 +388,14 @@ function OnboardingPage() {
                   <Button
                     variant="outline"
                     onClick={() => setStep(2)}
-                    className="h-14 flex-1 rounded-xl bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
+                    className="h-14 flex-1 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50"
                   >
                     Back
                   </Button>
                   <Button
                     onClick={handleFinish}
                     disabled={isSubmitting}
-                    className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300 disabled:opacity-50"
+                    className="h-14 flex-[2] rounded-xl text-lg font-semibold shadow-[var(--shadow-glow)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
                     style={{ background: "var(--gradient-primary)" }}
                   >
                     {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Finish setup"}

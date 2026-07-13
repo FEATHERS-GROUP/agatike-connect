@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useEffect, type FormEvent } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, User, Loader2, Phone } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, User, Loader2 } from "lucide-react";
 import { useMediaQuery } from "@mantine/hooks";
 
 import { Button } from "@/components/ui/button";
@@ -37,17 +37,13 @@ function SignUp() {
     }
   }, [authLoading, isLoggedIn, navigate]);
 
-  const [step, setStep] = useState(0); // 0: Method, 1: Basic Info, 2: Security & Terms
+  const [step, setStep] = useState(0); // 0: Method, 1: Details
   const [showPw, setShowPw] = useState(false);
-  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   // Details
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [gender, setGender] = useState("");
-  const [phone, setPhone] = useState("");
   const [agreed, setAgreed] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -58,26 +54,13 @@ function SignUp() {
   const [otpInput, setOtpInput] = useState("");
   const [otpToken, setOtpToken] = useState("");
 
-  const handleNextStep = () => {
-    setError("");
-    if (!name || !gender || !phone) {
-      setError("Please fill out your Username, Gender, and Phone.");
-      return;
-    }
-    setStep(2);
-  };
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!otpStep) {
-      if (!email || !password || !confirmPassword) {
+      if (!name || !email || !password) {
         setError("Please fill out all fields.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
         return;
       }
       if (password.length < 6) {
@@ -121,8 +104,6 @@ function SignUp() {
           username: name,
           email,
           password,
-          gender,
-          phone,
           agreed_to_terms: agreed,
           otpToken,
           otp: otpInput,
@@ -268,8 +249,6 @@ function SignUp() {
               ) : step === 0 ? (
                 <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500 mt-6">
                   <div className="space-y-3">
-                    {/* Google Signup Button Hidden per request */}
-                    {/* 
                     <Button
                       variant="outline"
                       type="button"
@@ -301,7 +280,6 @@ function SignUp() {
                       )}
                       {isLoading ? "Signing up..." : "Sign up with Google"}
                     </Button>
-                    */}
                     <Button
                       variant="outline"
                       type="button"
@@ -332,10 +310,10 @@ function SignUp() {
                     Create account with Email
                   </Button>
                 </div>
-              ) : step === 1 ? (
+              ) : (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 mt-6">
                   <div>
-                    <Label htmlFor="signup-name">Username</Label>
+                    <Label htmlFor="signup-name">Full name</Label>
                     <div className="relative mt-1">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -343,75 +321,12 @@ function SignUp() {
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="amaka_okafor"
+                        placeholder="Amaka Okafor"
                         className="pl-9 h-11"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
-                  <div>
-                    <Label htmlFor="signup-gender">Gender</Label>
-                    <select
-                      id="signup-gender"
-                      required
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      className="mt-1 flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={isLoading}
-                    >
-                      <option value="" disabled>Select</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="non_binary">Non-binary</option>
-                      <option value="prefer_not_to_say">Prefer not to say</option>
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="signup-phone">Phone</Label>
-                    <div className="relative mt-1">
-                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signup-phone"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+123456789"
-                        className="pl-9 h-11"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-                  
-                  {error && (
-                    <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs text-destructive">
-                      {error}
-                    </p>
-                  )}
-
-                  <div className="flex gap-3 mt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStep(0)}
-                      className="h-11 flex-1 rounded-xl"
-                      disabled={isLoading}
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Back
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleNextStep}
-                      className="h-11 flex-[2] rounded-xl shadow-[var(--shadow-glow)]"
-                      style={{ background: "var(--gradient-primary)" }}
-                      disabled={isLoading}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 mt-6">
                   <div>
                     <Label htmlFor="signup-email">Email</Label>
                     <div className="relative mt-1">
@@ -453,30 +368,6 @@ function SignUp() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="signup-confirm-pw">Confirm Password</Label>
-                    <div className="relative mt-1">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signup-confirm-pw"
-                        required
-                        type={showConfirmPw ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm password"
-                        className="pl-9 pr-10 h-11"
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPw(!showConfirmPw)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
                   <div className="flex items-start space-x-3 py-2">
                     <Checkbox
                       id="terms"
@@ -487,9 +378,21 @@ function SignUp() {
                     />
                     <label htmlFor="terms" className="text-xs leading-snug text-muted-foreground">
                       I agree to the{" "}
-                      <Link to="/terms" target="_blank" className="underline text-primary hover:text-primary/80">Terms</Link>
+                      <Link
+                        to="/terms"
+                        target="_blank"
+                        className="underline text-primary hover:text-primary/80"
+                      >
+                        Terms
+                      </Link>
                       ,{" "}
-                      <Link to="/privacy" target="_blank" className="underline text-primary hover:text-primary/80">Privacy Policy</Link>
+                      <Link
+                        to="/privacy"
+                        target="_blank"
+                        className="underline text-primary hover:text-primary/80"
+                      >
+                        Privacy Policy
+                      </Link>
                       , and to provide valid identification for verification.
                     </label>
                   </div>
@@ -504,7 +407,7 @@ function SignUp() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setStep(1)}
+                      onClick={() => setStep(0)}
                       className="h-11 flex-1 rounded-xl"
                       disabled={isLoading}
                     >
@@ -683,85 +586,23 @@ function SignUp() {
                       Sign up with Email
                     </Button>
                   </div>
-                ) : step === 1 ? (
+                ) : (
                   <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-name" className="text-sm font-medium text-slate-700">Username</Label>
+                      <Label htmlFor="signup-name" className="text-sm font-medium text-slate-700">Full Name</Label>
                       <div className="relative">
                         <Input
                           id="signup-name"
                           required
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="amaka_okafor"
+                          placeholder="Enter your name"
                           className="h-12 rounded-xl border-0 bg-slate-50 px-4 text-base placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-primary shadow-sm"
                           disabled={isLoading}
                         />
                       </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-gender" className="text-sm font-medium text-slate-700">Gender</Label>
-                      <select
-                        id="signup-gender"
-                        required
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                        className="flex h-12 w-full items-center justify-between rounded-xl border-0 bg-slate-50 px-4 text-base placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-                        disabled={isLoading}
-                      >
-                        <option value="" disabled>Select</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="non_binary">Non-binary</option>
-                        <option value="prefer_not_to_say">Prefer not to say</option>
-                      </select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-phone" className="text-sm font-medium text-slate-700">Phone</Label>
-                      <div className="relative">
-                        <Input
-                          id="signup-phone"
-                          required
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+123456789"
-                          className="h-12 rounded-xl border-0 bg-slate-50 px-4 text-base placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-primary shadow-sm"
-                          disabled={isLoading}
-                        />
-                      </div>
-                    </div>
-
-                    {error && (
-                      <p className="rounded-xl bg-destructive/10 px-3 py-2 text-center text-xs font-medium text-destructive mt-2">
-                        {error}
-                      </p>
-                    )}
-
-                    <div className="flex gap-3 mt-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setStep(0)}
-                        className="h-12 w-12 rounded-xl border-slate-200 shrink-0 text-slate-700 hover:bg-slate-50 flex items-center justify-center p-0"
-                        disabled={isLoading}
-                      >
-                        <ArrowLeft className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={handleNextStep}
-                        className="h-12 flex-1 rounded-xl font-semibold shadow-[var(--shadow-glow)] transition-all hover:scale-[1.02]"
-                        style={{ background: "var(--gradient-primary)" }}
-                        disabled={isLoading}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                     <div className="space-y-2">
                       <Label htmlFor="signup-email" className="text-sm font-medium text-slate-700">Email</Label>
                       <div className="relative">
@@ -801,29 +642,6 @@ function SignUp() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-confirm-pw" className="text-sm font-medium text-slate-700">Confirm Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="signup-confirm-pw"
-                          required
-                          type={showConfirmPw ? "text" : "password"}
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          placeholder="Confirm password"
-                          className="h-12 rounded-xl border-0 bg-slate-50 pl-4 pr-12 text-base placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-primary shadow-sm"
-                          disabled={isLoading}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPw(!showConfirmPw)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        >
-                          {showConfirmPw ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
-                      </div>
-                    </div>
-
                     <div className="flex items-start gap-2 pt-1">
                       <Checkbox
                         id="terms"
@@ -851,7 +669,7 @@ function SignUp() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setStep(1)}
+                        onClick={() => setStep(0)}
                         className="h-12 w-12 rounded-xl border-slate-200 shrink-0 text-slate-700 hover:bg-slate-50 flex items-center justify-center p-0"
                         disabled={isLoading}
                       >
