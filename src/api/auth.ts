@@ -280,10 +280,12 @@ export const sendSignupOtp = createServerFn({ method: "POST" }).handler(async (c
 });
 
 export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { username, email, password, agreed_to_terms, otpToken, otp } = ctx.data as unknown as {
+  const { username, email, password, gender, phone, agreed_to_terms, otpToken, otp } = ctx.data as unknown as {
     username: string;
     email: string;
     password: string;
+    gender: string;
+    phone: string;
     agreed_to_terms: boolean;
     otpToken: string;
     otp: string;
@@ -308,17 +310,22 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
     throw new Error("Invalid or expired OTP");
   }
 
-  // Check if email already exists
+  // Check if email or username already exists
   const checkQuery = `
-    query CheckUser($email: String!) {
-      users(where: { email: { _ilike: $email } }) {
+    query CheckUser($email: String!, $username: String!) {
+      users(where: { _or: [{ email: { _ilike: $email } }, { username: { _ilike: $username } }] }) {
         id
+        email
+        username
       }
     }
   `;
-  const existing = await hasuraRequest<{ users: { id: string }[] }>(checkQuery, { email });
+  const existing = await hasuraRequest<{ users: { id: string; email: string; username: string }[] }>(checkQuery, { email, username });
   if (existing.users.length > 0) {
-    throw new Error("An account with this email already exists");
+    if (existing.users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+      throw new Error("An account with this email already exists");
+    }
+    throw new Error("This username is already taken");
   }
 
   // Hash password
@@ -362,9 +369,9 @@ export const signupUser = createServerFn({ method: "POST" }).handler(async (ctx)
     password: hashedPassword,
     handle,
     dateOfBirth: "1900-01-01",
-    gender: "prefer_not_to_say",
+    gender: gender || "prefer_not_to_say",
     country: "Unknown",
-    phone: "0000000000",
+    phone: phone || "0000000000",
     agreed_to_terms,
   });
 
