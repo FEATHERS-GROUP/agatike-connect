@@ -9,6 +9,8 @@ import { loginUser, googleAuthUser } from "@/api/auth";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { toast } from "sonner";
 import { useGoogleLogin } from "@react-oauth/google";
+import { useMediaQuery } from "@mantine/hooks";
+import { MobileLoginFlow } from "@/components/mobile/MobileLoginFlow";
 import hero from "@/assets/hero-event.jpg";
 
 export const Route = createFileRoute("/signin")({
@@ -102,6 +104,27 @@ function SignIn() {
     },
   });
 
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+
+  // Mobile View
+  if (isMobile) {
+    return (
+      <MobileLoginFlow
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        isLoading={isLoading}
+        error={error}
+        onSubmit={onSubmit}
+        googleLogin={googleLogin}
+        showPw={showPw}
+        setShowPw={setShowPw}
+      />
+    );
+  }
+
+  // Desktop View
   return (
     <div className="flex min-h-[100dvh] flex-col bg-background text-foreground lg:block lg:min-h-screen">
       <div className="flex flex-1 flex-col lg:mx-auto lg:grid lg:min-h-screen lg:max-w-7xl lg:grid-cols-2 lg:items-center lg:gap-10 lg:px-6 lg:py-10">
@@ -124,9 +147,6 @@ function SignIn() {
 
         {/* Form Container */}
         <div className="relative -mt-6 flex flex-1 flex-col rounded-t-3xl bg-background px-6 pb-12 pt-8 lg:-mt-0 lg:mx-auto lg:w-full lg:max-w-md lg:rounded-none lg:bg-transparent lg:p-0">
-          {/* Mobile Handle */}
-          <div className="absolute left-1/2 top-3 h-1 w-12 -translate-x-1/2 rounded-full bg-border lg:hidden" />
-
           <div className="lg:rounded-3xl lg:border lg:border-border/60 lg:bg-card lg:p-8 lg:shadow-[var(--shadow-card)]">
             <div className="hidden lg:flex justify-center">
               <img src="/icon.svg" alt="Agatike" className="h-12 w-12 object-contain" />
