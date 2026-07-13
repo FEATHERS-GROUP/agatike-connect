@@ -22,7 +22,9 @@ export interface VipPrivilege {
   updated_at: string;
 }
 
-export const getWorkspaceVipPrivileges = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getWorkspaceVipPrivileges = createServerFn({ method: "POST" })
+  .validator((d: { workspace_id: string }) => d)
+  .handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
@@ -50,7 +52,9 @@ export const getWorkspaceVipPrivileges = createServerFn({ method: "POST" }).hand
   return data.vip_privileges || [];
 });
 
-export const createVipPrivilege = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const createVipPrivilege = createServerFn({ method: "POST" })
+  .validator((d: { workspace_id: string; name: string; description?: string; icon?: string; fields: any }) => d)
+  .handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
@@ -83,7 +87,9 @@ export const createVipPrivilege = createServerFn({ method: "POST" }).handler(asy
   return data.insert_vip_privileges_one;
 });
 
-export const updateVipPrivilege = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const updateVipPrivilege = createServerFn({ method: "POST" })
+  .validator((d: { id: string; name: string; description?: string; icon?: string; fields: any }) => d)
+  .handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
@@ -111,7 +117,9 @@ export const updateVipPrivilege = createServerFn({ method: "POST" }).handler(asy
   return data.update_vip_privileges_by_pk;
 });
 
-export const deleteVipPrivilege = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const deleteVipPrivilege = createServerFn({ method: "POST" })
+  .validator((d: { id: string }) => d)
+  .handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
@@ -129,7 +137,9 @@ export const deleteVipPrivilege = createServerFn({ method: "POST" }).handler(asy
   return data.delete_vip_privileges_by_pk;
 });
 
-export const getVipTicketsUsage = createServerFn({ method: "POST" }).handler(async (ctx) => {
+export const getVipTicketsUsage = createServerFn({ method: "POST" })
+  .validator((d: { workspace_id: string }) => d)
+  .handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
@@ -148,15 +158,48 @@ export const getVipTicketsUsage = createServerFn({ method: "POST" }).handler(asy
             cover
           }
         }
+        events(where: { workspace_id: { _eq: $workspace_id } }) {
+          id
+          title
+          cover
+          vip_privilege_ids
+        }
       }
     `;
 
-  const data = await hasuraRequest<{ event_tickets: any[] }>(query, {
+  const data = await hasuraRequest<{ event_tickets: any[]; events: any[] }>(query, {
     workspace_id: ctx.data?.workspace_id,
   });
 
-  // Filter out tickets that do not have any vip privileges
-  return (data.event_tickets || []).filter(
+  const ticketsWithVip = (data.event_tickets || []).filter(
     (t) => Array.isArray(t.vip_privilege_ids) && t.vip_privilege_ids.length > 0,
   );
+
+  const eventsWithVip = (data.events || []).filter(
+    (e) => Array.isArray(e.vip_privilege_ids) && e.vip_privilege_ids.length > 0,
+  );
+
+  return { tickets: ticketsWithVip, events: eventsWithVip };
+});
+
+export const getPublicVipPrivileges = createServerFn({ method: "POST" })
+  .validator((d: { workspace_id: string }) => d)
+  .handler(async (ctx) => {
+  const query = `
+      query GetPublicVipPrivileges($workspace_id: uuid!) {
+        vip_privileges(
+          where: { workspace_id: { _eq: $workspace_id } }
+        ) {
+          id
+          name
+          description
+          icon
+        }
+      }
+    `;
+
+  const data = await hasuraRequest<{ vip_privileges: any[] }>(query, {
+    workspace_id: ctx.data?.workspace_id,
+  });
+  return data.vip_privileges || [];
 });

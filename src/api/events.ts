@@ -165,6 +165,7 @@ const GET_PUBLIC_EVENTS = `
       tour_stops
       updated_at
       vipPerks
+      vip_privilege_ids
       workspace_id
       event_tickets {
         name
@@ -247,6 +248,7 @@ const GET_WORKSPACE_EVENTS = `
       allowed_public
       suspended
       created_at
+      vip_privilege_ids
       event_tickets {
         id
         name
@@ -295,6 +297,7 @@ const GET_EVENT_BY_ID = `
       tour_stops
       updated_at
       vipPerks
+      vip_privilege_ids
       workspace_id
       schedules {
         id
@@ -378,6 +381,7 @@ const UPDATE_EVENT = `
     $cover: String,
     $tour_stops: jsonb,
     $vipPerks: String,
+    $vip_privilege_ids: jsonb,
     $event_requency: jsonb,
     $lineup: jsonb,
     $event_type: String,
@@ -393,6 +397,7 @@ const UPDATE_EVENT = `
         cover: $cover,
         tour_stops: $tour_stops,
         vipPerks: $vipPerks,
+        vip_privilege_ids: $vip_privilege_ids,
         event_requency: $event_requency,
         lineup: $lineup,
         event_type: $event_type,
@@ -440,6 +445,10 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
         : existingEvent.tour_stops,
     vipPerks:
       eventUpdateVars.vipPerks !== undefined ? eventUpdateVars.vipPerks : existingEvent.vipPerks,
+    vip_privilege_ids:
+      eventUpdateVars.vip_privilege_ids !== undefined
+        ? eventUpdateVars.vip_privilege_ids
+        : existingEvent.vip_privilege_ids,
     event_requency:
       eventUpdateVars.event_requency !== undefined
         ? eventUpdateVars.event_requency
@@ -760,6 +769,7 @@ const GET_WORKSPACE_TICKET_PROJECTS = `
         tour_stops
         updated_at
         vipPerks
+        vip_privilege_ids
         workspace_id
         event_tickets {
           name

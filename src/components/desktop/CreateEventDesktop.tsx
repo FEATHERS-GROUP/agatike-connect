@@ -269,6 +269,7 @@ export function CreateEventDesktop() {
     ],
     coverPreview: "",
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
+    vip_privilege_ids: [] as string[],
     published: false,
     isRecurring: false,
     recurrenceType: "weekly",
@@ -404,6 +405,7 @@ export function CreateEventDesktop() {
         description: data.description,
         cover: coverUrl,
         vipPerks: data.vipPerks,
+        vip_privilege_ids: data.vip_privilege_ids,
         workspace_id: activeWorkspace?.id,
         tour_stops: data.locations.map((loc, idx) => ({
           ...loc,
@@ -897,13 +899,49 @@ export function CreateEventDesktop() {
                 </p>
               </div>
             </div>
+
+            {vipPrivileges.length > 0 && (
+              <div>
+                <Label>VIP Privileges</Label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {vipPrivileges.map((privilege: any) => {
+                    const isSelected = data.vip_privilege_ids?.includes(privilege.id);
+                    return (
+                      <div
+                        key={privilege.id}
+                        className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-xl border transition-colors ${
+                          isSelected
+                            ? "bg-primary/20 border-primary text-primary"
+                            : "bg-background border-border/60 text-muted-foreground hover:border-primary/50"
+                        }`}
+                        onClick={() => {
+                          const currentIds = data.vip_privilege_ids || [];
+                          if (isSelected) {
+                            updateField(
+                              "vip_privilege_ids",
+                              currentIds.filter((id) => id !== privilege.id)
+                            );
+                          } else {
+                            updateField("vip_privilege_ids", [...currentIds, privilege.id]);
+                          }
+                        }}
+                      >
+                        {privilege.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div>
-              <Label>VIP perks</Label>
+              <Label>Additional VIP perks details (Optional)</Label>
               <Textarea
                 rows={5}
                 value={data.vipPerks}
                 onChange={(e) => updateField("vipPerks", e.target.value)}
                 className="mt-1"
+                placeholder="Priority entry, VIP lounge, complimentary welcome drink..."
               />
             </div>
           </div>

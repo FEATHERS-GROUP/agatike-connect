@@ -13,6 +13,7 @@ import {
   experienceCategories,
 } from "@/lib/mock-data";
 import { getDistanceFromLatLonInKm } from "@/lib/utils";
+import { getPublicVipPrivileges } from "@/api/vip";
 
 export function useEventDetails(eventId: string, initialEvent?: any) {
   const ev = useMemo(() => {
@@ -323,6 +324,17 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
   });
 
+  const { data: workspaceVipPrivileges = [] } = useQuery({
+    queryKey: ["public-vip-privileges", ev.workspace_id],
+    queryFn: () => getPublicVipPrivileges({ data: { workspace_id: ev.workspace_id } } as any),
+    enabled: !!ev.workspace_id && !isMock,
+  });
+
+  const eventVipPrivileges = useMemo(() => {
+    if (!ev.vip_privilege_ids || !Array.isArray(ev.vip_privilege_ids)) return [];
+    return workspaceVipPrivileges.filter((p: any) => ev.vip_privilege_ids.includes(p.id));
+  }, [ev.vip_privilege_ids, workspaceVipPrivileges]);
+
   const attendeesList = useMemo(() => {
     const seen = new Set<string>();
     return rawAttendeesList.filter((att: any) => {
@@ -399,5 +411,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     isUpcoming,
     timerDate,
     waitlistUrl,
+    eventVipPrivileges,
   };
 }
