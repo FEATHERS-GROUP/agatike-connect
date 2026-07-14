@@ -3,9 +3,8 @@ name: Feature request
 about: Suggest an idea for this project
 title: Feature
 labels: documentation, enhancement
-assignees: ''
+assignees: ""
 type: Feature
-
 ---
 
 Title
@@ -37,9 +36,9 @@ Requirement 3
 
 Acceptance Criteria
 
- [ ]Criteria 1
- [ ]Criteria 2
- [ ]Criteria 3
+[ ]Criteria 1
+[ ]Criteria 2
+[ ]Criteria 3
 
 Design / Mockups
 Attach screenshots, wireframes, or links if available.
@@ -56,7 +55,7 @@ Priority
 
 Definition of Done
 
- [ ]Code completed
- [ ]Tests written/passed
- [ ]Documentation updated
- [ ]Product owner approval
+[ ]Code completed
+[ ]Tests written/passed
+[ ]Documentation updated
+[ ]Product owner approval

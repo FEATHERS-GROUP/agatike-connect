@@ -14,6 +14,7 @@ import {
   Search,
   Plus,
   X,
+  RefreshCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ interface FolderManagerProps<T> {
   getFolderId: (item: T) => string | null | undefined;
   onMoveItems: (itemIds: string[], folderId: string | null) => Promise<void>;
   onDeleteItems?: (itemIds: string[]) => Promise<void>;
+  onRefresh?: () => void;
   filterItem?: (item: T, search: string) => boolean;
   children: (props: {
     filteredItems: T[];
@@ -75,6 +77,7 @@ export function FolderManager<T>({
   getFolderId,
   onMoveItems,
   onDeleteItems,
+  onRefresh,
   filterItem,
   children,
   customContextItems,
@@ -261,6 +264,16 @@ export function FolderManager<T>({
             </>
           )}
 
+          {onRefresh && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuItem className="gap-2" onClick={onRefresh}>
+                <RefreshCcw className="h-4 w-4" />
+                Refresh
+              </ContextMenuItem>
+            </>
+          )}
+
           {customContextItems && (
             <>
               <ContextMenuSeparator />
@@ -437,6 +450,12 @@ export function FolderManager<T>({
             <FolderPlus className="h-4 w-4 text-green-500" />
             Create New Folder
           </ContextMenuItem>
+          {onRefresh && (
+            <ContextMenuItem className="gap-2" onClick={onRefresh}>
+              <RefreshCcw className="h-4 w-4" />
+              Refresh
+            </ContextMenuItem>
+          )}
           {selectedIds.size > 0 && (
             <>
               <ContextMenuSeparator />

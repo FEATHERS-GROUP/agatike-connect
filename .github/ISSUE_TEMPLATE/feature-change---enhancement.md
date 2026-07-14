@@ -3,9 +3,8 @@ name: Feature Change / Enhancement
 about: Describe this issue template's purpose here.
 title: feature changes
 labels: duplicate, enhancement
-assignees: ''
+assignees: ""
 type: Feature
-
 ---
 
 Title
@@ -32,9 +31,9 @@ So that <benefit>.
 
 Acceptance Criteria
 
- [ ]Existing behavior A is updated
- [ ]New behavior B is supported
- [ ]No regression to existing functionality
+[ ]Existing behavior A is updated
+[ ]New behavior B is supported
+[ ]No regression to existing functionality
 
 Affected Areas
 

@@ -16,6 +16,7 @@ import {
   FolderPlus,
   MoreVertical,
   MoveRight,
+  RefreshCcw,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -233,7 +234,8 @@ function ProcurementPage() {
           <div className="space-y-6 pb-12">
             <div className="mb-2">
               <Link
-                to={`/dashboard/${wsId ? activeWorkspace?.slug : ""}/book`}
+                to="/dashboard/$workspaceSlug/book"
+                params={{ workspaceSlug: (wsId ? activeWorkspace?.slug : workspaceSlug) as string }}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors bg-secondary/30 hover:bg-secondary px-3 py-1.5 rounded-full border border-border/30"
               >
                 <ArrowLeft className="h-4 w-4" /> Back to Agatike Book
@@ -607,6 +609,16 @@ function ProcurementPage() {
                         >
                           <Trash2 className="mr-2 h-4 w-4" /> Delete Document
                         </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                          onClick={() =>
+                            queryClient.invalidateQueries({
+                              queryKey: ["procurement-invoices", wsId],
+                            })
+                          }
+                        >
+                          <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
+                        </ContextMenuItem>
                       </ContextMenuContent>
                     </ContextMenu>
                   );
@@ -630,6 +642,14 @@ function ProcurementPage() {
             }
           >
             <FilePlus className="mr-2 h-4 w-4" /> Create Document
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem
+            onClick={() =>
+              queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] })
+            }
+          >
+            <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>

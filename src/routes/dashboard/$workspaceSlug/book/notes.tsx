@@ -220,6 +220,7 @@ function NotesPage() {
               await deleteMutation.mutateAsync(id);
             }
           }}
+          onRefresh={() => queryClient.invalidateQueries({ queryKey: ["workspace-notes", wsId] })}
           filterItem={(item: any, searchStr: string) =>
             item.title?.toLowerCase().includes(searchStr.toLowerCase()) ||
             item.content?.toLowerCase().includes(searchStr.toLowerCase())

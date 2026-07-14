@@ -75,10 +75,7 @@ export function EventDetailsDesktop({
 
           <EventIncluded isExperience={d.isExperience} included={d.included} />
 
-          <EventVipPrivileges
-            vipPrivileges={d.eventVipPrivileges || []}
-            vipPerks={d.ev.vipPerks}
-          />
+          <EventVipPrivileges vipPrivileges={d.eventVipPrivileges || []} vipPerks={d.ev.vipPerks} />
 
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">

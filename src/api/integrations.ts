@@ -1,45 +1,47 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getSession } from "./auth";
 
-// Helper function to update the organizer integrations column
-async function updateOrganizerIntegrations(organizerId: string, integrations: any) {
-  const mutation = `
-    mutation UpdateIntegrations($id: uuid!, $integrations: jsonb!) {
-      update_organizers_by_pk(
-        pk_columns: { id: $id },
-        _set: { integrations: $integrations }
-      ) {
-        id
+const updateOrganizerIntegrations = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string; integrations: any }) => d)
+  .handler(async ({ data: { organizerId, integrations } }) => {
+    const mutation = `
+      mutation UpdateIntegrations($id: uuid!, $integrations: jsonb!) {
+        update_organizers_by_pk(
+          pk_columns: { id: $id },
+          _set: { integrations: $integrations }
+        ) {
+          id
+        }
       }
+    `;
+    try {
+      await (
+        await import("./graphql.server")
+      ).hasuraRequest(mutation, { id: organizerId, integrations });
+      console.log(`[API] Successfully updated integrations for organizer ${organizerId}`);
+    } catch (error) {
+      console.error(`[API] Failed to update integrations for organizer ${organizerId}:`, error);
+      throw new Error("Failed to update database: " + (error as any).message);
     }
-  `;
-  try {
-    await (
-      await import("./graphql.server")
-    ).hasuraRequest(mutation, { id: organizerId, integrations });
-    console.log(`[API] Successfully updated integrations for organizer ${organizerId}`);
-  } catch (error) {
-    console.error(`[API] Failed to update integrations for organizer ${organizerId}:`, error);
-    throw new Error("Failed to update database: " + (error as any).message);
-  }
-}
-
-// Fetch current organizer to get integrations JSONB
-async function getOrganizer(organizerId: string) {
-  const query = `
-    query GetOrganizerIntegrations($id: uuid!) {
-      organizers_by_pk(id: $id) {
-        integrations
-      }
-    }
-  `;
-  const result = await (
-    await import("./graphql.server")
-  ).hasuraRequest<{ organizers_by_pk: { integrations: any } }>(query, {
-    id: organizerId,
   });
-  return result.organizers_by_pk;
-}
+
+const getOrganizer = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async ({ data: { organizerId } }) => {
+    const query = `
+      query GetOrganizerIntegrations($id: uuid!) {
+        organizers_by_pk(id: $id) {
+          integrations
+        }
+      }
+    `;
+    const result = await (
+      await import("./graphql.server")
+    ).hasuraRequest<{ organizers_by_pk: { integrations: any } }>(query, {
+      id: organizerId,
+    });
+    return result.organizers_by_pk;
+  });
 
 export const saveGoogleCredentials = createServerFn({ method: "POST" })
   .validator((d: { type: "drive" | "calendar"; tokenData: any }) => d)
@@ -64,7 +66,7 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
       }
       console.log(`[API] Fetching organizer: ${organizerId}`);
 
-      const organizer = await getOrganizer(organizerId);
+      const organizer = await getOrganizer({ data: { organizerId } });
       if (!organizer) {
         console.log(`[API] Organizer not found: ${organizerId}`);
         return { success: false, error: "Organizer not found" };
@@ -118,7 +120,7 @@ export const saveGoogleCredentials = createServerFn({ method: "POST" })
         connected_at: new Date().toISOString(),
       };
 
-      await updateOrganizerIntegrations(organizerId, integrations);
+      await updateOrganizerIntegrations({ data: { organizerId, integrations } });
 
       return { success: true };
     } catch (e: any) {
@@ -146,14 +148,14 @@ export const disconnectGoogleIntegration = createServerFn({ method: "POST" })
 
     const { type } = ctx.data;
 
-    const organizer = await getOrganizer(organizerId);
+    const organizer = await getOrganizer({ data: { organizerId } });
     if (!organizer) throw new Error("Organizer not found");
 
     const integrations = organizer.integrations || {};
 
     if (integrations.google && integrations.google[type]) {
       delete integrations.google[type];
-      await updateOrganizerIntegrations(organizerId, integrations);
+      await updateOrganizerIntegrations({ data: { organizerId, integrations } });
     }
 
     return { success: true };
@@ -178,7 +180,7 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
       }
 
       const { type, settings } = ctx.data;
-      const organizer = await getOrganizer(organizerId);
+      const organizer = await getOrganizer({ data: { organizerId } });
       if (!organizer) return { success: false, error: "Organizer not found" };
 
       const integrations = organizer.integrations || {};
@@ -195,7 +197,7 @@ export const updateIntegrationSettings = createServerFn({ method: "POST" })
         },
       };
 
-      await updateOrganizerIntegrations(organizerId, integrations);
+      await updateOrganizerIntegrations({ data: { organizerId, integrations } });
       return { success: true };
     } catch (e: any) {
       console.error("[API] updateIntegrationSettings caught error:", e);
@@ -218,7 +220,7 @@ export const getOrganizerIntegrations = createServerFn({ method: "GET" }).handle
     organizerId = meData.workspace_users_by_pk?.organizer_id;
   }
 
-  const organizer = await getOrganizer(organizerId);
+  const organizer = await getOrganizer({ data: { organizerId } });
   if (!organizer) return {};
 
   return organizer.integrations || {};
@@ -228,7 +230,7 @@ export async function getValidGoogleToken(
   organizerId: string,
   type: "drive" | "calendar",
 ): Promise<string> {
-  const organizer = await getOrganizer(organizerId);
+  const organizer = await getOrganizer({ data: { organizerId } });
   if (!organizer) throw new Error("Organizer not found");
 
   const integrations = organizer.integrations || {};
@@ -269,7 +271,7 @@ export async function getValidGoogleToken(
     }
     integrationData.expiry_date = Date.now() + tokens.expires_in * 1000;
 
-    await updateOrganizerIntegrations(organizerId, integrations);
+    await updateOrganizerIntegrations({ data: { organizerId, integrations } });
 
     return integrationData.access_token;
   }
@@ -454,7 +456,7 @@ export const exportToGoogleDrive = createServerFn({ method: "POST" })
     const { fileName, fileContentBase64, mimeType } = ctx.data;
     const accessToken = await getValidGoogleToken(organizerId, "drive");
 
-    const organizer = await getOrganizer(organizerId);
+    const organizer = await getOrganizer({ data: { organizerId } });
     const exportFolderKey = organizer?.integrations?.drive?.settings?.exportFolder || "root";
 
     let parentFolderId = "root";
