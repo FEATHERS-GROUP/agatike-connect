@@ -1,8 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { HomeMobile } from "@/components/mobile/HomeMobile";
 import { HomeDesktop } from "@/components/desktop/HomeDesktop";
-import { useUserAuth } from "@/contexts/UserAuthContext";
-import { useEffect } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,18 +22,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { isLoggedIn, isLoading } = useUserAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && !isLoading) {
-      const isMobile = window.matchMedia("(max-width: 767px)").matches;
-      if (isMobile && !isLoggedIn) {
-        navigate({ to: "/signin", replace: true });
-      }
-    }
-  }, [isLoggedIn, isLoading, navigate]);
-
   return (
     <>
       <div className="md:hidden">
