@@ -315,8 +315,11 @@ function VipAccessPage() {
               );
 
               // Group tickets by event
-              const eventsMap = new Map<string, { event: any; tickets: any[], eventLevel: boolean }>();
-              
+              const eventsMap = new Map<
+                string,
+                { event: any; tickets: any[]; eventLevel: boolean }
+              >();
+
               associatedEvents.forEach((e: any) => {
                 eventsMap.set(e.id, { event: e, tickets: [], eventLevel: true });
               });
@@ -373,15 +376,17 @@ function VipAccessPage() {
                                 {event.title || "Untitled Event"}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {tickets.length > 0 ? `${tickets.length} ticket tier(s)` : 'Event-level privilege'}
+                                {tickets.length > 0
+                                  ? `${tickets.length} ticket tier(s)`
+                                  : "Event-level privilege"}
                               </p>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {eventLevel && (
-                               <span className="px-2 py-1 bg-primary/10 text-primary border border-primary/20 text-xs rounded-md shadow-sm">
-                                 Event Level
-                               </span>
+                              <span className="px-2 py-1 bg-primary/10 text-primary border border-primary/20 text-xs rounded-md shadow-sm">
+                                Event Level
+                              </span>
                             )}
                             {tickets.map((t: any) => (
                               <span

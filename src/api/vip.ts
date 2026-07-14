@@ -25,10 +25,10 @@ export interface VipPrivilege {
 export const getWorkspaceVipPrivileges = createServerFn({ method: "POST" })
   .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const query = `
+    const query = `
       query GetWorkspaceVipPrivileges($workspace_id: uuid!) {
         vip_privileges(
           where: { workspace_id: { _eq: $workspace_id } }
@@ -46,19 +46,22 @@ export const getWorkspaceVipPrivileges = createServerFn({ method: "POST" })
       }
     `;
 
-  const data = await hasuraRequest<{ vip_privileges: VipPrivilege[] }>(query, {
-    workspace_id: ctx.data?.workspace_id,
+    const data = await hasuraRequest<{ vip_privileges: VipPrivilege[] }>(query, {
+      workspace_id: ctx.data?.workspace_id,
+    });
+    return data.vip_privileges || [];
   });
-  return data.vip_privileges || [];
-});
 
 export const createVipPrivilege = createServerFn({ method: "POST" })
-  .validator((d: { workspace_id: string; name: string; description?: string; icon?: string; fields: any }) => d)
+  .validator(
+    (d: { workspace_id: string; name: string; description?: string; icon?: string; fields: any }) =>
+      d,
+  )
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const mutation = `
+    const mutation = `
       mutation CreateVipPrivilege(
         $workspace_id: uuid!
         $name: String!
@@ -80,20 +83,22 @@ export const createVipPrivilege = createServerFn({ method: "POST" })
       }
     `;
 
-  const data = await hasuraRequest<{ insert_vip_privileges_one: { id: string } }>(
-    mutation,
-    ctx.data,
-  );
-  return data.insert_vip_privileges_one;
-});
+    const data = await hasuraRequest<{ insert_vip_privileges_one: { id: string } }>(
+      mutation,
+      ctx.data,
+    );
+    return data.insert_vip_privileges_one;
+  });
 
 export const updateVipPrivilege = createServerFn({ method: "POST" })
-  .validator((d: { id: string; name: string; description?: string; icon?: string; fields: any }) => d)
+  .validator(
+    (d: { id: string; name: string; description?: string; icon?: string; fields: any }) => d,
+  )
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const mutation = `
+    const mutation = `
       mutation UpdateVipPrivilege(
         $id: uuid!
         $name: String!
@@ -110,20 +115,20 @@ export const updateVipPrivilege = createServerFn({ method: "POST" })
       }
     `;
 
-  const data = await hasuraRequest<{ update_vip_privileges_by_pk: { id: string } }>(
-    mutation,
-    ctx.data,
-  );
-  return data.update_vip_privileges_by_pk;
-});
+    const data = await hasuraRequest<{ update_vip_privileges_by_pk: { id: string } }>(
+      mutation,
+      ctx.data,
+    );
+    return data.update_vip_privileges_by_pk;
+  });
 
 export const deleteVipPrivilege = createServerFn({ method: "POST" })
   .validator((d: { id: string }) => d)
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const mutation = `
+    const mutation = `
       mutation DeleteVipPrivilege($id: uuid!) {
         delete_vip_privileges_by_pk(id: $id) {
           id
@@ -131,19 +136,19 @@ export const deleteVipPrivilege = createServerFn({ method: "POST" })
       }
     `;
 
-  const data = await hasuraRequest<{ delete_vip_privileges_by_pk: { id: string } }>(mutation, {
-    id: ctx.data.id,
+    const data = await hasuraRequest<{ delete_vip_privileges_by_pk: { id: string } }>(mutation, {
+      id: ctx.data.id,
+    });
+    return data.delete_vip_privileges_by_pk;
   });
-  return data.delete_vip_privileges_by_pk;
-});
 
 export const getVipTicketsUsage = createServerFn({ method: "POST" })
   .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const query = `
+    const query = `
       query GetVipTicketsUsage($workspace_id: uuid!) {
         event_tickets(where: {
           event: { workspace_id: { _eq: $workspace_id } }
@@ -167,25 +172,25 @@ export const getVipTicketsUsage = createServerFn({ method: "POST" })
       }
     `;
 
-  const data = await hasuraRequest<{ event_tickets: any[]; events: any[] }>(query, {
-    workspace_id: ctx.data?.workspace_id,
+    const data = await hasuraRequest<{ event_tickets: any[]; events: any[] }>(query, {
+      workspace_id: ctx.data?.workspace_id,
+    });
+
+    const ticketsWithVip = (data.event_tickets || []).filter(
+      (t) => Array.isArray(t.vip_privilege_ids) && t.vip_privilege_ids.length > 0,
+    );
+
+    const eventsWithVip = (data.events || []).filter(
+      (e) => Array.isArray(e.vip_privilege_ids) && e.vip_privilege_ids.length > 0,
+    );
+
+    return { tickets: ticketsWithVip, events: eventsWithVip };
   });
-
-  const ticketsWithVip = (data.event_tickets || []).filter(
-    (t) => Array.isArray(t.vip_privilege_ids) && t.vip_privilege_ids.length > 0,
-  );
-
-  const eventsWithVip = (data.events || []).filter(
-    (e) => Array.isArray(e.vip_privilege_ids) && e.vip_privilege_ids.length > 0,
-  );
-
-  return { tickets: ticketsWithVip, events: eventsWithVip };
-});
 
 export const getPublicVipPrivileges = createServerFn({ method: "POST" })
   .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
-  const query = `
+    const query = `
       query GetPublicVipPrivileges($workspace_id: uuid!) {
         vip_privileges(
           where: { workspace_id: { _eq: $workspace_id } }
@@ -198,8 +203,8 @@ export const getPublicVipPrivileges = createServerFn({ method: "POST" })
       }
     `;
 
-  const data = await hasuraRequest<{ vip_privileges: any[] }>(query, {
-    workspace_id: ctx.data?.workspace_id,
+    const data = await hasuraRequest<{ vip_privileges: any[] }>(query, {
+      workspace_id: ctx.data?.workspace_id,
+    });
+    return data.vip_privileges || [];
   });
-  return data.vip_privileges || [];
-});

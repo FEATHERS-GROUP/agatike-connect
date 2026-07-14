@@ -919,7 +919,7 @@ export function CreateEventDesktop() {
                           if (isSelected) {
                             updateField(
                               "vip_privilege_ids",
-                              currentIds.filter((id) => id !== privilege.id)
+                              currentIds.filter((id) => id !== privilege.id),
                             );
                           } else {
                             updateField("vip_privilege_ids", [...currentIds, privilege.id]);

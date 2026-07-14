@@ -610,7 +610,13 @@ function ProcurementPage() {
                           <Trash2 className="mr-2 h-4 w-4" /> Delete Document
                         </ContextMenuItem>
                         <ContextMenuSeparator />
-                        <ContextMenuItem onClick={() => queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] })}>
+                        <ContextMenuItem
+                          onClick={() =>
+                            queryClient.invalidateQueries({
+                              queryKey: ["procurement-invoices", wsId],
+                            })
+                          }
+                        >
                           <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
                         </ContextMenuItem>
                       </ContextMenuContent>
@@ -638,7 +644,11 @@ function ProcurementPage() {
             <FilePlus className="mr-2 h-4 w-4" /> Create Document
           </ContextMenuItem>
           <ContextMenuSeparator />
-          <ContextMenuItem onClick={() => queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] })}>
+          <ContextMenuItem
+            onClick={() =>
+              queryClient.invalidateQueries({ queryKey: ["procurement-invoices", wsId] })
+            }
+          >
             <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
           </ContextMenuItem>
         </ContextMenuContent>

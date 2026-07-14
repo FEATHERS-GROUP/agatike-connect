@@ -1,11 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import {
-  ChevronLeft,
-  Share2,
-  MapPin,
-  Navigation,
-  Calendar,
-} from "lucide-react";
+import { ChevronLeft, Share2, MapPin, Navigation, Calendar } from "lucide-react";
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -51,10 +45,11 @@ export function EventDetailsMobile({
     <div className="min-h-screen bg-background text-foreground pb-[140px] md:pb-24">
       {/* Sticky Top Header */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${isScrolled
-          ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
-          : "bg-transparent"
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
+          isScrolled
+            ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
+            : "bg-transparent"
+        }`}
       >
         <Button
           variant="ghost"
@@ -135,10 +130,7 @@ export function EventDetailsMobile({
 
         <EventIncluded isExperience={d.isExperience} included={d.included} />
 
-        <EventVipPrivileges
-          vipPrivileges={d.eventVipPrivileges || []}
-          vipPerks={d.ev.vipPerks}
-        />
+        <EventVipPrivileges vipPrivileges={d.eventVipPrivileges || []} vipPerks={d.ev.vipPerks} />
 
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
