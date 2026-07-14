@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizerIntegrations } from "@/api/integrations";
 import * as LucideIcons from "lucide-react";
 import { useState } from "react";
 import { CommunityBadge } from "./CommunityBadge";
@@ -18,6 +20,12 @@ export function DesktopSidebar() {
   const [isBillingGroupOpen, setIsBillingGroupOpen] = useState(false);
 
   const { data: platformModules = [] } = usePlatformModules();
+  
+  const { data: integrations } = useQuery({
+    queryKey: ["organizer-integrations"],
+    queryFn: () => getOrganizerIntegrations(),
+  });
+  const driveConnected = !!integrations?.google?.drive;
 
   // If no workspace or modules are loaded, we can't show much
   const userModuleIds = activeWorkspace?.modules || [];
@@ -201,6 +209,19 @@ export function DesktopSidebar() {
                   <LucideIcons.ShoppingCart className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Procurement</span>
                 </Link>
+                {driveConnected && (
+                  <Link
+                    to={`/dashboard/${activeWorkspace.slug}/book/drive` as any}
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                      location.pathname.includes("/book/drive")
+                        ? "bg-accent text-accent-foreground font-medium"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <LucideIcons.HardDrive className="h-4 w-4 shrink-0" />
+                    <span className="truncate flex-1">Google Drive</span>
+                  </Link>
+                )}
               </div>
             )}
           </div>
