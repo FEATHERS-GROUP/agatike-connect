@@ -135,7 +135,6 @@ function EditEventPage() {
     category: categories[0],
     description: "",
     vipPerks: "",
-    vip_privilege_ids: [] as string[],
     locations: [] as any[],
     coverPreview: "",
     allowed_public: false,
@@ -187,7 +186,6 @@ function EditEventPage() {
       category: event.category || categories[0],
       description: event.description || "",
       vipPerks: event.vipPerks || "",
-      vip_privilege_ids: event.vip_privilege_ids || [],
       locations: tourStops,
       coverPreview: event.cover || "",
       allowed_public: !!event.allowed_public,
@@ -266,7 +264,6 @@ function EditEventPage() {
                 }),
           })),
           vipPerks: form.vipPerks,
-          vip_privilege_ids: form.vip_privilege_ids,
           event_requency: event?.event_requency || {},
           allowed_public: form.allowed_public,
           event_tickets: {
@@ -683,42 +680,6 @@ function EditEventPage() {
         <h2 className="font-semibold text-lg flex items-center gap-2">
           <Crown className="h-5 w-5 text-primary" /> VIP Perks
         </h2>
-        
-        {vipPrivileges.length > 0 && (
-          <div>
-            <Label>VIP Privileges</Label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {vipPrivileges.map((privilege: any) => {
-                const isSelected = form.vip_privilege_ids?.includes(privilege.id);
-                return (
-                  <div
-                    key={privilege.id}
-                    className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-xl border transition-colors ${
-                      isSelected
-                        ? "bg-primary/20 border-primary text-primary"
-                        : "bg-background border-border/60 text-muted-foreground hover:border-primary/50"
-                    }`}
-                    onClick={() => {
-                      const currentIds = form.vip_privilege_ids || [];
-                      if (isSelected) {
-                        updateField(
-                          "vip_privilege_ids",
-                          currentIds.filter((id) => id !== privilege.id)
-                        );
-                      } else {
-                        updateField("vip_privilege_ids", [...currentIds, privilege.id]);
-                      }
-                    }}
-                  >
-                    {privilege.name}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <Label>Additional VIP perks details (Optional)</Label>
         <Textarea
           rows={4}
           value={form.vipPerks}
