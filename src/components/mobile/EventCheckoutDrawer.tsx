@@ -51,6 +51,7 @@ export function EventCheckoutDrawer({
   currentVenueProject: any;
   setActiveTicketIdForMap: (id: string) => void;
   total: number;
+  totalTickets: number;
   selectedSeatsObj: any[];
   isUpcoming?: boolean;
   waitlistUrl?: string;
