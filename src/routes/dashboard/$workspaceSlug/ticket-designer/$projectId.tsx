@@ -664,6 +664,14 @@ function TicketDesignerPage() {
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <Link
+            to="/dashboard/$workspaceSlug"
+            params={{ workspaceSlug: activeWorkspace?.slug || workspaceSlug || "" }}
+            className="flex items-center"
+          >
+            <img src="/agatike-logo.svg" alt="Agatike" className="h-6 w-auto object-contain" />
+          </Link>
+          <div className="h-4 w-px bg-border/60 mx-1"></div>
+          <Link
             to="/dashboard/$workspaceSlug/ticket-designer"
             params={{ workspaceSlug: workspaceSlug || "" }}
             className="rounded-full p-2 hover:bg-secondary transition-colors"
@@ -751,21 +759,23 @@ function TicketDesignerPage() {
 
       <div className="flex-1 min-h-0 grid gap-6 p-6 lg:grid-cols-[360px_1fr]">
         {/* Controls */}
-        <aside className="min-h-0 space-y-6 overflow-y-auto pb-10 pr-2 -mr-2">
-          <div className="grid grid-cols-3 gap-1 rounded-xl bg-secondary/50 p-1">
+        <aside className="min-h-0 overflow-y-auto flex flex-col bg-card border border-border/60 rounded-2xl shadow-lg hide-scrollbar">
+          <div className="sticky top-0 z-10 bg-card/90 backdrop-blur-xl p-3 border-b border-border/40">
+            <div className="grid grid-cols-3 gap-1 rounded-lg bg-secondary/60 p-1">
             {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`rounded-lg px-2 py-1.5 text-xs font-medium transition-all capitalize ${activeTab === tab ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
+                className={`rounded-md px-2 py-1.5 text-xs font-semibold tracking-wide transition-all capitalize ${activeTab === tab ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/40 hover:text-foreground"}`}
               >
                 {tab === "back" ? "Back Side" : tab}
               </button>
             ))}
+            </div>
           </div>
 
           {activeTab === "setup" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Assignment" icon={Calendar}>
                 <div className="space-y-3">
                   <Field label="Assign to Event or Venue">
@@ -931,7 +941,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "design" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Template" icon={TicketIcon}>
                 <div className="grid grid-cols-2 gap-2">
                   {templates
@@ -997,7 +1007,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "media" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Cover image" icon={ImageIcon}>
                 <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
                   <input
@@ -1113,7 +1123,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "content" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Content" icon={TicketIcon}>
                 <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 mb-3">
                   <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -1142,7 +1152,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "layout" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Text Sizes" icon={Type}>
                 <div className="space-y-4">
                   <Field
@@ -1298,7 +1308,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "back" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Back Side Text" icon={Type}>
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Custom message / terms</Label>
@@ -1427,7 +1437,12 @@ function TicketDesignerPage() {
             </div>
 
             <div
-              className={`flex-1 flex ${editScope === "tier" && ticketTiers.length > 0 ? "flex-col py-8 justify-start" : "items-center justify-center"} overflow-auto gap-12`}
+              className={`flex-1 flex ${editScope === "tier" && ticketTiers.length > 0 ? "flex-col py-16 justify-start items-center" : "items-center justify-center"} overflow-auto gap-12 relative rounded-2xl shadow-inner`}
+              style={{
+                backgroundImage: "radial-gradient(circle, hsl(var(--border)) 1.5px, transparent 1.5px)",
+                backgroundSize: "24px 24px",
+                backgroundColor: "hsl(var(--secondary) / 0.4)",
+              }}
             >
               {editScope === "tier" && ticketTiers.length > 0 ? (
                 ticketTiers.map((tier: any) => {
@@ -1440,8 +1455,8 @@ function TicketDesignerPage() {
                   return (
                     <div
                       key={tier.id}
-                      id={`tier-preview-${tier.id}`}
-                      className={`relative cursor-pointer transition-all duration-300 mx-auto ${isSelected ? "ring-4 ring-primary ring-offset-8 ring-offset-card rounded-[28px] scale-100" : "opacity-40 hover:opacity-80 scale-95"}`}
+                      id={isSelected ? "ticket-preview-container" : `tier-preview-${tier.id}`}
+                      className={`relative cursor-pointer transition-all duration-300 mx-auto ${isSelected ? "ring-4 ring-primary ring-offset-8 ring-offset-secondary/40 rounded-[28px] scale-100 z-10 shadow-2xl" : "opacity-40 hover:opacity-80 scale-95 shadow-md"}`}
                       onClick={() => setActiveTierId(tier.id)}
                     >
                       <TicketPreview
@@ -1491,7 +1506,7 @@ function TicketDesignerPage() {
                         back={tDesign.back || defaultBack}
                       />
                       {isSelected && (
-                        <div className="absolute -right-2 -top-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg z-50">
+                        <div className="absolute -right-2 -top-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg z-50 pointer-events-none">
                           Currently Editing
                         </div>
                       )}
@@ -1499,8 +1514,9 @@ function TicketDesignerPage() {
                   );
                 })
               ) : (
-                <TicketPreview
-                  template={mergedDesign.template}
+                <div id="ticket-preview-container" className="relative w-fit h-fit shadow-2xl rounded-[28px] transition-transform hover:scale-[1.01] hover:shadow-3xl z-10">
+                  <TicketPreview
+                    template={mergedDesign.template}
                   palette={mergedDesign.palette}
                   font={mergedDesign.font}
                   tier={dynamicDefaults.tierName}
@@ -1531,6 +1547,7 @@ function TicketDesignerPage() {
                   layout={mergedDesign.layout || defaultLayout}
                   back={mergedDesign.back || defaultBack}
                 />
+                </div>
               )}
             </div>
           </div>
@@ -1576,21 +1593,39 @@ function Section({
   icon: any;
   children: React.ReactNode;
 }) {
+  const [isOpen, setIsOpen] = _useState(true);
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-primary" />
-        <p className="text-sm font-semibold">{title}</p>
-      </div>
-      {children}
+    <div className="border-b border-border/40 last:border-0">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between py-4 px-5 hover:bg-secondary/30 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+          <p className="text-[13px] font-semibold tracking-wide text-foreground">{title}</p>
+        </div>
+        <svg
+          className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="px-5 pb-5 pt-1 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</Label>
       {children}
     </div>
   );
