@@ -647,12 +647,30 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
         email
         active
         banned
+        profile
       }
     }
   `;
   const existing = await hasuraRequest<{ users: any[] }>(checkQuery, { email });
 
   let user = existing.users[0];
+
+  if (user && !user.profile && payload.picture) {
+    try {
+      const updateQuery = `
+        mutation UpdateGoogleUserProfile($id: uuid!, $profile: String!) {
+          update_users_by_pk(pk_columns: { id: $id }, _set: { profile: $profile }) {
+            id
+            profile
+          }
+        }
+      `;
+      await hasuraRequest(updateQuery, { id: user.id, profile: payload.picture });
+      user.profile = payload.picture;
+    } catch (err) {
+      console.warn("Failed to update user profile with Google picture:", err);
+    }
+  }
 
   if (!user) {
     const hashedPassword = await bcrypt.hash("GOOGLE_AUTH_USER", 10);
@@ -663,7 +681,7 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
         .slice(0, 20) + Math.floor(Math.random() * 1000);
 
     const insertQuery = `
-      mutation InsertGoogleUser($username: String!, $email: String!, $password: String!, $handle: String!) {
+      mutation InsertGoogleUser($username: String!, $email: String!, $password: String!, $handle: String!, $profile: String) {
         insert_users_one(object: {
           username: $username,
           email: $email,
@@ -674,13 +692,15 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
           country: "Unknown",
           phone: "0000000000",
           active: true,
-          agreed_to_terms: true
+          agreed_to_terms: true,
+          profile: $profile
         }) {
           id
           username
           handle
           email
           active
+          profile
         }
       }
     `;
@@ -690,6 +710,7 @@ export const googleAuthUser = createServerFn({ method: "POST" }).handler(async (
       email,
       password: hashedPassword,
       handle,
+      profile: payload.picture || null,
     });
 
     user = res.insert_users_one;

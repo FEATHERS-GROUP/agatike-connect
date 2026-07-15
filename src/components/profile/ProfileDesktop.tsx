@@ -134,11 +134,19 @@ export function ProfileDesktop({
             <div className="space-y-3">
               {followedOrganizers.slice(0, 4).map((org: any) => (
                 <div key={org.id} className="flex items-center gap-3">
-                  <img
-                    src={org.image || "https://placehold.co/100"}
-                    alt={org.name}
-                    className="h-9 w-9 rounded-full object-cover border border-border/40"
-                  />
+                  {org.image ? (
+                    <img
+                      src={org.image}
+                      alt={org.name}
+                      className="h-9 w-9 rounded-full object-cover border border-border/40"
+                    />
+                  ) : (
+                    <div className="h-9 w-9 rounded-full bg-secondary border border-border/40 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-muted-foreground">
+                        {getInitials(org.name)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{org.name}</p>
                     <p className="text-xs text-muted-foreground">@{org.handle}</p>
