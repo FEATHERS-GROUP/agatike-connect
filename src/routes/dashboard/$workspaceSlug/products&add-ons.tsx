@@ -214,6 +214,27 @@ function WorkspaceProductsView() {
       sold: p.sold_count || 0,
     }));
 
+  const stats = {
+    totalSales: 0,
+    activeCampaigns: 0,
+    lowStockAlerts: 0,
+  };
+
+  [...merchandise, ...allVouchers, ...punchCards].forEach((item) => {
+    const sold = Number(item.sold || 0);
+    const price = Number(item.price || 0);
+    stats.totalSales += sold * price;
+
+    if (item.is_active !== false) {
+      stats.activeCampaigns += 1;
+    }
+
+    const stock = item.stock;
+    if (stock !== "Unlimited" && stock !== undefined && stock !== null && Number(stock) < 100) {
+      stats.lowStockAlerts += 1;
+    }
+  });
+
   const renderTable = (items: any[], icon: any) => (
     <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
       <table className="w-full text-sm text-left">
@@ -296,16 +317,16 @@ function WorkspaceProductsView() {
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Sales</p>
           <p className="text-2xl font-semibold mt-1">
-            {formatCurrency(7650, activeWorkspace?.currency)}
+            {formatCurrency(stats.totalSales, activeWorkspace?.currency)}
           </p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Active Campaigns</p>
-          <p className="text-2xl font-semibold mt-1">5</p>
+          <p className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Low Stock Alerts</p>
-          <p className="text-2xl font-semibold text-orange-500 mt-1">0 Items</p>
+          <p className="text-2xl font-semibold text-orange-500 mt-1">{stats.lowStockAlerts} Items</p>
         </div>
       </div>
 
