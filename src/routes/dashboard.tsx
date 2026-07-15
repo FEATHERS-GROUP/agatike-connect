@@ -368,33 +368,7 @@ function DashboardLayout() {
     return () => unsubscribe();
   }, [activeWorkspace?.orgnizer_id, navigate]);
 
-  if (currentUser?.role === "organizer" && currentUser?.isActive === false) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
-        <div className="bg-primary/10 p-4 rounded-full mb-4">
-          <svg
-            className="w-8 h-8 text-primary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold mb-2">Account Pending Activation</h2>
-        <p className="text-muted-foreground text-sm max-w-md">
-          Your account is currently under review by the Agatike team. This process usually takes
-          between 2 to 24 hours depending on traffic. Once approved, you will be able to create
-          workspaces and manage your Operations.
-        </p>
-      </div>
-    );
-  }
+
 
   return (
     <>

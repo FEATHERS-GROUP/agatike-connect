@@ -7,6 +7,7 @@ import { SpaceDashboard } from "@/components/desktop/dashboard/views/SpaceDashbo
 import { ExperienceDashboard } from "@/components/desktop/dashboard/views/ExperienceDashboard";
 import { TransportDashboard } from "@/components/desktop/dashboard/views/TransportDashboard";
 import { BillingBanner } from "@/components/desktop/dashboard/BillingBanner";
+import { OnboardingSlider } from "@/components/dashboard/OnboardingSlider";
 
 export const Route = routerCreateFileRoute("/dashboard/$workspaceSlug/")({
   component: DashboardIndex,
@@ -37,6 +38,7 @@ function DashboardIndex() {
   return (
     <>
       <BillingBanner />
+      <OnboardingSlider />
       {renderDashboard()}
     </>
   );

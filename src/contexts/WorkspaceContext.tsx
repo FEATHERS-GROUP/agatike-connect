@@ -19,6 +19,7 @@ export type Workspace = {
   type: WorkspaceType;
   city: string;
   country?: string;
+  country_code?: string;
   address?: string;
   logo?: string;
   moduls: any;

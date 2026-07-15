@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
 import { sendSignupOtp } from "@/api/auth";
 import { getUserByHandle } from "@/api/users";
@@ -172,6 +172,8 @@ function CreateOrganizerPage() {
       navigate({ to: "/dashboard", replace: true });
     }
   }, [isLoaded, currentUser, navigate]);
+  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("identicon");
@@ -183,6 +185,14 @@ function CreateOrganizerPage() {
   const [otpInput, setOtpInput] = useState("");
   const [otpToken, setOtpToken] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
+
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timerId = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [resendCountdown]);
 
   const [syncHandle, setSyncHandle] = useState("");
   const [syncUserId, setSyncUserId] = useState<string | null>(null);
@@ -334,7 +344,7 @@ function CreateOrganizerPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      const { terms, confirm_password, instagram, tiktok, youtube, ...restValues } = values;
+      const { terms, confirm_password, instagram, tiktok, youtube, fee_acknowledgement, ...restValues } = values as any;
 
       let finalBusinessCert = restValues.business_cert;
       if (finalBusinessCert && finalBusinessCert.startsWith("data:")) {
@@ -429,6 +439,7 @@ function CreateOrganizerPage() {
         if (result.success && result.token) {
           setOtpToken(result.token);
           setOtpStep(true);
+          setResendCountdown(30);
           toast.success("Verification code sent to your email!");
         }
       } catch (err: any) {
@@ -445,6 +456,25 @@ function CreateOrganizerPage() {
     }
 
     mutation.mutate({ ...values, otpToken, otp: otpInput } as any);
+  };
+
+  const handleResendOtp = async () => {
+    const values = watch();
+    setIsSendingOtp(true);
+    try {
+      const result = await sendSignupOtp({
+        data: { email: values.email, phone: values.phone },
+      } as any);
+      if (result.success && result.token) {
+        setOtpToken(result.token);
+        setResendCountdown(30);
+        toast.success("Verification code resent to your email!");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to resend verification code.");
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   const nextStep = async () => {
@@ -1249,147 +1279,62 @@ function CreateOrganizerPage() {
                           )}
                         </Button>
                       </div>
+                      <div className="text-center mt-6 text-sm text-gray-500 dark:text-white/50">
+                        Didn't receive the code?{" "}
+                        {resendCountdown > 0 ? (
+                          <span className="font-medium text-gray-700 dark:text-white/70">
+                            Resend in {resendCountdown}s
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            className="text-primary font-semibold hover:underline"
+                            disabled={isSendingOtp}
+                          >
+                            Resend now
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <>
-                      {/* Dynamic Fee Calculator Section */}
+                      {/* Fee Acknowledgement (Kept outside modal) */}
                       <div className="mb-10 bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-200 dark:border-white/10 shadow-sm">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <Calculator className="h-5 w-5 text-primary" />
+                        <div className="flex flex-col gap-4">
+                          <div className="text-sm text-gray-600 dark:text-white/70">
+                            <strong>Pricing & Fees:</strong> We use transparent transaction pricing. To see exactly how much you'll earn on your selected plan and payment method, you can use our Fee Calculator.
                           </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                              Fee Calculator
-                            </h3>
-                            <p className="text-xs text-gray-500 dark:text-white/50">
-                              Estimate your earnings based on your selected plan and payment method.
-                            </p>
-                          </div>
-                        </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsFeeModalOpen(true)}
+                            className="w-full md:w-auto self-start border-primary/50 text-primary hover:bg-primary/10"
+                          >
+                            <Calculator className="w-4 h-4 mr-2" />
+                            Open Fee Calculator
+                          </Button>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                          <div className="space-y-2">
-                            <Label className="text-xs text-gray-700 dark:text-white/80">Ticket Price (RWF)</Label>
-                            <Input
-                              type="number"
-                              value={calcTicketPrice}
-                              onChange={(e) => setCalcTicketPrice(Number(e.target.value) || 0)}
-                              className="h-10 rounded-lg bg-white dark:bg-black/20"
+                          <div className="flex items-start space-x-3 mt-2 pt-4 border-t border-gray-200 dark:border-white/10">
+                            <Checkbox
+                              id="fee_acknowledgement"
+                              checked={watch("fee_acknowledgement")}
+                              onCheckedChange={(checked) =>
+                                setValue("fee_acknowledgement", checked as boolean, { shouldValidate: true })
+                              }
+                              className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary border-gray-300 dark:border-white/30"
                             />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs text-gray-700 dark:text-white/80">Expected Tickets Sold</Label>
-                            <Input
-                              type="number"
-                              value={calcTicketCount}
-                              onChange={(e) => setCalcTicketCount(Number(e.target.value) || 0)}
-                              className="h-10 rounded-lg bg-white dark:bg-black/20"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs text-gray-700 dark:text-white/80">Agatike Plan</Label>
-                            <Select value={calcPlanId} onValueChange={setCalcPlanId}>
-                              <SelectTrigger className="h-10 rounded-lg bg-white dark:bg-black/20">
-                                <SelectValue placeholder="Select Plan" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {pricingPlans.map((p: any) => (
-                                  <SelectItem key={p.id} value={p.id}>
-                                    {p.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-xs text-gray-700 dark:text-white/80">Country</Label>
-                            <Select value={calcCountry} onValueChange={setCalcCountry}>
-                              <SelectTrigger className="h-10 rounded-lg bg-white dark:bg-black/20">
-                                <SelectValue placeholder="Select Country" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableCountries.map((c: any) => (
-                                  <SelectItem key={c} value={c}>
-                                    {c}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2 md:col-span-2">
-                            <Label className="text-xs text-gray-700 dark:text-white/80">Expected Payout Network</Label>
-                            <Select value={calcNetwork} onValueChange={setCalcNetwork}>
-                              <SelectTrigger className="h-10 rounded-lg bg-white dark:bg-black/20">
-                                <SelectValue placeholder="Select Network" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableNetworks.map((n: any) => (
-                                  <SelectItem key={n.network} value={n.network}>
-                                    {n.network}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        {/* Results Breakdown */}
-                        <div className="bg-white dark:bg-black/40 rounded-xl p-4 space-y-3 text-sm border border-gray-100 dark:border-white/5">
-                          <div className="flex justify-between text-gray-600 dark:text-white/70">
-                            <span>Total Ticket Sales:</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{totalTicketSales.toLocaleString()} RWF</span>
-                          </div>
-                          <div className="flex justify-between text-gray-600 dark:text-white/70">
-                            <span>Agatike Organizer Fee:</span>
-                            <span className="text-red-500 font-medium">- {totalOrganizerFee.toLocaleString()} RWF</span>
-                          </div>
-                          <div className="flex justify-between text-gray-600 dark:text-white/70">
-                            <span>Estimated Wallet Balance:</span>
-                            <span className="font-semibold text-gray-900 dark:text-white">{estimatedWalletBalance.toLocaleString()} RWF</span>
-                          </div>
-                          <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
-                          <div className="flex justify-between text-xs text-gray-500 dark:text-white/50">
-                            <span>Agatike Withdrawal Fee:</span>
-                            <span>- {agatikeWithdrawalFee.toLocaleString()} RWF</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-gray-500 dark:text-white/50">
-                            <span>Provider Withdrawal Fee ({selectedNetwork?.network}):</span>
-                            <span>- {providerDisbursementFee.toLocaleString()} RWF</span>
-                          </div>
-                          <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
-                          <div className="flex justify-between font-bold text-lg text-primary">
-                            <span>Final Amount You Receive:</span>
-                            <span>{finalAmount.toLocaleString()} RWF</span>
-                          </div>
-                          <div className="text-[10px] text-gray-400 dark:text-white/40 mt-1 text-right">
-                            * Note: Customer pays a separate fee of {totalCustomerFee.toLocaleString()} RWF on checkout.
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 p-4 bg-primary/5 rounded-xl border border-primary/10 text-xs text-gray-600 dark:text-white/70 leading-relaxed">
-                          <strong>Pricing Explanation:</strong> Agatike uses transparent transaction pricing. Fees are calculated based on your selected plan and payment method. Ticket sales fees and payout processing fees are shown clearly before you create your account and before every withdrawal.
-                        </div>
-
-                        <div className="flex items-start space-x-3 mt-4">
-                          <Checkbox
-                            id="fee_acknowledgement"
-                            checked={watch("fee_acknowledgement")}
-                            onCheckedChange={(checked) =>
-                              setValue("fee_acknowledgement", checked as boolean, { shouldValidate: true })
-                            }
-                            className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary border-gray-300 dark:border-white/30"
-                          />
-                          <div className="space-y-1">
-                            <label
-                              htmlFor="fee_acknowledgement"
-                              className="text-sm font-medium leading-none text-gray-700 dark:text-white/80 cursor-pointer"
-                            >
-                              I understand and agree to Agatike's pricing, transaction fees, and payout processing fees.
-                            </label>
-                            {errors.fee_acknowledgement && (
-                              <p className="text-xs text-red-500 mt-1">{errors.fee_acknowledgement.message}</p>
-                            )}
+                            <div className="space-y-1">
+                              <label
+                                htmlFor="fee_acknowledgement"
+                                className="text-sm font-medium leading-none text-gray-700 dark:text-white/80 cursor-pointer"
+                              >
+                                I understand and agree to Agatike's pricing, transaction fees, and payout processing fees.
+                              </label>
+                              {errors.fee_acknowledgement && (
+                                <p className="text-xs text-red-500 mt-1">{errors.fee_acknowledgement.message}</p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1544,6 +1489,122 @@ function CreateOrganizerPage() {
         </div>
       </div>
 
+      {/* Fee Calculator Modal */}
+      <Dialog open={isFeeModalOpen} onOpenChange={setIsFeeModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-primary" /> Fee Calculator
+            </DialogTitle>
+            <DialogDescription>
+              Estimate your earnings based on your selected plan and payment method.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-700 dark:text-white/80">Ticket Price (RWF)</Label>
+              <Input
+                type="number"
+                value={calcTicketPrice}
+                onChange={(e) => setCalcTicketPrice(Number(e.target.value) || 0)}
+                className="h-10 rounded-lg bg-gray-50 dark:bg-white/5"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-700 dark:text-white/80">Expected Tickets Sold</Label>
+              <Input
+                type="number"
+                value={calcTicketCount}
+                onChange={(e) => setCalcTicketCount(Number(e.target.value) || 0)}
+                className="h-10 rounded-lg bg-gray-50 dark:bg-white/5"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-700 dark:text-white/80">Agatike Plan</Label>
+              <Select value={calcPlanId} onValueChange={setCalcPlanId}>
+                <SelectTrigger className="h-10 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <SelectValue placeholder="Select Plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pricingPlans.map((p: any) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-700 dark:text-white/80">Country</Label>
+              <Select value={calcCountry} onValueChange={setCalcCountry}>
+                <SelectTrigger className="h-10 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <SelectValue placeholder="Select Country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCountries.map((c: any) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label className="text-xs text-gray-700 dark:text-white/80">Expected Payout Network</Label>
+              <Select value={calcNetwork} onValueChange={setCalcNetwork}>
+                <SelectTrigger className="h-10 rounded-lg bg-gray-50 dark:bg-white/5">
+                  <SelectValue placeholder="Select Network" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableNetworks.map((n: any) => (
+                    <SelectItem key={n.network} value={n.network}>
+                      {n.network}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 space-y-3 text-sm border border-gray-200 dark:border-white/10">
+            <div className="flex justify-between text-gray-600 dark:text-white/70">
+              <span>Total Ticket Sales:</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{totalTicketSales.toLocaleString()} RWF</span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-white/70">
+              <span>Agatike Organizer Fee:</span>
+              <span className="text-red-500 font-medium">- {totalOrganizerFee.toLocaleString()} RWF</span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-white/70">
+              <span>Estimated Wallet Balance:</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{estimatedWalletBalance.toLocaleString()} RWF</span>
+            </div>
+            <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
+            <div className="flex justify-between text-xs text-gray-500 dark:text-white/50">
+              <span>Withdrawal Fee:</span>
+              <span>- {(agatikeWithdrawalFee + providerDisbursementFee).toLocaleString()} RWF</span>
+            </div>
+            <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
+            <div className="flex justify-between font-bold text-lg text-primary">
+              <span>Final Amount You Receive:</span>
+              <span>{finalAmount.toLocaleString()} RWF</span>
+            </div>
+            <div className="text-[10px] text-gray-400 dark:text-white/40 mt-1 text-right">
+              * Note: Customer pays a separate fee of {totalCustomerFee.toLocaleString()} RWF on checkout.
+            </div>
+          </div>
+          
+          <div className="mt-2 p-4 bg-primary/5 rounded-xl border border-primary/10 text-xs text-gray-600 dark:text-white/70 leading-relaxed">
+            <strong>Pricing Explanation:</strong> Agatike uses transparent transaction pricing. Ticket sales fees and payout processing fees are shown clearly before every withdrawal.
+          </div>
+
+          <div className="pt-4 flex justify-end">
+            <Button onClick={() => setIsFeeModalOpen(false)}>Close Calculator</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Avatar Modal */}
       <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
         <DialogContent className="sm:max-w-2xl rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
@@ -1599,6 +1660,17 @@ function CreateOrganizerPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Floating Fee Calculator Button */}
+      <Button
+        type="button"
+        onClick={() => setIsFeeModalOpen(true)}
+        className="fixed bottom-6 right-6 z-50 h-14 px-6 rounded-full shadow-[0_0_20px_rgba(242,87,29,0.3)] hover:shadow-[0_0_25px_rgba(242,87,29,0.5)] transition-all duration-300 flex items-center gap-2 text-white"
+        style={{ background: "var(--gradient-primary)" }}
+      >
+        <Calculator className="w-5 h-5" />
+        <span className="font-semibold">Fee Calculator</span>
+      </Button>
     </div>
   );
 }
