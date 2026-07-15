@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-designer/$projectId")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { template?: TemplateId; pitchType?: PitchType } => {
     return {
       template: search.template as TemplateId | undefined,
       pitchType: search.pitchType as PitchType | undefined,
@@ -297,6 +297,14 @@ function VenueDesignerPage() {
     <div className="h-screen bg-background overflow-hidden flex flex-col">
       <header className="flex-none flex items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
+          <Link
+            to="/dashboard/$workspaceSlug"
+            params={{ workspaceSlug: activeWorkspace?.slug || workspaceSlug }}
+            className="flex items-center"
+          >
+            <img src="/agatike-logo.svg" alt="Agatike" className="h-6 w-auto object-contain" />
+          </Link>
+          <div className="h-4 w-px bg-border/60 mx-1"></div>
           <Link
             to="/dashboard/$workspaceSlug/venue-designer"
             params={{ workspaceSlug }}

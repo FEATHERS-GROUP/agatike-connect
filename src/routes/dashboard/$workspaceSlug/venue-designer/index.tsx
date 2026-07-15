@@ -519,11 +519,10 @@ function VenueDesignerIndex() {
                     const eventObj = events.find((e: any) => e.id === proj.event_id);
                     const displayTitle = proj.name || "Untitled Venue";
                     const stopIdx = proj.tour_stop_idx ?? 0;
-                    let venueImage = null;
+                    let venueImage = eventObj?.cover || null;
                     let locationName = "";
 
                     if (stopIdx === -1) {
-                      venueImage = eventObj?.cover || null;
                       if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
                         locationName = " - All Locations";
                       }
@@ -531,7 +530,10 @@ function VenueDesignerIndex() {
                       Array.isArray(eventObj?.tour_stops) &&
                       eventObj.tour_stops.length > stopIdx
                     ) {
-                      venueImage = eventObj.tour_stops[stopIdx].venue_image_url;
+                      const stopImage = eventObj.tour_stops[stopIdx]?.venue_image_url;
+                      if (stopImage) {
+                        venueImage = stopImage;
+                      }
                       if (eventObj.tour_stops.length > 1) {
                         locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
                       }

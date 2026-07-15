@@ -95,8 +95,12 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
           },
         } as any,
       });
-    } catch (e) {
-      console.error("Failed to sync event to Google Calendar:", e);
+    } catch (e: any) {
+      if (e.message && e.message.includes("is not connected")) {
+        console.log("Google Calendar is not connected, skipping sync.");
+      } else {
+        console.error("Failed to sync event to Google Calendar:", e);
+      }
     }
   }
 
