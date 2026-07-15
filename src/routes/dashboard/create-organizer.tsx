@@ -115,6 +115,23 @@ const formSchema = z
   .refine((data) => data.password === data.confirm_password, {
     message: "Passwords do not match",
     path: ["confirm_password"],
+  })
+  .superRefine((data, ctx) => {
+    if (!data.national_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "National ID / Passport is required",
+        path: ["national_id"],
+      });
+    }
+    
+    if (data.business && !data.business_cert) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Business Certificate is required for registered businesses",
+        path: ["business_cert"],
+      });
+    }
   });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -656,40 +673,40 @@ function CreateOrganizerPage() {
                       )}
                     </div>
 
-                    {!isBusiness && (
-                      <div className="space-y-2 md:col-span-2">
-                        <Label className="text-gray-700 dark:text-white/80">
-                          National ID / Passport (Optional)
-                        </Label>
-                        <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
-                          <input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  setValue("national_id", event.target?.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                          <span className="text-sm font-medium text-gray-600 dark:text-white/70 flex items-center gap-2">
-                            {watch("national_id") ? (
-                              <>
-                                <CheckCircle2 className="h-5 w-5 text-green-400" /> Document
-                                Attached
-                              </>
-                            ) : (
-                              "Click to upload ID/Passport"
-                            )}
-                          </span>
-                        </label>
-                      </div>
-                    )}
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="text-gray-700 dark:text-white/80">
+                        National ID / Passport *
+                      </Label>
+                      <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                setValue("national_id", event.target?.result as string, { shouldValidate: true });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                        <span className="text-sm font-medium text-gray-600 dark:text-white/70 flex items-center gap-2">
+                          {watch("national_id") ? (
+                            <>
+                              <CheckCircle2 className="h-5 w-5 text-green-400" /> Document Attached
+                            </>
+                          ) : (
+                            "Click to upload ID/Passport"
+                          )}
+                        </span>
+                      </label>
+                      {errors.national_id && (
+                        <p className="text-xs text-red-400">{errors.national_id.message}</p>
+                      )}
+                    </div>
 
                     <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">
@@ -1005,7 +1022,7 @@ function CreateOrganizerPage() {
                     {isBusiness && (
                       <div className="space-y-2 md:col-span-2 mt-4">
                         <Label className="text-gray-700 dark:text-white/80">
-                          Business Certificate (Upload Document/Image)
+                          Business Certificate (Upload Document/Image) *
                         </Label>
                         <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
                           <input
@@ -1017,7 +1034,7 @@ function CreateOrganizerPage() {
                               if (file) {
                                 const reader = new FileReader();
                                 reader.onload = (event) => {
-                                  setValue("business_cert", event.target?.result as string);
+                                  setValue("business_cert", event.target?.result as string, { shouldValidate: true });
                                 };
                                 reader.readAsDataURL(file);
                               }
@@ -1034,6 +1051,9 @@ function CreateOrganizerPage() {
                             )}
                           </span>
                         </label>
+                        {errors.business_cert && (
+                          <p className="text-xs text-red-400">{errors.business_cert.message}</p>
+                        )}
                       </div>
                     )}
                   </div>

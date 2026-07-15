@@ -95,7 +95,7 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
         $image: String = ""
       ) {
         insert_organizers(objects: {
-          active: true, 
+          active: false, 
           bio: $bio, 
           business: $business, 
           business_cert: $business_cert, 
