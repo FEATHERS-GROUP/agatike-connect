@@ -15,11 +15,15 @@ export interface PricingPlan {
   is_popular: boolean;
   yearly_price?: number;
   customer_service_fee_percentage?: number;
+  customer_collection_fee_percentage?: number;
+  customer_collection_fee_fixed?: number;
   organizer_platform_contribution?: number;
+  organizer_collection_fee_percentage?: number;
+  organizer_collection_fee_fixed?: number;
   platform_margin_buffer?: number;
   max_withdrawals_per_week?: string;
   withdrawal_fee_percentage?: number;
-  withdrawal_fee_fixed?: number;
+  withdrawal_fee_fixed?: string;
 }
 
 export interface Subscription {
@@ -48,9 +52,15 @@ const GET_PLANS = `
       is_popular
       yearly_price
       customer_service_fee_percentage
+      customer_collection_fee_percentage
+      customer_collection_fee_fixed
       organizer_platform_contribution
+      organizer_collection_fee_percentage
+      organizer_collection_fee_fixed
       platform_margin_buffer
       max_withdrawals_per_week
+      withdrawal_fee_percentage
+      withdrawal_fee_fixed
     }
   }
 `;
@@ -599,7 +609,7 @@ export const payPendingInvoice = createServerFn({ method: "POST" })
       // Only advance the date if it's currently past due or close to due, so we don't accidentally skip a month if paid late
       // Actually, if paid, it extends exactly 1 month from the OLD billing date.
       nextDate.setMonth(nextDate.getMonth() + 1);
-      
+
       const UPDATE_SUB = `
         mutation UpdateSub($id: uuid!, $next_date: timestamptz!) {
           update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "active", next_billing_date: $next_date }) {
