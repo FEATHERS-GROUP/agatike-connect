@@ -28,6 +28,7 @@ export type Workspace = {
   icon?: string;
   modules?: string[];
   currency?: string;
+  business?: boolean;
   wallet?: {
     currency: string;
     [key: string]: any;

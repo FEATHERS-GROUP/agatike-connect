@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
 import { sendSignupOtp } from "@/api/auth";
 import { getUserByHandle } from "@/api/users";
@@ -42,6 +43,24 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 export const Route = createFileRoute("/dashboard/create-organizer")({
   component: CreateOrganizerPage,
 });
+
+const CATEGORIES = [
+  { id: "bottts", label: "Robots" },
+  { id: "shapes", label: "Shapes" },
+  { id: "identicon", label: "Patterns" },
+  { id: "adventurer", label: "Characters" },
+  { id: "fun-emoji", label: "Emojis" },
+  { id: "micah", label: "Stylized" },
+];
+
+const generateAvatars = (category: string) => {
+  const bg = ["b6e3f4", "c0aede", "ffdfbf", "ffd5dc", "d1d4f9"];
+  return Array.from({ length: 12 }).map(() => {
+    const color = bg[Math.floor(Math.random() * bg.length)];
+    const seed = Math.random().toString(36).substring(7);
+    return `https://api.dicebear.com/7.x/${category}/svg?seed=${seed}&backgroundColor=${color}`;
+  });
+};
 
 const AVAILABLE_FIELDS = [
   "Music & Concerts",
@@ -99,7 +118,7 @@ const formSchema = z
     numberOfEvents: z.string().min(1, "Please select the estimated volume of events"),
     bio: z.string().optional(),
     business_cert: z.string().optional(),
-    image: z.string().optional(),
+    image: z.string().min(1, "Profile picture or logo is required"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -153,6 +172,13 @@ function CreateOrganizerPage() {
       navigate({ to: "/dashboard", replace: true });
     }
   }, [isLoaded, currentUser, navigate]);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState("identicon");
+
+  useEffect(() => {
+    setAvatarOptions(generateAvatars(activeCategory));
+  }, [activeCategory]);
   const [otpStep, setOtpStep] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [otpToken, setOtpToken] = useState("");
@@ -213,8 +239,8 @@ function CreateOrganizerPage() {
   const withdrawalFeePct = Number(selectedPlan.withdrawal_fee_percentage) || 0;
   const withdrawalFeeFixed = Number(selectedPlan.withdrawal_fee_fixed) || 0;
   
-  const providerDisbursementPct = Number(selectedNetwork.disbursement_percentage) || 0;
-  const providerDisbursementFee = (estimatedWalletBalance * (providerDisbursementPct / 100)) + (Number(selectedNetwork.disbursement_fixed_fee) || 0);
+  const providerDisbursementPct = Number(selectedNetwork?.disbursement_percentage) || 0;
+  const providerDisbursementFee = (estimatedWalletBalance * (providerDisbursementPct / 100)) + (Number(selectedNetwork?.disbursement_fixed_fee) || 0);
   
   const agatikeWithdrawalFee = (estimatedWalletBalance * (withdrawalFeePct / 100)) + withdrawalFeeFixed;
   const finalAmount = estimatedWalletBalance - agatikeWithdrawalFee - providerDisbursementFee;
@@ -678,7 +704,7 @@ function CreateOrganizerPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">
                         Full Name / Organization Name *
                       </Label>
@@ -690,7 +716,7 @@ function CreateOrganizerPage() {
                       {errors.name && <p className="text-xs text-red-400">{errors.name.message}</p>}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">Unique Handle *</Label>
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white/40">
@@ -711,7 +737,7 @@ function CreateOrganizerPage() {
                       )}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">Email Address *</Label>
                       <Input
                         {...register("email")}
@@ -724,7 +750,7 @@ function CreateOrganizerPage() {
                       )}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">Phone Number *</Label>
                       <Input
                         {...register("phone")}
@@ -774,37 +800,58 @@ function CreateOrganizerPage() {
 
                     <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">
-                        Profile Picture / Logo (Optional)
+                        Profile Picture / Logo *
                       </Label>
-                      <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                setValue("image", event.target?.result as string);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                        <span className="text-sm font-medium text-gray-600 dark:text-white/70 flex items-center gap-2">
-                          {watch("image") ? (
-                            <>
-                              <CheckCircle2 className="h-5 w-5 text-green-400" /> Image Attached
-                            </>
-                          ) : (
-                            "Click to upload profile picture"
-                          )}
-                        </span>
-                      </label>
+                      <div className="flex flex-col gap-4">
+                        <label className="flex h-20 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:bg-white/10 transition-colors">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  setValue("image", event.target?.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          <span className="text-sm font-medium text-gray-600 dark:text-white/70 flex items-center gap-2">
+                            {watch("image") && !watch("image")?.includes("api.dicebear.com") ? (
+                              <>
+                                <CheckCircle2 className="h-5 w-5 text-green-400" /> Image Attached
+                              </>
+                            ) : (
+                              "Click to upload profile picture"
+                            )}
+                          </span>
+                        </label>
+                        <div className="flex items-center justify-center gap-4">
+                           <span className="text-sm text-gray-500 font-medium uppercase">Or</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsAvatarModalOpen(true)}
+                          className="h-12 w-full rounded-xl border-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40"
+                        >
+                          Choose from generated avatars
+                        </Button>
+                        {watch("image") && watch("image")?.includes("api.dicebear.com") && (
+                          <div className="flex justify-center mt-2">
+                             <img src={watch("image")} alt="Selected Avatar" className="w-16 h-16 rounded-full border-2 border-primary/30 bg-gray-100" />
+                          </div>
+                        )}
+                      </div>
+                      {errors.image && (
+                        <p className="text-xs text-red-400">{errors.image.message}</p>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">
                         {isBusiness ? "Date of Registration" : "Date of Birth"}
                       </Label>
@@ -815,7 +862,7 @@ function CreateOrganizerPage() {
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 md:col-span-2">
                       <Label className="text-gray-700 dark:text-white/80">
                         {isBusiness ? "Organization Type" : "Gender"}
                       </Label>
@@ -1307,7 +1354,7 @@ function CreateOrganizerPage() {
                             <span>- {agatikeWithdrawalFee.toLocaleString()} RWF</span>
                           </div>
                           <div className="flex justify-between text-xs text-gray-500 dark:text-white/50">
-                            <span>Provider Withdrawal Fee ({selectedNetwork.network}):</span>
+                            <span>Provider Withdrawal Fee ({selectedNetwork?.network}):</span>
                             <span>- {providerDisbursementFee.toLocaleString()} RWF</span>
                           </div>
                           <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
@@ -1496,6 +1543,62 @@ function CreateOrganizerPage() {
           </div>
         </div>
       </div>
+
+      {/* Avatar Modal */}
+      <Dialog open={isAvatarModalOpen} onOpenChange={setIsAvatarModalOpen}>
+        <DialogContent className="sm:max-w-2xl rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+          <div className="p-6 border-b border-border">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">Choose an Avatar</DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-6 bg-muted/50">
+            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-none">
+              {CATEGORIES.map((cat) => (
+                <button
+                  type="button"
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
+                    activeCategory === cat.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background text-foreground border border-border hover:border-input"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-4 max-h-[300px] overflow-y-auto">
+              {avatarOptions.map((opt, i) => (
+                <div
+                  key={i}
+                  className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
+                    watch("image") === opt
+                      ? "border-primary ring-4 ring-primary/10"
+                      : "border-transparent bg-background shadow-sm hover:shadow"
+                  }`}
+                  onClick={() => {
+                     setValue("image", opt);
+                     setIsAvatarModalOpen(false);
+                  }}
+                >
+                  <img
+                    src={opt}
+                    alt="Avatar"
+                    className="w-full aspect-square object-cover mix-blend-multiply dark:mix-blend-normal"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="p-4 border-t border-border flex justify-end gap-3 bg-background">
+            <Button type="button" variant="ghost" onClick={() => setIsAvatarModalOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

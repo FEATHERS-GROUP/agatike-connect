@@ -264,7 +264,7 @@ function SettingsPage() {
             { id: "overview", label: "Overview" },
             { id: "social", label: "Social Links" },
             { id: "security", label: "Security" },
-            { id: "integrations", label: "Integrations" },
+            ...(activeWorkspace?.business ? [{ id: "integrations", label: "Integrations" }] : []),
           ].map((tab) => (
             <button
               key={tab.id}
@@ -310,7 +310,7 @@ function SettingsPage() {
 
             {activeTab === "security" && <SettingsSecurityTab passwordForm={passwordForm} />}
 
-            {activeTab === "integrations" && <SettingsIntegrationsTab />}
+            {activeTab === "integrations" && activeWorkspace?.business && <SettingsIntegrationsTab />}
           </div>
         </div>
       </div>

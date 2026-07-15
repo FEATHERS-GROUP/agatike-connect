@@ -90,6 +90,20 @@ export function GlobalCommandMenu() {
     };
     const legacyId = legacyIdMap[m.label];
     return legacyId && userModuleIds.includes(legacyId);
+  }).filter((m: any) => {
+    if (!activeWorkspace?.business) {
+      const businessOnlyModules = [
+        "Agatike Book",
+        "Cinema / Theater",
+        "Spaces",
+        "Venue Listings",
+        "Badge Designer",
+      ];
+      if (businessOnlyModules.includes(m.label)) {
+        return false;
+      }
+    }
+    return true;
   });
 
   const studioLabels = [
