@@ -122,6 +122,26 @@ const palettes = [
   { name: "Forest", from: "#134e5e", to: "#71b280" },
   { name: "Gold", from: "#855e11", to: "#dfb054" },
   { name: "Void", from: "#0f0c29", to: "#24243e" },
+  { name: "Candy", from: "#ff758c", to: "#ff7eb3" },
+  { name: "Mint", from: "#00b09b", to: "#96c93d" },
+  { name: "Crimson", from: "#ed213a", to: "#93291e" },
+  { name: "Cyber", from: "#21d4fd", to: "#b721ff" },
+  { name: "Peach", from: "#ed4264", to: "#ffedbc" },
+  { name: "Plum", from: "#cc2b5e", to: "#753a88" },
+  { name: "Steel", from: "#141e30", to: "#243b55" },
+  { name: "Sand", from: "#3e5151", to: "#decba4" },
+  { name: "Deep Sea", from: "#2b5876", to: "#4e4376" },
+  { name: "Voltage", from: "#f4c4f3", to: "#fc67fa" },
+  { name: "Dusk", from: "#ffd89b", to: "#19547b" },
+  { name: "Blush", from: "#B24592", to: "#F15F79" },
+  { name: "Galaxy", from: "#0B486B", to: "#F56217" },
+  { name: "Rust", from: "#e52d27", to: "#b31217" },
+  { name: "Slate", from: "#434343", to: "#000000" },
+  { name: "Moss", from: "#1D976C", to: "#93F9B9" },
+  { name: "Orchid", from: "#DA22FF", to: "#9733EE" },
+  { name: "Ice", from: "#000046", to: "#1CB5E0" },
+  { name: "Timber", from: "#fc4a1a", to: "#f7b733" },
+  { name: "Mist", from: "#7F00FF", to: "#E100FF" },
 ];
 
 const fonts = [
@@ -133,7 +153,50 @@ const fonts = [
   { name: "Fun", css: "'Comic Sans MS', cursive" },
   { name: "Classic", css: "'Georgia', serif" },
   { name: "Tech", css: "'Roboto Mono', monospace" },
+  { name: "Sans", css: "'Open Sans', sans-serif" },
+  { name: "Serif", css: "'Merriweather', serif" },
+  { name: "Grotesque", css: "'Oswald', sans-serif" },
+  { name: "Geometric", css: "'Montserrat', sans-serif" },
+  { name: "Humanist", css: "'Lato', sans-serif" },
+  { name: "Slab", css: "'Roboto Slab', serif" },
+  { name: "Handwriting", css: "'Dancing Script', cursive" },
+  { name: "Retro", css: "'Press Start 2P', cursive" },
+  { name: "Round", css: "'Nunito', sans-serif" },
+  { name: "Tall", css: "'Fjalla One', sans-serif" },
+  { name: "Chunky", css: "'Alfa Slab One', serif" },
+  { name: "Clean", css: "'Work Sans', sans-serif" },
+  { name: "Heading", css: "'Rubik', sans-serif" },
+  { name: "Script", css: "'Pacifico', cursive" },
+  { name: "Minimal", css: "'Quicksand', sans-serif" },
+  { name: "Bold", css: "'Anton', sans-serif" },
+  { name: "Soft", css: "'Comfortaa', cursive" },
+  { name: "Typewriter", css: "'Courier Prime', monospace" },
+  { name: "Vintage", css: "'Rye', cursive" },
+  { name: "Gothic", css: "'League Gothic', sans-serif" },
+  { name: "Friendly", css: "'Baloo 2', cursive" },
+  { name: "Sharp", css: "'Josefin Sans', sans-serif" },
+  { name: "Newspaper", css: "'Lora', serif" },
+  { name: "Brush", css: "'Caveat', cursive" },
+  { name: "Wide", css: "'Syne', sans-serif" },
+  { name: "Old Style", css: "'Cinzel', serif" },
+  { name: "Future", css: "'Orbitron', sans-serif" },
+  { name: "Pixel", css: "'VT323', monospace" },
+  { name: "Art Deco", css: "'Fascinate Inline', cursive" },
+  { name: "Calligraphy", css: "'Great Vibes', cursive" },
+  { name: "Stencil", css: "'Allerta Stencil', sans-serif" },
+  { name: "Marker", css: "'Permanent Marker', cursive" },
+  { name: "Poster", css: "'Bebas Neue', sans-serif" },
+  { name: "Elegant Sans", css: "'Cormorant', serif" },
+  { name: "Geometric Serif", css: "'Zilla Slab', serif" },
+  { name: "Rounded Slab", css: "'Crete Round', serif" },
+  { name: "Chalk", css: "'Chalkduster', fantasy" },
+  { name: "Curly", css: "'Amatic SC', cursive" },
+  { name: "Block", css: "'Bungee', cursive" },
+  { name: "Shadow", css: "'Bungee Shade', cursive" },
+  { name: "Outline", css: "'Bungee Outline', cursive" },
+  { name: "Formal", css: "'EB Garamond', serif" },
 ];
+
 
 type TicketLayout = {
   titleSize: number; // px
@@ -314,6 +377,7 @@ function TicketDesignerPage() {
   const [previewMode, setPreviewMode] = useState<"Front" | "Back" | "Mobile">("Front");
   const [isDirty, setIsDirty] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [fontSearchQuery, setFontSearchQuery] = useState("");
 
   const [baseDesign, setBaseDesign] = useState<TicketDesign>({
     template: migrateTemplate((existingProject?.template as string) || initialTemplate),
@@ -967,7 +1031,7 @@ function TicketDesignerPage() {
               </Section>
 
               <Section title="Palette" icon={Palette}>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   {palettes.map((p) => (
                     <button
                       key={p.name}
@@ -985,22 +1049,33 @@ function TicketDesignerPage() {
               </Section>
 
               <Section title="Typography" icon={Type}>
-                <div className="grid grid-cols-2 gap-2">
-                  {fonts.map((f) => (
-                    <button
-                      key={f.name}
-                      onClick={() => updateDesign("font", f)}
-                      style={{ fontFamily: f.css }}
-                      className={`rounded-xl border p-3 text-left text-sm ${
-                        mergedDesign.font?.name === f.name
-                          ? "border-primary bg-accent/40"
-                          : "border-border/60"
-                      }`}
-                    >
-                      <p className="text-xs text-muted-foreground">{f.name}</p>
-                      <p className="font-semibold">Aa Bb 123</p>
-                    </button>
-                  ))}
+                <div className="mb-4">
+                  <Input
+                    type="search"
+                    placeholder="Search fonts..."
+                    value={fontSearchQuery}
+                    onChange={(e) => setFontSearchQuery(e.target.value)}
+                    className="h-8 text-xs bg-secondary/30"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {fonts
+                    .filter((f) => f.name.toLowerCase().includes(fontSearchQuery.toLowerCase()))
+                    .map((f) => (
+                      <button
+                        key={f.name}
+                        onClick={() => updateDesign("font", f)}
+                        style={{ fontFamily: f.css }}
+                        className={`rounded-xl border p-3 text-left text-sm ${
+                          mergedDesign.font?.name === f.name
+                            ? "border-primary bg-accent/40"
+                            : "border-border/60"
+                        }`}
+                      >
+                        <p className="text-xs text-muted-foreground">{f.name}</p>
+                        <p className="font-semibold">Aa Bb 123</p>
+                      </button>
+                    ))}
                 </div>
               </Section>
             </div>
