@@ -74,7 +74,7 @@ export function FormCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl w-48">
                 <DropdownMenuItem
-                  onClick={() => {
+                  onSelect={() => {
                     navigator.clipboard.writeText(`${window.location.origin}/f/${form.id}`);
                     toast.success("Public link copied to clipboard");
                   }}
@@ -82,29 +82,40 @@ export function FormCard({
                   <LinkIcon className="mr-2 h-4 w-4" /> Copy Public Link
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() =>
+                  onSelect={() => {
                     navigate({
                       to: "/dashboard/$workspaceSlug/rsvps/$formId",
                       params: { workspaceSlug, formId: form.id },
-                    })
-                  }
+                    });
+                  }}
                 >
                   <Eye className="mr-2 h-4 w-4" /> View RSVPs
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    navigate({
+                      to: "/dashboard/$workspaceSlug/rsvps/edit/$formId",
+                      params: { workspaceSlug, formId: form.id },
+                    });
+                  }}
+                >
                   <Edit2 className="mr-2 h-4 w-4" /> Edit Form
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
-                  onClick={() => onToggleActive(form)}
+                  onSelect={() => {
+                    onToggleActive(form);
+                  }}
                   disabled={isToggling}
                 >
                   <Ban className="mr-2 h-4 w-4" /> {form.is_active ? "Close Form" : "Open Form"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
-                  onClick={() => onDeleteClick(form)}
+                  onSelect={() => {
+                    onDeleteClick(form);
+                  }}
                 >
                   <Trash2 className="mr-2 h-4 w-4" /> Delete Form
                 </DropdownMenuItem>

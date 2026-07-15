@@ -156,6 +156,7 @@ import { Route as DashboardWorkspaceSlugSpacesSpaceIdPlansRouteImport } from './
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/overview'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdLocationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/locations'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
+import { Route as DashboardWorkspaceSlugRsvpsEditFormIdRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/edit.$formId'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/staff'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdPlanningRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/planning'
@@ -1030,6 +1031,12 @@ const DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
   } as any)
+const DashboardWorkspaceSlugRsvpsEditFormIdRoute =
+  DashboardWorkspaceSlugRsvpsEditFormIdRouteImport.update({
+    id: '/$workspaceSlug/rsvps/edit/$formId',
+    path: '/$workspaceSlug/rsvps/edit/$formId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute =
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport.update({
     id: '/$workspaceSlug/experiences/$experienceId/staff',
@@ -1486,6 +1493,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
@@ -1682,6 +1690,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
@@ -1881,6 +1890,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
@@ -2082,6 +2092,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
@@ -2278,6 +2289,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
@@ -2476,6 +2488,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
@@ -3612,6 +3625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
     }
+    '/dashboard/$workspaceSlug/rsvps/edit/$formId': {
+      id: '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+      path: '/$workspaceSlug/rsvps/edit/$formId'
+      fullPath: '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugRsvpsEditFormIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/experiences/$experienceId/staff': {
       id: '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
       path: '/$workspaceSlug/experiences/$experienceId/staff'
@@ -4156,6 +4176,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  DashboardWorkspaceSlugRsvpsEditFormIdRoute: typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   DashboardWorkspaceSlugUsersUserIdEditRoute: typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   DashboardBillingSubscriptionsCheckoutPlanIdRoute: typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   DashboardWorkspaceSlugEventsEventIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
@@ -4300,6 +4321,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute,
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute:
     DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute,
+  DashboardWorkspaceSlugRsvpsEditFormIdRoute:
+    DashboardWorkspaceSlugRsvpsEditFormIdRoute,
   DashboardWorkspaceSlugUsersUserIdEditRoute:
     DashboardWorkspaceSlugUsersUserIdEditRoute,
   DashboardBillingSubscriptionsCheckoutPlanIdRoute:

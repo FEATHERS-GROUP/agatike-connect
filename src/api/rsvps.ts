@@ -213,3 +213,65 @@ export const deleteCustomForm = createServerFn({ method: "POST" }).handler(async
   const data = await hasuraRequest<{ delete_custom_forms_by_pk: any }>(DELETE_CUSTOM_FORM, { id });
   return data.delete_custom_forms_by_pk;
 });
+
+export const updateCustomFormAndFields = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id, title, description, cover_image_url, fields } = ctx.data as any;
+  
+  await hasuraRequest(`
+    mutation UpdateCustomForm($id: uuid!, $title: String, $description: String, $cover: String) {
+      update_custom_forms_by_pk(pk_columns: {id: $id}, _set: {
+        title: $title, 
+        description: $description, 
+        cover_image_url: $cover
+      }) { id }
+    }
+  `, { id, title, description, cover: cover_image_url });
+
+  const existingIds = fields.filter((f: any) => !f.isNew).map((f: any) => f.id);
+  
+  if (existingIds.length > 0) {
+    await hasuraRequest(`
+      mutation DeleteRemovedFields($form_id: uuid!, $kept_ids: [uuid!]!) {
+        delete_form_fields(where: {form_id: {_eq: $form_id}, id: {_nin: $kept_ids}}) {
+          affected_rows
+        }
+      }
+    `, { form_id: id, kept_ids: existingIds });
+  } else {
+    await hasuraRequest(`
+      mutation DeleteAllFields($form_id: uuid!) {
+        delete_form_fields(where: {form_id: {_eq: $form_id}}) {
+          affected_rows
+        }
+      }
+    `, { form_id: id });
+  }
+
+  if (fields.length > 0) {
+    const objects = fields.map((f: any) => ({
+      id: f.isNew ? undefined : f.id,
+      form_id: id,
+      label: f.label,
+      field_type: f.field_type,
+      is_required: f.is_required,
+      order: f.order,
+      options: f.options
+    }));
+    
+    await hasuraRequest(`
+      mutation UpsertFields($objects: [form_fields_insert_input!]!) {
+        insert_form_fields(
+          objects: $objects,
+          on_conflict: {
+            constraint: form_fields_pkey,
+            update_columns: [label, field_type, is_required, options, order]
+          }
+        ) {
+          affected_rows
+        }
+      }
+    `, { objects });
+  }
+  
+  return { success: true };
+});
