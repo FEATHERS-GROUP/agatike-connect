@@ -88,7 +88,7 @@ export function EditorTopbar({
                       <DropdownMenuItem asChild>
                         <Link
                           to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                          search={{ pageId: page.id }}
+                          search={{ pageId: page.id } as any}
                           className="cursor-pointer py-2"
                         >
                           <FileText className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
@@ -113,7 +113,7 @@ export function EditorTopbar({
                           >
                             <Link
                               to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                              search={{ pageId: child.id }}
+                              search={{ pageId: child.id } as any}
                               className="cursor-pointer py-1.5"
                             >
                               <div className="flex flex-col min-w-0 flex-1">
@@ -138,7 +138,7 @@ export function EditorTopbar({
                 <DropdownMenuItem asChild>
                   <Link
                     to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                    search={{ parentId: editorState.id }}
+                    search={{ parentId: editorState.id } as any}
                     className="cursor-pointer text-primary"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -149,7 +149,7 @@ export function EditorTopbar({
               <DropdownMenuItem asChild>
                 <Link
                   to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                  search={{}}
+                  search={{} as any}
                   className="cursor-pointer"
                 >
                   <Plus className="h-4 w-4 mr-2" />
