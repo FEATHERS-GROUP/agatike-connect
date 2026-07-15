@@ -236,8 +236,12 @@ function WorkspaceProductsView() {
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                      <Icon className="h-5 w-5" />
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors overflow-hidden">
+                      {m.image_url ? (
+                        <img src={m.image_url} alt={m.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Icon className="h-5 w-5" />
+                      )}
                     </div>
                     <p className="font-semibold text-foreground">{m.name}</p>
                   </div>
@@ -402,9 +406,13 @@ function WorkspaceProductsView() {
 
               {selectedItem.type === "physical" && (
                 <div className="aspect-square w-full rounded-[2rem] bg-secondary/50 border border-border/60 flex items-center justify-center p-8 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"></div>
-                  <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm" />
-                  <div className="absolute bottom-6 left-6 right-6 bg-background/80 backdrop-blur-md p-4 rounded-xl border border-border/50 text-center shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 pointer-events-none"></div>
+                  {selectedItem.image_url ? (
+                    <img src={selectedItem.image_url} alt={selectedItem.name} className="absolute inset-0 w-full h-full object-cover z-0" />
+                  ) : (
+                    <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm z-0" />
+                  )}
+                  <div className="absolute bottom-6 left-6 right-6 bg-background/80 backdrop-blur-md p-4 rounded-xl border border-border/50 text-center shadow-lg z-20">
                     <p className="font-semibold text-lg">{selectedItem.name}</p>
                   </div>
                 </div>

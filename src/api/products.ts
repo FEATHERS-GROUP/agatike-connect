@@ -115,3 +115,36 @@ export const getProduct = createServerFn({ method: "POST" }).handler(async (ctx)
   const data = await hasuraRequest<{ products_by_pk: any }>(GET_PRODUCT, { id });
   return data.products_by_pk;
 });
+
+const GET_WORKSPACE_RECENT_ORDERS = `
+  query GetWorkspaceRecentOrders($workspace_id: uuid!) {
+    product_orders(
+      where: { product: { workspace_id: { _eq: $workspace_id } } },
+      order_by: { created_at: desc },
+      limit: 5
+    ) {
+      id
+      amount_paid
+      status
+      created_at
+      product {
+        name
+        type
+        event {
+          title
+        }
+      }
+      user {
+        first_name
+        last_name
+        email
+      }
+    }
+  }
+`;
+
+export const getWorkspaceRecentOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const data = await hasuraRequest<{ product_orders: any[] }>(GET_WORKSPACE_RECENT_ORDERS, { workspace_id });
+  return data.product_orders || [];
+});

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { DesktopHeader } from "@/components/desktop/dashboard/DesktopHeader";
 import { getWorkspaceEvents, getWorkspaceTicketProjects } from "@/api/events";
+import { DesktopRecentOrders } from "@/components/desktop/dashboard/DesktopRecentOrders";
 import { getAllWorkspacePages } from "@/api/workspace-pages";
 import { getWorkspaceWallet } from "@/api/wallet";
 import { getWorkspaceProducts } from "@/api/products";
@@ -203,8 +204,9 @@ export function EventDashboard() {
       </section>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Calendar Section */}
-        <section className="lg:col-span-2 rounded-3xl border border-border/60 bg-card p-6 shadow-sm flex flex-col h-[600px]">
+        <div className="lg:col-span-2 flex flex-col gap-8">
+          {/* Calendar Section */}
+          <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm flex flex-col h-[600px]">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary" /> Workspace Schedule
           </h2>
@@ -226,7 +228,10 @@ export function EventDashboard() {
               />
             </Suspense>
           </div>
-        </section>
+          </section>
+          
+          <DesktopRecentOrders />
+        </div>
 
         {/* Top Events Leaderboard */}
         <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm flex flex-col">
