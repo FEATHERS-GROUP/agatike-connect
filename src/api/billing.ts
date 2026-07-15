@@ -548,3 +548,67 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
       };
     }
   });
+
+export const payPendingInvoice = createServerFn({ method: "POST" })
+  .validator((d: { invoice_id: string; amount: number; payment_method?: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
+
+    const { invoice_id, amount } = ctx.data;
+
+    // 1. Fetch the invoice to get the subscription_id
+    const GET_INVOICE = `
+      query GetInvoice($id: uuid!) {
+        organizer_invoices_by_pk(id: $id) {
+          id
+          subscription_id
+          status
+        }
+      }
+    `;
+    const invRes = await hasuraRequest<{ organizer_invoices_by_pk: any }>(GET_INVOICE, { id: invoice_id });
+    const invoice = invRes.organizer_invoices_by_pk;
+    if (!invoice) throw new Error("Invoice not found");
+    if (invoice.status === "paid") throw new Error("Invoice already paid");
+    if (!invoice.subscription_id) throw new Error("Invoice is not linked to a subscription");
+
+    // 2. Mark invoice as paid
+    const UPDATE_INVOICE = `
+      mutation UpdateInvoice($id: uuid!) {
+        update_organizer_invoices_by_pk(pk_columns: { id: $id }, _set: { status: "paid" }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(UPDATE_INVOICE, { id: invoice_id });
+
+    // 3. Extend subscription by 1 month and activate it
+    const GET_SUB = `
+      query GetSub($id: uuid!) {
+        subscriptions_by_pk(id: $id) {
+          id
+          next_billing_date
+        }
+      }
+    `;
+    const subRes = await hasuraRequest<{ subscriptions_by_pk: any }>(GET_SUB, { id: invoice.subscription_id });
+    const sub = subRes.subscriptions_by_pk;
+    if (sub) {
+      const nextDate = new Date(sub.next_billing_date);
+      // Only advance the date if it's currently past due or close to due, so we don't accidentally skip a month if paid late
+      // Actually, if paid, it extends exactly 1 month from the OLD billing date.
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      
+      const UPDATE_SUB = `
+        mutation UpdateSub($id: uuid!, $next_date: timestamptz!) {
+          update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "active", next_billing_date: $next_date }) {
+            id
+          }
+        }
+      `;
+      await hasuraRequest(UPDATE_SUB, { id: sub.id, next_date: nextDate.toISOString() });
+    }
+
+    return { success: true };
+  });

@@ -908,3 +908,33 @@ export const sendVenueBookingEmail = createServerFn({ method: "POST" })
     if (!res.ok) throw new Error(resData.message || "Failed to send venue booking email");
     return resData;
   });
+
+export const sendEmail = async ({
+  to,
+  subject,
+  html,
+}: {
+  to: string[];
+  subject: string;
+  html: string;
+}) => {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to,
+      subject,
+      html,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send email");
+  }
+  return data;
+};
