@@ -45,6 +45,10 @@ export function EditorTopbar({
   return (
     <div className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border/60 px-6 py-3 flex items-center justify-between gap-4">
       <div className="flex items-center gap-4 min-w-0">
+        <Link to="/" className="flex items-center shrink-0">
+          <img src="/agatike-logo.svg" alt="Agatike" className="h-6 w-auto object-contain" />
+        </Link>
+        <div className="h-4 w-px bg-border/60 mx-1 hidden sm:block" />
         <Button
           variant="ghost"
           size="sm"

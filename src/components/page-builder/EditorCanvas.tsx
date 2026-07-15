@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Image as ImageIcon, Trash2, Plus } from "lucide-react";
 import { ComponentBlock } from "./ComponentBlock";
-import { PageSettingsPanel } from "./PageSettingsPanel";
 
 export function EditorCanvas({
   addComponent,
@@ -17,12 +16,32 @@ export function EditorCanvas({
   moveComponent,
 }: any) {
   return (
-    <div className="p-4 md:p-6 bg-background/50 w-full relative">
-      <div className="flex flex-col md:flex-row items-start gap-6 max-w-[1400px] mx-auto">
-        {/* ─── Builder Canvas ───────────────────────────────────── */}
-        <div className="flex-1 space-y-5 min-w-0">
-          <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-sm">
-            {/* Hero Header */}
+    <div className="w-full max-w-6xl mx-auto flex-1 min-w-0 mb-24 transition-all duration-300 group/canvas">
+      <div className="bg-background border border-border/40 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5 flex flex-col">
+        {/* Browser Mockup Top Bar */}
+        <div className="bg-secondary/40 border-b border-border/40 px-4 py-3 flex items-center gap-4">
+          <div className="flex gap-2 shrink-0">
+            <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm" />
+            <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm" />
+            <div className="w-3 h-3 rounded-full bg-green-400 shadow-sm" />
+          </div>
+          <div className="flex-1 max-w-xl mx-auto">
+            <div className="bg-background/80 text-muted-foreground text-[11px] font-medium px-4 py-1.5 rounded-md border border-border/40 text-center flex items-center justify-center gap-2">
+              <span className="opacity-60 text-xs">🔒</span>
+              {editorState.slug ? `ogatike.com/p/${editorState.slug}` : "Draft Preview"}
+            </div>
+          </div>
+          <div className="w-16 shrink-0" />
+        </div>
+
+        {/* Solid Navbar Style */}
+        {editorState.navbarStyle === "solid" && editorState.logoUrl && editorState.logoPosition === "navbar" && (
+          <div className="w-full bg-background border-b border-border/40 p-4 px-8 z-10 flex items-center">
+            <img src={editorState.logoUrl} alt="Logo" className="h-8 max-w-[150px] object-contain" />
+          </div>
+        )}
+
+        {/* Hero Header */}
             <div
               className={`relative h-[400px] bg-secondary flex flex-col p-8 transition-all ${
                 editorState.heroAlign === "top-left"
@@ -65,6 +84,13 @@ export function EditorCanvas({
                   opacity: (editorState.heroOverlayOpacity ?? 40) / 100,
                 }}
               />
+
+              {/* Transparent Navbar (if logo is here) */}
+              {editorState.navbarStyle === "transparent" && editorState.logoUrl && editorState.logoPosition === "navbar" && (
+                <div className="absolute top-0 left-0 w-full p-8 flex items-start z-10 pointer-events-none">
+                  <img src={editorState.logoUrl} alt="Logo" className="h-10 max-w-[150px] object-contain drop-shadow-md" />
+                </div>
+              )}
 
               {/* Top Right Controls */}
               <div className="absolute top-3 right-3 z-20 flex gap-2">
@@ -207,6 +233,10 @@ export function EditorCanvas({
                         : "items-center text-center"
                   }`}
                 >
+                  {/* Hero Logo */}
+                  {editorState.logoUrl && editorState.logoPosition === "hero" && (
+                    <img src={editorState.logoUrl} alt="Logo" className="h-16 max-w-[200px] object-contain mb-4 drop-shadow-md" />
+                  )}
                   <Input
                     value={editorState.title}
                     onChange={(e) => set("title")(e.target.value)}
@@ -344,18 +374,6 @@ export function EditorCanvas({
                 />
               ))}
             </div>
-          </div>
-        </div>
-
-        {/* ─── Settings + Toolbox Panel ─────────────────────────── */}
-        <div className="w-full md:w-64 lg:w-72 shrink-0 md:sticky top-6 md:top-20 md:max-h-[calc(100vh-6rem)] overflow-y-auto scrollbar-hide rounded-xl">
-          <PageSettingsPanel
-            addComponent={addComponent}
-            editorState={editorState}
-            set={set}
-            handleImageUpload={handleImageUpload}
-          />
-        </div>
       </div>
     </div>
   );

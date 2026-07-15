@@ -13,9 +13,7 @@ export function DesktopHeader() {
         <h1 className="text-2xl font-semibold">Here's what's happening today</h1>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" className="rounded-full">
-          Export
-        </Button>
+
         <Button asChild variant="outline" className="rounded-full">
           <Link to="/dashboard/workspaces">Workspaces</Link>
         </Button>
