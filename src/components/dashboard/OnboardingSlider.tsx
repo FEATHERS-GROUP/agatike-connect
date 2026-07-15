@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Ticket, 
-  ShieldCheck, 
-  Users, 
-  Wallet, 
-  Calculator, 
-  Sparkles,
-  LayoutTemplate,
-  Store,
-  QrCode,
-  CheckCircle2,
-  TrendingUp
+import {
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getPricingPlans } from "@/api/billing";
@@ -70,7 +59,7 @@ export function OnboardingSlider() {
   // Try to get country from workspace, fallback to "RWA" if none exists yet during onboarding
   const workspaceCountry = activeWorkspace?.country || activeWorkspace?.country_code || "RWA";
   const applicableFees = providerFees.filter((f: any) => f.country_code === workspaceCountry);
-  
+
   let highestProviderFee = 0;
   let highestProviderFixedFee = 0;
 
@@ -147,14 +136,14 @@ export function OnboardingSlider() {
       <DialogContent className="sm:max-w-4xl p-0 overflow-hidden rounded-[24px] border-0 shadow-2xl bg-white dark:bg-[#0a0a0a]">
         <DialogTitle className="sr-only">Welcome to Agatike Connect</DialogTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 h-[600px]">
-          
+
           {/* Left Side - Visuals */}
           <div className="hidden md:block bg-gray-50 dark:bg-white/[0.02] border-r border-gray-100 dark:border-white/5 relative h-full min-h-0 overflow-hidden">
             <div className="w-full h-full p-6 flex justify-center items-center">
-              <img 
-                src={slides[currentSlide].image} 
+              <img
+                src={slides[currentSlide].image}
                 alt={slides[currentSlide].title}
-                className="max-w-full max-h-full object-contain rounded-2xl drop-shadow-2xl" 
+                className="max-w-full max-h-full object-contain rounded-2xl drop-shadow-2xl"
               />
             </div>
           </div>
@@ -163,11 +152,10 @@ export function OnboardingSlider() {
           <div className="flex flex-col h-full min-h-0 overflow-hidden relative">
             <div className="absolute top-6 right-6 flex items-center gap-1.5">
               {[0, 1, 2, 3, 4].map((i) => (
-                <div 
-                  key={i} 
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    currentSlide === i ? "w-8 bg-primary" : "w-2 bg-gray-200 dark:bg-white/20"
-                  }`}
+                <div
+                  key={i}
+                  className={`h-2 rounded-full transition-all duration-300 ${currentSlide === i ? "w-8 bg-primary" : "w-2 bg-gray-200 dark:bg-white/20"
+                    }`}
                 />
               ))}
             </div>
@@ -190,7 +178,7 @@ export function OnboardingSlider() {
                   <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 text-sm text-gray-700 dark:text-white/80 leading-relaxed">
                     Agatike uses transparent transaction pricing. Fees are calculated based on your selected plan and payment method. Ticket sales fees and payout processing fees are shown clearly before you create your account and before every withdrawal.
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 dark:text-white/60">
                     Most ticket sellers charge a flat 8% fee and keep you in the dark. With Agatike, our percentage is broken down into collection and withdrawal fees, plus your local payment provider's fee.
                   </div>
@@ -201,7 +189,7 @@ export function OnboardingSlider() {
                       const withdrawalFee = Number(plan.withdrawal_fee_percentage) || 0;
                       const orgCollectionFixed = Number(plan.organizer_collection_fee_fixed) || 0;
                       const withdrawalFeeFixed = Number(plan.withdrawal_fee_fixed) || 0;
-                      
+
                       const totalRate = (orgCollection + withdrawalFee + highestProviderFee).toFixed(1);
                       const totalFixed = orgCollectionFixed + withdrawalFeeFixed + highestProviderFixedFee;
                       const isBasic = plan.name.toLowerCase().includes("basic");
@@ -232,8 +220,8 @@ export function OnboardingSlider() {
             </div>
 
             <div className="p-6 border-t border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-white/[0.01]">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={handleClose}
                 className="text-gray-500"
               >
