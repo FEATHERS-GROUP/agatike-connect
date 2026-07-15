@@ -94,13 +94,11 @@ export function useFirestoreUserMessages(
       snapshot.forEach((doc: any) => {
         const data = doc.data();
 
-        if (
-          type === "group" &&
-          followedOrganizerIds.length > 0 &&
-          !followedOrganizerIds.includes(data.organizerId)
-        ) {
-          // If it's a group channel and user is not following the organizer, skip it
-          return;
+        if (type === "group") {
+          if (followedOrganizerIds.length === 0 || !followedOrganizerIds.includes(data.organizerId)) {
+            // If it's a group channel and user is not following the organizer, skip it
+            return;
+          }
         }
 
         const rawTime = data.lastMessageTime;
