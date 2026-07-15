@@ -54,7 +54,7 @@ export function useSubscriptionLimits(
             }
             return -1;
           },
-        }
+        },
       )
     : dbLimits;
 

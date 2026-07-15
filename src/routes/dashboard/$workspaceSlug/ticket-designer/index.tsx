@@ -142,7 +142,8 @@ function TicketDesignerIndex() {
     const eventObj = p.events || events.find((e: any) => e.id === p.eventId);
     const venueObj = p.rentable_venues || venues.find((v: any) => v.id === p.venueId);
     const cinemaObj = cinemas.find((c: any) => c.id === p.cinemaId);
-    const displayTitle = eventObj?.title || venueObj?.name || cinemaObj?.name || p.name || "Untitled Design";
+    const displayTitle =
+      eventObj?.title || venueObj?.name || cinemaObj?.name || p.name || "Untitled Design";
     return displayTitle.toLowerCase().includes(q) || (p.name && p.name.toLowerCase().includes(q));
   });
 
@@ -262,21 +263,17 @@ function TicketDesignerIndex() {
       {/* Decorative subtle background blobs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl pointer-events-none translate-x-1/3 translate-y-1/3" />
-      
-
 
       <main className="mx-auto max-w-7xl p-6 lg:p-10 space-y-16 relative z-10">
         {/* New Project Section */}
         <section className="relative">
           <div className="mb-8 max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight mb-2">
-              Create New Project
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight mb-2">Create New Project</h2>
             <p className="text-base text-muted-foreground">
               Start with a beautifully crafted template and customize it for your event.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
             {templates.map((t) => (
               <button
@@ -284,12 +281,16 @@ function TicketDesignerIndex() {
                 onClick={() => openSetupModal(t.id)}
                 className="group relative flex flex-col items-start gap-4 rounded-[2rem] border border-border/50 bg-card/60 backdrop-blur-sm p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40 hover:bg-card focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
-                <div className={`p-3.5 rounded-2xl ${t.bg} transition-transform duration-300 group-hover:scale-110`}>
+                <div
+                  className={`p-3.5 rounded-2xl ${t.bg} transition-transform duration-300 group-hover:scale-110`}
+                >
                   <t.icon className="h-6 w-6" />
                 </div>
                 <div className="mt-2">
                   <h3 className="font-semibold text-lg tracking-tight">{t.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{t.desc}</p>
+                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                    {t.desc}
+                  </p>
                 </div>
                 <div className="mt-auto pt-5 flex items-center text-sm font-semibold text-primary opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
                   Select Template <ChevronRight className="ml-1 h-4 w-4" />
@@ -306,13 +307,16 @@ function TicketDesignerIndex() {
               <DialogHeader>
                 <DialogTitle className="text-xl">Setup Ticket Project</DialogTitle>
                 <DialogDescription className="text-sm mt-1.5">
-                  Link this design to an existing event to preview all ticket tiers inside the editor.
+                  Link this design to an existing event to preview all ticket tiers inside the
+                  editor.
                 </DialogDescription>
               </DialogHeader>
             </div>
             <form onSubmit={handleCreateNew} className="p-6 space-y-5">
               <div className="space-y-2.5">
-                <Label htmlFor="projectName" className="text-sm font-medium">Project Name</Label>
+                <Label htmlFor="projectName" className="text-sm font-medium">
+                  Project Name
+                </Label>
                 <Input
                   id="projectName"
                   value={newProjectName}
@@ -323,7 +327,9 @@ function TicketDesignerIndex() {
               </div>
 
               <div className="space-y-2.5">
-                <Label htmlFor="eventSelect" className="text-sm font-medium">Assign to Event or Venue *</Label>
+                <Label htmlFor="eventSelect" className="text-sm font-medium">
+                  Assign to Event or Venue *
+                </Label>
                 <select
                   id="eventSelect"
                   value={selectedAssignment}
@@ -362,11 +368,20 @@ function TicketDesignerIndex() {
                 </select>
               </div>
 
-               <DialogFooter className="pt-4">
-                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="rounded-xl">
+              <DialogFooter className="pt-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-xl"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending} className="rounded-xl px-6">
+                <Button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="rounded-xl px-6"
+                >
                   {createMutation.isPending ? "Creating..." : "Start Designing"}
                 </Button>
               </DialogFooter>
@@ -385,8 +400,8 @@ function TicketDesignerIndex() {
             </div>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search projects..." 
+              <Input
+                placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 rounded-xl bg-card/60 backdrop-blur-sm border-border/50 focus-visible:ring-primary shadow-sm"
@@ -407,7 +422,9 @@ function TicketDesignerIndex() {
                 {isLoadingProjects ? (
                   <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-sm font-medium text-muted-foreground mt-4">Loading ticket designs...</p>
+                    <p className="text-sm font-medium text-muted-foreground mt-4">
+                      Loading ticket designs...
+                    </p>
                   </div>
                 ) : filteredItems.length === 0 ? (
                   <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">
@@ -497,8 +514,12 @@ function TicketDesignerIndex() {
                                 </span>
                               </div>
                               <div className="relative z-10 text-white drop-shadow-md mt-auto">
-                                <p className="text-xs font-medium opacity-80 uppercase tracking-wider mb-1">{displaySubtitle}</p>
-                                <h3 className="text-xl font-bold leading-tight line-clamp-1">{displayTitle}</h3>
+                                <p className="text-xs font-medium opacity-80 uppercase tracking-wider mb-1">
+                                  {displaySubtitle}
+                                </p>
+                                <h3 className="text-xl font-bold leading-tight line-clamp-1">
+                                  {displayTitle}
+                                </h3>
                               </div>
                             </div>
                             <div className="p-5 flex flex-col flex-grow justify-between">

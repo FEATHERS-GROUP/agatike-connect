@@ -117,7 +117,10 @@ function VenueDesignerIndex() {
     const q = searchQuery.toLowerCase();
     const eventObj = events.find((e: any) => e.id === p.event_id);
     const displayTitle = p.name || "Untitled Venue";
-    return displayTitle.toLowerCase().includes(q) || (eventObj && eventObj.title.toLowerCase().includes(q));
+    return (
+      displayTitle.toLowerCase().includes(q) ||
+      (eventObj && eventObj.title.toLowerCase().includes(q))
+    );
   });
 
   const activeEvent = events.find((e: any) => e.id === selectedEventId);
@@ -256,7 +259,7 @@ function VenueDesignerIndex() {
       {/* Decorative subtle background blobs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none translate-x-1/3 -translate-y-1/4" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-green-500/5 rounded-full blur-3xl pointer-events-none -translate-x-1/4 translate-y-1/3" />
-      
+
       <main className="mx-auto max-w-7xl p-6 lg:p-10 space-y-16 relative z-10">
         {/* New Project Section */}
         <section className="relative">
@@ -273,12 +276,16 @@ function VenueDesignerIndex() {
                 onClick={() => openSetupModal(t.id)}
                 className="group relative flex flex-col items-start gap-4 rounded-[2rem] border border-border/50 bg-card/60 backdrop-blur-sm p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40 hover:bg-card focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
-                <div className={`p-3.5 rounded-2xl ${t.bg} transition-transform duration-300 group-hover:scale-110`}>
+                <div
+                  className={`p-3.5 rounded-2xl ${t.bg} transition-transform duration-300 group-hover:scale-110`}
+                >
                   <t.icon className="h-6 w-6" />
                 </div>
                 <div className="mt-2">
                   <h3 className="font-semibold text-lg tracking-tight">{t.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">{t.desc}</p>
+                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                    {t.desc}
+                  </p>
                 </div>
                 <div className="mt-auto pt-5 flex items-center text-sm font-semibold text-primary opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
                   Select Template <ChevronRight className="ml-1 h-4 w-4" />
@@ -305,7 +312,9 @@ function VenueDesignerIndex() {
               {modalStep === 1 ? (
                 <>
                   <div className="space-y-2.5">
-                    <Label htmlFor="projectName" className="text-sm font-medium">Project Name</Label>
+                    <Label htmlFor="projectName" className="text-sm font-medium">
+                      Project Name
+                    </Label>
                     <Input
                       id="projectName"
                       value={newProjectName}
@@ -316,7 +325,9 @@ function VenueDesignerIndex() {
                   </div>
 
                   <div className="space-y-2.5">
-                    <Label htmlFor="eventSelect" className="text-sm font-medium">Select Event *</Label>
+                    <Label htmlFor="eventSelect" className="text-sm font-medium">
+                      Select Event *
+                    </Label>
                     <select
                       id="eventSelect"
                       value={selectedEventId}
@@ -338,7 +349,9 @@ function VenueDesignerIndex() {
 
                   {hasMultipleStops && (
                     <div className="space-y-2.5">
-                      <Label htmlFor="tourStopSelect" className="text-sm font-medium">Select Location / Tour Stop *</Label>
+                      <Label htmlFor="tourStopSelect" className="text-sm font-medium">
+                        Select Location / Tour Stop *
+                      </Label>
                       <select
                         id="tourStopSelect"
                         value={selectedTourStopIdx}
@@ -419,10 +432,19 @@ function VenueDesignerIndex() {
                     Back
                   </Button>
                 )}
-                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)} className="rounded-xl">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-xl"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending} className="rounded-xl px-6">
+                <Button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="rounded-xl px-6"
+                >
                   {createMutation.isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : null}
@@ -482,8 +504,8 @@ function VenueDesignerIndex() {
             </div>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search venues..." 
+              <Input
+                placeholder="Search venues..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 rounded-xl bg-card/60 backdrop-blur-sm border-border/50 focus-visible:ring-primary shadow-sm"
@@ -504,7 +526,9 @@ function VenueDesignerIndex() {
                 {isLoadingProjects ? (
                   <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-sm font-medium text-muted-foreground mt-4">Loading venue projects...</p>
+                    <p className="text-sm font-medium text-muted-foreground mt-4">
+                      Loading venue projects...
+                    </p>
                   </div>
                 ) : filteredItems.length === 0 ? (
                   <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">

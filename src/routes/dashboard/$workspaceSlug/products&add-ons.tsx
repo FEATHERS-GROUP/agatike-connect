@@ -259,7 +259,11 @@ function WorkspaceProductsView() {
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors overflow-hidden">
                       {m.image_url ? (
-                        <img src={m.image_url} alt={m.name} className="h-full w-full object-cover" />
+                        <img
+                          src={m.image_url}
+                          alt={m.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <Icon className="h-5 w-5" />
                       )}
@@ -302,7 +306,10 @@ function WorkspaceProductsView() {
         </div>
         <div className="flex items-center gap-2">
           <BatchGenerateModal />
-          <Link to="/dashboard/$workspaceSlug/products/create" params={{ workspaceSlug: activeWorkspace?.slug as string }}>
+          <Link
+            to="/dashboard/$workspaceSlug/products/create"
+            params={{ workspaceSlug: activeWorkspace?.slug as string }}
+          >
             <Button
               className="rounded-full shadow-[var(--shadow-glow)]"
               style={{ background: "var(--gradient-primary)" }}
@@ -326,7 +333,9 @@ function WorkspaceProductsView() {
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Low Stock Alerts</p>
-          <p className="text-2xl font-semibold text-orange-500 mt-1">{stats.lowStockAlerts} Items</p>
+          <p className="text-2xl font-semibold text-orange-500 mt-1">
+            {stats.lowStockAlerts} Items
+          </p>
         </div>
       </div>
 
@@ -429,7 +438,11 @@ function WorkspaceProductsView() {
                 <div className="aspect-square w-full rounded-[2rem] bg-secondary/50 border border-border/60 flex items-center justify-center p-8 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 pointer-events-none"></div>
                   {selectedItem.image_url ? (
-                    <img src={selectedItem.image_url} alt={selectedItem.name} className="absolute inset-0 w-full h-full object-cover z-0" />
+                    <img
+                      src={selectedItem.image_url}
+                      alt={selectedItem.name}
+                      className="absolute inset-0 w-full h-full object-cover z-0"
+                    />
                   ) : (
                     <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm z-0" />
                   )}
@@ -476,7 +489,13 @@ function WorkspaceProductsView() {
                     </p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center">
-                    <Link to="/dashboard/$workspaceSlug/products/edit/$productId" params={{ workspaceSlug: activeWorkspace?.slug as string, productId: selectedItem.id }}>
+                    <Link
+                      to="/dashboard/$workspaceSlug/products/edit/$productId"
+                      params={{
+                        workspaceSlug: activeWorkspace?.slug as string,
+                        productId: selectedItem.id,
+                      }}
+                    >
                       <Button
                         variant="outline"
                         className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"

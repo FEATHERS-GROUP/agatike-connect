@@ -145,6 +145,8 @@ const GET_WORKSPACE_RECENT_ORDERS = `
 
 export const getWorkspaceRecentOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { workspace_id } = ctx.data as unknown as { workspace_id: string };
-  const data = await hasuraRequest<{ product_orders: any[] }>(GET_WORKSPACE_RECENT_ORDERS, { workspace_id });
+  const data = await hasuraRequest<{ product_orders: any[] }>(GET_WORKSPACE_RECENT_ORDERS, {
+    workspace_id,
+  });
   return data.product_orders || [];
 });

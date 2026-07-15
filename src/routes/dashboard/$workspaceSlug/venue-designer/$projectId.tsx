@@ -29,7 +29,9 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-designer/$projectId")({
-  validateSearch: (search: Record<string, unknown>): { template?: TemplateId; pitchType?: PitchType } => {
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { template?: TemplateId; pitchType?: PitchType } => {
     return {
       template: search.template as TemplateId | undefined,
       pitchType: search.pitchType as PitchType | undefined,

@@ -197,7 +197,6 @@ const fonts = [
   { name: "Formal", css: "'EB Garamond', serif" },
 ];
 
-
 type TicketLayout = {
   titleSize: number; // px
   subtitleSize: number; // px
@@ -670,7 +669,7 @@ function TicketDesignerPage() {
     try {
       const frontCanvas = await htmlToImage.toCanvas(frontElement, { pixelRatio: 2 });
       const backCanvas = await htmlToImage.toCanvas(backElement, { pixelRatio: 2 });
-      
+
       const frontImgData = frontCanvas.toDataURL("image/png");
       const backImgData = backCanvas.toDataURL("image/png");
 
@@ -679,11 +678,11 @@ function TicketDesignerPage() {
         unit: "px",
         format: [frontCanvas.width / 2, frontCanvas.height / 2],
       });
-      
+
       pdf.addImage(frontImgData, "PNG", 0, 0, frontCanvas.width / 2, frontCanvas.height / 2);
       pdf.addPage();
       pdf.addImage(backImgData, "PNG", 0, 0, backCanvas.width / 2, backCanvas.height / 2);
-      
+
       pdf.save(`${projectName.replace(/\s+/g, "-").toLowerCase()}-ticket.pdf`);
     } catch (err) {
       console.error("Failed to export PDF", err);
@@ -721,7 +720,7 @@ function TicketDesignerPage() {
     let tierType = dynamicDefaults.tierName;
     let tierCost = mergedDesign.price || dynamicDefaults.price || "0";
     let stopSubtitle = "";
-    
+
     if (editScope === "tier" && activeTierId) {
       tDesign = getTierSpecificDesign(activeTierId);
       const tierObj = allTicketTiers.find((t: any) => t.id === activeTierId);
@@ -729,12 +728,20 @@ function TicketDesignerPage() {
         tierType = tierObj.type || "General";
         tierCost = tierObj.cost?.toString() || "0";
       }
-      stopSubtitle = activeTourStopIdx >= 0 && tourStops[activeTourStopIdx]?.venue
-        ? `${tourStops[activeTourStopIdx].venue} · ${tourStops[activeTourStopIdx].city}${tourStops[activeTourStopIdx].address ? `\n${tourStops[activeTourStopIdx].address}` : ""}`
-        : "";
+      stopSubtitle =
+        activeTourStopIdx >= 0 && tourStops[activeTourStopIdx]?.venue
+          ? `${tourStops[activeTourStopIdx].venue} · ${tourStops[activeTourStopIdx].city}${tourStops[activeTourStopIdx].address ? `\n${tourStops[activeTourStopIdx].address}` : ""}`
+          : "";
     }
-    
-    const cover = tDesign.cover || (assignmentType === "cinema" ? cinemaMatch?.cover_url : assignmentType === "venue" ? venueMatch?.cover_url || venueMatch?.images?.[0] : eventMatch?.cover) || "";
+
+    const cover =
+      tDesign.cover ||
+      (assignmentType === "cinema"
+        ? cinemaMatch?.cover_url
+        : assignmentType === "venue"
+          ? venueMatch?.cover_url || venueMatch?.images?.[0]
+          : eventMatch?.cover) ||
+      "";
 
     return {
       template: tDesign.template,
@@ -743,8 +750,14 @@ function TicketDesignerPage() {
       tier: tierType,
       title: tDesign.title || dynamicDefaults.title || "",
       subtitle: tDesign.subtitle || stopSubtitle || dynamicDefaults.subtitle || "",
-      date: tDesign.date || (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.date : dynamicDefaults.date) || "",
-      time: tDesign.time || (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.time : dynamicDefaults.time) || "",
+      date:
+        tDesign.date ||
+        (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.date : dynamicDefaults.date) ||
+        "",
+      time:
+        tDesign.time ||
+        (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.time : dynamicDefaults.time) ||
+        "",
       seat: tDesign.seat || dynamicDefaults.seat,
       price: tierCost,
       currency: tDesign.currency || dynamicDefaults.currency,
@@ -874,15 +887,15 @@ function TicketDesignerPage() {
         <aside className="min-h-0 overflow-y-auto flex flex-col bg-card border border-border/60 rounded-2xl shadow-lg hide-scrollbar">
           <div className="sticky top-0 z-10 bg-card/90 backdrop-blur-xl p-3 border-b border-border/40">
             <div className="grid grid-cols-3 gap-1 rounded-lg bg-secondary/60 p-1">
-            {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-md px-2 py-1.5 text-xs font-semibold tracking-wide transition-all capitalize ${activeTab === tab ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/40 hover:text-foreground"}`}
-              >
-                {tab === "back" ? "Back Side" : tab}
-              </button>
-            ))}
+              {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-md px-2 py-1.5 text-xs font-semibold tracking-wide transition-all capitalize ${activeTab === tab ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/40 hover:text-foreground"}`}
+                >
+                  {tab === "back" ? "Back Side" : tab}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1562,7 +1575,8 @@ function TicketDesignerPage() {
             <div
               className={`flex-1 flex ${editScope === "tier" && ticketTiers.length > 0 ? "flex-col py-16 justify-start items-center" : "items-center justify-center"} overflow-auto gap-12 relative rounded-2xl shadow-inner`}
               style={{
-                backgroundImage: "radial-gradient(circle, hsl(var(--border)) 1.5px, transparent 1.5px)",
+                backgroundImage:
+                  "radial-gradient(circle, hsl(var(--border)) 1.5px, transparent 1.5px)",
                 backgroundSize: "24px 24px",
                 backgroundColor: "hsl(var(--secondary) / 0.4)",
               }}
@@ -1637,39 +1651,42 @@ function TicketDesignerPage() {
                   );
                 })
               ) : (
-                <div id="ticket-preview-container" className="relative w-fit h-fit shadow-2xl rounded-[28px] transition-transform hover:scale-[1.01] hover:shadow-3xl z-10">
+                <div
+                  id="ticket-preview-container"
+                  className="relative w-fit h-fit shadow-2xl rounded-[28px] transition-transform hover:scale-[1.01] hover:shadow-3xl z-10"
+                >
                   <TicketPreview
                     template={mergedDesign.template}
-                  palette={mergedDesign.palette}
-                  font={mergedDesign.font}
-                  tier={dynamicDefaults.tierName}
-                  title={mergedDesign.title || dynamicDefaults.title || ""}
-                  subtitle={mergedDesign.subtitle || dynamicDefaults.subtitle || ""}
-                  date={mergedDesign.date || dynamicDefaults.date || ""}
-                  time={mergedDesign.time || dynamicDefaults.time || ""}
-                  seat={mergedDesign.seat || dynamicDefaults.seat}
-                  price={mergedDesign.price || dynamicDefaults.price || ""}
-                  currency={mergedDesign.currency || dynamicDefaults.currency}
-                  cover={
-                    mergedDesign.cover ||
-                    (assignmentType === "cinema"
-                      ? cinemaMatch?.cover_url
-                      : assignmentType === "venue"
-                        ? venueMatch?.cover_url || venueMatch?.images?.[0]
-                        : eventMatch?.cover) ||
-                    ""
-                  }
-                  logoText={mergedDesign.logoText || dynamicDefaults.brand}
-                  logoImage={mergedDesign.logoImage}
-                  logoScale={mergedDesign.logoScale || 24}
-                  logoOpacity={mergedDesign.logoOpacity ?? 1}
-                  logoColorMode={mergedDesign.logoColorMode || "original"}
-                  orderId={orderId}
-                  previewMode={previewMode}
-                  onLogoClick={handleLogoClick}
-                  layout={mergedDesign.layout || defaultLayout}
-                  back={mergedDesign.back || defaultBack}
-                />
+                    palette={mergedDesign.palette}
+                    font={mergedDesign.font}
+                    tier={dynamicDefaults.tierName}
+                    title={mergedDesign.title || dynamicDefaults.title || ""}
+                    subtitle={mergedDesign.subtitle || dynamicDefaults.subtitle || ""}
+                    date={mergedDesign.date || dynamicDefaults.date || ""}
+                    time={mergedDesign.time || dynamicDefaults.time || ""}
+                    seat={mergedDesign.seat || dynamicDefaults.seat}
+                    price={mergedDesign.price || dynamicDefaults.price || ""}
+                    currency={mergedDesign.currency || dynamicDefaults.currency}
+                    cover={
+                      mergedDesign.cover ||
+                      (assignmentType === "cinema"
+                        ? cinemaMatch?.cover_url
+                        : assignmentType === "venue"
+                          ? venueMatch?.cover_url || venueMatch?.images?.[0]
+                          : eventMatch?.cover) ||
+                      ""
+                    }
+                    logoText={mergedDesign.logoText || dynamicDefaults.brand}
+                    logoImage={mergedDesign.logoImage}
+                    logoScale={mergedDesign.logoScale || 24}
+                    logoOpacity={mergedDesign.logoOpacity ?? 1}
+                    logoColorMode={mergedDesign.logoColorMode || "original"}
+                    orderId={orderId}
+                    previewMode={previewMode}
+                    onLogoClick={handleLogoClick}
+                    layout={mergedDesign.layout || defaultLayout}
+                    back={mergedDesign.back || defaultBack}
+                  />
                 </div>
               )}
             </div>
@@ -1705,7 +1722,15 @@ function TicketDesignerPage() {
       />
 
       {/* Hidden elements for PDF export */}
-      <div style={{ position: "fixed", top: "-10000px", left: "-10000px", pointerEvents: "none", zIndex: -9999 }}>
+      <div
+        style={{
+          position: "fixed",
+          top: "-10000px",
+          left: "-10000px",
+          pointerEvents: "none",
+          zIndex: -9999,
+        }}
+      >
         <div id="export-front-container" className="relative w-fit h-fit">
           <TicketPreview {...getActiveTicketProps()} previewMode="Front" onLogoClick={() => {}} />
         </div>
@@ -1729,7 +1754,7 @@ function Section({
   const [isOpen, setIsOpen] = _useState(true);
   return (
     <div className="border-b border-border/40 last:border-0">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-4 px-5 hover:bg-secondary/30 transition-colors"
       >
@@ -1758,7 +1783,9 @@ function Section({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</Label>
+      <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        {label}
+      </Label>
       {children}
     </div>
   );

@@ -207,29 +207,29 @@ export function EventDashboard() {
         <div className="lg:col-span-2 flex flex-col gap-8">
           {/* Calendar Section */}
           <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-sm flex flex-col h-[600px]">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-primary" /> Workspace Schedule
-          </h2>
-          <div className="flex-1 bg-secondary/20 rounded-2xl overflow-hidden border border-border/40 p-2">
-            <Suspense fallback={<div className="animate-pulse bg-muted/20 h-full rounded-xl" />}>
-              <Calendar
-                events={calendarEvents}
-                startAccessor="start"
-                endAccessor="end"
-                style={{ height: "100%" }}
-                views={["month", "agenda"]}
-                className="text-sm font-sans"
-                eventPropGetter={() => ({
-                  style: {
-                    background: "var(--gradient-primary)",
-                    color: "#fff",
-                  },
-                })}
-              />
-            </Suspense>
-          </div>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-primary" /> Workspace Schedule
+            </h2>
+            <div className="flex-1 bg-secondary/20 rounded-2xl overflow-hidden border border-border/40 p-2">
+              <Suspense fallback={<div className="animate-pulse bg-muted/20 h-full rounded-xl" />}>
+                <Calendar
+                  events={calendarEvents}
+                  startAccessor="start"
+                  endAccessor="end"
+                  style={{ height: "100%" }}
+                  views={["month", "agenda"]}
+                  className="text-sm font-sans"
+                  eventPropGetter={() => ({
+                    style: {
+                      background: "var(--gradient-primary)",
+                      color: "#fff",
+                    },
+                  })}
+                />
+              </Suspense>
+            </div>
           </section>
-          
+
           <DesktopRecentOrders />
         </div>
 

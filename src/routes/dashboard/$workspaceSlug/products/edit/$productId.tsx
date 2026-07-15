@@ -164,7 +164,9 @@ function EditProductView() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Edit Workspace Campaign</h1>
           <p className="text-sm text-muted-foreground">
-            {step === 1 ? "Select the type of campaign you want to edit." : "Edit the details for your campaign."}
+            {step === 1
+              ? "Select the type of campaign you want to edit."
+              : "Edit the details for your campaign."}
           </p>
         </div>
       </header>
@@ -184,10 +186,17 @@ function EditProductView() {
                       "cursor-pointer rounded-xl border-2 p-5 transition-all flex flex-col gap-3",
                       isSelected
                         ? "border-primary bg-primary/5"
-                        : "border-border/60 hover:border-primary/50 hover:bg-secondary/20"
+                        : "border-border/60 hover:border-primary/50 hover:bg-secondary/20",
                     )}
                   >
-                    <div className={cn("p-3 rounded-lg w-fit", isSelected ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground")}>
+                    <div
+                      className={cn(
+                        "p-3 rounded-lg w-fit",
+                        isSelected
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground",
+                      )}
+                    >
                       <Icon className="h-6 w-6" />
                     </div>
                     <div>
@@ -205,7 +214,10 @@ function EditProductView() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in slide-in-from-right-2">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6 animate-in fade-in slide-in-from-right-2"
+          >
             {formData.type === "physical" && (
               <div className="flex flex-col items-center gap-2 mb-2">
                 <label className="relative flex h-24 w-24 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary">
@@ -323,7 +335,13 @@ function EditProductView() {
             <div className="space-y-3">
               <Label>Description</Label>
               <div className="rounded-xl overflow-hidden border border-border/60 [&_.ql-toolbar]:bg-secondary/40 [&_.ql-container]:min-h-[120px] [&_.ql-editor]:min-h-[120px] [&_.ql-editor]:text-base">
-                <Suspense fallback={<div className="h-[150px] flex items-center justify-center text-muted-foreground">Loading editor...</div>}>
+                <Suspense
+                  fallback={
+                    <div className="h-[150px] flex items-center justify-center text-muted-foreground">
+                      Loading editor...
+                    </div>
+                  }
+                >
                   <ReactQuill
                     theme="snow"
                     value={formData.description}

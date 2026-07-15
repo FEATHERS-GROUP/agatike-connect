@@ -34,7 +34,10 @@ export function DesktopRecentOrders() {
         ) : (
           <div className="divide-y divide-border/60">
             {orders.map((order: any) => (
-              <div key={order.id} className="p-4 sm:px-6 flex items-center justify-between hover:bg-muted/20 transition-colors">
+              <div
+                key={order.id}
+                className="p-4 sm:px-6 flex items-center justify-between hover:bg-muted/20 transition-colors"
+              >
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     <Package className="h-5 w-5" />
@@ -50,7 +53,9 @@ export function DesktopRecentOrders() {
                           <span className="opacity-50">•</span>
                           <span className="flex items-center gap-1 bg-secondary/50 px-1.5 py-0.5 rounded-md">
                             <Calendar className="h-3 w-3" />
-                            <span className="truncate max-w-[120px]">{order.product.event.title}</span>
+                            <span className="truncate max-w-[120px]">
+                              {order.product.event.title}
+                            </span>
                           </span>
                         </>
                       )}
@@ -62,7 +67,12 @@ export function DesktopRecentOrders() {
                     {formatCurrency(order.amount_paid || 0, activeWorkspace?.currency)}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-1 uppercase tracking-wider">
-                    {new Date(order.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {new Date(order.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
               </div>
