@@ -106,7 +106,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
     <div className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div className="flex items-center justify-between p-6 md:p-8 shrink-0">
         <h2 className="text-xl font-bold tracking-tight">Workspace Setup</h2>
-        {workspaces.length > 0 && !created && (
+        {!created && (
           <Button variant="ghost" className="rounded-full" onClick={onClose}>
             Cancel & Close
           </Button>
@@ -177,9 +177,9 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                         }`}
                       >
                         {isBusinessOnly && (
-                           <div className="absolute top-4 right-4 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                             {label}
-                           </div>
+                          <div className="absolute top-4 right-4 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                            {label}
+                          </div>
                         )}
                         <div
                           className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${
@@ -438,7 +438,9 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                   className="rounded-full gap-2 px-8 text-base shadow-[var(--shadow-glow)]"
                   style={{ background: "var(--gradient-primary)" }}
                   onClick={() => setStep(step + 1)}
-                  disabled={step === 2 && (!name.trim() || !city.trim() || !address.trim() || !icon)}
+                  disabled={
+                    step === 2 && (!name.trim() || !city.trim() || !address.trim() || !icon)
+                  }
                 >
                   Continue <ArrowRight className="h-5 w-5" />
                 </Button>

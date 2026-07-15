@@ -17,7 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
 import { sendSignupOtp } from "@/api/auth";
 import { getUserByHandle } from "@/api/users";
@@ -131,7 +137,9 @@ const formSchema = z
     email: z.string().email("Valid email is required"),
     business: z.boolean(),
     terms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
-    fee_acknowledgement: z.boolean().refine((val) => val === true, "You must accept the fee structure"),
+    fee_acknowledgement: z
+      .boolean()
+      .refine((val) => val === true, "You must accept the fee structure"),
     instagram: z.string().optional(),
     tiktok: z.string().optional(),
     youtube: z.string().optional(),
@@ -148,7 +156,7 @@ const formSchema = z
         path: ["national_id"],
       });
     }
-    
+
     if (data.business && !data.business_cert) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -214,9 +222,12 @@ function CreateOrganizerPage() {
   });
 
   const selectedPlan = pricingPlans.find((p: any) => p.id === calcPlanId) || pricingPlans[0] || {};
-  const availableCountries = Array.from(new Set(providerFees.map((f: any) => f.country_code).filter(Boolean)));
+  const availableCountries = Array.from(
+    new Set(providerFees.map((f: any) => f.country_code).filter(Boolean)),
+  );
   const availableNetworks = providerFees.filter((f: any) => f.country_code === calcCountry);
-  const selectedNetwork = availableNetworks.find((f: any) => f.network === calcNetwork) || availableNetworks[0] || {};
+  const selectedNetwork =
+    availableNetworks.find((f: any) => f.network === calcNetwork) || availableNetworks[0] || {};
 
   useEffect(() => {
     if (pricingPlans.length > 0 && !calcPlanId) {
@@ -225,34 +236,41 @@ function CreateOrganizerPage() {
   }, [pricingPlans, calcPlanId]);
 
   useEffect(() => {
-    if (availableNetworks.length > 0 && (!calcNetwork || !availableNetworks.find((n:any)=>n.network === calcNetwork))) {
+    if (
+      availableNetworks.length > 0 &&
+      (!calcNetwork || !availableNetworks.find((n: any) => n.network === calcNetwork))
+    ) {
       setCalcNetwork(availableNetworks[0].network);
     }
   }, [availableNetworks, calcNetwork]);
 
   const totalTicketSales = calcTicketPrice * calcTicketCount;
-  
+
   const custServicePct = Number(selectedPlan.customer_service_fee_percentage) || 0;
   const custCollectionPct = Number(selectedPlan.customer_collection_fee_percentage) || 0;
   const custFixed = Number(selectedPlan.customer_collection_fee_fixed) || 0;
-  
-  const customerFeePerTicket = (calcTicketPrice * (custServicePct + custCollectionPct) / 100) + custFixed;
+
+  const customerFeePerTicket =
+    (calcTicketPrice * (custServicePct + custCollectionPct)) / 100 + custFixed;
   const totalCustomerFee = customerFeePerTicket * calcTicketCount;
 
   const orgCollectionPct = Number(selectedPlan.organizer_collection_fee_percentage) || 0;
   const orgFixed = Number(selectedPlan.organizer_collection_fee_fixed) || 0;
-  const organizerFeePerTicket = (calcTicketPrice * (orgCollectionPct) / 100) + orgFixed;
+  const organizerFeePerTicket = (calcTicketPrice * orgCollectionPct) / 100 + orgFixed;
   const totalOrganizerFee = organizerFeePerTicket * calcTicketCount;
 
   const estimatedWalletBalance = totalTicketSales - totalOrganizerFee;
 
   const withdrawalFeePct = Number(selectedPlan.withdrawal_fee_percentage) || 0;
   const withdrawalFeeFixed = Number(selectedPlan.withdrawal_fee_fixed) || 0;
-  
+
   const providerDisbursementPct = Number(selectedNetwork?.disbursement_percentage) || 0;
-  const providerDisbursementFee = (estimatedWalletBalance * (providerDisbursementPct / 100)) + (Number(selectedNetwork?.disbursement_fixed_fee) || 0);
-  
-  const agatikeWithdrawalFee = (estimatedWalletBalance * (withdrawalFeePct / 100)) + withdrawalFeeFixed;
+  const providerDisbursementFee =
+    estimatedWalletBalance * (providerDisbursementPct / 100) +
+    (Number(selectedNetwork?.disbursement_fixed_fee) || 0);
+
+  const agatikeWithdrawalFee =
+    estimatedWalletBalance * (withdrawalFeePct / 100) + withdrawalFeeFixed;
   const finalAmount = estimatedWalletBalance - agatikeWithdrawalFee - providerDisbursementFee;
 
   const {
@@ -344,7 +362,15 @@ function CreateOrganizerPage() {
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      const { terms, confirm_password, instagram, tiktok, youtube, fee_acknowledgement, ...restValues } = values as any;
+      const {
+        terms,
+        confirm_password,
+        instagram,
+        tiktok,
+        youtube,
+        fee_acknowledgement,
+        ...restValues
+      } = values as any;
 
       let finalBusinessCert = restValues.business_cert;
       if (finalBusinessCert && finalBusinessCert.startsWith("data:")) {
@@ -807,7 +833,9 @@ function CreateOrganizerPage() {
                             if (file) {
                               const reader = new FileReader();
                               reader.onload = (event) => {
-                                setValue("national_id", event.target?.result as string, { shouldValidate: true });
+                                setValue("national_id", event.target?.result as string, {
+                                  shouldValidate: true,
+                                });
                               };
                               reader.readAsDataURL(file);
                             }
@@ -860,7 +888,7 @@ function CreateOrganizerPage() {
                           </span>
                         </label>
                         <div className="flex items-center justify-center gap-4">
-                           <span className="text-sm text-gray-500 font-medium uppercase">Or</span>
+                          <span className="text-sm text-gray-500 font-medium uppercase">Or</span>
                         </div>
                         <Button
                           type="button"
@@ -872,7 +900,11 @@ function CreateOrganizerPage() {
                         </Button>
                         {watch("image") && watch("image")?.includes("api.dicebear.com") && (
                           <div className="flex justify-center mt-2">
-                             <img src={watch("image")} alt="Selected Avatar" className="w-16 h-16 rounded-full border-2 border-primary/30 bg-gray-100" />
+                            <img
+                              src={watch("image")}
+                              alt="Selected Avatar"
+                              className="w-16 h-16 rounded-full border-2 border-primary/30 bg-gray-100"
+                            />
                           </div>
                         )}
                       </div>
@@ -1175,7 +1207,9 @@ function CreateOrganizerPage() {
                               if (file) {
                                 const reader = new FileReader();
                                 reader.onload = (event) => {
-                                  setValue("business_cert", event.target?.result as string, { shouldValidate: true });
+                                  setValue("business_cert", event.target?.result as string, {
+                                    shouldValidate: true,
+                                  });
                                 };
                                 reader.readAsDataURL(file);
                               }
@@ -1303,7 +1337,9 @@ function CreateOrganizerPage() {
                       <div className="mb-10 bg-gray-50 dark:bg-white/5 rounded-2xl p-6 border border-gray-200 dark:border-white/10 shadow-sm">
                         <div className="flex flex-col gap-4">
                           <div className="text-sm text-gray-600 dark:text-white/70">
-                            <strong>Pricing & Fees:</strong> We use transparent transaction pricing. To see exactly how much you'll earn on your selected plan and payment method, you can use our Fee Calculator.
+                            <strong>Pricing & Fees:</strong> We use transparent transaction pricing.
+                            To see exactly how much you'll earn on your selected plan and payment
+                            method, you can use our Fee Calculator.
                           </div>
                           <Button
                             type="button"
@@ -1320,7 +1356,9 @@ function CreateOrganizerPage() {
                               id="fee_acknowledgement"
                               checked={watch("fee_acknowledgement")}
                               onCheckedChange={(checked) =>
-                                setValue("fee_acknowledgement", checked as boolean, { shouldValidate: true })
+                                setValue("fee_acknowledgement", checked as boolean, {
+                                  shouldValidate: true,
+                                })
                               }
                               className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary border-gray-300 dark:border-white/30"
                             />
@@ -1329,10 +1367,13 @@ function CreateOrganizerPage() {
                                 htmlFor="fee_acknowledgement"
                                 className="text-sm font-medium leading-none text-gray-700 dark:text-white/80 cursor-pointer"
                               >
-                                I understand and agree to Agatike's pricing, transaction fees, and payout processing fees.
+                                I understand and agree to Agatike's pricing, transaction fees, and
+                                payout processing fees.
                               </label>
                               {errors.fee_acknowledgement && (
-                                <p className="text-xs text-red-500 mt-1">{errors.fee_acknowledgement.message}</p>
+                                <p className="text-xs text-red-500 mt-1">
+                                  {errors.fee_acknowledgement.message}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -1512,7 +1553,9 @@ function CreateOrganizerPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs text-gray-700 dark:text-white/80">Expected Tickets Sold</Label>
+              <Label className="text-xs text-gray-700 dark:text-white/80">
+                Expected Tickets Sold
+              </Label>
               <Input
                 type="number"
                 value={calcTicketCount}
@@ -1551,7 +1594,9 @@ function CreateOrganizerPage() {
               </Select>
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label className="text-xs text-gray-700 dark:text-white/80">Expected Payout Network</Label>
+              <Label className="text-xs text-gray-700 dark:text-white/80">
+                Expected Payout Network
+              </Label>
               <Select value={calcNetwork} onValueChange={setCalcNetwork}>
                 <SelectTrigger className="h-10 rounded-lg bg-gray-50 dark:bg-white/5">
                   <SelectValue placeholder="Select Network" />
@@ -1570,15 +1615,21 @@ function CreateOrganizerPage() {
           <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 space-y-3 text-sm border border-gray-200 dark:border-white/10">
             <div className="flex justify-between text-gray-600 dark:text-white/70">
               <span>Total Ticket Sales:</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{totalTicketSales.toLocaleString()} RWF</span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {totalTicketSales.toLocaleString()} RWF
+              </span>
             </div>
             <div className="flex justify-between text-gray-600 dark:text-white/70">
               <span>Agatike Organizer Fee:</span>
-              <span className="text-red-500 font-medium">- {totalOrganizerFee.toLocaleString()} RWF</span>
+              <span className="text-red-500 font-medium">
+                - {totalOrganizerFee.toLocaleString()} RWF
+              </span>
             </div>
             <div className="flex justify-between text-gray-600 dark:text-white/70">
               <span>Estimated Wallet Balance:</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{estimatedWalletBalance.toLocaleString()} RWF</span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {estimatedWalletBalance.toLocaleString()} RWF
+              </span>
             </div>
             <div className="h-px bg-gray-200 dark:bg-white/10 my-2" />
             <div className="flex justify-between text-xs text-gray-500 dark:text-white/50">
@@ -1591,12 +1642,14 @@ function CreateOrganizerPage() {
               <span>{finalAmount.toLocaleString()} RWF</span>
             </div>
             <div className="text-[10px] text-gray-400 dark:text-white/40 mt-1 text-right">
-              * Note: Customer pays a separate fee of {totalCustomerFee.toLocaleString()} RWF on checkout.
+              * Note: Customer pays a separate fee of {totalCustomerFee.toLocaleString()} RWF on
+              checkout.
             </div>
           </div>
-          
+
           <div className="mt-2 p-4 bg-primary/5 rounded-xl border border-primary/10 text-xs text-gray-600 dark:text-white/70 leading-relaxed">
-            <strong>Pricing Explanation:</strong> Agatike uses transparent transaction pricing. Ticket sales fees and payout processing fees are shown clearly before every withdrawal.
+            <strong>Pricing Explanation:</strong> Agatike uses transparent transaction pricing.
+            Ticket sales fees and payout processing fees are shown clearly before every withdrawal.
           </div>
 
           <div className="pt-4 flex justify-end">
@@ -1640,8 +1693,8 @@ function CreateOrganizerPage() {
                       : "border-transparent bg-background shadow-sm hover:shadow"
                   }`}
                   onClick={() => {
-                     setValue("image", opt);
-                     setIsAvatarModalOpen(false);
+                    setValue("image", opt);
+                    setIsAvatarModalOpen(false);
                   }}
                 >
                   <img

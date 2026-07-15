@@ -18,10 +18,12 @@ export const Route = createFileRoute("/dashboard/billing/")({
 function BillingOverview() {
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
-  const { limits, stats, workspaceStats, isLoading: limitsLoading } = useSubscriptionLimits(
-    activeWorkspace?.orgnizer_id,
-    activeWorkspace?.id,
-  );
+  const {
+    limits,
+    stats,
+    workspaceStats,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("momo");
@@ -49,7 +51,7 @@ function BillingOverview() {
 
   const handleProceedPayment = (details?: any) => {
     if (!selectedInvoice) return;
-    
+
     payMutation.mutate({
       invoice_id: selectedInvoice.id,
       amount: selectedInvoice.amount,
@@ -140,7 +142,7 @@ function BillingOverview() {
             <AlertCircle className="h-5 w-5" />
             Pending Invoices
           </div>
-          
+
           {invoicesLoading ? (
             <div className="flex items-center justify-center flex-1">
               <Loader2 className="h-6 w-6 animate-spin text-red-500" />
@@ -148,15 +150,19 @@ function BillingOverview() {
           ) : pendingInvoices.length > 0 ? (
             <div className="space-y-3">
               {pendingInvoices.map((inv: any) => (
-                <div key={inv.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-red-100 shadow-sm">
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between bg-white p-3 rounded-lg border border-red-100 shadow-sm"
+                >
                   <div>
                     <div className="font-bold text-gray-900">${inv.amount}</div>
                     <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                      <Calendar className="h-3 w-3" /> Due: {new Date(inv.created_at).toLocaleDateString()}
+                      <Calendar className="h-3 w-3" /> Due:{" "}
+                      {new Date(inv.created_at).toLocaleDateString()}
                     </div>
                   </div>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="bg-red-600 hover:bg-red-700 text-white shadow-sm"
                     onClick={() => {
                       setSelectedInvoice(inv);

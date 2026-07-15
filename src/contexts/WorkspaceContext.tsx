@@ -146,10 +146,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       } as Workspace;
     },
     onSuccess: (newWorkspace) => {
-      queryClient.setQueryData(["workspaces"], (old: { workspaces: Workspace[]; currentUser: any } | undefined) => {
-        if (!old) return old;
-        return { ...old, workspaces: [...old.workspaces, newWorkspace] };
-      });
+      queryClient.setQueryData(
+        ["workspaces"],
+        (old: { workspaces: Workspace[]; currentUser: any } | undefined) => {
+          if (!old) return old;
+          return { ...old, workspaces: [...old.workspaces, newWorkspace] };
+        },
+      );
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       setActiveWorkspace(newWorkspace);
     },

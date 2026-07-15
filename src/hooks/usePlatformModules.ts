@@ -93,7 +93,7 @@ export function usePlatformModules() {
 export function getModulesForWorkspaceType(
   modules: WorkspaceModule[],
   type: string,
-  isBusiness: boolean = true
+  isBusiness: boolean = true,
 ): WorkspaceModule[] {
   const allowedCategories = ["SHARED"];
 

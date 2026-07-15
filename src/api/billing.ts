@@ -577,7 +577,9 @@ export const payPendingInvoice = createServerFn({ method: "POST" })
         }
       }
     `;
-    const invRes = await hasuraRequest<{ organizer_invoices_by_pk: any }>(GET_INVOICE, { id: invoice_id });
+    const invRes = await hasuraRequest<{ organizer_invoices_by_pk: any }>(GET_INVOICE, {
+      id: invoice_id,
+    });
     const invoice = invRes.organizer_invoices_by_pk;
     if (!invoice) throw new Error("Invoice not found");
     if (invoice.status === "paid") throw new Error("Invoice already paid");
@@ -602,7 +604,9 @@ export const payPendingInvoice = createServerFn({ method: "POST" })
         }
       }
     `;
-    const subRes = await hasuraRequest<{ subscriptions_by_pk: any }>(GET_SUB, { id: invoice.subscription_id });
+    const subRes = await hasuraRequest<{ subscriptions_by_pk: any }>(GET_SUB, {
+      id: invoice.subscription_id,
+    });
     const sub = subRes.subscriptions_by_pk;
     if (sub) {
       const nextDate = new Date(sub.next_billing_date);

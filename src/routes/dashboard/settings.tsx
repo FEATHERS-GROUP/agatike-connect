@@ -310,7 +310,9 @@ function SettingsPage() {
 
             {activeTab === "security" && <SettingsSecurityTab passwordForm={passwordForm} />}
 
-            {activeTab === "integrations" && activeWorkspace?.business && <SettingsIntegrationsTab />}
+            {activeTab === "integrations" && activeWorkspace?.business && (
+              <SettingsIntegrationsTab />
+            )}
           </div>
         </div>
       </div>

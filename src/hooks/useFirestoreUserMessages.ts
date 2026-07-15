@@ -95,7 +95,10 @@ export function useFirestoreUserMessages(
         const data = doc.data();
 
         if (type === "group") {
-          if (followedOrganizerIds.length === 0 || !followedOrganizerIds.includes(data.organizerId)) {
+          if (
+            followedOrganizerIds.length === 0 ||
+            !followedOrganizerIds.includes(data.organizerId)
+          ) {
             // If it's a group channel and user is not following the organizer, skip it
             return;
           }

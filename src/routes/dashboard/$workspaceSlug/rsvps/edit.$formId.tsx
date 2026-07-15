@@ -283,7 +283,8 @@ function EditFormPage() {
                 <List className="mr-2 h-5 w-5 text-primary" /> Form Fields
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Customize the questions you want to ask attendees. Note: If you remove a field, answers for that field will be deleted for all existing RSVPs.
+                Customize the questions you want to ask attendees. Note: If you remove a field,
+                answers for that field will be deleted for all existing RSVPs.
               </p>
             </div>
 

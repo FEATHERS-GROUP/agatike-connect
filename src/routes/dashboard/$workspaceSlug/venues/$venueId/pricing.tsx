@@ -25,7 +25,8 @@ function VenuePricingPage() {
 
   const { data: subscription } = useQuery({
     queryKey: ["active-subscription", activeWorkspace?.orgnizer_id],
-    queryFn: () => getActiveSubscription({ data: { organizer_id: activeWorkspace!.orgnizer_id } } as any),
+    queryFn: () =>
+      getActiveSubscription({ data: { organizer_id: activeWorkspace!.orgnizer_id } } as any),
     enabled: !!activeWorkspace?.orgnizer_id,
   });
 
@@ -170,9 +171,15 @@ function VenuePricingPage() {
                   {subscription?.pricing_plan && (
                     <p className="text-sm text-muted-foreground mt-2 bg-secondary/30 p-3 rounded-lg border border-border/50">
                       <strong>Note:</strong> Your plan includes an Organizer Collection Fee of{" "}
-                      <strong>{subscription.pricing_plan.organizer_collection_fee_percentage}%</strong>. 
-                      This, along with standard network provider fees, is deducted from ticket sales. Customers pay an additional{" "}
-                      <strong>{subscription.pricing_plan.customer_collection_fee_percentage}%</strong> service fee at checkout.
+                      <strong>
+                        {subscription.pricing_plan.organizer_collection_fee_percentage}%
+                      </strong>
+                      . This, along with standard network provider fees, is deducted from ticket
+                      sales. Customers pay an additional{" "}
+                      <strong>
+                        {subscription.pricing_plan.customer_collection_fee_percentage}%
+                      </strong>{" "}
+                      service fee at checkout.
                     </p>
                   )}
                 </div>

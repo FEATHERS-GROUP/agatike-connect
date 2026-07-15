@@ -368,8 +368,6 @@ function DashboardLayout() {
     return () => unsubscribe();
   }, [activeWorkspace?.orgnizer_id, navigate]);
 
-
-
   return (
     <>
       <div className="md:hidden print:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">

@@ -1,4 +1,13 @@
-import { Building2, Plus, ArrowRight, LogOut, User, Settings, LayoutDashboard, RefreshCw } from "lucide-react";
+import {
+  Building2,
+  Plus,
+  ArrowRight,
+  LogOut,
+  User,
+  Settings,
+  LayoutDashboard,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNavigate } from "@tanstack/react-router";
@@ -42,7 +51,10 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   };
 
   return (
-    <div className="space-y-8 pb-24 px-4 md:px-8 max-w-7xl mx-auto pt-8">
+    <div className="space-y-8 pb-24 px-4 md:px-12 w-full max-w-[1600px] mx-auto pt-8">
+      <div className="flex justify-center w-full mb-8">
+        <img src="/agatike-logo.svg" alt="Agatike" className="h-10 w-auto object-contain" />
+      </div>
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Workspaces</h1>

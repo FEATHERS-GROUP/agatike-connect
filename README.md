@@ -404,6 +404,7 @@ flowchart TD
 Agatike employs a sophisticated shared-cost model to handle payment processing fees efficiently while remaining profitable.
 
 **The Equation:**
+
 - `Total Collection Pool` = `Customer Fee` + `Organizer Fee`
 - `Agatike Net Profit` = `Total Collection Pool` - `Network Cost`
 
@@ -765,9 +766,9 @@ When an organizer imports from a custom form:
 
 ### Email (`src/api/email.ts`)
 
-| Function            | Purpose                                       |
-| ------------------- | --------------------------------------------- |
-| `sendAttendeeEmail` | Send rich HTML email to one or more attendees |
+| Function            | Purpose                                            |
+| ------------------- | -------------------------------------------------- |
+| `sendAttendeeEmail` | Send rich HTML email to one or more attendees      |
 | `sendEmail`         | Generic utility to send emails (to, subject, html) |
 
 ---
