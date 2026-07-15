@@ -91,7 +91,8 @@ export function GlobalCommandMenu() {
     const legacyId = legacyIdMap[m.label];
     return legacyId && userModuleIds.includes(legacyId);
   }).filter((m: any) => {
-    if (!activeWorkspace?.business) {
+    const isSubExpired = currentUser?.isTrialExpired || currentUser?.isExpired;
+    if (!activeWorkspace?.business || isSubExpired) {
       const businessOnlyModules = [
         "Agatike Book",
         "Cinema / Theater",

@@ -36,7 +36,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
   const [activeCategory, setActiveCategory] = useState("bottts");
 
   // Filter platform modules based on selected workspace type
-  const platformModules = getModulesForWorkspaceType(allModules, type);
+  const platformModules = getModulesForWorkspaceType(allModules, type, !!currentUser?.business);
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
 
   const generateAvatarsForCategory = (category: string) => {
@@ -113,7 +113,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
         )}
       </div>
 
-      <div className="flex-1 w-full max-w-4xl mx-auto p-6 md:p-8 flex flex-col justify-center min-h-[600px]">
+      <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 flex flex-col justify-center min-h-[600px]">
         {created ? (
           <div className="text-center animate-scale-in">
             <div
@@ -147,42 +147,62 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                     This helps us customize your dashboard with the right tools.
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {types.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setType(t.id);
-                        // Reset module selection when type changes so only compatible modules are pre-selected
-                        setModules([]);
-                      }}
-                      className={`flex flex-col items-start gap-4 rounded-3xl border-2 p-6 text-left transition ${
-                        type === t.id
-                          ? "border-primary bg-primary/5 shadow-md"
-                          : "border-border/60 bg-card hover:bg-secondary/50"
-                      }`}
-                    >
-                      <div
-                        className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${
-                          type === t.id
-                            ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
-                            : "bg-secondary text-muted-foreground"
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {types.map((t) => {
+                    const isBusinessOnly = ["VENUE", "CINEMA", "TRANSPORT"].includes(t.id);
+                    const isSubExpired = currentUser?.isTrialExpired || currentUser?.isExpired;
+                    const isDisabled = isBusinessOnly && (!currentUser?.business || isSubExpired);
+
+                    let label = "Business Only";
+                    if (isBusinessOnly && currentUser?.business && isSubExpired) {
+                      label = "Trial Expired";
+                    }
+
+                    return (
+                      <button
+                        key={t.id}
+                        disabled={isDisabled}
+                        onClick={() => {
+                          if (isDisabled) return;
+                          setType(t.id);
+                          // Reset module selection when type changes so only compatible modules are pre-selected
+                          setModules([]);
+                        }}
+                        className={`flex flex-col items-start gap-4 rounded-3xl border-2 p-6 text-left transition relative ${
+                          isDisabled
+                            ? "opacity-60 cursor-not-allowed bg-card border-border/40 grayscale"
+                            : type === t.id
+                              ? "border-primary bg-primary/5 shadow-md"
+                              : "border-border/60 bg-card hover:bg-secondary/50"
                         }`}
                       >
-                        <t.icon className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <p
-                          className={`text-xl font-bold ${type === t.id ? "text-primary" : "text-foreground"}`}
+                        {isBusinessOnly && (
+                           <div className="absolute top-4 right-4 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                             {label}
+                           </div>
+                        )}
+                        <div
+                          className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${
+                            type === t.id && !isDisabled
+                              ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
+                              : "bg-secondary text-muted-foreground"
+                          }`}
                         >
-                          {t.title}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                          {t.desc}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+                          <t.icon className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p
+                            className={`text-xl font-bold ${type === t.id && !isDisabled ? "text-primary" : "text-foreground"}`}
+                          >
+                            {t.title}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                            {t.desc}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -224,7 +244,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-base font-semibold">Primary City</Label>
+                      <Label className="text-base font-semibold">Primary City *</Label>
                       <Input
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
@@ -247,7 +267,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                       </select>
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label className="text-base font-semibold">Full Address</Label>
+                      <Label className="text-base font-semibold">Full Address *</Label>
                       <AddressAutocomplete
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
@@ -258,7 +278,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                   </div>
 
                   <div className="pt-6 border-t border-border/60 space-y-4">
-                    <Label className="text-base font-semibold">Workspace Icon or Logo</Label>
+                    <Label className="text-base font-semibold">Workspace Icon or Logo *</Label>
                     <div className="flex items-center gap-4">
                       <div className="h-20 w-20 shrink-0 rounded-2xl border-2 border-border/60 overflow-hidden bg-secondary/30 flex items-center justify-center">
                         {icon.startsWith("data:image") || icon.startsWith("http") ? (
@@ -317,7 +337,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                   {isLoadingModules ? (
                     <div className="col-span-full py-8 text-center text-muted-foreground">
                       Loading modules...
@@ -418,7 +438,7 @@ export function WorkspaceWizard({ onClose }: WorkspaceWizardProps) {
                   className="rounded-full gap-2 px-8 text-base shadow-[var(--shadow-glow)]"
                   style={{ background: "var(--gradient-primary)" }}
                   onClick={() => setStep(step + 1)}
-                  disabled={step === 2 && !name.trim()}
+                  disabled={step === 2 && (!name.trim() || !city.trim() || !address.trim() || !icon)}
                 >
                   Continue <ArrowRight className="h-5 w-5" />
                 </Button>

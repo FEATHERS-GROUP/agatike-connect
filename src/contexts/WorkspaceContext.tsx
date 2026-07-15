@@ -44,6 +44,7 @@ interface WorkspaceContextType {
   createWorkspace: (workspace: Partial<Workspace>) => Promise<Workspace>;
   isLoaded: boolean;
   isLoading: boolean;
+  refetch: () => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
@@ -58,6 +59,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     data: workspacesData,
     isLoading,
     isSuccess,
+    refetch,
   } = useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
@@ -144,9 +146,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       } as Workspace;
     },
     onSuccess: (newWorkspace) => {
-      queryClient.setQueryData(["workspaces"], (old: Workspace[] | undefined) => {
-        return old ? [...old, newWorkspace] : [newWorkspace];
+      queryClient.setQueryData(["workspaces"], (old: { workspaces: Workspace[]; currentUser: any } | undefined) => {
+        if (!old) return old;
+        return { ...old, workspaces: [...old.workspaces, newWorkspace] };
       });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       setActiveWorkspace(newWorkspace);
     },
   });
@@ -172,6 +176,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         createWorkspace,
         isLoaded: !isLoading && isSuccess,
         isLoading,
+        refetch,
       }}
     >
       {children}

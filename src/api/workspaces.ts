@@ -131,6 +131,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
         }
         organizers_by_pk(id: $orgnizer_id) {
           active
+          business
         }
       }
     `;
@@ -138,10 +139,11 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
   const data = await hasuraRequest<{
     workspaces: any[];
     platformModules: { id: string; label: string }[];
-    organizers_by_pk?: { active: boolean };
+    organizers_by_pk?: { active: boolean; business: boolean };
   }>(query, { orgnizer_id });
 
   currentUser.isActive = data.organizers_by_pk?.active ?? true;
+  currentUser.business = data.organizers_by_pk?.business ?? false;
 
   let resultWorkspaces = data.workspaces;
 

@@ -1,4 +1,4 @@
-import { Building2, Plus, ArrowRight, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
+import { Building2, Plus, ArrowRight, LogOut, User, Settings, LayoutDashboard, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNavigate } from "@tanstack/react-router";
@@ -15,11 +15,12 @@ interface WorkspaceListProps {
 }
 
 export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
-  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, currentUser } =
+  const { workspaces, activeWorkspace, setActiveWorkspace, isLoading, currentUser, refetch } =
     useWorkspace() as any;
   const navigate = useNavigate();
 
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { canCreateWorkspace } = useSubscriptionLimits(currentUser?.id);
 
@@ -34,9 +35,15 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
     onOpenWizard();
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
+
   return (
     <div className="space-y-8 pb-24 px-4 md:px-8 max-w-7xl mx-auto pt-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Workspaces</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -44,15 +51,26 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             payouts.
           </p>
         </div>
-        {currentUser?.role === "organizer" && (
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
-            onClick={handleCreateClick}
-            className="rounded-full shadow-[var(--shadow-glow)] gap-2"
-            style={{ background: "var(--gradient-primary)" }}
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+            className="rounded-full flex-1 sm:flex-none"
           >
-            <Plus className="h-4 w-4" /> New Workspace
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            Refresh
           </Button>
-        )}
+          {currentUser?.role === "organizer" && (
+            <Button
+              onClick={handleCreateClick}
+              className="rounded-full shadow-[var(--shadow-glow)] gap-2 flex-1 sm:flex-none"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="h-4 w-4" /> New Workspace
+            </Button>
+          )}
+        </div>
       </div>
 
       {isLoading ? (

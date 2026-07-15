@@ -57,6 +57,7 @@ export function usePlatformModules() {
           ...mod,
           href,
           icon: (LucideIcons as any)[mod.icon] || LucideIcons.LayoutDashboard,
+          category: mod.label === "Venue Designer" ? "SHARED" : mod.category,
         };
       }) as WorkspaceModule[];
 

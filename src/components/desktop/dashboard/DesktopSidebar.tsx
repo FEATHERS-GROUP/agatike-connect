@@ -20,7 +20,7 @@ export function DesktopSidebar() {
   const [isBillingGroupOpen, setIsBillingGroupOpen] = useState(false);
 
   const { data: platformModules = [] } = usePlatformModules();
-  
+
   const { data: integrations } = useQuery({
     queryKey: ["organizer-integrations"],
     queryFn: () => getOrganizerIntegrations(),
@@ -63,7 +63,8 @@ export function DesktopSidebar() {
     const legacyId = legacyIdMap[m.label];
     return legacyId && userModuleIds.includes(legacyId);
   }).filter((m) => {
-    if (!activeWorkspace?.business) {
+    const isSubExpired = currentUser?.isTrialExpired || currentUser?.isExpired;
+    if (!activeWorkspace?.business || isSubExpired) {
       const businessOnlyModules = [
         "Agatike Book",
         "Cinema / Theater",
@@ -104,11 +105,10 @@ export function DesktopSidebar() {
       }
     }
 
-    const cls = `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-      isActive
+    const cls = `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${isActive
         ? "bg-accent text-accent-foreground font-medium"
         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-    }`;
+      }`;
 
     return fullHref ? (
       <Link key={n.id} to={fullHref} className={cls}>
@@ -170,55 +170,50 @@ export function DesktopSidebar() {
               <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
                 <Link
                   to={`/dashboard/${activeWorkspace.slug}/book/tasks` as any}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.includes("/book/tasks")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.includes("/book/tasks")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.CheckSquare className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Tasks</span>
                 </Link>
                 <Link
                   to={`/dashboard/${activeWorkspace.slug}/book/notes` as any}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.includes("/book/notes")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.includes("/book/notes")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.StickyNote className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Notes</span>
                 </Link>
                 <Link
                   to={`/dashboard/${activeWorkspace.slug}/book/finance` as any}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.includes("/book/finance")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.includes("/book/finance")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.TrendingUp className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Finance</span>
                 </Link>
                 <Link
                   to={`/dashboard/${activeWorkspace.slug}/book/books` as any}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.includes("/book/books")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.includes("/book/books")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.FileText className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Custom Books</span>
                 </Link>
                 <Link
                   to={`/dashboard/${activeWorkspace.slug}/book/procurement` as any}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.includes("/book/procurement")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.includes("/book/procurement")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.ShoppingCart className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Procurement</span>
@@ -226,11 +221,10 @@ export function DesktopSidebar() {
                 {driveConnected && (
                   <Link
                     to={`/dashboard/${activeWorkspace.slug}/book/drive` as any}
-                    className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                      location.pathname.includes("/book/drive")
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.includes("/book/drive")
                         ? "bg-accent text-accent-foreground font-medium"
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <LucideIcons.HardDrive className="h-4 w-4 shrink-0" />
                     <span className="truncate flex-1">Google Drive</span>
@@ -285,33 +279,30 @@ export function DesktopSidebar() {
               <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
                 <Link
                   to="/dashboard/billing"
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname === "/dashboard/billing"
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname === "/dashboard/billing"
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.LayoutDashboard className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Overview</span>
                 </Link>
                 <Link
                   to="/dashboard/billing/subscriptions"
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.startsWith("/dashboard/billing/subscriptions")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.startsWith("/dashboard/billing/subscriptions")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.Zap className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Subscriptions</span>
                 </Link>
                 <Link
                   to="/dashboard/billing/invoices"
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-                    location.pathname.startsWith("/dashboard/billing/invoices")
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname.startsWith("/dashboard/billing/invoices")
                       ? "bg-accent text-accent-foreground font-medium"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <LucideIcons.Receipt className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1">Invoices</span>
@@ -325,11 +316,10 @@ export function DesktopSidebar() {
         <div className="mt-2 pt-2 border-t border-border/40">
           <Link
             to="/dashboard/support"
-            className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
-              location.pathname === "/dashboard/support"
+            className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${location.pathname === "/dashboard/support"
                 ? "bg-accent text-accent-foreground font-medium"
                 : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
+              }`}
           >
             <LucideIcons.LifeBuoy className="h-4 w-4 shrink-0" />
             <span className="truncate flex-1">Help &amp; Support</span>
