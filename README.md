@@ -749,6 +749,7 @@ When an organizer imports from a custom form:
 | Function            | Purpose                                       |
 | ------------------- | --------------------------------------------- |
 | `sendAttendeeEmail` | Send rich HTML email to one or more attendees |
+| `sendEmail`         | Generic utility to send emails (to, subject, html) |
 
 ---
 
