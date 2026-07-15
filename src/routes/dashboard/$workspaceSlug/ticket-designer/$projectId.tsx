@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
@@ -662,24 +662,28 @@ function TicketDesignerPage() {
       return;
     }
 
-    const ticketElement = document.getElementById("ticket-preview-container");
-    if (!ticketElement) return;
+    const frontElement = document.getElementById("export-front-container");
+    const backElement = document.getElementById("export-back-container");
+    if (!frontElement || !backElement) return;
 
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(ticketElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-      });
-      const imgData = canvas.toDataURL("image/png");
+      const frontCanvas = await htmlToImage.toCanvas(frontElement, { pixelRatio: 2 });
+      const backCanvas = await htmlToImage.toCanvas(backElement, { pixelRatio: 2 });
+      
+      const frontImgData = frontCanvas.toDataURL("image/png");
+      const backImgData = backCanvas.toDataURL("image/png");
 
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "px",
-        format: [canvas.width / 2, canvas.height / 2],
+        format: [frontCanvas.width / 2, frontCanvas.height / 2],
       });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      
+      pdf.addImage(frontImgData, "PNG", 0, 0, frontCanvas.width / 2, frontCanvas.height / 2);
+      pdf.addPage();
+      pdf.addImage(backImgData, "PNG", 0, 0, backCanvas.width / 2, backCanvas.height / 2);
+      
       pdf.save(`${projectName.replace(/\s+/g, "-").toLowerCase()}-ticket.pdf`);
     } catch (err) {
       console.error("Failed to export PDF", err);
@@ -709,6 +713,50 @@ function TicketDesignerPage() {
       ...(!sameDesignForLocations && activeTourStopIdx >= 0 && tierId
         ? overrides.combinations[`${activeTourStopIdx}_${tierId}`]
         : {}),
+    };
+  };
+
+  const getActiveTicketProps = () => {
+    let tDesign = mergedDesign;
+    let tierType = dynamicDefaults.tierName;
+    let tierCost = mergedDesign.price || dynamicDefaults.price || "0";
+    let stopSubtitle = "";
+    
+    if (editScope === "tier" && activeTierId) {
+      tDesign = getTierSpecificDesign(activeTierId);
+      const tierObj = allTicketTiers.find((t: any) => t.id === activeTierId);
+      if (tierObj) {
+        tierType = tierObj.type || "General";
+        tierCost = tierObj.cost?.toString() || "0";
+      }
+      stopSubtitle = activeTourStopIdx >= 0 && tourStops[activeTourStopIdx]?.venue
+        ? `${tourStops[activeTourStopIdx].venue} · ${tourStops[activeTourStopIdx].city}${tourStops[activeTourStopIdx].address ? `\n${tourStops[activeTourStopIdx].address}` : ""}`
+        : "";
+    }
+    
+    const cover = tDesign.cover || (assignmentType === "cinema" ? cinemaMatch?.cover_url : assignmentType === "venue" ? venueMatch?.cover_url || venueMatch?.images?.[0] : eventMatch?.cover) || "";
+
+    return {
+      template: tDesign.template,
+      palette: tDesign.palette,
+      font: tDesign.font,
+      tier: tierType,
+      title: tDesign.title || dynamicDefaults.title || "",
+      subtitle: tDesign.subtitle || stopSubtitle || dynamicDefaults.subtitle || "",
+      date: tDesign.date || (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.date : dynamicDefaults.date) || "",
+      time: tDesign.time || (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.time : dynamicDefaults.time) || "",
+      seat: tDesign.seat || dynamicDefaults.seat,
+      price: tierCost,
+      currency: tDesign.currency || dynamicDefaults.currency,
+      cover,
+      logoText: tDesign.logoText || dynamicDefaults.brand,
+      logoImage: tDesign.logoImage,
+      logoScale: tDesign.logoScale || 24,
+      logoOpacity: tDesign.logoOpacity ?? 1,
+      logoColorMode: tDesign.logoColorMode || "original",
+      orderId,
+      layout: tDesign.layout || defaultLayout,
+      back: tDesign.back || defaultBack,
     };
   };
 
@@ -1655,6 +1703,16 @@ function TicketDesignerPage() {
         resourceType="ticket_project"
         resourceId={projectId}
       />
+
+      {/* Hidden elements for PDF export */}
+      <div style={{ position: "fixed", top: "-10000px", left: "-10000px", pointerEvents: "none", zIndex: -9999 }}>
+        <div id="export-front-container" className="relative w-fit h-fit">
+          <TicketPreview {...getActiveTicketProps()} previewMode="Front" onLogoClick={() => {}} />
+        </div>
+        <div id="export-back-container" className="relative w-fit h-fit">
+          <TicketPreview {...getActiveTicketProps()} previewMode="Back" onLogoClick={() => {}} />
+        </div>
+      </div>
     </div>
   );
 }
