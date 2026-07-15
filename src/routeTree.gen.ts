@@ -158,6 +158,7 @@ import { Route as DashboardWorkspaceSlugSpacesSpaceIdOverviewRouteImport } from 
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdLocationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/locations'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
 import { Route as DashboardWorkspaceSlugRsvpsEditFormIdRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/edit.$formId'
+import { Route as DashboardWorkspaceSlugProductsEditProductIdRouteImport } from './routes/dashboard/$workspaceSlug/products/edit/$productId'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/staff'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdPlanningRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/planning'
@@ -1044,6 +1045,12 @@ const DashboardWorkspaceSlugRsvpsEditFormIdRoute =
     path: '/$workspaceSlug/rsvps/edit/$formId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugProductsEditProductIdRoute =
+  DashboardWorkspaceSlugProductsEditProductIdRouteImport.update({
+    id: '/$workspaceSlug/products/edit/$productId',
+    path: '/$workspaceSlug/products/edit/$productId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute =
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport.update({
     id: '/$workspaceSlug/experiences/$experienceId/staff',
@@ -1501,6 +1508,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
@@ -1699,6 +1707,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
@@ -1900,6 +1909,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
@@ -2103,6 +2113,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/products/edit/$productId'
     | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
@@ -2301,6 +2312,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/products/edit/$productId'
     | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
@@ -2501,6 +2513,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/products/edit/$productId'
     | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
@@ -3652,6 +3665,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugRsvpsEditFormIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/products/edit/$productId': {
+      id: '/dashboard/$workspaceSlug/products/edit/$productId'
+      path: '/$workspaceSlug/products/edit/$productId'
+      fullPath: '/dashboard/$workspaceSlug/products/edit/$productId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugProductsEditProductIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/experiences/$experienceId/staff': {
       id: '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
       path: '/$workspaceSlug/experiences/$experienceId/staff'
@@ -4197,6 +4217,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  DashboardWorkspaceSlugProductsEditProductIdRoute: typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   DashboardWorkspaceSlugRsvpsEditFormIdRoute: typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   DashboardWorkspaceSlugUsersUserIdEditRoute: typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   DashboardBillingSubscriptionsCheckoutPlanIdRoute: typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
@@ -4344,6 +4365,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute,
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute:
     DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute,
+  DashboardWorkspaceSlugProductsEditProductIdRoute:
+    DashboardWorkspaceSlugProductsEditProductIdRoute,
   DashboardWorkspaceSlugRsvpsEditFormIdRoute:
     DashboardWorkspaceSlugRsvpsEditFormIdRoute,
   DashboardWorkspaceSlugUsersUserIdEditRoute:

@@ -3,20 +3,19 @@ import { Loader2, ArrowLeft, ImageIcon, Package, Wallet, Ticket, Gift } from "lu
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useState, lazy, Suspense } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProduct } from "@/api/products";
+import { useState, lazy, Suspense, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { getProduct, updateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import { cn } from "@/lib/utils";
 
 const ReactQuill = lazy(() => import("react-quill-new"));
 import "react-quill-new/dist/quill.snow.css";
 
-export const Route = createFileRoute("/dashboard/$workspaceSlug/products/create")({
-  component: CreateProductView,
+export const Route = createFileRoute("/dashboard/$workspaceSlug/products/edit/$productId")({
+  component: EditProductView,
 });
 
 const PRODUCT_TYPES = [
@@ -46,14 +45,19 @@ const PRODUCT_TYPES = [
   },
 ];
 
-function CreateProductView() {
+function EditProductView() {
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
-  const { canCreateProduct, canCreateCampaign, canCreateGiftCard, canCreatePunchCard } =
-    useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const { productId } = Route.useParams();
   const queryClient = useQueryClient();
 
-  const [step, setStep] = useState(1);
+  const { data: product, isLoading: isFetching } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => getProduct({ data: { id: productId } } as any),
+    enabled: !!productId,
+  });
+
+  const [step, setStep] = useState(2); // Start at step 2 for editing
   const [formData, setFormData] = useState({
     type: "physical",
     name: "",
@@ -67,11 +71,28 @@ function CreateProductView() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        type: product.type || "physical",
+        name: product.name || "",
+        description: product.description || "",
+        price: product.price || "",
+        stock_limit: product.stock_limit || "",
+        value_amount: product.value_amount || "",
+        punch_count: product.punch_count || "",
+        reward_description: product.reward_description || "",
+      });
+      if (product.image_url) {
+        setImagePreview(product.image_url);
+      }
+    }
+  }, [product]);
+
   const mutation = useMutation({
     mutationFn: async () => {
       const payload: any = {
-        workspace_id: activeWorkspace?.id,
-        event_id: null,
+        id: productId,
         type: formData.type,
         name: formData.name,
         description: formData.description,
@@ -87,23 +108,22 @@ function CreateProductView() {
             ? String(formData.punch_count)
             : null,
         reward_description: formData.type === "loyalty_card" ? formData.reward_description : null,
-        sold_count: "0",
-        is_active: true,
       };
 
       if (imageFile) {
         payload.image_url = await uploadFileToStorage(imageFile, "events/products");
       }
 
-      return await createProduct({ data: payload } as any);
+      return await updateProduct({ data: payload } as any);
     },
     onSuccess: () => {
-      toast.success("Campaign item created successfully!");
+      toast.success("Campaign item updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["workspace-products", activeWorkspace?.id] });
+      queryClient.invalidateQueries({ queryKey: ["product", productId] });
       navigate({ to: `/dashboard/${activeWorkspace?.slug}/products&add-ons` });
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to create campaign item");
+      toast.error(err.message || "Failed to update campaign item");
     },
   });
 
@@ -113,32 +133,16 @@ function CreateProductView() {
       toast.error("Please fill in the required fields");
       return;
     }
-
-    let canCreate = true;
-    let limitType = "Product";
-
-    if (formData.type === "physical") {
-      canCreate = canCreateCampaign();
-      limitType = "Campaign";
-    } else if (formData.type === "voucher") {
-      canCreate = canCreateGiftCard();
-      limitType = "Gift Card";
-    } else if (formData.type === "punch_card" || formData.type === "loyalty_card") {
-      canCreate = canCreatePunchCard();
-      limitType = "Punch Card";
-    } else {
-      canCreate = canCreateProduct();
-    }
-
-    if (!canCreate) {
-      toast.error(`${limitType} Limit Reached`, {
-        description: `You have reached the maximum number of ${limitType}s allowed by your plan.`,
-      });
-      return;
-    }
-
     mutation.mutate();
   };
+
+  if (isFetching) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto w-full">
@@ -158,9 +162,9 @@ function CreateProductView() {
           <ArrowLeft className="mr-2 h-4 w-4" /> {step === 2 ? "Back to Types" : "Back to Products"}
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Create Workspace Campaign</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Edit Workspace Campaign</h1>
           <p className="text-sm text-muted-foreground">
-            {step === 1 ? "Select the type of campaign you want to create." : "Fill in the details for your campaign."}
+            {step === 1 ? "Select the type of campaign you want to edit." : "Edit the details for your campaign."}
           </p>
         </div>
       </header>
@@ -340,7 +344,7 @@ function CreateProductView() {
                 style={{ background: "var(--gradient-primary)" }}
               >
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Campaign
+                Save Changes
               </Button>
             </div>
           </form>

@@ -317,7 +317,7 @@ function WorkspaceProductsView() {
       </Tabs>
 
       <Sheet open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <SheetContent className="sm:max-w-md w-full overflow-y-auto">
+        <SheetContent className="sm:max-w-2xl w-full overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-2xl">{selectedItem?.name}</SheetTitle>
             <SheetDescription>
@@ -415,9 +415,10 @@ function WorkspaceProductsView() {
                 <h4 className="font-semibold text-lg">Details & Stats</h4>
 
                 {selectedItem.description && (
-                  <p className="text-sm text-muted-foreground bg-secondary/30 p-4 rounded-xl border border-border/50">
-                    {selectedItem.description}
-                  </p>
+                  <div
+                    className="text-sm text-muted-foreground bg-secondary/30 p-4 rounded-xl border border-border/50 break-words overflow-hidden [&>*:last-child]:mb-0 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-lg [&_h2]:font-bold [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_*]:!bg-transparent [&_*]:!text-inherit"
+                    dangerouslySetInnerHTML={{ __html: selectedItem.description }}
+                  />
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
@@ -446,12 +447,14 @@ function WorkspaceProductsView() {
                     </p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center">
-                    <Button
-                      variant="outline"
-                      className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
-                    >
-                      Edit Item
-                    </Button>
+                    <Link to="/dashboard/$workspaceSlug/products/edit/$productId" params={{ workspaceSlug: activeWorkspace?.slug as string, productId: selectedItem.id }}>
+                      <Button
+                        variant="outline"
+                        className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                      >
+                        Edit Item
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

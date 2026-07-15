@@ -90,3 +90,28 @@ export const getEventProducts = createServerFn({ method: "POST" }).handler(async
   const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, { event_id });
   return data.products || [];
 });
+
+const GET_PRODUCT = `
+  query GetProduct($id: uuid!) {
+    products_by_pk(id: $id) {
+      id
+      name
+      type
+      description
+      price
+      value_amount
+      stock_limit
+      sold_count
+      punch_count
+      reward_description
+      image_url
+      is_active
+    }
+  }
+`;
+
+export const getProduct = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ products_by_pk: any }>(GET_PRODUCT, { id });
+  return data.products_by_pk;
+});
