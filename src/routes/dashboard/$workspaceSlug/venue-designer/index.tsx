@@ -11,6 +11,7 @@ import {
   Loader2,
   Trash2,
   MapPin,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,6 +110,18 @@ function VenueDesignerIndex() {
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedTourStopIdx, setSelectedTourStopIdx] = useState(0);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const searchedProjects = dbProjects.filter((p: any) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const eventObj = events.find((e: any) => e.id === p.event_id);
+    const displayTitle = p.name || "Untitled Venue";
+    return (
+      displayTitle.toLowerCase().includes(q) ||
+      (eventObj && eventObj.title.toLowerCase().includes(q))
+    );
+  });
 
   const activeEvent = events.find((e: any) => e.id === selectedEventId);
   const hasMultipleStops =
@@ -242,43 +255,39 @@ function VenueDesignerIndex() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <Link to="/dashboard" className="rounded-full p-2 hover:bg-secondary transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <p className="text-xs text-muted-foreground">Dashboard / Tools</p>
-            <h1 className="text-lg font-semibold">Venue Designer</h1>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 relative overflow-hidden">
+      {/* Decorative subtle background blobs */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none translate-x-1/3 -translate-y-1/4" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-green-500/5 rounded-full blur-3xl pointer-events-none -translate-x-1/4 translate-y-1/3" />
 
-      <main className="mx-auto max-w-6xl p-6 lg:p-10 space-y-12">
+      <main className="mx-auto max-w-7xl p-6 lg:p-10 space-y-16 relative z-10">
         {/* New Project Section */}
-        <section>
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold tracking-tight">Create New Venue Map</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Select a starting template for your interactive seating map.
+        <section className="relative">
+          <div className="mb-8 max-w-2xl">
+            <h2 className="text-3xl font-bold tracking-tight mb-2">Create New Venue Map</h2>
+            <p className="text-base text-muted-foreground">
+              Select a starting template for your interactive seating plan.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {templates.map((t) => (
               <button
                 key={t.id}
                 onClick={() => openSetupModal(t.id)}
-                className="group relative flex flex-col items-start gap-4 rounded-3xl border border-border/60 bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="group relative flex flex-col items-start gap-4 rounded-[2rem] border border-border/50 bg-card/60 backdrop-blur-sm p-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/40 hover:bg-card focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
-                <div className={`p-3 rounded-2xl ${t.bg}`}>
+                <div
+                  className={`p-3.5 rounded-2xl ${t.bg} transition-transform duration-300 group-hover:scale-110`}
+                >
                   <t.icon className="h-6 w-6" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{t.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{t.desc}</p>
+                <div className="mt-2">
+                  <h3 className="font-semibold text-lg tracking-tight">{t.label}</h3>
+                  <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                    {t.desc}
+                  </p>
                 </div>
-                <div className="mt-auto pt-4 flex items-center text-sm font-medium text-primary opacity-0 -translate-x-4 transition-all group-hover:opacity-100 group-hover:translate-x-0">
+                <div className="mt-auto pt-5 flex items-center text-sm font-semibold text-primary opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
                   Select Template <ChevronRight className="ml-1 h-4 w-4" />
                 </div>
               </button>
@@ -288,30 +297,37 @@ function VenueDesignerIndex() {
 
         {/* Setup Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Setup Venue Project</DialogTitle>
-              <DialogDescription>
-                {modalStep === 1
-                  ? "Link this venue map to an existing event."
-                  : "Configure your custom blank canvas boundaries."}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleNext} className="space-y-4 py-4">
+          <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-0 overflow-hidden border-border/50 shadow-2xl">
+            <div className="p-6 bg-gradient-to-b from-secondary/30 to-transparent border-b border-border/50">
+              <DialogHeader>
+                <DialogTitle className="text-xl">Setup Venue Project</DialogTitle>
+                <DialogDescription className="text-sm mt-1.5">
+                  {modalStep === 1
+                    ? "Link this venue map to an existing event."
+                    : "Configure your custom blank canvas boundaries."}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+            <form onSubmit={handleNext} className="p-6 space-y-5">
               {modalStep === 1 ? (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="projectName">Project Name</Label>
+                  <div className="space-y-2.5">
+                    <Label htmlFor="projectName" className="text-sm font-medium">
+                      Project Name
+                    </Label>
                     <Input
                       id="projectName"
                       value={newProjectName}
                       onChange={(e) => setNewProjectName(e.target.value)}
                       placeholder="e.g. VIP Main Stage Map"
+                      className="h-11 rounded-xl"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="eventSelect">Select Event *</Label>
+                  <div className="space-y-2.5">
+                    <Label htmlFor="eventSelect" className="text-sm font-medium">
+                      Select Event *
+                    </Label>
                     <select
                       id="eventSelect"
                       value={selectedEventId}
@@ -319,12 +335,12 @@ function VenueDesignerIndex() {
                         setSelectedEventId(e.target.value);
                         setSelectedTourStopIdx(-1);
                       }}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-shadow"
                       required
                     >
                       <option value="">-- Select Event --</option>
                       {events.map((ev: any) => (
-                        <option key={ev.id} value={ev.id}>
+                        <option key={ev.id} value={ev.id} className="font-normal">
                           {ev.title}
                         </option>
                       ))}
@@ -332,13 +348,15 @@ function VenueDesignerIndex() {
                   </div>
 
                   {hasMultipleStops && (
-                    <div className="space-y-2">
-                      <Label htmlFor="tourStopSelect">Select Location / Tour Stop *</Label>
+                    <div className="space-y-2.5">
+                      <Label htmlFor="tourStopSelect" className="text-sm font-medium">
+                        Select Location / Tour Stop *
+                      </Label>
                       <select
                         id="tourStopSelect"
                         value={selectedTourStopIdx}
                         onChange={(e) => setSelectedTourStopIdx(Number(e.target.value))}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-shadow"
                         required
                       >
                         <option value={-1}>All Locations (Same Design)</option>
@@ -353,10 +371,10 @@ function VenueDesignerIndex() {
                 </>
               ) : (
                 <>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Canvas Boundary Shape</Label>
-                      <div className="grid grid-cols-4 gap-2">
+                  <div className="space-y-5">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Canvas Boundary Shape</Label>
+                      <div className="grid grid-cols-4 gap-2.5">
                         {[
                           "rect",
                           "circle",
@@ -371,7 +389,7 @@ function VenueDesignerIndex() {
                             key={shape}
                             type="button"
                             onClick={() => setBoundaryShape(shape as any)}
-                            className={`p-2 rounded-lg border text-xs capitalize text-center ${boundaryShape === shape ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:bg-secondary"}`}
+                            className={`p-2.5 rounded-xl border text-xs capitalize text-center transition-all ${boundaryShape === shape ? "border-primary bg-primary/10 text-primary font-semibold shadow-sm" : "border-border hover:border-primary/40 hover:bg-secondary/50"}`}
                           >
                             {shape.replace("_", " ")}
                           </button>
@@ -379,9 +397,9 @@ function VenueDesignerIndex() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Focal Point (Pitch/Stage)</Label>
-                      <div className="grid grid-cols-4 gap-2">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Focal Point (Pitch/Stage)</Label>
+                      <div className="grid grid-cols-4 gap-2.5">
                         {[
                           { id: "none", label: "Empty" },
                           { id: "basketball", label: "Basketball" },
@@ -392,7 +410,7 @@ function VenueDesignerIndex() {
                             key={p.id}
                             type="button"
                             onClick={() => setPitchType(p.id as any)}
-                            className={`p-2 rounded-lg border text-xs capitalize text-center ${pitchType === p.id ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:bg-secondary"}`}
+                            className={`p-2.5 rounded-xl border text-xs capitalize text-center transition-all ${pitchType === p.id ? "border-primary bg-primary/10 text-primary font-semibold shadow-sm" : "border-border hover:border-primary/40 hover:bg-secondary/50"}`}
                           >
                             {p.label}
                           </button>
@@ -403,21 +421,30 @@ function VenueDesignerIndex() {
                 </>
               )}
 
-              <DialogFooter className="pt-4">
+              <DialogFooter className="pt-6">
                 {modalStep === 2 && (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setModalStep(1)}
-                    className="mr-auto"
+                    className="mr-auto rounded-xl"
                   >
                     Back
                   </Button>
                 )}
-                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsModalOpen(false)}
+                  className="rounded-xl"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={createMutation.isPending}
+                  className="rounded-xl px-6"
+                >
                   {createMutation.isPending ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : null}
@@ -430,19 +457,20 @@ function VenueDesignerIndex() {
 
         {/* Delete Confirm Modal */}
         <Dialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-border/50 shadow-2xl p-6">
             <DialogHeader>
-              <DialogTitle>Delete Venue Map</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-xl">Delete Venue Map</DialogTitle>
+              <DialogDescription className="text-sm mt-1.5 leading-relaxed">
                 Are you sure you want to delete this venue map? This action cannot be undone. If it
                 is linked to an event, the event will automatically be unlinked.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="mt-4">
+            <DialogFooter className="mt-6">
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => setProjectToDelete(null)}
                 disabled={deleteMutation.isPending}
+                className="rounded-xl"
               >
                 Cancel
               </Button>
@@ -454,6 +482,7 @@ function VenueDesignerIndex() {
                   }
                 }}
                 disabled={deleteMutation.isPending}
+                className="rounded-xl px-6"
               >
                 {deleteMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -466,35 +495,46 @@ function VenueDesignerIndex() {
 
         {/* Saved Projects Section */}
         <section>
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight">Saved Venue Maps</h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h2 className="text-2xl font-bold tracking-tight mb-2">Saved Venue Maps</h2>
+              <p className="text-base text-muted-foreground">
                 Manage and edit your existing interactive seating plans.
               </p>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search venues..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-xl bg-card/60 backdrop-blur-sm border-border/50 focus-visible:ring-primary shadow-sm"
+              />
             </div>
           </div>
 
           <FolderManager
             moduleType="venue_designer"
-            items={dbProjects}
+            items={searchedProjects}
             getItemId={(item) => item.id}
             getFolderId={(item) => item.folder_id}
             onMoveItems={handleBulkMove}
             onDeleteItems={handleBulkDelete}
           >
             {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                 {isLoadingProjects ? (
-                  <div className="col-span-full flex flex-col items-center justify-center py-12">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-sm text-muted-foreground mt-2">Loading venue projects...</p>
+                  <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    <p className="text-sm font-medium text-muted-foreground mt-4">
+                      Loading venue projects...
+                    </p>
                   </div>
                 ) : filteredItems.length === 0 ? (
-                  <div className="col-span-full text-center py-12 bg-card rounded-[2rem] border border-dashed border-border/60 p-8">
-                    <MapPin className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                    <h3 className="text-lg font-semibold">No Venue Projects</h3>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">
+                    <MapPin className="mx-auto h-16 w-16 bg-secondary/50 rounded-full flex items-center justify-center p-4 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold tracking-tight">No Venue Projects</h3>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
                       Create your first venue seating map by selecting a template above.
                     </p>
                   </div>
@@ -503,11 +543,10 @@ function VenueDesignerIndex() {
                     const eventObj = events.find((e: any) => e.id === proj.event_id);
                     const displayTitle = proj.name || "Untitled Venue";
                     const stopIdx = proj.tour_stop_idx ?? 0;
-                    let venueImage = null;
+                    let venueImage = eventObj?.cover || null;
                     let locationName = "";
 
                     if (stopIdx === -1) {
-                      venueImage = eventObj?.cover || null;
                       if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
                         locationName = " - All Locations";
                       }
@@ -515,7 +554,10 @@ function VenueDesignerIndex() {
                       Array.isArray(eventObj?.tour_stops) &&
                       eventObj.tour_stops.length > stopIdx
                     ) {
-                      venueImage = eventObj.tour_stops[stopIdx].venue_image_url;
+                      const stopImage = eventObj.tour_stops[stopIdx]?.venue_image_url;
+                      if (stopImage) {
+                        venueImage = stopImage;
+                      }
                       if (eventObj.tour_stops.length > 1) {
                         locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
                       }
@@ -526,52 +568,53 @@ function VenueDesignerIndex() {
                     return (
                       <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
                         <div
-                          className="relative group rounded-3xl border overflow-hidden shadow-sm transition-all hover:shadow-lg focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                          className="relative group rounded-[1.5rem] border bg-card overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
                           style={{
                             borderColor: isSelected
                               ? "hsl(var(--primary))"
-                              : "hsl(var(--border) / 0.6)",
+                              : "hsl(var(--border) / 0.5)",
                           }}
                         >
                           <div
-                            className="absolute top-3 left-3 z-20"
+                            className="absolute top-3 left-3 z-20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
                             onClick={(e) => e.stopPropagation()}
+                            data-state={isSelected ? "checked" : "unchecked"}
                           >
                             <Checkbox
                               checked={isSelected}
                               onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
-                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                              className="bg-background/90 backdrop-blur-md border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-sm"
                             />
                           </div>
                           <Link
                             to="/dashboard/$workspaceSlug/venue-designer/$projectId"
                             params={{ workspaceSlug, projectId: proj.id }}
-                            className="block h-full"
+                            className="flex flex-col h-full"
                           >
-                            <div className="h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50">
+                            <div className="h-40 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50 shrink-0">
                               {venueImage && (
                                 <img
                                   src={venueImage}
                                   alt=""
-                                  className="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-500"
+                                  className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700"
                                 />
                               )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 pointer-events-none" />
-                              <div className="relative z-10 text-white drop-shadow-md">
-                                <p className="text-xs opacity-80 uppercase tracking-wider line-clamp-1">
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 pointer-events-none" />
+                              <div className="relative z-10 text-white drop-shadow-md mt-auto">
+                                <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest line-clamp-1 mb-1.5 text-primary-foreground">
                                   {eventObj?.title || "No event linked"}
                                   {locationName}
                                 </p>
-                                <h3 className="text-xl font-bold leading-tight mt-1 drop-shadow-lg">
+                                <h3 className="text-xl font-bold leading-tight drop-shadow-lg line-clamp-1">
                                   {displayTitle}
                                 </h3>
                               </div>
                             </div>
-                            <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                              <span>Edit Map</span>
-                              <div className="flex items-center gap-2">
+                            <div className="px-5 py-4 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors bg-card">
+                              <span className="font-medium text-[13px]">Edit Map</span>
+                              <div className="flex items-center gap-1.5">
                                 <button
-                                  className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                                  className="p-2 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors z-20"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();

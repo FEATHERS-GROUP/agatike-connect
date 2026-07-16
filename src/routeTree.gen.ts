@@ -68,7 +68,7 @@ import { Route as StaffEventEventIdRouteImport } from './routes/staff.event.$eve
 import { Route as SpacesSuccessSpaceIdRouteImport } from './routes/spaces/success/$spaceId'
 import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/checkout/$spaceId'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public/badge/$badgeId'
-import { Route as InternalControlAdminRouteImport } from './routes/internal.control.admin'
+import { Route as InternalControlAdminRouteImport } from './routes/internal/control/admin'
 import { Route as FEventIdReviewRouteImport } from './routes/f/$eventId/review'
 import { Route as DashboardBillingInvoicesRouteImport } from './routes/dashboard/billing/invoices'
 import { Route as DashboardWorkspaceSlugVipAccessRouteImport } from './routes/dashboard.$workspaceSlug.vip-access'
@@ -78,7 +78,7 @@ import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dash
 import { Route as DashboardWorkspaceSlugProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/products&add-ons'
 import { Route as DashboardWorkspaceSlugMembershipsRouteImport } from './routes/dashboard/$workspaceSlug/memberships'
 import { Route as DashboardWorkspaceSlugCommunityRouteImport } from './routes/dashboard/$workspaceSlug/community'
-import { Route as InternalControlAdminIndexRouteImport } from './routes/internal.control.admin.index'
+import { Route as InternalControlAdminIndexRouteImport } from './routes/internal/control/admin/index'
 import { Route as DashboardBillingSubscriptionsIndexRouteImport } from './routes/dashboard/billing/subscriptions/index'
 import { Route as DashboardWorkspaceSlugWithdrawalsIndexRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/index'
 import { Route as DashboardWorkspaceSlugVenueDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/venue-designer/index'
@@ -92,14 +92,14 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
-import { Route as InternalControlAdminUsersRouteImport } from './routes/internal.control.admin.users'
-import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal.control.admin.transactions'
-import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal.control.admin.providers'
-import { Route as InternalControlAdminModulesRouteImport } from './routes/internal.control.admin.modules'
-import { Route as InternalControlAdminLoginRouteImport } from './routes/internal.control.admin.login'
-import { Route as InternalControlAdminLeadsRouteImport } from './routes/internal.control.admin.leads'
-import { Route as InternalControlAdminHealthRouteImport } from './routes/internal.control.admin.health'
-import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal.control.admin.earnings'
+import { Route as InternalControlAdminUsersRouteImport } from './routes/internal/control/admin/users'
+import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal/control/admin/transactions'
+import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal/control/admin/providers'
+import { Route as InternalControlAdminModulesRouteImport } from './routes/internal/control/admin/modules'
+import { Route as InternalControlAdminLoginRouteImport } from './routes/internal/control/admin/login'
+import { Route as InternalControlAdminLeadsRouteImport } from './routes/internal/control/admin/leads'
+import { Route as InternalControlAdminHealthRouteImport } from './routes/internal/control/admin/health'
+import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal/control/admin/earnings'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
@@ -112,6 +112,7 @@ import { Route as DashboardWorkspaceSlugSpacesCreateSpaceRouteImport } from './r
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId'
 import { Route as DashboardWorkspaceSlugRsvpsCreateRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/create'
 import { Route as DashboardWorkspaceSlugRsvpsFormIdRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/$formId'
+import { Route as DashboardWorkspaceSlugProductsCreateRouteImport } from './routes/dashboard/$workspaceSlug/products/create'
 import { Route as DashboardWorkspaceSlugPageBuilderEditorRouteImport } from './routes/dashboard/$workspaceSlug/page-builder/editor'
 import { Route as DashboardWorkspaceSlugExperiencesCreateExperienceRouteImport } from './routes/dashboard/$workspaceSlug/experiences/create-experience'
 import { Route as DashboardWorkspaceSlugEventsCreateEventRouteImport } from './routes/dashboard/$workspaceSlug/events/create-event'
@@ -130,19 +131,19 @@ import { Route as DashboardWorkspaceSlugCinemaCreateMovieRouteImport } from './r
 import { Route as DashboardWorkspaceSlugCinemaCreateRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/create'
 import { Route as DashboardWorkspaceSlugCinemaAnalyticsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/analytics'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId'
-import { Route as InternalControlAdminSupportIndexRouteImport } from './routes/internal.control.admin.support.index'
-import { Route as InternalControlAdminPricingIndexRouteImport } from './routes/internal.control.admin.pricing.index'
-import { Route as InternalControlAdminOrganizersIndexRouteImport } from './routes/internal.control.admin.organizers.index'
-import { Route as InternalControlAdminAgatikeUsersIndexRouteImport } from './routes/internal.control.admin.agatike-users.index'
+import { Route as InternalControlAdminSupportIndexRouteImport } from './routes/internal/control/admin/support/index'
+import { Route as InternalControlAdminPricingIndexRouteImport } from './routes/internal/control/admin/pricing/index'
+import { Route as InternalControlAdminOrganizersIndexRouteImport } from './routes/internal/control/admin/organizers/index'
+import { Route as InternalControlAdminAgatikeUsersIndexRouteImport } from './routes/internal/control/admin/agatike-users/index'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/index'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/index'
 import { Route as DashboardWorkspaceSlugEventsEventIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/index'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/index'
 import { Route as VenuesVenueIdFacilitiesCheckoutFacilityIdRouteImport } from './routes/venues/$venueId_/facilities/checkout/$facilityId'
-import { Route as InternalControlAdminSupportTicketIdRouteImport } from './routes/internal.control.admin.support.$ticketId'
-import { Route as InternalControlAdminPricingPlanIdRouteImport } from './routes/internal.control.admin.pricing.$planId'
-import { Route as InternalControlAdminOrganizersOrganizerIdRouteImport } from './routes/internal.control.admin.organizers.$organizerId'
-import { Route as InternalControlAdminAgatikeUsersUserIdRouteImport } from './routes/internal.control.admin.agatike-users.$userId'
+import { Route as InternalControlAdminSupportTicketIdRouteImport } from './routes/internal/control/admin/support/$ticketId'
+import { Route as InternalControlAdminPricingPlanIdRouteImport } from './routes/internal/control/admin/pricing/$planId'
+import { Route as InternalControlAdminOrganizersOrganizerIdRouteImport } from './routes/internal/control/admin/organizers/$organizerId'
+import { Route as InternalControlAdminAgatikeUsersUserIdRouteImport } from './routes/internal/control/admin/agatike-users/$userId'
 import { Route as DashboardBillingSubscriptionsCheckoutPlanIdRouteImport } from './routes/dashboard/billing/subscriptions/checkout.$planId'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/settings'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdPricingRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/pricing'
@@ -156,6 +157,8 @@ import { Route as DashboardWorkspaceSlugSpacesSpaceIdPlansRouteImport } from './
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/overview'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdLocationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/locations'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
+import { Route as DashboardWorkspaceSlugRsvpsEditFormIdRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/edit.$formId'
+import { Route as DashboardWorkspaceSlugProductsEditProductIdRouteImport } from './routes/dashboard/$workspaceSlug/products/edit/$productId'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/staff'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdPlanningRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/planning'
@@ -185,24 +188,24 @@ import { Route as DashboardWorkspaceSlugCinemaCinemaIdIntegrationsRouteImport } 
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdCreateScheduleRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/create-schedule'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/bookings'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdArchiveRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/archive'
-import { Route as InternalControlAdminOrganizersOrganizerIdIndexRouteImport } from './routes/internal.control.admin.organizers.$organizerId.index'
-import { Route as InternalControlAdminOrganizersOrganizerIdWorkspacesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.workspaces'
-import { Route as InternalControlAdminOrganizersOrganizerIdWalletsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.wallets'
-import { Route as InternalControlAdminOrganizersOrganizerIdVenuesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.venues'
-import { Route as InternalControlAdminOrganizersOrganizerIdUsersRouteImport } from './routes/internal.control.admin.organizers.$organizerId.users'
-import { Route as InternalControlAdminOrganizersOrganizerIdSubscriptionsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.subscriptions'
-import { Route as InternalControlAdminOrganizersOrganizerIdSettingsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.settings'
-import { Route as InternalControlAdminOrganizersOrganizerIdRsvpsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.rsvps'
-import { Route as InternalControlAdminOrganizersOrganizerIdProjectsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.projects'
-import { Route as InternalControlAdminOrganizersOrganizerIdModulesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.modules'
-import { Route as InternalControlAdminOrganizersOrganizerIdMembershipsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.memberships'
-import { Route as InternalControlAdminOrganizersOrganizerIdInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.invoices'
-import { Route as InternalControlAdminOrganizersOrganizerIdFormsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.forms'
-import { Route as InternalControlAdminOrganizersOrganizerIdEventsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.events'
-import { Route as InternalControlAdminOrganizersOrganizerIdContributorsRouteImport } from './routes/internal.control.admin.organizers.$organizerId.contributors'
-import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book-invoices'
-import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal.control.admin.organizers.$organizerId.book'
-import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal.control.admin.organizers.$organizerId.attendees'
+import { Route as InternalControlAdminOrganizersOrganizerIdIndexRouteImport } from './routes/internal/control/admin/organizers/$organizerId/index'
+import { Route as InternalControlAdminOrganizersOrganizerIdWorkspacesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/workspaces'
+import { Route as InternalControlAdminOrganizersOrganizerIdWalletsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/wallets'
+import { Route as InternalControlAdminOrganizersOrganizerIdVenuesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/venues'
+import { Route as InternalControlAdminOrganizersOrganizerIdUsersRouteImport } from './routes/internal/control/admin/organizers/$organizerId/users'
+import { Route as InternalControlAdminOrganizersOrganizerIdSubscriptionsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/subscriptions'
+import { Route as InternalControlAdminOrganizersOrganizerIdSettingsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/settings'
+import { Route as InternalControlAdminOrganizersOrganizerIdRsvpsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/rsvps'
+import { Route as InternalControlAdminOrganizersOrganizerIdProjectsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/projects'
+import { Route as InternalControlAdminOrganizersOrganizerIdModulesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/modules'
+import { Route as InternalControlAdminOrganizersOrganizerIdMembershipsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/memberships'
+import { Route as InternalControlAdminOrganizersOrganizerIdInvoicesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/invoices'
+import { Route as InternalControlAdminOrganizersOrganizerIdFormsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/forms'
+import { Route as InternalControlAdminOrganizersOrganizerIdEventsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/events'
+import { Route as InternalControlAdminOrganizersOrganizerIdContributorsRouteImport } from './routes/internal/control/admin/organizers/$organizerId/contributors'
+import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/book-invoices'
+import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal/control/admin/organizers/$organizerId/book'
+import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/attendees'
 import { Route as DashboardWorkspaceSlugEventsEventIdStaffAddRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/staff_.add'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings'
@@ -766,6 +769,12 @@ const DashboardWorkspaceSlugRsvpsFormIdRoute =
     path: '/$workspaceSlug/rsvps/$formId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugProductsCreateRoute =
+  DashboardWorkspaceSlugProductsCreateRouteImport.update({
+    id: '/$workspaceSlug/products/create',
+    path: '/$workspaceSlug/products/create',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugPageBuilderEditorRoute =
   DashboardWorkspaceSlugPageBuilderEditorRouteImport.update({
     id: '/$workspaceSlug/page-builder/editor',
@@ -1029,6 +1038,18 @@ const DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute =
     id: '/integrations',
     path: '/integrations',
     getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
+  } as any)
+const DashboardWorkspaceSlugRsvpsEditFormIdRoute =
+  DashboardWorkspaceSlugRsvpsEditFormIdRouteImport.update({
+    id: '/$workspaceSlug/rsvps/edit/$formId',
+    path: '/$workspaceSlug/rsvps/edit/$formId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugProductsEditProductIdRoute =
+  DashboardWorkspaceSlugProductsEditProductIdRouteImport.update({
+    id: '/$workspaceSlug/products/edit/$productId',
+    path: '/$workspaceSlug/products/edit/$productId',
+    getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute =
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport.update({
@@ -1423,6 +1444,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   '/dashboard/$workspaceSlug/page-builder/editor': typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  '/dashboard/$workspaceSlug/products/create': typeof DashboardWorkspaceSlugProductsCreateRoute
   '/dashboard/$workspaceSlug/rsvps/$formId': typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   '/dashboard/$workspaceSlug/rsvps/create': typeof DashboardWorkspaceSlugRsvpsCreateRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId': typeof DashboardWorkspaceSlugSpacesSpaceIdRouteWithChildren
@@ -1486,6 +1508,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
+  '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
@@ -1620,6 +1644,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   '/dashboard/$workspaceSlug/page-builder/editor': typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  '/dashboard/$workspaceSlug/products/create': typeof DashboardWorkspaceSlugProductsCreateRoute
   '/dashboard/$workspaceSlug/rsvps/$formId': typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   '/dashboard/$workspaceSlug/rsvps/create': typeof DashboardWorkspaceSlugRsvpsCreateRoute
   '/dashboard/$workspaceSlug/spaces/create-space': typeof DashboardWorkspaceSlugSpacesCreateSpaceRoute
@@ -1682,6 +1707,8 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
+  '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
@@ -1818,6 +1845,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   '/dashboard/$workspaceSlug/page-builder/editor': typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  '/dashboard/$workspaceSlug/products/create': typeof DashboardWorkspaceSlugProductsCreateRoute
   '/dashboard/$workspaceSlug/rsvps/$formId': typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   '/dashboard/$workspaceSlug/rsvps/create': typeof DashboardWorkspaceSlugRsvpsCreateRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId': typeof DashboardWorkspaceSlugSpacesSpaceIdRouteWithChildren
@@ -1881,6 +1909,8 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/experiences/$experienceId/planning': typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons': typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
+  '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
@@ -2019,6 +2049,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
     | '/dashboard/$workspaceSlug/page-builder/editor'
+    | '/dashboard/$workspaceSlug/products/create'
     | '/dashboard/$workspaceSlug/rsvps/$formId'
     | '/dashboard/$workspaceSlug/rsvps/create'
     | '/dashboard/$workspaceSlug/spaces/$spaceId'
@@ -2082,6 +2113,8 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/products/edit/$productId'
+    | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
@@ -2216,6 +2249,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
     | '/dashboard/$workspaceSlug/page-builder/editor'
+    | '/dashboard/$workspaceSlug/products/create'
     | '/dashboard/$workspaceSlug/rsvps/$formId'
     | '/dashboard/$workspaceSlug/rsvps/create'
     | '/dashboard/$workspaceSlug/spaces/create-space'
@@ -2278,6 +2312,8 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/products/edit/$productId'
+    | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
@@ -2413,6 +2449,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
     | '/dashboard/$workspaceSlug/page-builder/editor'
+    | '/dashboard/$workspaceSlug/products/create'
     | '/dashboard/$workspaceSlug/rsvps/$formId'
     | '/dashboard/$workspaceSlug/rsvps/create'
     | '/dashboard/$workspaceSlug/spaces/$spaceId'
@@ -2476,6 +2513,8 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/planning'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/products&add-ons'
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
+    | '/dashboard/$workspaceSlug/products/edit/$productId'
+    | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
@@ -3304,6 +3343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugRsvpsFormIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/products/create': {
+      id: '/dashboard/$workspaceSlug/products/create'
+      path: '/$workspaceSlug/products/create'
+      fullPath: '/dashboard/$workspaceSlug/products/create'
+      preLoaderRoute: typeof DashboardWorkspaceSlugProductsCreateRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/page-builder/editor': {
       id: '/dashboard/$workspaceSlug/page-builder/editor'
       path: '/$workspaceSlug/page-builder/editor'
@@ -3611,6 +3657,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
       preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
+    }
+    '/dashboard/$workspaceSlug/rsvps/edit/$formId': {
+      id: '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+      path: '/$workspaceSlug/rsvps/edit/$formId'
+      fullPath: '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugRsvpsEditFormIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/products/edit/$productId': {
+      id: '/dashboard/$workspaceSlug/products/edit/$productId'
+      path: '/$workspaceSlug/products/edit/$productId'
+      fullPath: '/dashboard/$workspaceSlug/products/edit/$productId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugProductsEditProductIdRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/experiences/$experienceId/staff': {
       id: '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
@@ -4112,6 +4172,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugEventsCreateEventRoute: typeof DashboardWorkspaceSlugEventsCreateEventRoute
   DashboardWorkspaceSlugExperiencesCreateExperienceRoute: typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   DashboardWorkspaceSlugPageBuilderEditorRoute: typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  DashboardWorkspaceSlugProductsCreateRoute: typeof DashboardWorkspaceSlugProductsCreateRoute
   DashboardWorkspaceSlugRsvpsFormIdRoute: typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   DashboardWorkspaceSlugRsvpsCreateRoute: typeof DashboardWorkspaceSlugRsvpsCreateRoute
   DashboardWorkspaceSlugSpacesSpaceIdRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRouteWithChildren
@@ -4156,6 +4217,8 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdPlanningRoute
   DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
+  DashboardWorkspaceSlugProductsEditProductIdRoute: typeof DashboardWorkspaceSlugProductsEditProductIdRoute
+  DashboardWorkspaceSlugRsvpsEditFormIdRoute: typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
   DashboardWorkspaceSlugUsersUserIdEditRoute: typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   DashboardBillingSubscriptionsCheckoutPlanIdRoute: typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   DashboardWorkspaceSlugEventsEventIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
@@ -4215,6 +4278,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugExperiencesCreateExperienceRoute,
   DashboardWorkspaceSlugPageBuilderEditorRoute:
     DashboardWorkspaceSlugPageBuilderEditorRoute,
+  DashboardWorkspaceSlugProductsCreateRoute:
+    DashboardWorkspaceSlugProductsCreateRoute,
   DashboardWorkspaceSlugRsvpsFormIdRoute:
     DashboardWorkspaceSlugRsvpsFormIdRoute,
   DashboardWorkspaceSlugRsvpsCreateRoute:
@@ -4300,6 +4365,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugExperiencesExperienceIdProductsChar38addOnsRoute,
   DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute:
     DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute,
+  DashboardWorkspaceSlugProductsEditProductIdRoute:
+    DashboardWorkspaceSlugProductsEditProductIdRoute,
+  DashboardWorkspaceSlugRsvpsEditFormIdRoute:
+    DashboardWorkspaceSlugRsvpsEditFormIdRoute,
   DashboardWorkspaceSlugUsersUserIdEditRoute:
     DashboardWorkspaceSlugUsersUserIdEditRoute,
   DashboardBillingSubscriptionsCheckoutPlanIdRoute:

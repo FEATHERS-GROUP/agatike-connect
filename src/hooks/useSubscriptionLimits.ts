@@ -4,6 +4,7 @@ import {
   getOrganizerUsageStats,
   getWorkspaceUsageStats,
 } from "@/api/billing";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 
 export function useSubscriptionLimits(
   organizerId: string | undefined,
@@ -29,7 +30,7 @@ export function useSubscriptionLimits(
 
   // usage_limits is stored as jsonb – may need parsing
   const rawLimits = subscription?.pricing_plan?.usage_limits;
-  const limits: Record<string, any> =
+  const dbLimits: Record<string, any> =
     typeof rawLimits === "string"
       ? (() => {
           try {
@@ -40,6 +41,23 @@ export function useSubscriptionLimits(
         })()
       : rawLimits || {};
 
+  const { currentUser } = useWorkspace() as any;
+  const isTrial = currentUser?.isTrialActive;
+
+  const limits: Record<string, any> = isTrial
+    ? new Proxy(
+        {},
+        {
+          get: (target, prop) => {
+            if (typeof prop === "string" && (prop.startsWith("has_") || prop.startsWith("can_"))) {
+              return true;
+            }
+            return -1;
+          },
+        },
+      )
+    : dbLimits;
+
   const isLoading = subLoading || statsLoading || (!!workspaceId && wsStatsLoading);
 
   /** Helper: returns true when limit is -1/undefined (unlimited) or count is within limit */
@@ -48,8 +66,8 @@ export function useSubscriptionLimits(
     const limit = limits[limitKey];
     if (limit === -1 || limit === undefined || limit === null) return true;
     const count = useWorkspace
-      ? (workspaceStats?.[limitKey.replace("max_", "")] ?? 0)
-      : (stats?.[limitKey.replace("max_", "")] ?? 0);
+      ? (workspaceStats?.[limitKey.replace("max_", "") as keyof typeof workspaceStats] ?? 0)
+      : (stats?.[limitKey.replace("max_", "") as keyof typeof stats] ?? 0);
     return count < limit;
   };
 

@@ -54,7 +54,7 @@ export function PageSettingsPanel({
   ];
 
   return (
-    <div className="flex flex-col gap-px bg-border/40 rounded-xl overflow-hidden border border-border/50 shadow-sm min-h-full">
+    <div className="flex flex-col gap-px bg-border/40 min-h-full">
       {/* Toolbox */}
       <div className="bg-card p-4">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-3 flex items-center gap-2">

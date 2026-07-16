@@ -330,37 +330,68 @@ function PricingPlansPage() {
 
               {(() => {
                 const isActivePlan = activeSub?.plan_id === plan.id;
+                const isBusinessAccount = activeWorkspace?.business === true;
+                const isBusinessOrEnterprisePlan =
+                  plan.name.toLowerCase().includes("business") ||
+                  plan.name.toLowerCase().includes("enterprise");
+                const isProPlan = plan.name.toLowerCase().includes("pro");
+
+                let buttonDisabled = isActivePlan;
+                let buttonText = isActivePlan
+                  ? "Current Plan"
+                  : isEnterprise
+                    ? "Contact Sales"
+                    : plan.price === 0
+                      ? "Get Started"
+                      : "Upgrade Now";
+
+                if (!isBusinessAccount && isBusinessOrEnterprisePlan) {
+                  buttonDisabled = true;
+                  buttonText = "Requires Business Account";
+                }
+
+                if (isBusinessAccount && isProPlan) {
+                  buttonDisabled = true;
+                  buttonText = "For Personal Accounts Only";
+                }
+
                 return (
-                  <Button
-                    onClick={() => {
-                      if (isActivePlan) return;
-                      if (isEnterprise) {
-                        setIsSalesDrawerOpen(true);
-                      } else {
-                        handleUpgrade(plan);
+                  <div className="w-full flex flex-col mb-8">
+                    <Button
+                      onClick={() => {
+                        if (buttonDisabled) return;
+                        if (isEnterprise) {
+                          setIsSalesDrawerOpen(true);
+                        } else {
+                          handleUpgrade(plan);
+                        }
+                      }}
+                      disabled={buttonDisabled}
+                      variant={isActivePlan ? "secondary" : plan.is_popular ? "default" : "outline"}
+                      className={`w-full rounded-full h-11 ${
+                        plan.is_popular && !isActivePlan && !buttonDisabled
+                          ? "shadow-md hover:scale-105 transition-transform"
+                          : ""
+                      } ${buttonDisabled ? "opacity-75 cursor-not-allowed font-bold" : ""}`}
+                      style={
+                        plan.is_popular && !isActivePlan && !buttonDisabled
+                          ? { background: "var(--gradient-primary)" }
+                          : {}
                       }
-                    }}
-                    disabled={isActivePlan}
-                    variant={isActivePlan ? "secondary" : plan.is_popular ? "default" : "outline"}
-                    className={`w-full rounded-full mb-8 h-11 ${
-                      plan.is_popular && !isActivePlan
-                        ? "shadow-md hover:scale-105 transition-transform"
-                        : ""
-                    } ${isActivePlan ? "opacity-75 cursor-not-allowed font-bold" : ""}`}
-                    style={
-                      plan.is_popular && !isActivePlan
-                        ? { background: "var(--gradient-primary)" }
-                        : {}
-                    }
-                  >
-                    {isActivePlan
-                      ? "Current Plan"
-                      : isEnterprise
-                        ? "Contact Sales"
-                        : plan.price === 0
-                          ? "Get Started"
-                          : "Upgrade Now"}
-                  </Button>
+                    >
+                      {buttonText}
+                    </Button>
+                    {isBusinessAccount && isProPlan && (
+                      <p className="text-xs text-center text-red-500/80 mt-2 px-2">
+                        Business accounts cannot use the Pro Organizer plan.
+                      </p>
+                    )}
+                    {!isBusinessAccount && isBusinessOrEnterprisePlan && (
+                      <p className="text-xs text-center text-muted-foreground mt-2 px-2">
+                        You must convert your account to Business to subscribe.
+                      </p>
+                    )}
+                  </div>
                 );
               })()}
 

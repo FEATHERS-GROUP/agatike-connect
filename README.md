@@ -399,6 +399,26 @@ flowchart TD
     Proceed --> CheckoutFlow["Proceed to Payment"]
 ```
 
+### 12.3 Shared Collection Fee Architecture
+
+Agatike employs a sophisticated shared-cost model to handle payment processing fees efficiently while remaining profitable.
+
+**The Equation:**
+
+- `Total Collection Pool` = `Customer Fee` + `Organizer Fee`
+- `Agatike Net Profit` = `Total Collection Pool` - `Network Cost`
+
+**The Logic:**
+Agatike creates subscription tiers (e.g., "Pro", "Enterprise") that explicitly define a `customer_collection_fee_percentage` and an `organizer_collection_fee_percentage`. The combination of these two fields represents the **Total Collection Pool** available to cover network fees.
+
+1. **The Subsidy (Loss-Leader) Case:**
+   If a network provider charges **4%** for a deposit, but Agatike's tier rules state the Organizer pays **3%** and the Customer pays **0%**, the `Total Collection Pool` is **3%**. The network takes 4%. Agatike absorbs the remaining **1% loss** to cover the network cost, effectively subsidizing the transaction to drive volume. Agatike then monetizes this relationship heavily on the back-end via withdrawal fees.
+
+2. **The Profitable Case:**
+   If a network provider charges **4%**, Agatike's Organizer Fee is **3%**, and the Customer Fee is set to **2%**, the `Total Collection Pool` is **5%**. The network takes its 4%, leaving Agatike with a **1% net profit** on the collection itself.
+
+This entire equation is calculated dynamically in the `simulateTransaction` engine and enforced in the `PaymentModal` prior to any PawaPay charges. Upon successful completion in the webhook, the resulting net profit (or subsidized loss) is permanently logged into the `earnings` ledger.
+
 ---
 
 ## Routing Architecture Reminder
@@ -746,9 +766,10 @@ When an organizer imports from a custom form:
 
 ### Email (`src/api/email.ts`)
 
-| Function            | Purpose                                       |
-| ------------------- | --------------------------------------------- |
-| `sendAttendeeEmail` | Send rich HTML email to one or more attendees |
+| Function            | Purpose                                            |
+| ------------------- | -------------------------------------------------- |
+| `sendAttendeeEmail` | Send rich HTML email to one or more attendees      |
+| `sendEmail`         | Generic utility to send emails (to, subject, html) |
 
 ---
 

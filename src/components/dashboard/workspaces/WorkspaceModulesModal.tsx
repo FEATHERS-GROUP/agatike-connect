@@ -22,7 +22,11 @@ interface WorkspaceModulesModalProps {
 
 export function WorkspaceModulesModal({ workspace, isOpen, onClose }: WorkspaceModulesModalProps) {
   const { data: allModules = [], isLoading: isLoadingModules } = usePlatformModules();
-  const platformModules = getModulesForWorkspaceType(allModules, workspace?.type || "EVENT");
+  const platformModules = getModulesForWorkspaceType(
+    allModules,
+    workspace?.type || "EVENT",
+    !!workspace?.business,
+  );
   const queryClient = useQueryClient();
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
 

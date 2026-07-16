@@ -5,6 +5,7 @@ import { Save, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenueById, updateRentableVenue } from "@/api/rentable_venues";
+import { getActiveSubscription } from "@/api/billing";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -20,6 +21,13 @@ function VenuePricingPage() {
     queryKey: ["venue", venueId],
     queryFn: () => getRentableVenueById({ data: { id: venueId } }),
     enabled: !!venueId,
+  });
+
+  const { data: subscription } = useQuery({
+    queryKey: ["active-subscription", activeWorkspace?.orgnizer_id],
+    queryFn: () =>
+      getActiveSubscription({ data: { organizer_id: activeWorkspace!.orgnizer_id } } as any),
+    enabled: !!activeWorkspace?.orgnizer_id,
   });
 
   const [rentalType, setRentalType] = useState("Per Day");
@@ -148,7 +156,6 @@ function VenuePricingPage() {
                   <option value="consumable">Consumable Voucher (Credit)</option>
                 </select>
               </div>
-
               {entranceType !== "free" && (
                 <div className="space-y-2">
                   <Label className="text-base">
@@ -161,6 +168,20 @@ function VenuePricingPage() {
                     defaultValue={venue.entrance_fee}
                     placeholder="e.g. 5000"
                   />
+                  {subscription?.pricing_plan && (
+                    <p className="text-sm text-muted-foreground mt-2 bg-secondary/30 p-3 rounded-lg border border-border/50">
+                      <strong>Note:</strong> Your plan includes an Organizer Collection Fee of{" "}
+                      <strong>
+                        {subscription.pricing_plan.organizer_collection_fee_percentage}%
+                      </strong>
+                      . This, along with standard network provider fees, is deducted from ticket
+                      sales. Customers pay an additional{" "}
+                      <strong>
+                        {subscription.pricing_plan.customer_collection_fee_percentage}%
+                      </strong>{" "}
+                      service fee at checkout.
+                    </p>
+                  )}
                 </div>
               )}
             </div>

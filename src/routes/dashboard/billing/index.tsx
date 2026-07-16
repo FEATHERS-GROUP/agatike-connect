@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Wallet, Plus, ArrowRight, Zap, Loader2 } from "lucide-react";
+import { CreditCard, Zap, Loader2, AlertCircle, Calendar } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Progress } from "@/components/ui/progress";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getInvoices, payPendingInvoice } from "@/api/billing";
+import { useState } from "react";
+import { toast } from "sonner";
+import { PaymentModal } from "@/components/shared/PaymentModal";
 
 export const Route = createFileRoute("/dashboard/billing/")({
   component: BillingOverview,
@@ -12,10 +17,47 @@ export const Route = createFileRoute("/dashboard/billing/")({
 
 function BillingOverview() {
   const { activeWorkspace } = useWorkspace();
-  const { limits, stats, workspaceStats, isLoading } = useSubscriptionLimits(
-    activeWorkspace?.orgnizer_id,
-    activeWorkspace?.id,
-  );
+  const queryClient = useQueryClient();
+  const {
+    limits,
+    stats,
+    workspaceStats,
+    isLoading: limitsLoading,
+  } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("momo");
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+
+  const { data: invoices = [], isLoading: invoicesLoading } = useQuery({
+    queryKey: ["organizer-invoices", activeWorkspace?.orgnizer_id],
+    queryFn: () => getInvoices({ data: { organizer_id: activeWorkspace?.orgnizer_id } } as any),
+    enabled: !!activeWorkspace?.orgnizer_id,
+  });
+
+  const pendingInvoices = invoices.filter((inv: any) => inv.status === "pending");
+
+  const payMutation = useMutation({
+    mutationFn: (values: any) => payPendingInvoice({ data: values } as any),
+    onSuccess: () => {
+      toast.success("Payment successful! Your subscription is now active.");
+      setIsPaymentModalOpen(false);
+      setSelectedInvoice(null);
+      queryClient.invalidateQueries({ queryKey: ["organizer-invoices"] });
+      // Invalidate limits / active sub if needed
+    },
+    onError: (err: any) => toast.error(err.message || "Payment failed"),
+  });
+
+  const handleProceedPayment = (details?: any) => {
+    if (!selectedInvoice) return;
+
+    payMutation.mutate({
+      invoice_id: selectedInvoice.id,
+      amount: selectedInvoice.amount,
+      payment_method: paymentMethod,
+    });
+  };
 
   const paymentMethods = [
     {
@@ -89,33 +131,64 @@ function BillingOverview() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Billing Overview</h1>
         <p className="text-muted-foreground mt-2">
-          Manage your payment methods and view your current balance.
+          Manage your subscriptions, view pending invoices, and track your plan usage.
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-border/60 bg-gradient-to-br from-card to-secondary/30 p-6 shadow-sm flex flex-col justify-between h-48">
-          <div>
-            <div className="flex items-center gap-2 text-muted-foreground mb-2">
-              <Wallet className="h-4 w-4" />
-              <span className="text-sm font-medium uppercase tracking-wider">Current Balance</span>
+        {/* Pending Invoices Card */}
+        <div className="rounded-xl border border-red-500/30 bg-red-50/50 p-6 shadow-sm flex flex-col h-48 overflow-y-auto">
+          <div className="flex items-center gap-2 text-red-600 mb-4 font-medium">
+            <AlertCircle className="h-5 w-5" />
+            Pending Invoices
+          </div>
+
+          {invoicesLoading ? (
+            <div className="flex items-center justify-center flex-1">
+              <Loader2 className="h-6 w-6 animate-spin text-red-500" />
             </div>
-            <h2 className="text-4xl font-bold">$0.00</h2>
-            <p className="text-sm text-muted-foreground mt-1">No outstanding charges.</p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" size="sm" className="rounded-full">
-              Add Funds
-            </Button>
-          </div>
+          ) : pendingInvoices.length > 0 ? (
+            <div className="space-y-3">
+              {pendingInvoices.map((inv: any) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between bg-white p-3 rounded-lg border border-red-100 shadow-sm"
+                >
+                  <div>
+                    <div className="font-bold text-gray-900">${inv.amount}</div>
+                    <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                      <Calendar className="h-3 w-3" /> Due:{" "}
+                      {new Date(inv.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white shadow-sm"
+                    onClick={() => {
+                      setSelectedInvoice(inv);
+                      setIsPaymentModalOpen(true);
+                    }}
+                  >
+                    Pay Now
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center flex-1 text-center opacity-70">
+              <p className="text-sm text-gray-500 font-medium">No pending invoices</p>
+              <p className="text-xs text-gray-400">Your account is up to date.</p>
+            </div>
+          )}
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-card p-6 shadow-sm flex flex-col justify-between h-48">
+        {/* Payment Methods Card */}
+        <div className="rounded-xl border border-border/60 bg-card p-6 shadow-sm flex flex-col h-48">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-foreground font-medium">
                 <CreditCard className="h-5 w-5 text-primary" />
-                Payment Methods
+                Saved Cards
               </div>
             </div>
             {paymentMethods.map((pm) => (
@@ -140,9 +213,9 @@ function BillingOverview() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-fit text-primary -ml-3 mt-4 hover:bg-primary/10 rounded-lg group"
+            className="w-fit text-primary -ml-3 mt-auto hover:bg-primary/10 rounded-lg group"
           >
-            <Plus className="h-4 w-4 mr-1" /> Add Payment Method
+            Add New Card
           </Button>
         </div>
       </div>
@@ -153,7 +226,7 @@ function BillingOverview() {
           <h2 className="text-xl font-bold">Plan Usage & Limits</h2>
         </div>
 
-        {isLoading ? (
+        {limitsLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
@@ -161,7 +234,7 @@ function BillingOverview() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
             {USAGE_METRICS.map((metric) => {
               const limitVal = limits[metric.limitKey];
-              if (limitVal === undefined) return null; // not tracked in this plan
+              if (limitVal === undefined) return null;
 
               const isUnlimited = limitVal === -1;
               const used = metric.statVal || 0;
@@ -287,6 +360,22 @@ function BillingOverview() {
           </div>
         </div>
       </div>
+
+      {selectedInvoice && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onOpenChange={setIsPaymentModalOpen}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          onProceed={handleProceedPayment}
+          isProcessing={payMutation.isPending}
+          isGenerating={false}
+          workspaceId={activeWorkspace?.id || ""}
+          baseAmount={selectedInvoice.amount}
+          itemLabel="Subscription Invoice"
+          baseCurrency="USD"
+        />
+      )}
     </div>
   );
 }

@@ -45,6 +45,10 @@ export function EditorTopbar({
   return (
     <div className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border/60 px-6 py-3 flex items-center justify-between gap-4">
       <div className="flex items-center gap-4 min-w-0">
+        <Link to="/" className="flex items-center shrink-0">
+          <img src="/agatike-logo.svg" alt="Agatike" className="h-6 w-auto object-contain" />
+        </Link>
+        <div className="h-4 w-px bg-border/60 mx-1 hidden sm:block" />
         <Button
           variant="ghost"
           size="sm"
@@ -84,7 +88,7 @@ export function EditorTopbar({
                       <DropdownMenuItem asChild>
                         <Link
                           to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                          search={{ pageId: page.id }}
+                          search={{ pageId: page.id } as any}
                           className="cursor-pointer py-2"
                         >
                           <FileText className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
@@ -109,7 +113,7 @@ export function EditorTopbar({
                           >
                             <Link
                               to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                              search={{ pageId: child.id }}
+                              search={{ pageId: child.id } as any}
                               className="cursor-pointer py-1.5"
                             >
                               <div className="flex flex-col min-w-0 flex-1">
@@ -134,7 +138,7 @@ export function EditorTopbar({
                 <DropdownMenuItem asChild>
                   <Link
                     to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                    search={{ parentId: editorState.id }}
+                    search={{ parentId: editorState.id } as any}
                     className="cursor-pointer text-primary"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -145,7 +149,7 @@ export function EditorTopbar({
               <DropdownMenuItem asChild>
                 <Link
                   to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
-                  search={{}}
+                  search={{} as any}
                   className="cursor-pointer"
                 >
                   <Plus className="h-4 w-4 mr-2" />

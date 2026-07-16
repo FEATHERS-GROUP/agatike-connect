@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { EditorTopbar } from "@/components/page-builder/EditorTopbar";
 import { EditorCanvas } from "@/components/page-builder/EditorCanvas";
+import { PageSettingsPanel } from "@/components/page-builder/PageSettingsPanel";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllWorkspacePages,
@@ -359,38 +360,52 @@ function PageBuilder() {
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      <div className="flex-1 overflow-y-auto bg-secondary/20 relative">
-        {/* Top Bar */}
-        <EditorTopbar
-          activeWorkspace={activeWorkspace}
-          editorState={editorState}
-          workspace_id={workspace_id}
-          allPages={allPages}
-          handleCopyLink={handleCopyLink}
-          deleteMutation={deleteMutation}
-          handlePublish={handlePublish}
-          saveMutation={saveMutation}
-        />
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
+      {/* Top Bar */}
+      <EditorTopbar
+        activeWorkspace={activeWorkspace}
+        editorState={editorState}
+        workspace_id={workspace_id}
+        allPages={allPages}
+        handleCopyLink={handleCopyLink}
+        deleteMutation={deleteMutation}
+        handlePublish={handlePublish}
+        saveMutation={saveMutation}
+      />
 
-        {/* Builder Content */}
-        {isLoadingPage && !!activePageId ? (
-          <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-1 overflow-hidden">
+        {/* Builder Content Area (The Canvas) */}
+        <div className="flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8">
+          {isLoadingPage && !!activePageId ? (
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <EditorCanvas
+              addComponent={addComponent}
+              editorState={editorState}
+              set={set}
+              handleImageUpload={handleImageUpload}
+              allPages={allPages}
+              forms={forms}
+              workspace_id={workspace_id}
+              updateComponent={updateComponent}
+              removeComponent={removeComponent}
+              moveComponent={moveComponent}
+            />
+          )}
+        </div>
+
+        {/* Right Sidebar: Settings + Toolbox */}
+        {!isLoadingPage && (
+          <div className="w-80 shrink-0 border-l border-border/60 bg-card overflow-y-auto z-10 flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.02)] hidden md:flex">
+            <PageSettingsPanel
+              addComponent={addComponent}
+              editorState={editorState}
+              set={set}
+              handleImageUpload={handleImageUpload}
+            />
           </div>
-        ) : (
-          <EditorCanvas
-            addComponent={addComponent}
-            editorState={editorState}
-            set={set}
-            handleImageUpload={handleImageUpload}
-            allPages={allPages}
-            forms={forms}
-            workspace_id={workspace_id}
-            updateComponent={updateComponent}
-            removeComponent={removeComponent}
-            moveComponent={moveComponent}
-          />
         )}
       </div>
     </div>

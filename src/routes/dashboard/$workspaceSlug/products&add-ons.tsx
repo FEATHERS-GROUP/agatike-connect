@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { getWorkspaceProducts } from "@/api/products";
+import {
+  getWorkspaceSponsoredVoucherBatches,
+  batchGenerateSponsoredVouchers,
+} from "@/api/vouchers";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -29,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -39,22 +44,17 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/products&add-ons
   component: WorkspaceProductsView,
 });
 
-function AddCampaignModal() {
+import { Link } from "@tanstack/react-router";
+
+function BatchGenerateModal() {
   const [open, setOpen] = useState(false);
   const { activeWorkspace } = useWorkspace();
-  const { canCreateProduct, canCreateCampaign, canCreateGiftCard, canCreatePunchCard } =
-    useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState({
-    type: "physical",
-    name: "",
-    description: "",
-    price: "",
-    stock_limit: "",
-    value_amount: "",
-    punch_count: "",
-    reward_description: "",
+    batch_name: "",
+    value_per_person: "",
+    quantity: "",
   });
 
   const mutation = useMutation({
@@ -62,66 +62,30 @@ function AddCampaignModal() {
       const payload = {
         workspace_id: activeWorkspace?.id,
         event_id: null,
-        type: formData.type,
-        name: formData.name,
-        description: formData.description,
-        price: formData.type === "loyalty_card" ? 0 : Number(formData.price) || 0,
-        stock_limit: formData.stock_limit ? Number(formData.stock_limit) : null,
-        value_amount:
-          formData.type === "voucher" && formData.value_amount
-            ? Number(formData.value_amount)
-            : null,
-        punch_count:
-          (formData.type === "punch_card" || formData.type === "loyalty_card") &&
-          formData.punch_count
-            ? Number(formData.punch_count)
-            : null,
-        reward_description: formData.type === "loyalty_card" ? formData.reward_description : null,
-        sold_count: 0,
-        is_active: true,
+        batch_name: formData.batch_name,
+        value_per_person: Number(formData.value_per_person),
+        quantity: Number(formData.quantity),
+        generation_type: "manual",
+        value_type: "fixed",
       };
-      return await createProduct({ data: payload } as any);
+      return await batchGenerateSponsoredVouchers({ data: payload } as any);
     },
     onSuccess: () => {
-      toast.success("Campaign item created successfully!");
+      toast.success("Voucher batch generated successfully!");
       setOpen(false);
-      // queryClient.invalidateQueries({ queryKey: ['workspace-products'] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-vouchers", activeWorkspace?.id] });
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to create campaign item");
+      toast.error(err.message || "Failed to generate vouchers");
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || (formData.type !== "loyalty_card" && !formData.price)) {
-      toast.error("Please fill in the required fields");
+    if (!formData.batch_name || !formData.value_per_person || !formData.quantity) {
+      toast.error("Please fill in all fields");
       return;
     }
-
-    let canCreate = true;
-    let limitType = "Product";
-
-    if (formData.type === "physical") {
-      canCreate = canCreateCampaign();
-      limitType = "Campaign";
-    } else if (formData.type === "voucher") {
-      canCreate = canCreateGiftCard();
-      limitType = "Gift Card";
-    } else if (formData.type === "punch_card" || formData.type === "loyalty_card") {
-      canCreate = canCreatePunchCard();
-      limitType = "Punch Card";
-    } else {
-      canCreate = canCreateProduct();
-    }
-
-    if (!canCreate) {
-      toast.error(`${limitType} Limit Reached`, {
-        description: `You have reached the maximum number of ${limitType}s allowed by your plan.`,
-      });
-      return;
-    }
-
     mutation.mutate();
   };
 
@@ -129,134 +93,54 @@ function AddCampaignModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          className="rounded-full shadow-[var(--shadow-glow)]"
-          style={{ background: "var(--gradient-primary)" }}
+          variant="outline"
+          className="rounded-full shadow-[var(--shadow-glow)] mr-2 border-primary/20 hover:bg-primary/5 text-primary"
         >
-          <Plus className="mr-1 h-4 w-4" /> Create Campaign
+          <Ticket className="mr-1 h-4 w-4" /> Batch Generate Vouchers
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create Workspace Campaign</DialogTitle>
+          <DialogTitle>Batch Generate Vouchers</DialogTitle>
           <DialogDescription>
-            Add standalone merch, consumable wallets, or loyalty cards.
+            Generate a batch of pre-loaded vouchers for your workspace.
           </DialogDescription>
         </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label>Item Type</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(val) => setFormData({ ...formData, type: val })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="physical">Physical Merchandise</SelectItem>
-                <SelectItem value="voucher">Consumable Wallet / Voucher</SelectItem>
-                <SelectItem value="punch_card">Pre-paid Punch Card</SelectItem>
-                <SelectItem value="loyalty_card">Earned Loyalty Card</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label>
-              Item Name <span className="text-red-500">*</span>
+              Batch Name <span className="text-red-500">*</span>
             </Label>
             <Input
-              placeholder="e.g. VIP Drink Pass"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Summer Promo Vouchers"
+              value={formData.batch_name}
+              onChange={(e) => setFormData({ ...formData, batch_name: e.target.value })}
             />
           </div>
-
-          {formData.type !== "loyalty_card" && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>
-                  Price <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Total Stock (Optional)</Label>
-                <Input
-                  type="number"
-                  placeholder="Unlimited"
-                  value={formData.stock_limit}
-                  onChange={(e) => setFormData({ ...formData, stock_limit: e.target.value })}
-                />
-              </div>
-            </div>
-          )}
-
-          {formData.type === "voucher" && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label>
-                Starting Wallet Balance <span className="text-red-500">*</span>
+                Value per Voucher <span className="text-red-500">*</span>
               </Label>
               <Input
                 type="number"
-                placeholder="e.g. 100"
-                value={formData.value_amount}
-                onChange={(e) => setFormData({ ...formData, value_amount: e.target.value })}
+                placeholder="50"
+                value={formData.value_per_person}
+                onChange={(e) => setFormData({ ...formData, value_per_person: e.target.value })}
               />
-              <p className="text-xs text-muted-foreground">
-                The amount of money loaded onto this voucher for spending.
-              </p>
             </div>
-          )}
-
-          {(formData.type === "punch_card" || formData.type === "loyalty_card") && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+            <div className="space-y-2">
               <Label>
-                {formData.type === "loyalty_card"
-                  ? "Target Stamps to Reward"
-                  : "Number of Pre-paid Items"}{" "}
-                <span className="text-red-500">*</span>
+                Quantity to Generate <span className="text-red-500">*</span>
               </Label>
               <Input
                 type="number"
-                placeholder={formData.type === "loyalty_card" ? "e.g. 10" : "e.g. 5"}
-                value={formData.punch_count}
-                onChange={(e) => setFormData({ ...formData, punch_count: e.target.value })}
+                placeholder="100"
+                value={formData.quantity}
+                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
               />
             </div>
-          )}
-
-          {formData.type === "loyalty_card" && (
-            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-              <Label>
-                Reward Description <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                placeholder="e.g. 1 Free Drink"
-                value={formData.reward_description}
-                onChange={(e) => setFormData({ ...formData, reward_description: e.target.value })}
-              />
-              <p className="text-xs text-muted-foreground">
-                What the user gets when they collect all stamps.
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              placeholder="Details about this item..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
           </div>
-
           <div className="pt-4 flex justify-end gap-2 border-t">
             <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
               Cancel
@@ -267,7 +151,7 @@ function AddCampaignModal() {
               style={{ background: "var(--gradient-primary)" }}
             >
               {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Campaign
+              Generate Batch
             </Button>
           </div>
         </form>
@@ -280,53 +164,76 @@ function WorkspaceProductsView() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const { activeWorkspace } = useWorkspace();
 
-  const merchandise = [
-    {
-      id: 1,
-      name: "Brand Hoodie",
-      price: 45,
-      stock: 100,
-      sold: 20,
-      type: "physical",
-      description: "High quality premium brand hoodie.",
-    },
-    { id: 2, name: "Premium Tote Bag", price: 15, stock: 300, sold: 150, type: "physical" },
-  ];
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
+    queryKey: ["workspace-products", activeWorkspace?.id],
+    queryFn: () => getWorkspaceProducts({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
 
-  const vouchers = [
-    {
-      id: 4,
-      name: `General Gift Card (${formatCurrency(50, activeWorkspace?.currency)})`,
-      price: 50,
-      stock: 500,
-      sold: 45,
-      type: "voucher",
-      value_amount: 50,
-      description: "A gift card applicable across the workspace.",
-    },
-  ];
+  const { data: voucherBatches = [], isLoading: isLoadingVouchers } = useQuery({
+    queryKey: ["workspace-vouchers", activeWorkspace?.id],
+    queryFn: () =>
+      getWorkspaceSponsoredVoucherBatches({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
 
-  const punchCards = [
-    {
-      id: 6,
-      name: "Monthly Coffee Pass",
-      price: 30,
-      stock: 100,
-      sold: 85,
-      type: "punch_card",
-      punch_count: 10,
-      description: "Good for 10 coffees at any of our partner stands.",
-    },
-    {
-      id: 7,
-      name: "10x Entry Pass",
-      price: 100,
-      stock: 50,
-      sold: 12,
-      type: "punch_card",
-      punch_count: 10,
-    },
-  ];
+  const merchandise = products
+    .filter((p: any) => p.type === "physical")
+    .map((p: any) => ({
+      ...p,
+      stock: p.stock_limit || "Unlimited",
+      sold: p.sold_count || 0,
+    }));
+
+  const productVouchers = products
+    .filter((p: any) => p.type === "voucher")
+    .map((p: any) => ({
+      ...p,
+      stock: p.stock_limit || "Unlimited",
+      sold: p.sold_count || 0,
+    }));
+
+  const generatedBatches = voucherBatches.map((b: any) => ({
+    id: b.id,
+    name: b.name,
+    price: b.value_per_voucher,
+    stock: b.vouchers?.length || 0,
+    sold: b.vouchers?.filter((v: any) => !v.is_active).length || 0,
+    type: "voucher_batch",
+    value_amount: b.value_per_voucher,
+    description: `Batch generated with ${b.vouchers?.length || 0} vouchers.`,
+  }));
+
+  const allVouchers = [...productVouchers, ...generatedBatches];
+
+  const punchCards = products
+    .filter((p: any) => p.type === "punch_card" || p.type === "loyalty_card")
+    .map((p: any) => ({
+      ...p,
+      stock: p.stock_limit || "Unlimited",
+      sold: p.sold_count || 0,
+    }));
+
+  const stats = {
+    totalSales: 0,
+    activeCampaigns: 0,
+    lowStockAlerts: 0,
+  };
+
+  [...merchandise, ...allVouchers, ...punchCards].forEach((item) => {
+    const sold = Number(item.sold || 0);
+    const price = Number(item.price || 0);
+    stats.totalSales += sold * price;
+
+    if (item.is_active !== false) {
+      stats.activeCampaigns += 1;
+    }
+
+    const stock = item.stock;
+    if (stock !== "Unlimited" && stock !== undefined && stock !== null && Number(stock) < 100) {
+      stats.lowStockAlerts += 1;
+    }
+  });
 
   const renderTable = (items: any[], icon: any) => (
     <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
@@ -350,8 +257,16 @@ function WorkspaceProductsView() {
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                      <Icon className="h-5 w-5" />
+                    <div className="h-10 w-10 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors overflow-hidden">
+                      {m.image_url ? (
+                        <img
+                          src={m.image_url}
+                          alt={m.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Icon className="h-5 w-5" />
+                      )}
                     </div>
                     <p className="font-semibold text-foreground">{m.name}</p>
                   </div>
@@ -389,23 +304,38 @@ function WorkspaceProductsView() {
             Manage standalone campaigns, general merch, and vouchers for your brand.
           </p>
         </div>
-        <AddCampaignModal />
+        <div className="flex items-center gap-2">
+          <BatchGenerateModal />
+          <Link
+            to="/dashboard/$workspaceSlug/products/create"
+            params={{ workspaceSlug: activeWorkspace?.slug as string }}
+          >
+            <Button
+              className="rounded-full shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Plus className="mr-1 h-4 w-4" /> Create Campaign
+            </Button>
+          </Link>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Sales</p>
           <p className="text-2xl font-semibold mt-1">
-            {formatCurrency(7650, activeWorkspace?.currency)}
+            {formatCurrency(stats.totalSales, activeWorkspace?.currency)}
           </p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Active Campaigns</p>
-          <p className="text-2xl font-semibold mt-1">5</p>
+          <p className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">Low Stock Alerts</p>
-          <p className="text-2xl font-semibold text-orange-500 mt-1">0 Items</p>
+          <p className="text-2xl font-semibold text-orange-500 mt-1">
+            {stats.lowStockAlerts} Items
+          </p>
         </div>
       </div>
 
@@ -416,17 +346,18 @@ function WorkspaceProductsView() {
           <TabsTrigger value="punchcards">Punch Cards</TabsTrigger>
         </TabsList>
         <TabsContent value="merch">{renderTable(merchandise, ShoppingBag)}</TabsContent>
-        <TabsContent value="vouchers">{renderTable(vouchers, Ticket)}</TabsContent>
+        <TabsContent value="vouchers">{renderTable(allVouchers, Ticket)}</TabsContent>
         <TabsContent value="punchcards">{renderTable(punchCards, QrCode)}</TabsContent>
       </Tabs>
 
       <Sheet open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <SheetContent className="sm:max-w-md w-full overflow-y-auto">
+        <SheetContent className="sm:max-w-2xl w-full overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle className="text-2xl">{selectedItem?.name}</SheetTitle>
             <SheetDescription>
               {selectedItem?.type === "physical" && "Physical Merchandise"}
               {selectedItem?.type === "voucher" && "Gift Card / Voucher"}
+              {selectedItem?.type === "voucher_batch" && "Generated Voucher Batch"}
               {selectedItem?.type === "punch_card" && "Digital Punch Card"}
             </SheetDescription>
           </SheetHeader>
@@ -479,7 +410,7 @@ function WorkspaceProductsView() {
                 </div>
               )}
 
-              {selectedItem.type === "voucher" && (
+              {(selectedItem.type === "voucher" || selectedItem.type === "voucher_batch") && (
                 <div className="relative overflow-hidden rounded-[2rem] p-8 shadow-2xl bg-gradient-to-tr from-blue-600 to-cyan-400">
                   <div className="absolute inset-0 bg-black/5 backdrop-blur-xl mix-blend-overlay"></div>
                   <div className="relative z-10 flex flex-col items-center text-center">
@@ -505,9 +436,17 @@ function WorkspaceProductsView() {
 
               {selectedItem.type === "physical" && (
                 <div className="aspect-square w-full rounded-[2rem] bg-secondary/50 border border-border/60 flex items-center justify-center p-8 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"></div>
-                  <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm" />
-                  <div className="absolute bottom-6 left-6 right-6 bg-background/80 backdrop-blur-md p-4 rounded-xl border border-border/50 text-center shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 z-10 pointer-events-none"></div>
+                  {selectedItem.image_url ? (
+                    <img
+                      src={selectedItem.image_url}
+                      alt={selectedItem.name}
+                      className="absolute inset-0 w-full h-full object-cover z-0"
+                    />
+                  ) : (
+                    <ShoppingBag className="h-32 w-32 text-muted-foreground/30 drop-shadow-sm z-0" />
+                  )}
+                  <div className="absolute bottom-6 left-6 right-6 bg-background/80 backdrop-blur-md p-4 rounded-xl border border-border/50 text-center shadow-lg z-20">
                     <p className="font-semibold text-lg">{selectedItem.name}</p>
                   </div>
                 </div>
@@ -518,9 +457,10 @@ function WorkspaceProductsView() {
                 <h4 className="font-semibold text-lg">Details & Stats</h4>
 
                 {selectedItem.description && (
-                  <p className="text-sm text-muted-foreground bg-secondary/30 p-4 rounded-xl border border-border/50">
-                    {selectedItem.description}
-                  </p>
+                  <div
+                    className="text-sm text-muted-foreground bg-secondary/30 p-4 rounded-xl border border-border/50 break-words overflow-hidden [&>*:last-child]:mb-0 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-lg [&_h2]:font-bold [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_*]:!bg-transparent [&_*]:!text-inherit"
+                    dangerouslySetInnerHTML={{ __html: selectedItem.description }}
+                  />
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
@@ -549,12 +489,20 @@ function WorkspaceProductsView() {
                     </p>
                   </div>
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center">
-                    <Button
-                      variant="outline"
-                      className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                    <Link
+                      to="/dashboard/$workspaceSlug/products/edit/$productId"
+                      params={{
+                        workspaceSlug: activeWorkspace?.slug as string,
+                        productId: selectedItem.id,
+                      }}
                     >
-                      Edit Item
-                    </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                      >
+                        Edit Item
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

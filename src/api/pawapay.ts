@@ -403,8 +403,8 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const platformRevenue = customerFee + organizerFee;
     const netProfit = platformRevenue - providerCost;
 
-    // Organizer wallet receives base minus their contribution (and any shortfall)
-    const organizerNetAmount = Math.max(0, baseAmt - organizerFee - (shortfall || 0));
+    // Organizer wallet receives base minus their contribution (Agatike absorbs any shortfall)
+    const organizerNetAmount = Math.max(0, baseAmt - organizerFee);
 
     // ── Insert wallet transaction + earnings atomically ──────────────────────
     const txRes = await hasuraRequest<any>(

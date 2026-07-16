@@ -133,8 +133,8 @@ function RequestWithdrawalPage() {
   const FILTERED_NETWORKS = NETWORKS.filter((n) => n.code === selectedCountry);
 
   const amountToWithdraw = Number(withdrawAmount) || 0;
-  const platformPercentage = subscription?.pricing_plan?.organizer_platform_contribution || 0;
-  const platformFixed = subscription?.pricing_plan?.withdrawal_fee_fixed || 0;
+  const platformPercentage = Number(subscription?.pricing_plan?.withdrawal_fee_percentage) || 0;
+  const platformFixed = Number(subscription?.pricing_plan?.withdrawal_fee_fixed) || 0;
   const agatikeFee = amountToWithdraw * (platformPercentage / 100) + platformFixed;
 
   let netPercentage = 0;

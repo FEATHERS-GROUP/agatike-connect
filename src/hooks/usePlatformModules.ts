@@ -57,6 +57,7 @@ export function usePlatformModules() {
           ...mod,
           href,
           icon: (LucideIcons as any)[mod.icon] || LucideIcons.LayoutDashboard,
+          category: mod.label === "Venue Designer" ? "SHARED" : mod.category,
         };
       }) as WorkspaceModule[];
 
@@ -92,6 +93,7 @@ export function usePlatformModules() {
 export function getModulesForWorkspaceType(
   modules: WorkspaceModule[],
   type: string,
+  isBusiness: boolean = true,
 ): WorkspaceModule[] {
   const allowedCategories = ["SHARED"];
 
@@ -108,6 +110,19 @@ export function getModulesForWorkspaceType(
   }
 
   return modules.filter((m) => {
+    if (!isBusiness) {
+      const businessOnlyModules = [
+        "Agatike Book",
+        "Cinema / Theater",
+        "Spaces",
+        "Venue Listings",
+        "Badge Designer",
+      ];
+      if (businessOnlyModules.includes(m.label)) {
+        return false;
+      }
+    }
+
     if (!m.category) return true; // Show uncategorized as fallback just in case
     const cat = m.category.toUpperCase();
     return allowedCategories.includes(cat);

@@ -80,6 +80,8 @@ export const Route = createFileRoute(
 
 function PlanningView() {
   const { experienceId: eventId } = Route.useParams();
+  const { activeWorkspace } = useWorkspace();
+  const isBusiness = activeWorkspace?.business;
 
   return (
     <div className="space-y-6">
@@ -101,21 +103,25 @@ function PlanningView() {
             <Wallet className="h-4 w-4 mr-2" /> Overview
           </TabsTrigger>
 
-          <TabsTrigger
-            value="book"
-            className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-          >
-            <BookOpen className="h-4 w-4 mr-2" /> Agatike Book
-          </TabsTrigger>
+          {isBusiness && (
+            <TabsTrigger
+              value="book"
+              className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              <BookOpen className="h-4 w-4 mr-2" /> Agatike Book
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="overview" className="mt-0">
           <OverviewTab eventId={eventId} />
         </TabsContent>
 
-        <TabsContent value="book" className="mt-0">
-          <AgatikeBookTab eventId={eventId} />
-        </TabsContent>
+        {isBusiness && (
+          <TabsContent value="book" className="mt-0">
+            <AgatikeBookTab eventId={eventId} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

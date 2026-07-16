@@ -143,10 +143,10 @@ function OrganizerOverview() {
           <span className="text-gray-600 dark:text-[#797775] text-sm">Status:</span>
           <span
             className={
-              overview.active ? "text-[#84c87e] font-medium" : "text-[#f43f5e] font-medium"
+              overview.active ? "text-[#84c87e] font-medium" : "text-[#f97316] font-medium"
             }
           >
-            {overview.active ? "Active" : "Inactive (Banned)"}
+            {overview.active ? "Active" : "Pending / Inactive"}
           </span>
           {overview.active ? (
             <button
@@ -164,7 +164,7 @@ function OrganizerOverview() {
               className="flex items-center gap-1.5 px-3 py-1.5 bg-[#84c87e]/10 text-[#84c87e] border border-[#84c87e]/30 hover:bg-[#84c87e]/20 transition-colors rounded-sm disabled:opacity-50 text-xs font-medium ml-2"
             >
               <CheckCircle className="h-3.5 w-3.5" />
-              {loading ? "..." : "Activate Account"}
+              {loading ? "..." : "Approve & Activate Account"}
             </button>
           )}
         </div>

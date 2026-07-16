@@ -240,11 +240,19 @@ export function ProfileMobile({
                 key={org.id}
                 className="bg-card border border-border/40 rounded-2xl flex items-center gap-3 p-3 shadow-sm"
               >
-                <img
-                  src={org.image || "https://placehold.co/100"}
-                  alt={org.name}
-                  className="h-12 w-12 rounded-full object-cover shrink-0 border border-border/40"
-                />
+                {org.image ? (
+                  <img
+                    src={org.image}
+                    alt={org.name}
+                    className="h-12 w-12 rounded-full object-cover shrink-0 border border-border/40"
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-secondary border border-border/40 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-bold text-muted-foreground">
+                      {getInitials(org.name)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm">{org.name}</p>
                   <p className="text-sm font-medium text-muted-foreground mt-2 md:text-base">

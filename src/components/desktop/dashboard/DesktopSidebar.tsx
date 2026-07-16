@@ -20,7 +20,7 @@ export function DesktopSidebar() {
   const [isBillingGroupOpen, setIsBillingGroupOpen] = useState(false);
 
   const { data: platformModules = [] } = usePlatformModules();
-  
+
   const { data: integrations } = useQuery({
     queryKey: ["organizer-integrations"],
     queryFn: () => getOrganizerIntegrations(),
@@ -32,37 +32,54 @@ export function DesktopSidebar() {
 
   // Filter platform modules based on user's active workspace modules.
   // We maintain the order defined in the database.
-  const nav = platformModules.filter((m) => {
-    if (m.mandatory && currentUser?.role === "organizer") return true;
-    if (userModuleIds.includes(m.id)) return true;
+  const nav = platformModules
+    .filter((m) => {
+      if (m.mandatory && currentUser?.role === "organizer") return true;
+      if (userModuleIds.includes(m.id)) return true;
 
-    // Fallback for legacy workspaces created before DB migration
-    const legacyIdMap: Record<string, string> = {
-      Dashboard: "dashboard",
-      Events: "events",
-      Tickets: "tickets",
-      RSVPs: "rsvps",
-      Attendees: "rsvps",
-      Scanning: "scanner",
-      "Products & Add-ons": "products&add-ons",
-      Merchandise: "merchandise",
-      "VIP Access": "vip",
-      Campaigns: "campaigns",
-      "Venue Listings": "venue_listings",
-      "Venue Designer": "venue_designer",
-      Experiences: "experiences",
-      Analytics: "analytics",
-      Users: "users",
-      Withdrawals: "withdrawals",
-      Settings: "settings",
-      "Page Builder": "page_builder",
-      "Badge Designer": "badge_designer",
-      "Ticket Designer": "ticket_designer",
-    };
+      // Fallback for legacy workspaces created before DB migration
+      const legacyIdMap: Record<string, string> = {
+        Dashboard: "dashboard",
+        Events: "events",
+        Tickets: "tickets",
+        RSVPs: "rsvps",
+        Attendees: "rsvps",
+        Scanning: "scanner",
+        "Products & Add-ons": "products&add-ons",
+        Merchandise: "merchandise",
+        "VIP Access": "vip",
+        Campaigns: "campaigns",
+        "Venue Listings": "venue_listings",
+        "Venue Designer": "venue_designer",
+        Experiences: "experiences",
+        Analytics: "analytics",
+        Users: "users",
+        Withdrawals: "withdrawals",
+        Settings: "settings",
+        "Page Builder": "page_builder",
+        "Badge Designer": "badge_designer",
+        "Ticket Designer": "ticket_designer",
+      };
 
-    const legacyId = legacyIdMap[m.label];
-    return legacyId && userModuleIds.includes(legacyId);
-  });
+      const legacyId = legacyIdMap[m.label];
+      return legacyId && userModuleIds.includes(legacyId);
+    })
+    .filter((m) => {
+      const isSubExpired = currentUser?.isTrialExpired || currentUser?.isExpired;
+      if (!activeWorkspace?.business || isSubExpired) {
+        const businessOnlyModules = [
+          "Agatike Book",
+          "Cinema / Theater",
+          "Spaces",
+          "Venue Listings",
+          "Badge Designer",
+        ];
+        if (businessOnlyModules.includes(m.label)) {
+          return false;
+        }
+      }
+      return true;
+    });
 
   const studioLabels = ["Badge Designer", "Venue Designer", "Tickets", "Page Builder"];
   const mainNav = nav.filter((m) => !studioLabels.includes(m.label) && m.label !== "Agatike Book");

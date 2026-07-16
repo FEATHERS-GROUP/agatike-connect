@@ -452,11 +452,13 @@ export function CreateEventDesktop() {
         merchandises: {
           data: uploadedMerch.map((m) => ({
             name: m.name,
-            cost: m.price.toString(),
-            image: m.image || "",
+            price: m.price.toString(),
+            image_url: m.image || "",
             organizer_id: activeWorkspace?.orgnizer_id,
-            remaining: "100",
-            sold: "0",
+            workspace_id: activeWorkspace?.id,
+            stock_limit: "100",
+            sold_count: "0",
+            type: "merchandise",
           })),
         },
       };

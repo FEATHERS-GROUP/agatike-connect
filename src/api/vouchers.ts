@@ -220,3 +220,39 @@ export const getSponsoredVoucherBatches = createServerFn({ method: "POST" }).han
     return data.sponsored_voucher_batches || [];
   },
 );
+
+const GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES = `
+  query GetWorkspaceSponsoredVoucherBatches($workspace_id: uuid!) {
+    sponsored_voucher_batches(where: { workspace_id: { _eq: $workspace_id }, event_id: { _is_null: true } }, order_by: { created_at: desc }) {
+      id
+      name
+      value_per_voucher
+      generation_type
+      value_type
+      linked_ticket_ids
+      vouchers {
+        id
+        current_balance
+        is_active
+        voucher_transactions_aggregate {
+          aggregate {
+            sum {
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const getWorkspaceSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+    const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
+      GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES,
+      { workspace_id },
+    ).catch(() => ({ sponsored_voucher_batches: [] }));
+    return data.sponsored_voucher_batches || [];
+  },
+);

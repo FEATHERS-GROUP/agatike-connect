@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
@@ -122,6 +122,26 @@ const palettes = [
   { name: "Forest", from: "#134e5e", to: "#71b280" },
   { name: "Gold", from: "#855e11", to: "#dfb054" },
   { name: "Void", from: "#0f0c29", to: "#24243e" },
+  { name: "Candy", from: "#ff758c", to: "#ff7eb3" },
+  { name: "Mint", from: "#00b09b", to: "#96c93d" },
+  { name: "Crimson", from: "#ed213a", to: "#93291e" },
+  { name: "Cyber", from: "#21d4fd", to: "#b721ff" },
+  { name: "Peach", from: "#ed4264", to: "#ffedbc" },
+  { name: "Plum", from: "#cc2b5e", to: "#753a88" },
+  { name: "Steel", from: "#141e30", to: "#243b55" },
+  { name: "Sand", from: "#3e5151", to: "#decba4" },
+  { name: "Deep Sea", from: "#2b5876", to: "#4e4376" },
+  { name: "Voltage", from: "#f4c4f3", to: "#fc67fa" },
+  { name: "Dusk", from: "#ffd89b", to: "#19547b" },
+  { name: "Blush", from: "#B24592", to: "#F15F79" },
+  { name: "Galaxy", from: "#0B486B", to: "#F56217" },
+  { name: "Rust", from: "#e52d27", to: "#b31217" },
+  { name: "Slate", from: "#434343", to: "#000000" },
+  { name: "Moss", from: "#1D976C", to: "#93F9B9" },
+  { name: "Orchid", from: "#DA22FF", to: "#9733EE" },
+  { name: "Ice", from: "#000046", to: "#1CB5E0" },
+  { name: "Timber", from: "#fc4a1a", to: "#f7b733" },
+  { name: "Mist", from: "#7F00FF", to: "#E100FF" },
 ];
 
 const fonts = [
@@ -133,6 +153,48 @@ const fonts = [
   { name: "Fun", css: "'Comic Sans MS', cursive" },
   { name: "Classic", css: "'Georgia', serif" },
   { name: "Tech", css: "'Roboto Mono', monospace" },
+  { name: "Sans", css: "'Open Sans', sans-serif" },
+  { name: "Serif", css: "'Merriweather', serif" },
+  { name: "Grotesque", css: "'Oswald', sans-serif" },
+  { name: "Geometric", css: "'Montserrat', sans-serif" },
+  { name: "Humanist", css: "'Lato', sans-serif" },
+  { name: "Slab", css: "'Roboto Slab', serif" },
+  { name: "Handwriting", css: "'Dancing Script', cursive" },
+  { name: "Retro", css: "'Press Start 2P', cursive" },
+  { name: "Round", css: "'Nunito', sans-serif" },
+  { name: "Tall", css: "'Fjalla One', sans-serif" },
+  { name: "Chunky", css: "'Alfa Slab One', serif" },
+  { name: "Clean", css: "'Work Sans', sans-serif" },
+  { name: "Heading", css: "'Rubik', sans-serif" },
+  { name: "Script", css: "'Pacifico', cursive" },
+  { name: "Minimal", css: "'Quicksand', sans-serif" },
+  { name: "Bold", css: "'Anton', sans-serif" },
+  { name: "Soft", css: "'Comfortaa', cursive" },
+  { name: "Typewriter", css: "'Courier Prime', monospace" },
+  { name: "Vintage", css: "'Rye', cursive" },
+  { name: "Gothic", css: "'League Gothic', sans-serif" },
+  { name: "Friendly", css: "'Baloo 2', cursive" },
+  { name: "Sharp", css: "'Josefin Sans', sans-serif" },
+  { name: "Newspaper", css: "'Lora', serif" },
+  { name: "Brush", css: "'Caveat', cursive" },
+  { name: "Wide", css: "'Syne', sans-serif" },
+  { name: "Old Style", css: "'Cinzel', serif" },
+  { name: "Future", css: "'Orbitron', sans-serif" },
+  { name: "Pixel", css: "'VT323', monospace" },
+  { name: "Art Deco", css: "'Fascinate Inline', cursive" },
+  { name: "Calligraphy", css: "'Great Vibes', cursive" },
+  { name: "Stencil", css: "'Allerta Stencil', sans-serif" },
+  { name: "Marker", css: "'Permanent Marker', cursive" },
+  { name: "Poster", css: "'Bebas Neue', sans-serif" },
+  { name: "Elegant Sans", css: "'Cormorant', serif" },
+  { name: "Geometric Serif", css: "'Zilla Slab', serif" },
+  { name: "Rounded Slab", css: "'Crete Round', serif" },
+  { name: "Chalk", css: "'Chalkduster', fantasy" },
+  { name: "Curly", css: "'Amatic SC', cursive" },
+  { name: "Block", css: "'Bungee', cursive" },
+  { name: "Shadow", css: "'Bungee Shade', cursive" },
+  { name: "Outline", css: "'Bungee Outline', cursive" },
+  { name: "Formal", css: "'EB Garamond', serif" },
 ];
 
 type TicketLayout = {
@@ -314,6 +376,7 @@ function TicketDesignerPage() {
   const [previewMode, setPreviewMode] = useState<"Front" | "Back" | "Mobile">("Front");
   const [isDirty, setIsDirty] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [fontSearchQuery, setFontSearchQuery] = useState("");
 
   const [baseDesign, setBaseDesign] = useState<TicketDesign>({
     template: migrateTemplate((existingProject?.template as string) || initialTemplate),
@@ -598,24 +661,28 @@ function TicketDesignerPage() {
       return;
     }
 
-    const ticketElement = document.getElementById("ticket-preview-container");
-    if (!ticketElement) return;
+    const frontElement = document.getElementById("export-front-container");
+    const backElement = document.getElementById("export-back-container");
+    if (!frontElement || !backElement) return;
 
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(ticketElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-      });
-      const imgData = canvas.toDataURL("image/png");
+      const frontCanvas = await htmlToImage.toCanvas(frontElement, { pixelRatio: 2 });
+      const backCanvas = await htmlToImage.toCanvas(backElement, { pixelRatio: 2 });
+
+      const frontImgData = frontCanvas.toDataURL("image/png");
+      const backImgData = backCanvas.toDataURL("image/png");
 
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "px",
-        format: [canvas.width / 2, canvas.height / 2],
+        format: [frontCanvas.width / 2, frontCanvas.height / 2],
       });
-      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+
+      pdf.addImage(frontImgData, "PNG", 0, 0, frontCanvas.width / 2, frontCanvas.height / 2);
+      pdf.addPage();
+      pdf.addImage(backImgData, "PNG", 0, 0, backCanvas.width / 2, backCanvas.height / 2);
+
       pdf.save(`${projectName.replace(/\s+/g, "-").toLowerCase()}-ticket.pdf`);
     } catch (err) {
       console.error("Failed to export PDF", err);
@@ -648,6 +715,64 @@ function TicketDesignerPage() {
     };
   };
 
+  const getActiveTicketProps = () => {
+    let tDesign = mergedDesign;
+    let tierType = dynamicDefaults.tierName;
+    let tierCost = mergedDesign.price || dynamicDefaults.price || "0";
+    let stopSubtitle = "";
+
+    if (editScope === "tier" && activeTierId) {
+      tDesign = getTierSpecificDesign(activeTierId);
+      const tierObj = allTicketTiers.find((t: any) => t.id === activeTierId);
+      if (tierObj) {
+        tierType = tierObj.type || "General";
+        tierCost = tierObj.cost?.toString() || "0";
+      }
+      stopSubtitle =
+        activeTourStopIdx >= 0 && tourStops[activeTourStopIdx]?.venue
+          ? `${tourStops[activeTourStopIdx].venue} · ${tourStops[activeTourStopIdx].city}${tourStops[activeTourStopIdx].address ? `\n${tourStops[activeTourStopIdx].address}` : ""}`
+          : "";
+    }
+
+    const cover =
+      tDesign.cover ||
+      (assignmentType === "cinema"
+        ? cinemaMatch?.cover_url
+        : assignmentType === "venue"
+          ? venueMatch?.cover_url || venueMatch?.images?.[0]
+          : eventMatch?.cover) ||
+      "";
+
+    return {
+      template: tDesign.template,
+      palette: tDesign.palette,
+      font: tDesign.font,
+      tier: tierType,
+      title: tDesign.title || dynamicDefaults.title || "",
+      subtitle: tDesign.subtitle || stopSubtitle || dynamicDefaults.subtitle || "",
+      date:
+        tDesign.date ||
+        (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.date : dynamicDefaults.date) ||
+        "",
+      time:
+        tDesign.time ||
+        (activeTourStopIdx >= 0 ? tourStops[activeTourStopIdx]?.time : dynamicDefaults.time) ||
+        "",
+      seat: tDesign.seat || dynamicDefaults.seat,
+      price: tierCost,
+      currency: tDesign.currency || dynamicDefaults.currency,
+      cover,
+      logoText: tDesign.logoText || dynamicDefaults.brand,
+      logoImage: tDesign.logoImage,
+      logoScale: tDesign.logoScale || 24,
+      logoOpacity: tDesign.logoOpacity ?? 1,
+      logoColorMode: tDesign.logoColorMode || "original",
+      orderId,
+      layout: tDesign.layout || defaultLayout,
+      back: tDesign.back || defaultBack,
+    };
+  };
+
   const getTourStopSpecificDesign = (stopIdx: number) => {
     return {
       ...baseDesign,
@@ -663,6 +788,14 @@ function TicketDesignerPage() {
     <div className="h-[100dvh] flex flex-col bg-secondary/30 overflow-hidden">
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border/60 bg-background/80 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
+          <Link
+            to="/dashboard/$workspaceSlug"
+            params={{ workspaceSlug: activeWorkspace?.slug || workspaceSlug || "" }}
+            className="flex items-center"
+          >
+            <img src="/agatike-logo.svg" alt="Agatike" className="h-6 w-auto object-contain" />
+          </Link>
+          <div className="h-4 w-px bg-border/60 mx-1"></div>
           <Link
             to="/dashboard/$workspaceSlug/ticket-designer"
             params={{ workspaceSlug: workspaceSlug || "" }}
@@ -751,21 +884,23 @@ function TicketDesignerPage() {
 
       <div className="flex-1 min-h-0 grid gap-6 p-6 lg:grid-cols-[360px_1fr]">
         {/* Controls */}
-        <aside className="min-h-0 space-y-6 overflow-y-auto pb-10 pr-2 -mr-2">
-          <div className="grid grid-cols-3 gap-1 rounded-xl bg-secondary/50 p-1">
-            {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-lg px-2 py-1.5 text-xs font-medium transition-all capitalize ${activeTab === tab ? "bg-background shadow text-foreground" : "text-muted-foreground hover:bg-background/50"}`}
-              >
-                {tab === "back" ? "Back Side" : tab}
-              </button>
-            ))}
+        <aside className="min-h-0 overflow-y-auto flex flex-col bg-card border border-border/60 rounded-2xl shadow-lg hide-scrollbar">
+          <div className="sticky top-0 z-10 bg-card/90 backdrop-blur-xl p-3 border-b border-border/40">
+            <div className="grid grid-cols-3 gap-1 rounded-lg bg-secondary/60 p-1">
+              {(["setup", "design", "media", "layout", "back", "content"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-md px-2 py-1.5 text-xs font-semibold tracking-wide transition-all capitalize ${activeTab === tab ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:bg-background/40 hover:text-foreground"}`}
+                >
+                  {tab === "back" ? "Back Side" : tab}
+                </button>
+              ))}
+            </div>
           </div>
 
           {activeTab === "setup" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Assignment" icon={Calendar}>
                 <div className="space-y-3">
                   <Field label="Assign to Event or Venue">
@@ -931,7 +1066,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "design" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Template" icon={TicketIcon}>
                 <div className="grid grid-cols-2 gap-2">
                   {templates
@@ -957,7 +1092,7 @@ function TicketDesignerPage() {
               </Section>
 
               <Section title="Palette" icon={Palette}>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   {palettes.map((p) => (
                     <button
                       key={p.name}
@@ -975,29 +1110,40 @@ function TicketDesignerPage() {
               </Section>
 
               <Section title="Typography" icon={Type}>
-                <div className="grid grid-cols-2 gap-2">
-                  {fonts.map((f) => (
-                    <button
-                      key={f.name}
-                      onClick={() => updateDesign("font", f)}
-                      style={{ fontFamily: f.css }}
-                      className={`rounded-xl border p-3 text-left text-sm ${
-                        mergedDesign.font?.name === f.name
-                          ? "border-primary bg-accent/40"
-                          : "border-border/60"
-                      }`}
-                    >
-                      <p className="text-xs text-muted-foreground">{f.name}</p>
-                      <p className="font-semibold">Aa Bb 123</p>
-                    </button>
-                  ))}
+                <div className="mb-4">
+                  <Input
+                    type="search"
+                    placeholder="Search fonts..."
+                    value={fontSearchQuery}
+                    onChange={(e) => setFontSearchQuery(e.target.value)}
+                    className="h-8 text-xs bg-secondary/30"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {fonts
+                    .filter((f) => f.name.toLowerCase().includes(fontSearchQuery.toLowerCase()))
+                    .map((f) => (
+                      <button
+                        key={f.name}
+                        onClick={() => updateDesign("font", f)}
+                        style={{ fontFamily: f.css }}
+                        className={`rounded-xl border p-3 text-left text-sm ${
+                          mergedDesign.font?.name === f.name
+                            ? "border-primary bg-accent/40"
+                            : "border-border/60"
+                        }`}
+                      >
+                        <p className="text-xs text-muted-foreground">{f.name}</p>
+                        <p className="font-semibold">Aa Bb 123</p>
+                      </button>
+                    ))}
                 </div>
               </Section>
             </div>
           )}
 
           {activeTab === "media" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Cover image" icon={ImageIcon}>
                 <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground hover:bg-secondary">
                   <input
@@ -1113,7 +1259,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "content" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Content" icon={TicketIcon}>
                 <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 mb-3">
                   <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -1142,7 +1288,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "layout" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Text Sizes" icon={Type}>
                 <div className="space-y-4">
                   <Field
@@ -1298,7 +1444,7 @@ function TicketDesignerPage() {
           )}
 
           {activeTab === "back" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="animate-in fade-in slide-in-from-left-2 duration-300 pb-10">
               <Section title="Back Side Text" icon={Type}>
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Custom message / terms</Label>
@@ -1427,7 +1573,13 @@ function TicketDesignerPage() {
             </div>
 
             <div
-              className={`flex-1 flex ${editScope === "tier" && ticketTiers.length > 0 ? "flex-col py-8 justify-start" : "items-center justify-center"} overflow-auto gap-12`}
+              className={`flex-1 flex ${editScope === "tier" && ticketTiers.length > 0 ? "flex-col py-16 justify-start items-center" : "items-center justify-center"} overflow-auto gap-12 relative rounded-2xl shadow-inner`}
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle, hsl(var(--border)) 1.5px, transparent 1.5px)",
+                backgroundSize: "24px 24px",
+                backgroundColor: "hsl(var(--secondary) / 0.4)",
+              }}
             >
               {editScope === "tier" && ticketTiers.length > 0 ? (
                 ticketTiers.map((tier: any) => {
@@ -1440,8 +1592,8 @@ function TicketDesignerPage() {
                   return (
                     <div
                       key={tier.id}
-                      id={`tier-preview-${tier.id}`}
-                      className={`relative cursor-pointer transition-all duration-300 mx-auto ${isSelected ? "ring-4 ring-primary ring-offset-8 ring-offset-card rounded-[28px] scale-100" : "opacity-40 hover:opacity-80 scale-95"}`}
+                      id={isSelected ? "ticket-preview-container" : `tier-preview-${tier.id}`}
+                      className={`relative cursor-pointer transition-all duration-300 mx-auto ${isSelected ? "ring-4 ring-primary ring-offset-8 ring-offset-secondary/40 rounded-[28px] scale-100 z-10 shadow-2xl" : "opacity-40 hover:opacity-80 scale-95 shadow-md"}`}
                       onClick={() => setActiveTierId(tier.id)}
                     >
                       <TicketPreview
@@ -1491,7 +1643,7 @@ function TicketDesignerPage() {
                         back={tDesign.back || defaultBack}
                       />
                       {isSelected && (
-                        <div className="absolute -right-2 -top-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg z-50">
+                        <div className="absolute -right-2 -top-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg z-50 pointer-events-none">
                           Currently Editing
                         </div>
                       )}
@@ -1499,38 +1651,43 @@ function TicketDesignerPage() {
                   );
                 })
               ) : (
-                <TicketPreview
-                  template={mergedDesign.template}
-                  palette={mergedDesign.palette}
-                  font={mergedDesign.font}
-                  tier={dynamicDefaults.tierName}
-                  title={mergedDesign.title || dynamicDefaults.title || ""}
-                  subtitle={mergedDesign.subtitle || dynamicDefaults.subtitle || ""}
-                  date={mergedDesign.date || dynamicDefaults.date || ""}
-                  time={mergedDesign.time || dynamicDefaults.time || ""}
-                  seat={mergedDesign.seat || dynamicDefaults.seat}
-                  price={mergedDesign.price || dynamicDefaults.price || ""}
-                  currency={mergedDesign.currency || dynamicDefaults.currency}
-                  cover={
-                    mergedDesign.cover ||
-                    (assignmentType === "cinema"
-                      ? cinemaMatch?.cover_url
-                      : assignmentType === "venue"
-                        ? venueMatch?.cover_url || venueMatch?.images?.[0]
-                        : eventMatch?.cover) ||
-                    ""
-                  }
-                  logoText={mergedDesign.logoText || dynamicDefaults.brand}
-                  logoImage={mergedDesign.logoImage}
-                  logoScale={mergedDesign.logoScale || 24}
-                  logoOpacity={mergedDesign.logoOpacity ?? 1}
-                  logoColorMode={mergedDesign.logoColorMode || "original"}
-                  orderId={orderId}
-                  previewMode={previewMode}
-                  onLogoClick={handleLogoClick}
-                  layout={mergedDesign.layout || defaultLayout}
-                  back={mergedDesign.back || defaultBack}
-                />
+                <div
+                  id="ticket-preview-container"
+                  className="relative w-fit h-fit shadow-2xl rounded-[28px] transition-transform hover:scale-[1.01] hover:shadow-3xl z-10"
+                >
+                  <TicketPreview
+                    template={mergedDesign.template}
+                    palette={mergedDesign.palette}
+                    font={mergedDesign.font}
+                    tier={dynamicDefaults.tierName}
+                    title={mergedDesign.title || dynamicDefaults.title || ""}
+                    subtitle={mergedDesign.subtitle || dynamicDefaults.subtitle || ""}
+                    date={mergedDesign.date || dynamicDefaults.date || ""}
+                    time={mergedDesign.time || dynamicDefaults.time || ""}
+                    seat={mergedDesign.seat || dynamicDefaults.seat}
+                    price={mergedDesign.price || dynamicDefaults.price || ""}
+                    currency={mergedDesign.currency || dynamicDefaults.currency}
+                    cover={
+                      mergedDesign.cover ||
+                      (assignmentType === "cinema"
+                        ? cinemaMatch?.cover_url
+                        : assignmentType === "venue"
+                          ? venueMatch?.cover_url || venueMatch?.images?.[0]
+                          : eventMatch?.cover) ||
+                      ""
+                    }
+                    logoText={mergedDesign.logoText || dynamicDefaults.brand}
+                    logoImage={mergedDesign.logoImage}
+                    logoScale={mergedDesign.logoScale || 24}
+                    logoOpacity={mergedDesign.logoOpacity ?? 1}
+                    logoColorMode={mergedDesign.logoColorMode || "original"}
+                    orderId={orderId}
+                    previewMode={previewMode}
+                    onLogoClick={handleLogoClick}
+                    layout={mergedDesign.layout || defaultLayout}
+                    back={mergedDesign.back || defaultBack}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -1563,6 +1720,24 @@ function TicketDesignerPage() {
         resourceType="ticket_project"
         resourceId={projectId}
       />
+
+      {/* Hidden elements for PDF export */}
+      <div
+        style={{
+          position: "fixed",
+          top: "-10000px",
+          left: "-10000px",
+          pointerEvents: "none",
+          zIndex: -9999,
+        }}
+      >
+        <div id="export-front-container" className="relative w-fit h-fit">
+          <TicketPreview {...getActiveTicketProps()} previewMode="Front" onLogoClick={() => {}} />
+        </div>
+        <div id="export-back-container" className="relative w-fit h-fit">
+          <TicketPreview {...getActiveTicketProps()} previewMode="Back" onLogoClick={() => {}} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1576,21 +1751,41 @@ function Section({
   icon: any;
   children: React.ReactNode;
 }) {
+  const [isOpen, setIsOpen] = _useState(true);
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-primary" />
-        <p className="text-sm font-semibold">{title}</p>
-      </div>
-      {children}
+    <div className="border-b border-border/40 last:border-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between py-4 px-5 hover:bg-secondary/30 transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+          <p className="text-[13px] font-semibold tracking-wide text-foreground">{title}</p>
+        </div>
+        <svg
+          className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="px-5 pb-5 pt-1 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        {label}
+      </Label>
       {children}
     </div>
   );
