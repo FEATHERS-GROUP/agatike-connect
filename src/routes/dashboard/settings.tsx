@@ -14,14 +14,8 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceWallet, getWalletTransactions } from "@/api/wallet";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { formatDistanceToNow } from "date-fns";
 import { WorkspaceWizard } from "@/components/dashboard/workspaces/WorkspaceWizard";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { useNavigate } from "@tanstack/react-router";
 import { SettingsOverviewTab } from "@/components/dashboard/settings/SettingsOverviewTab";
 import { SettingsSocialTab } from "@/components/dashboard/settings/SettingsSocialTab";
@@ -128,7 +122,7 @@ function SettingsPage() {
       });
       setAvatar(
         profile.image ||
-          `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
+        `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
       );
     }
   }, [profile, reset]);
@@ -271,11 +265,10 @@ function SettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-3 text-sm font-medium transition-all ${
-                activeTab === tab.id
+              className={`pb-3 text-sm font-medium transition-all ${activeTab === tab.id
                   ? "border-b-2 border-primary text-foreground"
                   : "text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -337,11 +330,10 @@ function SettingsPage() {
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${
-                    activeCategory === cat.id
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0 ${activeCategory === cat.id
                       ? "bg-primary text-primary-foreground"
                       : "bg-background text-foreground border border-border hover:border-input"
-                  }`}
+                    }`}
                 >
                   {cat.label}
                 </button>
@@ -351,11 +343,10 @@ function SettingsPage() {
               {avatarOptions.map((opt, i) => (
                 <div
                   key={i}
-                  className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
-                    avatar === opt
+                  className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${avatar === opt
                       ? "border-primary ring-4 ring-primary/10"
                       : "border-transparent bg-background shadow-sm hover:shadow"
-                  }`}
+                    }`}
                   onClick={() => setAvatar(opt)}
                 >
                   <img
