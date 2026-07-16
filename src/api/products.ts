@@ -135,8 +135,8 @@ const GET_WORKSPACE_RECENT_ORDERS = `
         }
       }
       user {
-        first_name
-        last_name
+        username
+        handle
         email
       }
     }

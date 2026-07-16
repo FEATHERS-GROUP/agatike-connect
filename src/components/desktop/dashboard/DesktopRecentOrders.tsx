@@ -44,7 +44,7 @@ export function DesktopRecentOrders() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-medium truncate">
-                      {order.user?.first_name} {order.user?.last_name}
+                      {order.user?.username || order.user?.handle || order.user?.email || "Unknown User"}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
                       <span className="font-medium text-foreground/80">{order.product?.name}</span>
