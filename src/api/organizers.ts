@@ -759,7 +759,13 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
 
     const CREATE_SUB = `
       mutation CreateSub($object: subscriptions_insert_input!) {
-        insert_subscriptions_one(object: $object) {
+        insert_subscriptions_one(
+          object: $object,
+          on_conflict: {
+            constraint: subscriptions_organizer_id_key,
+            update_columns: [plan_id, amount, status, next_billing_date]
+          }
+        ) {
           id
         }
       }
@@ -781,13 +787,14 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
   if (slackUrl) {
     try {
       const handle = pwdData.organizers_by_pk.handle;
-      const typeLabel = isBusiness ? "Business" : "Personal";
+      const currentTypeLabel = pwdData.organizers_by_pk.business ? "Business" : "Personal";
+      const requestedTypeLabel = isBusiness ? "Business" : "Personal";
       
       await fetch(slackUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: `*Account Conversion Request!*\n*Organizer ID:* ${session.sub}\n*Handle:* @${handle}\n*Requested Type:* ${typeLabel}\n*Business Cert:* ${data.business_cert || "None"}\n*Status:* Pending Admin Approval`,
+          text: `*Account Conversion Request!*\n*Organizer ID:* ${session.sub}\n*Handle:* @${handle}\n*Current Type:* ${currentTypeLabel}\n*Requested Type:* ${requestedTypeLabel}\n*Business Cert:* ${data.business_cert || "None"}\n*Status:* Pending Admin Approval`,
         }),
       });
     } catch (err) {

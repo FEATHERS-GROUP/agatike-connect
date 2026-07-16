@@ -79,28 +79,7 @@ export function OnboardingSlider() {
     }
   }
 
-  useEffect(() => {
-    if (pricingPlans.length > 0 || providerFees.length > 0) {
-      console.groupCollapsed("=== Agatike Pricing & Fees Debug ===");
-      console.log("Workspace Country:", workspaceCountry || "None (Using All)");
-      console.log("Raw Provider Fees pulled:", providerFees);
-      console.log("Applicable Provider Fees:", applicableFees);
-      console.log("Highest Provider Disbursement % (Network):", highestProviderFee);
-      console.log("Pricing Plans (Agatike Collection & Withdrawal):", pricingPlans);
-      console.log("Calculated Breakdown for Slider:");
-      pricingPlans.forEach((plan: any) => {
-        const orgCollection = Number(plan.organizer_collection_fee_percentage) || 0;
-        const withdrawalFee = Number(plan.withdrawal_fee_percentage) || 0;
-        const orgCollectionFixed = Number(plan.organizer_collection_fee_fixed) || 0;
-        const withdrawalFeeFixed = Number(plan.withdrawal_fee_fixed) || 0;
-        const totalFixed = orgCollectionFixed + withdrawalFeeFixed + highestProviderFixedFee;
-        console.log(
-          `- ${plan.name}: ${orgCollection}% (Sale) + ${withdrawalFee}% (Withdraw) + ~${highestProviderFee}% (Network) = ${(orgCollection + withdrawalFee + highestProviderFee).toFixed(1)}% ${totalFixed > 0 ? `+ ${totalFixed} Fixed ` : ""}Total`,
-        );
-      });
-      console.groupEnd();
-    }
-  }, [pricingPlans, providerFees, workspaceCountry, applicableFees, highestProviderFee]);
+
 
   const slides = [
     {

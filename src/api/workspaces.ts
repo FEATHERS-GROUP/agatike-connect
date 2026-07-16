@@ -145,7 +145,10 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
   currentUser.isActive = data.organizers_by_pk?.active ?? true;
   currentUser.business = data.organizers_by_pk?.business ?? false;
 
-  let resultWorkspaces = data.workspaces;
+  let resultWorkspaces = data.workspaces.map((ws: any) => ({
+    ...ws,
+    business: currentUser.business
+  }));
 
   if (allowedWorkspaces) {
     resultWorkspaces = resultWorkspaces.filter((ws: any) => allowedWorkspaces!.includes(ws.id));
