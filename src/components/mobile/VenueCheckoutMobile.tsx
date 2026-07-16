@@ -260,7 +260,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || venue.currency,
             type: "venue_booking",
-            referenceId: booking_ref,
+            referenceId: res.id,
             workspaceId: venue.workspace_id,
             reason: venue?.name || "Venue Booking",
             shortfall: paymentDetails?.shortfall || 0,

@@ -1,19 +1,23 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft,  MapPin,
+import {
+  ChevronLeft,
+  MapPin,
   Clock,
   Star,
   Users,
   CheckCircle2,
   Ticket,
   ChevronRight,
+  ChevronUp,
   X,
+  Share2,
+  Heart,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
 export function VenueDetailsMobile({ venue }: { venue: any }) {
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
