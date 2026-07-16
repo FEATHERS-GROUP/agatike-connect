@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { COUNTRIES } from "@/lib/countries";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
+import { FloatingFeeCalculator } from "@/components/shared/FeeCalculatorModal";
 import {
   Sheet,
   SheetContent,
@@ -313,7 +314,7 @@ function PublicPricingPage() {
         onOpenChange={setIsSalesDrawerOpen}
         organizerProfile={organizerProfile}
       />
-
+      <FloatingFeeCalculator />
       <Footer />
     </div>
   );
