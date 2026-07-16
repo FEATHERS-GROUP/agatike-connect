@@ -1,11 +1,23 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, MapPin, Clock, Star, Heart, Share2, Users, ChevronUp } from "lucide-react";
+import { ChevronLeft,  MapPin,
+  Clock,
+  Star,
+  Users,
+  CheckCircle2,
+  Ticket,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
 export function VenueDetailsMobile({ venue }: { venue: any }) {
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+
   if (!venue) return null;
 
   const [isTicketsExpanded, setIsTicketsExpanded] = useState(true);
@@ -83,6 +95,23 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           <h3 className="font-bold mb-2">About</h3>
           <p className="text-muted-foreground text-sm leading-relaxed">{venue.description}</p>
         </div>
+
+        {venue.images && venue.images.length > 0 && (
+          <div className="border-t border-border/40 pt-6">
+            <h3 className="font-bold mb-4">Gallery</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {venue.images.map((img: string, i: number) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`${venue.name} Gallery Image ${i + 1}`}
+                  onClick={() => setSelectedGalleryIndex(i)}
+                  className="w-full h-32 object-cover rounded-xl border border-border/40 cursor-pointer active:opacity-70 transition-opacity"
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {venue.facilities_data && venue.facilities_data.length > 0 && (
           <div className="border-t border-border/40 pt-6">
@@ -202,16 +231,20 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         )}
 
         <div className="border-t border-border/40 pt-6">
-          <h3 className="font-bold mb-4">Entry Tickets</h3>
+          <h3 className="font-bold mb-4">
+            {venue.rental_model === "ENTIRE_VENUE" ? "Rent Venue" : "Entry Tickets"}
+          </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            {venue.entrance_type === "consumable"
-              ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
-              : venue.entrance_type === "free"
-                ? "General admission is free."
-                : "Book your access in advance"}
+            {venue.rental_model === "ENTIRE_VENUE"
+              ? `Rent this venue for your exclusive use.`
+              : venue.entrance_type === "consumable"
+                ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
+                : venue.entrance_type === "free"
+                  ? "General admission is free."
+                  : "Book your access in advance"}
           </p>
 
-          {venue.entrance_type !== "free" && (
+          {venue.rental_model !== "ENTIRE_VENUE" && venue.entrance_type !== "free" && (
             <div className="space-y-3">
               <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
                 <span className="text-muted-foreground text-sm font-medium">Standard Entrance</span>
@@ -219,6 +252,17 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                   {venue.entrance_fee > 0
                     ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
                     : "Free"}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {venue.rental_model === "ENTIRE_VENUE" && venue.pricing_tiers && venue.pricing_tiers.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
+                <span className="text-muted-foreground text-sm font-medium">Starting from</span>
+                <span className="font-bold text-primary">
+                  {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
                 </span>
               </div>
             </div>
@@ -328,7 +372,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           >
             <div className="flex items-center gap-1.5">
               <span className="text-sm text-muted-foreground font-semibold">
-                Entry Ticket Prices
+                {venue.rental_model === "ENTIRE_VENUE" ? "Rental Prices" : "Entry Ticket Prices"}
               </span>
               <ChevronUp
                 className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isTicketsExpanded ? "rotate-180" : ""}`}
@@ -337,7 +381,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             {!isTicketsExpanded && <span className="text-xs text-primary font-bold">View All</span>}
           </div>
 
-          {isTicketsExpanded && venue.entrance_type !== "free" && (
+          {isTicketsExpanded && venue.rental_model !== "ENTIRE_VENUE" && venue.entrance_type !== "free" && (
             <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
               <div className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
                 <span className="text-muted-foreground font-medium">Standard Entrance</span>
@@ -350,16 +394,30 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             </div>
           )}
 
-          {venue.entrance_type !== "free" && (
+          {isTicketsExpanded && venue.rental_model === "ENTIRE_VENUE" && venue.pricing_tiers && venue.pricing_tiers.length > 0 && (
+            <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+              {venue.pricing_tiers.map((tier: any, i: number) => (
+                <div key={i} className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
+                  <span className="text-muted-foreground font-medium">{tier.name}</span>
+                  <span className="font-bold text-foreground">
+                    {formatCurrency(tier.amount, venue.currency || "RWF")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(venue.rental_model === "ENTIRE_VENUE" || venue.entrance_type !== "free") && (
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col">
                 <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                  Tickets from
+                  {venue.rental_model === "ENTIRE_VENUE" ? "Rental from" : "Tickets from"}
                 </span>
                 <span className="text-xl font-bold text-foreground">
-                  {venue.entrance_fee > 0
-                    ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
-                    : "Free"}
+                  {venue.rental_model === "ENTIRE_VENUE"
+                    ? (venue.pricing_tiers && venue.pricing_tiers.length > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF") : "Free")
+                    : (venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free")
+                  }
                 </span>
               </div>
               <Link
@@ -371,13 +429,44 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                   className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  Book Ticket
+                  {venue.rental_model === "ENTIRE_VENUE" ? "Rent Now" : "Book Ticket"}
                 </button>
               </Link>
             </div>
           )}
         </div>
       </div>
+
+      {selectedGalleryIndex !== null && venue?.images && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm">
+          <button
+            onClick={() => setSelectedGalleryIndex(null)}
+            className="absolute top-6 right-6 text-white/70 hover:text-white p-2 transition-colors"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <button
+            onClick={() => setSelectedGalleryIndex((prev) => (prev! > 0 ? prev! - 1 : venue.images.length - 1))}
+            className="absolute left-4 text-white/70 hover:text-white p-2 transition-colors"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+
+          <img
+            src={venue.images[selectedGalleryIndex]}
+            alt="Gallery view"
+            className="max-h-[85vh] max-w-[85vw] object-contain rounded-lg shadow-2xl"
+          />
+
+          <button
+            onClick={() => setSelectedGalleryIndex((prev) => (prev! < venue.images.length - 1 ? prev! + 1 : 0))}
+            className="absolute right-4 text-white/70 hover:text-white p-2 transition-colors"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

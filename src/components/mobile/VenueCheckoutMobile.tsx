@@ -58,6 +58,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
+  const [bookingReason, setBookingReason] = useState("");
+  const [bookingReasonOther, setBookingReasonOther] = useState("");
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -94,6 +96,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         if (parsed.nationality) setNationality(parsed.nationality);
         if (parsed.phone) setPhone(parsed.phone);
         if (parsed.step) setStep(parsed.step);
+        if (parsed.bookingReason) setBookingReason(parsed.bookingReason);
+        if (parsed.bookingReasonOther) setBookingReasonOther(parsed.bookingReasonOther);
       } else {
         // Default first ticket tier to 1 if no saved session
         const firstTierName = venue?.pricing_tiers?.[0]?.name || "Standard Entry";
@@ -129,6 +133,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         nationality,
         phone,
         step,
+        bookingReason,
+        bookingReasonOther,
       }),
     );
   }, [
@@ -148,7 +154,11 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   if (!venue) return null;
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
-  const isStep1Valid = date !== "" && totalTickets > 0;
+  const isStep1Valid =
+    date !== "" &&
+    totalTickets > 0 &&
+    (venue?.rental_model !== "ENTIRE_VENUE" ||
+      (bookingReason !== "" && (bookingReason !== "Other" || bookingReasonOther.trim() !== "")));
   const isStep2Valid =
     name.trim() !== "" &&
     email.trim() !== "" &&
@@ -160,7 +170,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const total =
     (venue.pricing_tiers?.length > 0
       ? venue.pricing_tiers
-      : [{ name: "Standard Entry", amount: 0 }]
+      : [{ name: "Standard Entry", amount: venue.entrance_fee || 0 }]
     ).reduce((acc: number, tier: any) => {
       const qty = ticketsData[tier.name || "Standard Entry"] || 0;
       return acc + qty * (Number(tier.amount) || 0);
@@ -195,7 +205,9 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         number_of_attendees: totalAttendees,
         tickets_data: ticketsData,
         attendees_info: attendees.length > 0 ? attendees : null,
-        internal_notes: null,
+        internal_notes: venue?.rental_model === "ENTIRE_VENUE" 
+          ? (bookingReason === "Other" ? bookingReasonOther : bookingReason) 
+          : null,
         venue_name: venue.name,
         venue_currency: venue.currency,
       };
@@ -531,16 +543,17 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
               <div className="pt-2">
                 <label className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-2">
-                  <Ticket className="w-4 h-4" /> Select Tickets
+                  <Ticket className="w-4 h-4" /> {venue?.rental_model === "ENTIRE_VENUE" ? "Select Package" : "Select Tickets"}
                 </label>
                 <p className="text-xs text-muted-foreground mb-3 leading-normal">
-                  Specify how many tickets you'd like to purchase for this visit using the selector
-                  buttons.
+                  {venue?.rental_model === "ENTIRE_VENUE" 
+                    ? "Select a rental package for your booking."
+                    : "Specify how many tickets you'd like to purchase for this visit using the selector buttons."}
                 </p>
                 <div className="space-y-3">
                   {(venue?.pricing_tiers?.length > 0
                     ? venue.pricing_tiers
-                    : [{ name: "Standard Entry", amount: 0 }]
+                    : [{ name: "Standard Entry", amount: venue.entrance_fee || 0 }]
                   ).map((tier: any, idx: number) => (
                     <div
                       key={idx}
@@ -557,47 +570,90 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                         </p>
                       </div>
                       <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          disabled={(ticketsData[tier.name || "Standard Entry"] || 0) <= 0}
-                          onClick={() => {
-                            const val = ticketsData[tier.name || "Standard Entry"] || 0;
-                            if (val > 0) {
-                              setTicketsData((p) => ({
-                                ...p,
-                                [tier.name || "Standard Entry"]: val - 1,
-                              }));
-                            }
-                          }}
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="w-10 text-center font-bold text-sm tracking-tight">
-                          {ticketsData[tier.name || "Standard Entry"] || 0}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            const val = ticketsData[tier.name || "Standard Entry"] || 0;
-                            setTicketsData((p) => ({
-                              ...p,
-                              [tier.name || "Standard Entry"]: val + 1,
-                            }));
-                          }}
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
+                        {venue?.rental_model === "ENTIRE_VENUE" ? (
+                          <Button
+                            type="button"
+                            variant={ticketsData[tier.name || "Standard Entry"] ? "default" : "outline"}
+                            onClick={() => {
+                              setTicketsData({ [tier.name || "Standard Entry"]: 1 });
+                            }}
+                            className="h-8 rounded-lg text-xs"
+                          >
+                            {ticketsData[tier.name || "Standard Entry"] ? "Selected" : "Select"}
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={(ticketsData[tier.name || "Standard Entry"] || 0) <= 0}
+                              onClick={() => {
+                                const val = ticketsData[tier.name || "Standard Entry"] || 0;
+                                if (val > 0) {
+                                  setTicketsData((p) => ({
+                                    ...p,
+                                    [tier.name || "Standard Entry"]: val - 1,
+                                  }));
+                                }
+                              }}
+                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="w-10 text-center font-bold text-sm tracking-tight">
+                              {ticketsData[tier.name || "Standard Entry"] || 0}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                const val = ticketsData[tier.name || "Standard Entry"] || 0;
+                                setTicketsData((p) => ({
+                                  ...p,
+                                  [tier.name || "Standard Entry"]: val + 1,
+                                }));
+                              }}
+                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
+              
+              {venue?.rental_model === "ENTIRE_VENUE" && (
+                <div className="pt-4 border-t border-border/40">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2 block">Reason for booking</h3>
+                  <div className="space-y-4">
+                    <select
+                      value={bookingReason}
+                      onChange={(e) => setBookingReason(e.target.value)}
+                      className="w-full h-12 bg-secondary/30 border border-border/80 rounded-xl px-4 text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
+                    >
+                      <option value="" disabled>Select reason</option>
+                      <option value="Wedding">Wedding</option>
+                      <option value="Corporate Event">Corporate Event</option>
+                      <option value="Birthday Party">Birthday Party</option>
+                      <option value="Concert/Performance">Concert/Performance</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    {bookingReason === "Other" && (
+                      <Input
+                        placeholder="Please specify"
+                        value={bookingReasonOther}
+                        onChange={(e) => setBookingReasonOther(e.target.value)}
+                        className="h-12 w-full bg-secondary/30 border border-border/80 rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
