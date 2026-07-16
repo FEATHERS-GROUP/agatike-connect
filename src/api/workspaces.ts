@@ -147,7 +147,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
 
   let resultWorkspaces = data.workspaces.map((ws: any) => ({
     ...ws,
-    business: currentUser.business
+    business: currentUser.business,
   }));
 
   if (allowedWorkspaces) {

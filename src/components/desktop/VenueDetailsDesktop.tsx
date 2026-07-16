@@ -362,16 +362,18 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               </div>
             )}
 
-            {venue.rental_model === "ENTIRE_VENUE" && venue.pricing_tiers && venue.pricing_tiers.length > 0 && (
-              <div className="space-y-3 mb-8">
-                <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
-                  <span className="text-muted-foreground font-medium">Starting from</span>
-                  <span className="text-xl font-bold">
-                    {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
-                  </span>
+            {venue.rental_model === "ENTIRE_VENUE" &&
+              venue.pricing_tiers &&
+              venue.pricing_tiers.length > 0 && (
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
+                    <span className="text-muted-foreground font-medium">Starting from</span>
+                    <span className="text-xl font-bold">
+                      {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {(venue.rental_model === "ENTIRE_VENUE" || venue.entrance_type !== "free") && (
               <Link
@@ -383,7 +385,8 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                   className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  {venue.rental_model === "ENTIRE_VENUE" ? "Rent Now" : "Get Ticket"} <ArrowRight className="w-5 h-5 ml-2" />
+                  {venue.rental_model === "ENTIRE_VENUE" ? "Rent Now" : "Get Ticket"}{" "}
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
             )}
@@ -401,9 +404,11 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
           >
             <X className="w-8 h-8" />
           </button>
-          
+
           <button
-            onClick={() => setSelectedGalleryIndex((prev) => (prev! > 0 ? prev! - 1 : venue.images.length - 1))}
+            onClick={() =>
+              setSelectedGalleryIndex((prev) => (prev! > 0 ? prev! - 1 : venue.images.length - 1))
+            }
             className="absolute left-6 text-white/70 hover:text-white p-2 transition-colors"
           >
             <ChevronLeft className="w-10 h-10" />
@@ -416,7 +421,9 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
           />
 
           <button
-            onClick={() => setSelectedGalleryIndex((prev) => (prev! < venue.images.length - 1 ? prev! + 1 : 0))}
+            onClick={() =>
+              setSelectedGalleryIndex((prev) => (prev! < venue.images.length - 1 ? prev! + 1 : 0))
+            }
             className="absolute right-6 text-white/70 hover:text-white p-2 transition-colors"
           >
             <ChevronRight className="w-10 h-10" />

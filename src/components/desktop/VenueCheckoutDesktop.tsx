@@ -93,10 +93,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const isDateBooked = (d: Date) => {
     // Disable past dates
     if (d < new Date(new Date().setHours(0, 0, 0, 0))) return true;
-    
+
     // Only block specific dates if renting entire venue
     if (venue?.rental_model !== "ENTIRE_VENUE") return false;
-    
+
     return bookedDates.includes(format(d, "yyyy-MM-dd"));
   };
   const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id) || {
@@ -253,9 +253,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         number_of_attendees: totalAttendees,
         tickets_data: ticketsData,
         attendees_info: attendees.length > 0 ? attendees : null,
-        internal_notes: venue?.rental_model === "ENTIRE_VENUE" 
-          ? (bookingReason === "Other" ? bookingReasonOther : bookingReason) 
-          : null,
+        internal_notes:
+          venue?.rental_model === "ENTIRE_VENUE"
+            ? bookingReason === "Other"
+              ? bookingReasonOther
+              : bookingReason
+            : null,
         venue_name: venue.name,
         venue_currency: venue.currency,
       };
@@ -647,7 +650,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                             variant={"outline"}
                             className={cn(
                               "w-full h-12 justify-start text-left font-normal bg-secondary/20 border-border/85 rounded-xl",
-                              !date && "text-muted-foreground"
+                              !date && "text-muted-foreground",
                             )}
                           >
                             <Calendar className="mr-2 h-4 w-4" />
@@ -672,7 +675,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
                   <div className="border-t border-border/40 pt-6">
                     <h3 className="text-xl font-semibold mb-1">
-                      {venue?.rental_model === "ENTIRE_VENUE" ? "Package Selection" : "Ticket Selection"}
+                      {venue?.rental_model === "ENTIRE_VENUE"
+                        ? "Package Selection"
+                        : "Ticket Selection"}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       {venue?.rental_model === "ENTIRE_VENUE"
@@ -700,7 +705,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                             {venue?.rental_model === "ENTIRE_VENUE" ? (
                               <Button
                                 type="button"
-                                variant={ticketsData[tier.name || "Standard Entry"] ? "default" : "outline"}
+                                variant={
+                                  ticketsData[tier.name || "Standard Entry"] ? "default" : "outline"
+                                }
                                 onClick={() => {
                                   setTicketsData({ [tier.name || "Standard Entry"]: 1 });
                                 }}
@@ -753,7 +760,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                       ))}
                     </div>
                   </div>
-                  
+
                   {venue?.rental_model === "ENTIRE_VENUE" && (
                     <div className="border-t border-border/40 pt-6">
                       <h3 className="text-xl font-semibold mb-4">Reason for booking</h3>
@@ -763,7 +770,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                           onChange={(e) => setBookingReason(e.target.value)}
                           className="w-full h-12 bg-secondary/20 border border-border/85 rounded-xl px-4 text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
                         >
-                          <option value="" disabled>Select reason</option>
+                          <option value="" disabled>
+                            Select reason
+                          </option>
                           <option value="Wedding">Wedding</option>
                           <option value="Corporate Event">Corporate Event</option>
                           <option value="Birthday Party">Birthday Party</option>

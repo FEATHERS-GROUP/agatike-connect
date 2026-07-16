@@ -36,10 +36,10 @@ async function run() {
         args: {
           source: "default",
           schema: "public",
-          name: "event_feedback"
-        }
-      })
-    }
+          name: "event_feedback",
+        },
+      }),
+    },
   );
   // It might fail if already tracked, which is fine, we just need to reload metadata.
 

@@ -261,16 +261,18 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             </div>
           )}
 
-          {venue.rental_model === "ENTIRE_VENUE" && venue.pricing_tiers && venue.pricing_tiers.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
-                <span className="text-muted-foreground text-sm font-medium">Starting from</span>
-                <span className="font-bold text-primary">
-                  {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
-                </span>
+          {venue.rental_model === "ENTIRE_VENUE" &&
+            venue.pricing_tiers &&
+            venue.pricing_tiers.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
+                  <span className="text-muted-foreground text-sm font-medium">Starting from</span>
+                  <span className="font-bold text-primary">
+                    {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
 
         {/* Community Reviews */}
@@ -385,31 +387,39 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             {!isTicketsExpanded && <span className="text-xs text-primary font-bold">View All</span>}
           </div>
 
-          {isTicketsExpanded && venue.rental_model !== "ENTIRE_VENUE" && venue.entrance_type !== "free" && (
-            <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
-              <div className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
-                <span className="text-muted-foreground font-medium">Standard Entrance</span>
-                <span className="font-bold text-foreground">
-                  {venue.entrance_fee > 0
-                    ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
-                    : "Free"}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {isTicketsExpanded && venue.rental_model === "ENTIRE_VENUE" && venue.pricing_tiers && venue.pricing_tiers.length > 0 && (
-            <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
-              {venue.pricing_tiers.map((tier: any, i: number) => (
-                <div key={i} className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
-                  <span className="text-muted-foreground font-medium">{tier.name}</span>
+          {isTicketsExpanded &&
+            venue.rental_model !== "ENTIRE_VENUE" &&
+            venue.entrance_type !== "free" && (
+              <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                <div className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
+                  <span className="text-muted-foreground font-medium">Standard Entrance</span>
                   <span className="font-bold text-foreground">
-                    {formatCurrency(tier.amount, venue.currency || "RWF")}
+                    {venue.entrance_fee > 0
+                      ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                      : "Free"}
                   </span>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            )}
+
+          {isTicketsExpanded &&
+            venue.rental_model === "ENTIRE_VENUE" &&
+            venue.pricing_tiers &&
+            venue.pricing_tiers.length > 0 && (
+              <div className="mb-4 space-y-2 max-h-48 overflow-y-auto pr-1 border-t border-border/40 pt-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                {venue.pricing_tiers.map((tier: any, i: number) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150"
+                  >
+                    <span className="text-muted-foreground font-medium">{tier.name}</span>
+                    <span className="font-bold text-foreground">
+                      {formatCurrency(tier.amount, venue.currency || "RWF")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
           {(venue.rental_model === "ENTIRE_VENUE" || venue.entrance_type !== "free") && (
             <div className="flex items-center justify-between gap-4">
@@ -419,9 +429,12 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                 </span>
                 <span className="text-xl font-bold text-foreground">
                   {venue.rental_model === "ENTIRE_VENUE"
-                    ? (venue.pricing_tiers && venue.pricing_tiers.length > 0 ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF") : "Free")
-                    : (venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, venue.currency || "RWF") : "Free")
-                  }
+                    ? venue.pricing_tiers && venue.pricing_tiers.length > 0
+                      ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")
+                      : "Free"
+                    : venue.entrance_fee > 0
+                      ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                      : "Free"}
                 </span>
               </div>
               <Link
@@ -449,9 +462,11 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           >
             <X className="w-8 h-8" />
           </button>
-          
+
           <button
-            onClick={() => setSelectedGalleryIndex((prev) => (prev! > 0 ? prev! - 1 : venue.images.length - 1))}
+            onClick={() =>
+              setSelectedGalleryIndex((prev) => (prev! > 0 ? prev! - 1 : venue.images.length - 1))
+            }
             className="absolute left-4 text-white/70 hover:text-white p-2 transition-colors"
           >
             <ChevronLeft className="w-8 h-8" />
@@ -464,7 +479,9 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
           />
 
           <button
-            onClick={() => setSelectedGalleryIndex((prev) => (prev! < venue.images.length - 1 ? prev! + 1 : 0))}
+            onClick={() =>
+              setSelectedGalleryIndex((prev) => (prev! < venue.images.length - 1 ? prev! + 1 : 0))
+            }
             className="absolute right-4 text-white/70 hover:text-white p-2 transition-colors"
           >
             <ChevronRight className="w-8 h-8" />

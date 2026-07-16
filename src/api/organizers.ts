@@ -698,7 +698,7 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
 
   // Update Organizer profile
   const isBusiness = data.targetType === "business";
-  
+
   const updateMutation = `
     mutation UpdateOrganizerConversion(
       $id: uuid!,
@@ -739,7 +739,7 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
     const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
       organizer_id: session.sub,
     });
-    
+
     if (activeSubRes.subscriptions.length > 0) {
       const CANCEL_SUB = `
         mutation CancelSub($id: uuid!) {
@@ -770,7 +770,7 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
         }
       }
     `;
-    
+
     await hasuraRequest(CREATE_SUB, {
       object: {
         organizer_id: session.sub,
@@ -789,7 +789,7 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
       const handle = pwdData.organizers_by_pk.handle;
       const currentTypeLabel = pwdData.organizers_by_pk.business ? "Business" : "Personal";
       const requestedTypeLabel = isBusiness ? "Business" : "Personal";
-      
+
       await fetch(slackUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

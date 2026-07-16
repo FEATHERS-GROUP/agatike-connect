@@ -213,8 +213,8 @@ export function FeeCalculatorModal({ open, onOpenChange }: FeeCalculatorModalPro
         </div>
 
         <div className="mt-2 p-4 bg-primary/5 rounded-xl border border-primary/10 text-xs text-gray-600 dark:text-white/70 leading-relaxed">
-          <strong>Pricing Explanation:</strong> Agatike uses transparent transaction pricing.
-          Ticket sales fees and payout processing fees are shown clearly before every withdrawal.
+          <strong>Pricing Explanation:</strong> Agatike uses transparent transaction pricing. Ticket
+          sales fees and payout processing fees are shown clearly before every withdrawal.
         </div>
 
         <div className="pt-4 flex justify-end">

@@ -79,8 +79,6 @@ export function OnboardingSlider() {
     }
   }
 
-
-
   const slides = [
     {
       title: "Welcome to Agatike Connect! 🎉",
