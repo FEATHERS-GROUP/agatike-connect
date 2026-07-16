@@ -154,13 +154,18 @@ function FeedbackForm() {
 
       // Check for duplicate submission
       const alreadySubmitted = await checkFeedbackExists({
-        data: { event_id: eventId, reviewer_email: email },
+        data: {
+          event_id: venue ? undefined : eventId,
+          venue_id: venue ? eventId : undefined,
+          reviewer_email: email,
+        },
       } as any);
       if (alreadySubmitted) throw new Error("You have already submitted feedback for this event.");
 
       return submitEventFeedback({
         data: {
-          event_id: eventId,
+          event_id: venue ? undefined : eventId,
+          venue_id: venue ? eventId : undefined,
           attendee_id: verifiedAttendeeId || undefined,
           reviewer_name: name,
           reviewer_email: email,

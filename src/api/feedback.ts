@@ -7,7 +7,9 @@ export const submitEventFeedback = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
     const input = ctx.data as unknown as {
-      event_id: string;
+      event_id?: string;
+      venue_id?: string;
+      space_id?: string;
       attendee_id?: string;
       reviewer_name: string;
       reviewer_email: string;
@@ -22,7 +24,7 @@ export const submitEventFeedback = createServerFn({ method: "POST" })
 
     // Verify attendee belongs to this event if attendee_id is provided
     let is_verified = false;
-    if (input.attendee_id) {
+    if (input.attendee_id && input.event_id) {
       const checkQuery = `
       query CheckAttendee($id: uuid!) {
         event_attendees_by_pk(id: $id) {
@@ -49,11 +51,13 @@ export const submitEventFeedback = createServerFn({ method: "POST" })
     if (input.category_scores && Object.keys(input.category_scores).length > 0) {
       const scores = Object.values(input.category_scores);
       const total = scores.reduce((acc, val) => acc + val, 0);
-      finalRating = (input.rating + total) / (scores.length + 1);
+      finalRating = Math.round((input.rating + total) / (scores.length + 1));
     }
 
     const insertObject: Record<string, any> = {
-      event_id: input.event_id,
+      event_id: input.event_id || null,
+      venue_id: input.venue_id || null,
+      space_id: input.space_id || null,
       reviewer_name: input.reviewer_name,
       reviewer_email: input.reviewer_email,
       rating: finalRating,
@@ -101,7 +105,7 @@ export const getEventFeedback = createServerFn({ method: "POST" })
     const query = `
     query GetEventFeedback($event_id: uuid!) {
       event_feedback(
-        where: { event_id: { _eq: $event_id } },
+        where: { _or: [{ event_id: { _eq: $event_id } }, { venue_id: { _eq: $event_id } }] },
         order_by: [{ is_featured: desc }, { created_at: desc }]
       ) {
         id
@@ -119,7 +123,7 @@ export const getEventFeedback = createServerFn({ method: "POST" })
         source
         created_at
       }
-      event_feedback_aggregate(where: { event_id: { _eq: $event_id } }) {
+      event_feedback_aggregate(where: { _or: [{ event_id: { _eq: $event_id } }, { venue_id: { _eq: $event_id } }] }) {
         aggregate {
           count
           avg { rating }
@@ -157,7 +161,7 @@ export const getEventFeedbackPublic = createServerFn({ method: "POST" })
     const query = `
     query GetPublicFeedback($event_id: uuid!) {
       event_feedback(
-        where: { event_id: { _eq: $event_id }, is_public: { _eq: true } },
+        where: { _or: [{ event_id: { _eq: $event_id } }, { venue_id: { _eq: $event_id } }], is_public: { _eq: true } },
         order_by: [{ is_featured: desc }, { created_at: desc }],
         limit: 20
       ) {
@@ -171,7 +175,7 @@ export const getEventFeedbackPublic = createServerFn({ method: "POST" })
         is_featured
         created_at
       }
-      event_feedback_aggregate(where: { event_id: { _eq: $event_id }, is_public: { _eq: true } }) {
+      event_feedback_aggregate(where: { _or: [{ event_id: { _eq: $event_id } }, { venue_id: { _eq: $event_id } }], is_public: { _eq: true } }) {
         aggregate {
           count
           avg { rating }
@@ -290,26 +294,46 @@ export const getOrganizersRatings = createServerFn({ method: "GET" })
 export const checkFeedbackExists = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const { event_id, reviewer_email } = ctx.data as unknown as {
-      event_id: string;
+    const { event_id, venue_id, space_id, reviewer_email } = ctx.data as unknown as {
+      event_id?: string;
+      venue_id?: string;
+      space_id?: string;
       reviewer_email: string;
     };
 
-    const query = `
-    query CheckFeedback($event_id: uuid!, $reviewer_email: String!) {
-      event_feedback(where: {
-        event_id: { _eq: $event_id },
-        reviewer_email: { _eq: $reviewer_email }
-      }, limit: 1) {
-        id
-      }
-    }
-  `;
+    let query = "";
+    let variables: any = { reviewer_email };
 
-    const data = await hasuraRequest<{ event_feedback: any[] }>(query, {
-      event_id,
-      reviewer_email,
-    });
+    if (venue_id) {
+      query = `
+      query CheckFeedback($venue_id: uuid!, $reviewer_email: String!) {
+        event_feedback(where: {
+          venue_id: { _eq: $venue_id },
+          reviewer_email: { _eq: $reviewer_email }
+        }, limit: 1) { id }
+      }`;
+      variables.venue_id = venue_id;
+    } else if (space_id) {
+      query = `
+      query CheckFeedback($space_id: uuid!, $reviewer_email: String!) {
+        event_feedback(where: {
+          space_id: { _eq: $space_id },
+          reviewer_email: { _eq: $reviewer_email }
+        }, limit: 1) { id }
+      }`;
+      variables.space_id = space_id;
+    } else {
+      query = `
+      query CheckFeedback($event_id: uuid!, $reviewer_email: String!) {
+        event_feedback(where: {
+          event_id: { _eq: $event_id },
+          reviewer_email: { _eq: $reviewer_email }
+        }, limit: 1) { id }
+      }`;
+      variables.event_id = event_id;
+    }
+
+    const data = await hasuraRequest<{ event_feedback: any[] }>(query, variables);
     return data.event_feedback.length > 0;
   });
 
