@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, MapPin, Clock, Star, Users, ArrowRight } from "lucide-react";
+import { ChevronLeft, MapPin, Clock, Star, Users, ArrowRight, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { Navbar } from "@/components/site/Navbar";
@@ -7,7 +7,11 @@ import { Footer } from "@/components/site/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 
+import { useState } from "react";
+
 export function VenueDetailsDesktop({ venue }: { venue: any }) {
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+
   if (!venue) return null;
 
   /** Strip Quill's inline color/background-color so dark theme takes over */
@@ -64,6 +68,23 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
             <h2 className="text-xl font-semibold">About this venue</h2>
             <p className="mt-3 text-muted-foreground leading-relaxed">{venue.description}</p>
           </div>
+
+          {venue.images && venue.images.length > 0 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Gallery</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {venue.images.map((img: string, i: number) => (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`${venue.name} Gallery Image ${i + 1}`}
+                    onClick={() => setSelectedGalleryIndex(i)}
+                    className="w-full h-40 object-cover rounded-2xl border border-border/40 cursor-pointer hover:opacity-80 transition-opacity"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Map — shown above amenities */}
           {venue.latitude && venue.longitude && (
@@ -123,8 +144,8 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                       </div>
                       <div className="mt-auto">
                         <Link
-                          to="/venues/$venueId_/facilities/checkout/$facilityId"
-                          params={{ venueId_: venue.id, facilityId: facility.id }}
+                          to="/venues/$venueId/facilities/checkout/$facilityId"
+                          params={{ venueId: venue.id, facilityId: facility.id }}
                           className="block w-full"
                         >
                           <Button
@@ -312,17 +333,23 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
         <aside className="lg:sticky lg:top-24 h-fit">
           <div className="rounded-3xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
             <h3 className="text-2xl font-bold tracking-tight mb-2">
-              {venue.entrance_type === "free" ? "Free Entry" : "Entry Ticket"}
+              {venue.rental_model === "ENTIRE_VENUE"
+                ? "Rent Venue"
+                : venue.entrance_type === "free"
+                  ? "Free Entry"
+                  : "Entry Ticket"}
             </h3>
             <p className="text-muted-foreground mb-6">
-              {venue.entrance_type === "consumable"
-                ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
-                : venue.entrance_type === "free"
-                  ? "General admission is free."
-                  : "Book your access in advance"}
+              {venue.rental_model === "ENTIRE_VENUE"
+                ? `Rent this venue for your exclusive use.`
+                : venue.entrance_type === "consumable"
+                  ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
+                  : venue.entrance_type === "free"
+                    ? "General admission is free."
+                    : "Book your access in advance"}
             </p>
 
-            {venue.entrance_type !== "free" && (
+            {venue.rental_model !== "ENTIRE_VENUE" && venue.entrance_type !== "free" && (
               <div className="space-y-3 mb-8">
                 <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
                   <span className="text-muted-foreground font-medium">Standard Entrance</span>
@@ -335,7 +362,20 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               </div>
             )}
 
-            {venue.entrance_type !== "free" && (
+            {venue.rental_model === "ENTIRE_VENUE" &&
+              venue.pricing_tiers &&
+              venue.pricing_tiers.length > 0 && (
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30">
+                    <span className="text-muted-foreground font-medium">Starting from</span>
+                    <span className="text-xl font-bold">
+                      {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+            {(venue.rental_model === "ENTIRE_VENUE" || venue.entrance_type !== "free") && (
               <Link
                 to="/venues/checkout/$venueId"
                 params={{ venueId: venue.id }}
@@ -345,7 +385,8 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                   className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  Book Ticket Now <ArrowRight className="w-5 h-5 ml-2" />
+                  {venue.rental_model === "ENTIRE_VENUE" ? "Rent Now" : "Get Ticket"}{" "}
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
             )}
@@ -354,6 +395,41 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
       </div>
 
       <Footer />
+
+      {selectedGalleryIndex !== null && venue?.images && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm">
+          <button
+            onClick={() => setSelectedGalleryIndex(null)}
+            className="absolute top-6 right-6 text-white/70 hover:text-white p-2 transition-colors"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          <button
+            onClick={() =>
+              setSelectedGalleryIndex((prev) => (prev! > 0 ? prev! - 1 : venue.images.length - 1))
+            }
+            className="absolute left-6 text-white/70 hover:text-white p-2 transition-colors"
+          >
+            <ChevronLeft className="w-10 h-10" />
+          </button>
+
+          <img
+            src={venue.images[selectedGalleryIndex]}
+            alt="Gallery view"
+            className="max-h-[85vh] max-w-[85vw] object-contain rounded-lg shadow-2xl"
+          />
+
+          <button
+            onClick={() =>
+              setSelectedGalleryIndex((prev) => (prev! < venue.images.length - 1 ? prev! + 1 : 0))
+            }
+            className="absolute right-6 text-white/70 hover:text-white p-2 transition-colors"
+          >
+            <ChevronRight className="w-10 h-10" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

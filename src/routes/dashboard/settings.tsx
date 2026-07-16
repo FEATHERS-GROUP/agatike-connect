@@ -14,20 +14,15 @@ import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceWallet, getWalletTransactions } from "@/api/wallet";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { formatDistanceToNow } from "date-fns";
 import { WorkspaceWizard } from "@/components/dashboard/workspaces/WorkspaceWizard";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { useNavigate } from "@tanstack/react-router";
 import { SettingsOverviewTab } from "@/components/dashboard/settings/SettingsOverviewTab";
 import { SettingsSocialTab } from "@/components/dashboard/settings/SettingsSocialTab";
 import { SettingsSecurityTab } from "@/components/dashboard/settings/SettingsSecurityTab";
 import { SettingsIntegrationsTab } from "@/components/dashboard/settings/SettingsIntegrationsTab";
 import { SettingsProfileSidebar } from "@/components/dashboard/settings/SettingsProfileSidebar";
+import { SettingsAccountTypeTab } from "@/components/dashboard/settings/SettingsAccountTypeTab";
 import { Camera, Globe, ArrowLeft, X, Dices } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -87,9 +82,9 @@ function SettingsPage() {
   const [showAllEarnings, setShowAllEarnings] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"overview" | "social" | "security" | "integrations">(
-    "overview",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "social" | "security" | "integrations" | "account-type"
+  >("overview");
   const [avatar, setAvatar] = useState("");
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [avatarOptions, setAvatarOptions] = useState<string[]>([]);
@@ -264,6 +259,7 @@ function SettingsPage() {
             { id: "overview", label: "Overview" },
             { id: "social", label: "Social Links" },
             { id: "security", label: "Security" },
+            { id: "account-type", label: "Account Type" },
             ...(activeWorkspace?.business ? [{ id: "integrations", label: "Integrations" }] : []),
           ].map((tab) => (
             <button
@@ -313,6 +309,8 @@ function SettingsPage() {
             {activeTab === "integrations" && activeWorkspace?.business && (
               <SettingsIntegrationsTab />
             )}
+
+            {activeTab === "account-type" && <SettingsAccountTypeTab profile={profile} />}
           </div>
         </div>
       </div>

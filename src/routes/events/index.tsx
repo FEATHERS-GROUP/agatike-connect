@@ -11,6 +11,7 @@ import {
   Users,
   User,
   X,
+  Ticket,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -19,28 +20,6 @@ import { Footer } from "@/components/site/Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
-
-const categories = [
-  "Music",
-  "Sports",
-  "Cinema",
-  "Conferences",
-  "Nightlife",
-  "Festivals",
-  "Comedy",
-  "Workshop",
-  "Hiking",
-  "Running",
-  "Surf",
-  "Wellness",
-  "Drawing",
-  "Art",
-  "Trips",
-  "Bike Rides",
-  "Yoga",
-  "Book Clubs",
-  "Tourism",
-];
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -178,6 +157,16 @@ function EventsBrowse() {
     return [...dbEvents];
   }, [dbEvents]);
 
+  const dynamicCategories = useMemo(() => {
+    const cats = new Set<string>();
+    allEvents.forEach((e: any) => {
+      if (e.category) {
+        cats.add(e.category);
+      }
+    });
+    return Array.from(cats).sort();
+  }, [allEvents]);
+
   const filtered = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -284,66 +273,63 @@ function EventsBrowse() {
         )}
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 md:px-6 py-6 md:py-10">
-        <header className="hidden md:flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">All events</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {isLoading ? "Loading..." : `${filtered.length} events across Africa`}
+      <section className="relative border-b border-border/40 overflow-hidden bg-background">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-50 blur-[100px]"></div>
+
+        <div className="relative mx-auto max-w-7xl px-4 md:px-6 py-12 md:py-20 lg:py-24">
+          <div className="max-w-2xl text-left">
+            <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl text-foreground">
+              Discover amazing events.
+            </h1>
+            <p className="mt-4 text-muted-foreground md:text-lg font-medium">
+              Get tickets to nightlife, music, sports, conferences and festivals across Africa. Skip
+              the line and enjoy your time.
             </p>
           </div>
-          <div className="flex w-full max-w-md gap-2 md:w-auto">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search title, city, organizer"
-                className="pl-9 rounded-full bg-secondary/60 border-transparent"
-              />
-            </div>
-            <Button variant="outline" className="rounded-full">
-              <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
-            </Button>
-          </div>
-        </header>
 
-        {/* Mobile Search */}
-        {isLoggedIn && (
-          <div className="md:hidden flex w-full gap-2 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search title, city..."
-                className="pl-9 rounded-full bg-secondary/60 border-transparent text-sm"
-              />
+          <div className="mt-10 mb-12 rounded-3xl border border-border/40 bg-card/60 p-3 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-2xl backdrop-saturate-150 max-w-[800px]">
+            <div className="flex flex-col md:flex-row gap-3 items-center">
+              <div className="flex-1 flex w-full bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
+                <div className="relative flex-1 flex items-center group">
+                  <Search className="absolute left-4 h-5 w-5 text-primary" aria-hidden="true" />
+                  <input
+                    className="flex rounded-xl border-input px-4 py-2 transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-primary/10 hover:border-border/80 md:text-sm w-full pl-12 h-14 bg-transparent border-0 shadow-none text-[15px] font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                    placeholder="Search for events..."
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex w-full md:w-[250px] shrink-0 bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
+                <div className="relative flex-1 flex items-center group">
+                  <Ticket className="absolute left-4 h-4 w-4 text-primary" aria-hidden="true" />
+                  <select
+                    className="w-full pl-11 pr-8 h-14 bg-transparent border-0 text-[14px] font-medium focus:outline-none appearance-none"
+                    value={cat || "All"}
+                    onChange={(e) => setCat(e.target.value === "All" ? null : e.target.value)}
+                  >
+                    <option value="All">All Categories</option>
+                    {dynamicCategories.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <button
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer duration-200 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md py-2 h-[64px] px-8 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Search
+              </button>
             </div>
-            <Button variant="outline" size="icon" className="rounded-full shrink-0">
-              <SlidersHorizontal className="h-4 w-4" />
-            </Button>
           </div>
-        )}
-
-        <div className="mt-2 md:mt-6 flex overflow-x-auto hide-scrollbar gap-2 pb-2">
-          <button
-            onClick={() => setCat(null)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${cat === null ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}
-          >
-            All
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`rounded-full border px-3 py-1 text-sm transition ${cat === c ? "border-primary bg-accent text-accent-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary"}`}
-            >
-              {c}
-            </button>
-          ))}
         </div>
+      </section>
 
+      <div className="mx-auto max-w-7xl px-4 md:px-6 py-6 md:py-10">
         {isLoading ? (
           <div className="mt-24 flex justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

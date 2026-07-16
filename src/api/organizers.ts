@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
-import { jwtVerify } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 import bcrypt from "bcryptjs";
@@ -241,6 +241,9 @@ export const getOrganizerProfile = createServerFn({ method: "GET" }).handler(asy
           followers
           numberOfEvents
           image
+          business
+          business_cert
+          active
         }
       }
     `;
@@ -577,3 +580,227 @@ export const getOrganizersByIds = createServerFn({ method: "POST" })
     const result = await hasuraRequest<{ organizers: any[] }>(query, { ids });
     return result.organizers || [];
   });
+
+export const sendAccountConversionOtp = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { email, phone } = ctx.data as unknown as { email: string; phone?: string };
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedOtp = await bcrypt.hash(otp, 10);
+
+  const token = await new SignJWT({ email, otp: hashedOtp, type: "conversion_otp" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("15m")
+    .sign(SECRET);
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Verify your request</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p>Please use the following One-Time Password (OTP) to complete your account conversion:</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #F2571D; padding: 24px; background: #fff5f2; border-radius: 12px; display: inline-block; margin: 24px 0;">
+          ${otp}
+        </div>
+        <p style="font-size: 14px; color: #666;">This code will expire in 15 minutes.</p>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
+      </div>
+    </div>
+  `;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [email],
+      subject: `Your Verification OTP: ${otp}`,
+      html: html,
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.message || "Failed to send OTP via email");
+  }
+
+  if (phone) {
+    try {
+      const { sendSMS } = await import("./pindo");
+      await sendSMS(phone, `Your Agatike Connect verification code is: ${otp}`);
+    } catch (err) {
+      console.error("Failed to send SMS OTP:", err);
+    }
+  }
+
+  return { success: true, token };
+});
+
+export const convertOrganizerAccount = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const data = ctx.data as unknown as {
+    password?: string;
+    otp?: string;
+    otpToken?: string;
+    targetType: "business" | "personal";
+    business_cert?: string;
+    plan_id?: string;
+  };
+
+  if (!data.password || !data.otp || !data.otpToken) {
+    throw new Error("Missing verification details");
+  }
+
+  // Verify OTP
+  try {
+    const { payload } = await jwtVerify(data.otpToken, SECRET);
+    if (payload.type !== "conversion_otp") {
+      throw new Error("Invalid OTP token");
+    }
+
+    const isValidOtp = await bcrypt.compare(data.otp, payload.otp as string);
+    if (!isValidOtp) {
+      throw new Error("Incorrect OTP provided");
+    }
+  } catch (e: any) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  // Verify Password
+  const pwdQuery = `
+    query GetPassword($id: uuid!) {
+      organizers_by_pk(id: $id) {
+        password
+        email
+        phone
+        handle
+      }
+    }
+  `;
+  const pwdData = await hasuraRequest<{ organizers_by_pk: any }>(pwdQuery, {
+    id: session.sub,
+  });
+
+  if (!pwdData.organizers_by_pk) throw new Error("Organizer not found");
+
+  const validPwd = await bcrypt.compare(data.password, pwdData.organizers_by_pk.password);
+  if (!validPwd) throw new Error("Incorrect current password");
+
+  // Update Organizer profile
+  const isBusiness = data.targetType === "business";
+
+  const updateMutation = `
+    mutation UpdateOrganizerConversion(
+      $id: uuid!,
+      $business: Boolean!,
+      $business_cert: String!,
+      $active: Boolean!
+    ) {
+      update_organizers_by_pk(
+        pk_columns: { id: $id },
+        _set: {
+          business: $business,
+          business_cert: $business_cert,
+          active: $active
+        }
+      ) {
+        id
+      }
+    }
+  `;
+
+  await hasuraRequest(updateMutation, {
+    id: session.sub,
+    business: isBusiness,
+    business_cert: data.business_cert || "",
+    active: false,
+  });
+
+  // Switch Plan if plan_id provided
+  if (data.plan_id) {
+    // 1. Cancel existing active subscription(s)
+    const GET_ACTIVE_SUB = `
+      query GetActiveSub($organizer_id: uuid!) {
+        subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }) {
+          id
+        }
+      }
+    `;
+    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
+      organizer_id: session.sub,
+    });
+
+    if (activeSubRes.subscriptions.length > 0) {
+      const CANCEL_SUB = `
+        mutation CancelSub($id: uuid!) {
+          update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "canceled" }) {
+            id
+          }
+        }
+      `;
+      for (const sub of activeSubRes.subscriptions) {
+        await hasuraRequest(CANCEL_SUB, { id: sub.id });
+      }
+    }
+
+    // 2. Create new subscription
+    const nextBillingDate = new Date();
+    nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+
+    const CREATE_SUB = `
+      mutation CreateSub($object: subscriptions_insert_input!) {
+        insert_subscriptions_one(
+          object: $object,
+          on_conflict: {
+            constraint: subscriptions_organizer_id_key,
+            update_columns: [plan_id, amount, status, next_billing_date]
+          }
+        ) {
+          id
+        }
+      }
+    `;
+
+    await hasuraRequest(CREATE_SUB, {
+      object: {
+        organizer_id: session.sub,
+        plan_id: data.plan_id,
+        amount: 0,
+        status: "active",
+        next_billing_date: nextBillingDate.toISOString(),
+      },
+    });
+  }
+
+  // Slack webhook notification
+  const slackUrl = process.env.SLACK_WEBHOOK_URL;
+  if (slackUrl) {
+    try {
+      const handle = pwdData.organizers_by_pk.handle;
+      const currentTypeLabel = pwdData.organizers_by_pk.business ? "Business" : "Personal";
+      const requestedTypeLabel = isBusiness ? "Business" : "Personal";
+
+      await fetch(slackUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: `*Account Conversion Request!*\n*Organizer ID:* ${session.sub}\n*Handle:* @${handle}\n*Current Type:* ${currentTypeLabel}\n*Requested Type:* ${requestedTypeLabel}\n*Business Cert:* ${data.business_cert || "None"}\n*Status:* Pending Admin Approval`,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to send Slack notification for conversion:", err);
+    }
+  }
+
+  return { success: true };
+});
