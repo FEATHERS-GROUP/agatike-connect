@@ -77,8 +77,8 @@ function PublicPricingPage() {
         if (session) {
           setOrganizerProfile({
             id: session.sub,
-            email: session.email || "",
-            name: session.name || "",
+            email: "",
+            name: "",
           });
         }
       } catch (error) {
