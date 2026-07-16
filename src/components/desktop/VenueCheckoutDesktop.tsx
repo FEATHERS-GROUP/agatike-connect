@@ -86,8 +86,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   const bookedDates = bookings
     ? bookings
-        .filter((b: any) => ["Confirmed", "Pending"].includes(b.status))
-        .map((b: any) => format(new Date(b.start_time), "yyyy-MM-dd"))
+        .filter((b: any) => ["Confirmed", "Pending"].includes(b.status) && b.start_time)
+        .map((b: any) => b.start_time.split("T")[0])
     : [];
 
   const isDateBooked = (d: Date) => {
