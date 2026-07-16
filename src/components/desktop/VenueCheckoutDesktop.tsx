@@ -18,7 +18,11 @@ import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createVenueBooking } from "@/api/venue_bookings";
+import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
@@ -73,6 +77,28 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
     enabled: !!venue?.workspace_id,
   });
+
+  const { data: bookings } = useQuery({
+    queryKey: ["venueBookings", venue?.id],
+    queryFn: () => getVenueBookings({ data: { venue_id: venue?.id } } as any),
+    enabled: !!venue?.id,
+  });
+
+  const bookedDates = bookings
+    ? bookings
+        .filter((b: any) => ["Confirmed", "Pending"].includes(b.status))
+        .map((b: any) => format(new Date(b.start_time), "yyyy-MM-dd"))
+    : [];
+
+  const isDateBooked = (d: Date) => {
+    // Disable past dates
+    if (d < new Date(new Date().setHours(0, 0, 0, 0))) return true;
+    
+    // Only block specific dates if renting entire venue
+    if (venue?.rental_model !== "ENTIRE_VENUE") return false;
+    
+    return bookedDates.includes(format(d, "yyyy-MM-dd"));
+  };
   const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id) || {
     template: "entrance-1",
     palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
@@ -160,7 +186,20 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     isHydrated,
   ]);
 
-  if (!venue) return null;
+  if (!venue) {
+    return (
+      <div className="min-h-screen bg-secondary/20 flex flex-col font-sans">
+        <Navbar />
+        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="space-y-6">
+            <div className="h-10 w-48 bg-secondary/40 rounded-xl animate-pulse" />
+            <div className="h-64 w-full bg-secondary/40 rounded-3xl animate-pulse" />
+          </div>
+          <div className="bg-card rounded-3xl shadow-xl border border-border/50 h-[500px] animate-pulse" />
+        </main>
+      </div>
+    );
+  }
 
   const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
   const isStep1Valid =
@@ -571,7 +610,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           <ChevronLeft className="w-4 h-4 mr-1" /> Back to Details
         </Link>
 
-        <h1 className="text-3xl font-bold tracking-tight mb-8">Secure your tickets</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-8">
+          {venue?.rental_model === "ENTIRE_VENUE" ? "Book your date" : "Secure your tickets"}
+        </h1>
 
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Left Column: Form */}
@@ -600,26 +641,29 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                       <label className="text-sm font-medium text-muted-foreground block">
                         Select Date of Visit
                       </label>
-                      <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                        <Input
-                          type="date"
-                          required
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          onClick={(e) => {
-                            try {
-                              e.currentTarget.showPicker();
-                            } catch {}
-                          }}
-                          onFocus={(e) => {
-                            try {
-                              e.currentTarget.showPicker();
-                            } catch {}
-                          }}
-                          className="h-12 w-full bg-secondary/20 border border-border/85 rounded-xl pl-11 pr-4 focus-visible:ring-1 focus-visible:ring-primary/50 cursor-pointer text-sm font-medium"
-                        />
-                      </div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full h-12 justify-start text-left font-normal bg-secondary/20 border-border/85 rounded-xl",
+                              !date && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {date ? format(new Date(date), "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={date ? new Date(date) : undefined}
+                            onSelect={(d: any) => setDate(d ? format(d, "yyyy-MM-dd") : "")}
+                            disabled={isDateBooked}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <p className="text-[11px] text-muted-foreground/80 mt-1">
                         Click anywhere on the field above to open the calendar and choose a date.
                       </p>
