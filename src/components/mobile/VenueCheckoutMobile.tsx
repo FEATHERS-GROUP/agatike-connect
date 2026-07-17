@@ -203,11 +203,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     phone.trim() !== "" &&
     attendees.every((att) => att.name.trim() !== "");
 
-  const total =
-    (venue.pricing_tiers?.length > 0
-      ? venue.pricing_tiers
-      : [{ name: "Standard Entry", amount: venue.entrance_fee || 0 }]
-    ).reduce((acc: number, tier: any) => {
+  const total = (venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
+    ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
+    : []
+  )
+    .concat(venue?.pricing_tiers || [])
+    .reduce((acc: number, tier: any) => {
       const qty = ticketsData[tier.name || "Standard Entry"] || 0;
       return acc + qty * (Number(tier.amount) || 0);
     }, 0) || 0;
@@ -595,10 +596,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     : "Specify how many tickets you'd like to purchase for this visit using the selector buttons."}
                 </p>
                 <div className="space-y-3">
-                  {(venue?.pricing_tiers?.length > 0
-                    ? venue.pricing_tiers
-                    : [{ name: "Standard Entry", amount: venue.entrance_fee || 0 }]
-                  ).map((tier: any, idx: number) => (
+                  {(venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
+                    ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
+                    : []
+                  )
+                    .concat(venue?.pricing_tiers || [])
+                    .map((tier: any, idx: number) => (
                     <div
                       key={idx}
                       className="relative overflow-hidden flex justify-between items-center bg-secondary/30 p-4 rounded-xl border border-border/40 hover:bg-secondary/40 transition-colors"
@@ -909,9 +912,9 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                     {Object.entries(ticketsData)
                       .filter(([_, qty]) => qty > 0)
                       .map(([name, qty], i) => {
-                        const tier = venue.pricing_tiers?.find((t: any) => t.name === name) || {
-                          amount: 0,
-                        };
+                        const tier = name === "Standard Entry" 
+                          ? { amount: venue?.entrance_fee || 0 }
+                          : venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
                         return (
                           <div key={i} className="flex justify-between">
                             <span className="text-muted-foreground">

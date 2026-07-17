@@ -359,6 +359,19 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                       : "Free"}
                   </span>
                 </div>
+                {venue.pricing_tiers &&
+                  venue.pricing_tiers.length > 0 &&
+                  venue.pricing_tiers.map((tier: any, i: number) => (
+                    <div
+                      key={`tier-${i}`}
+                      className="flex items-center justify-between p-4 rounded-2xl border border-border/40 bg-secondary/30"
+                    >
+                      <span className="text-muted-foreground font-medium">{tier.name}</span>
+                      <span className="text-xl font-bold">
+                        {formatCurrency(tier.amount, venue.currency || "RWF")}
+                      </span>
+                    </div>
+                  ))}
               </div>
             )}
 

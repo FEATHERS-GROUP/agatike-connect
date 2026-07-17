@@ -399,6 +399,19 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                       : "Free"}
                   </span>
                 </div>
+                {venue.pricing_tiers &&
+                  venue.pricing_tiers.length > 0 &&
+                  venue.pricing_tiers.map((tier: any, i: number) => (
+                    <div
+                      key={`tier-${i}`}
+                      className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150"
+                    >
+                      <span className="text-muted-foreground font-medium">{tier.name}</span>
+                      <span className="font-bold text-foreground">
+                        {formatCurrency(tier.amount, venue.currency || "RWF")}
+                      </span>
+                    </div>
+                  ))}
               </div>
             )}
 
