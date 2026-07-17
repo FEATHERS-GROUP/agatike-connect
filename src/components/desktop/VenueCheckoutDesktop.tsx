@@ -605,7 +605,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         </div>
       )}
 
-      <section className="mx-auto max-w-5xl px-4 pt-8 pb-20 md:pt-12">
+      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 md:px-8 xl:px-12 pt-8 pb-20 md:pt-12">
         <Link
           to="/venues/$venueId"
           params={{ venueId: venue.id }}
@@ -618,7 +618,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           {venue?.rental_model === "ENTIRE_VENUE" ? "Book your date" : "Secure your tickets"}
         </h1>
 
-        <div className="flex flex-col lg:flex-row gap-10">
+        <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 xl:gap-24">
           {/* Left Column: Form */}
           <div className="flex-1 bg-card rounded-3xl p-8 border border-border/50 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-3 mb-8">
