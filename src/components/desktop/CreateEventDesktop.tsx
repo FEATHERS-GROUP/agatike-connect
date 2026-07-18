@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { createEvent } from "@/api/events";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
@@ -271,6 +272,7 @@ export function CreateEventDesktop() {
     vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
     vip_privilege_ids: [] as string[],
     published: false,
+    allowedPublic: false,
     isRecurring: false,
     recurrenceType: "weekly",
     recurrenceCount: 4,
@@ -423,6 +425,7 @@ export function CreateEventDesktop() {
                 timer_date: null,
               }),
         })),
+        allowed_public: data.allowedPublic,
         event_requency:
           data.isRecurring && !data.isUpcoming
             ? { type: data.recurrenceType, count: data.recurrenceCount }
@@ -957,6 +960,7 @@ export function CreateEventDesktop() {
             onPublish={handlePublish}
             isPending={publishMutation.isPending}
             currencySymbol={currencySymbol}
+            onUpdateField={updateField as any}
           />
         )}
 
@@ -1384,6 +1388,7 @@ function PublishReview({
   onPublish,
   isPending,
   currencySymbol,
+  onUpdateField,
 }: {
   data: any;
   tickets: Ticket[];
@@ -1391,9 +1396,23 @@ function PublishReview({
   onPublish: () => void;
   isPending?: boolean;
   currencySymbol: string;
+  onUpdateField: (key: any, value: any) => void;
 }) {
   return (
     <div className="space-y-5">
+      <div className="rounded-2xl border border-border/60 bg-accent/20 p-5 flex items-center justify-between">
+        <div className="space-y-1">
+          <Label className="text-base font-semibold">Make Event Public</Label>
+          <p className="text-sm text-muted-foreground">
+            Allow anyone on the internet to find and register for this event. Keep this off if you want it to be private.
+          </p>
+        </div>
+        <Switch
+          checked={data.allowedPublic}
+          onCheckedChange={(checked) => onUpdateField("allowedPublic", checked)}
+        />
+      </div>
+
       <div className="overflow-hidden rounded-2xl border border-border/60">
         {data.coverPreview ? (
           <img src={data.coverPreview} alt="" className="aspect-[16/8] w-full object-cover" />
