@@ -176,7 +176,7 @@ function CreateOrganizerPage() {
   const [step, setStep] = useState(1);
   const totalSteps = 6;
   const [isGeneratingHandle, setIsGeneratingHandle] = useState(false);
-  const { currentUser, isLoaded } = useWorkspace();
+  const { currentUser, isLoaded, refetch } = useWorkspace();
 
   useEffect(() => {
     if (isLoaded && currentUser) {
@@ -382,9 +382,15 @@ function CreateOrganizerPage() {
       };
       return await createOrganizerAccount({ data: payload } as any);
     },
-    onSuccess: () => {
-      toast.success("Profile created! Please log in with your new credentials.");
-      navigate({ to: "/dashboard/login" });
+    onSuccess: async () => {
+      if (syncUserId) {
+        toast.success("Account successfully converted to Organizer!");
+        await refetch();
+        navigate({ to: "/dashboard/workspaces" });
+      } else {
+        toast.success("Profile created! Please log in with your new credentials.");
+        navigate({ to: "/dashboard/login" });
+      }
     },
     onError: (error) => {
       toast.error("Failed to create profile. Please try again.");
