@@ -236,8 +236,9 @@ function WorkspaceProductsView() {
   });
 
   const renderTable = (items: any[], icon: any) => (
-    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)]">
-      <table className="w-full text-sm text-left">
+    <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left min-w-[600px] whitespace-nowrap">
         <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
           <tr>
             <th className="px-6 py-4 font-medium">Item Name</th>
@@ -285,26 +286,27 @@ function WorkspaceProductsView() {
           })}
           {items.length === 0 && (
             <tr>
-              <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+              <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground whitespace-normal">
                 No items found. Create one to get started.
               </td>
             </tr>
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto w-full">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-6 max-w-[1400px] w-full mx-auto px-2 sm:px-4 md:px-0 pb-10">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Products & Add-ons</h1>
           <p className="text-sm text-muted-foreground">
             Manage standalone campaigns, general merch, and vouchers for your brand.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <BatchGenerateModal />
           <Link
             to="/dashboard/$workspaceSlug/products/create"
@@ -340,11 +342,13 @@ function WorkspaceProductsView() {
       </div>
 
       <Tabs defaultValue="merch" className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="merch">Physical Merch</TabsTrigger>
-          <TabsTrigger value="vouchers">Gift Cards & Vouchers</TabsTrigger>
-          <TabsTrigger value="punchcards">Punch Cards</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto pb-2 mb-2 no-scrollbar">
+          <TabsList className="flex w-max min-w-full justify-start h-auto p-1 bg-secondary/50">
+            <TabsTrigger value="merch" className="rounded-full px-4 py-2">Physical Merch</TabsTrigger>
+            <TabsTrigger value="vouchers" className="rounded-full px-4 py-2">Gift Cards & Vouchers</TabsTrigger>
+            <TabsTrigger value="punchcards" className="rounded-full px-4 py-2">Punch Cards</TabsTrigger>
+          </TabsList>
+        </div>
         <TabsContent value="merch">{renderTable(merchandise, ShoppingBag)}</TabsContent>
         <TabsContent value="vouchers">{renderTable(allVouchers, Ticket)}</TabsContent>
         <TabsContent value="punchcards">{renderTable(punchCards, QrCode)}</TabsContent>
@@ -463,7 +467,7 @@ function WorkspaceProductsView() {
                   />
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm">
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
                       Price

@@ -16,7 +16,7 @@ export const createProduct = createServerFn({ method: "POST" }).handler(async (c
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const productData = ctx.data as any;
+  const productData = (ctx.data as any).data ? { ...(ctx.data as any).data } : { ...(ctx.data as any) };
   productData.organizer_id = session.sub;
 
   return hasuraRequest(CREATE_PRODUCT, { object: productData });
@@ -36,7 +36,8 @@ export const updateProduct = createServerFn({ method: "POST" }).handler(async (c
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { id, ...setData } = ctx.data as any;
+  const payload = (ctx.data as any).data || ctx.data;
+  const { id, ...setData } = payload as any;
 
   return hasuraRequest(UPDATE_PRODUCT, { id, set: setData });
 });
@@ -61,7 +62,8 @@ const GET_WORKSPACE_PRODUCTS = `
 `;
 
 export const getWorkspaceProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { workspace_id } = payload as { workspace_id: string };
   const data = await hasuraRequest<{ products: any[] }>(GET_WORKSPACE_PRODUCTS, { workspace_id });
   return data.products || [];
 });
@@ -86,7 +88,8 @@ const GET_EVENT_PRODUCTS = `
 `;
 
 export const getEventProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { event_id } = payload as { event_id: string };
   const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, { event_id });
   return data.products || [];
 });
