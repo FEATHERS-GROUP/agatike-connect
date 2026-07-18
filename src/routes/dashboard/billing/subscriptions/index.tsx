@@ -166,17 +166,18 @@ function SubscriptionsPage() {
           <p className="text-muted-foreground mt-2">You don't have an active subscription yet.</p>
         </div>
         <div className="flex flex-col items-center justify-center py-20 bg-card border border-border/60 rounded-[2.5rem] shadow-sm text-center px-4 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-          <Zap className="h-16 w-16 text-muted-foreground mb-6 opacity-30 group-hover:text-primary/60 transition-colors duration-500" />
-          <h2 className="text-3xl font-bold mb-3">Ready to unlock your potential?</h2>
-          <p className="text-muted-foreground mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+          <Zap className="h-16 w-16 text-muted-foreground mb-6 opacity-30 group-hover:text-primary/60 transition-colors duration-500 relative z-10" />
+          <h2 className="text-3xl font-bold mb-3 relative z-10">Ready to unlock your potential?</h2>
+          <p className="text-muted-foreground mb-10 max-w-lg mx-auto text-lg leading-relaxed relative z-10">
             Get access to advanced modules, expanded limits, and powerful tools to manage your
             events and spaces more efficiently.
           </p>
           <Button
             asChild
             size="lg"
-            className="rounded-full px-10 h-14 text-lg shadow-[var(--shadow-glow)] transition-transform hover:-translate-y-1 hover:scale-105"
+            className="rounded-full px-10 h-14 text-lg shadow-[var(--shadow-glow)] transition-transform hover:-translate-y-1 hover:scale-105 relative z-10"
+
             style={{ background: "var(--gradient-primary)" }}
           >
             <Link to="/dashboard/billing/subscriptions/pricingplans">

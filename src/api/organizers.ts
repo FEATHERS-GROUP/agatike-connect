@@ -38,6 +38,7 @@ export interface OrganizerInput {
   otpToken?: string;
   otp?: string;
   image?: string;
+  country?: string;
 }
 
 export const checkOrganizerHandle = createServerFn({ method: "POST" }).handler(async (ctx) => {
@@ -92,7 +93,8 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
         $socials: jsonb = "", 
         $speciality: jsonb = "", 
         $user_id: uuid = null,
-        $image: String = ""
+        $image: String = "",
+        $country: String = ""
       ) {
         insert_organizers(objects: {
           active: false, 
@@ -114,7 +116,8 @@ export const createOrganizerAccount = createServerFn({ method: "POST" }).handler
           speciality: $speciality, 
           updated_on: "now()", 
           user_id: $user_id,
-          image: $image
+          image: $image,
+          country: $country
         }) {
           returning {
             id
@@ -244,6 +247,7 @@ export const getOrganizerProfile = createServerFn({ method: "GET" }).handler(asy
           business
           business_cert
           active
+          country
         }
       }
     `;
@@ -265,6 +269,7 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" }).handler
     image?: string;
     password?: string;
     socials?: any;
+    country?: string;
   };
 
   const variables: any = {
@@ -276,6 +281,7 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" }).handler
     bio: data.bio,
     image: data.image,
     socials: data.socials,
+    country: data.country,
   };
 
   let setFields = `
@@ -286,6 +292,7 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" }).handler
       bio: $bio,
       image: $image,
       socials: $socials,
+      country: $country,
       updated_on: "now()"
     `;
 
@@ -298,7 +305,8 @@ export const updateOrganizerProfile = createServerFn({ method: "POST" }).handler
         $phone: String,
         $bio: String,
         $image: String,
-        $socials: jsonb
+        $socials: jsonb,
+        $country: String
       ) {
         update_organizers_by_pk(
           pk_columns: { id: $id },
@@ -372,6 +380,7 @@ export const getOrganizers = createServerFn({ method: "GET" })
         phone
         socials
         active
+        country
       }
     }
   `;
@@ -574,6 +583,7 @@ export const getOrganizersByIds = createServerFn({ method: "POST" })
           phone
           socials
           active
+          country
         }
       }
     `;
@@ -635,7 +645,7 @@ export const sendAccountConversionOtp = createServerFn({ method: "POST" }).handl
   if (phone) {
     try {
       const { sendSMS } = await import("./pindo");
-      await sendSMS(phone, `Your Agatike Connect verification code is: ${otp}`);
+      await sendSMS(phone, `Your Agatike Connect verification code is: ${otp}`, session.sub);
     } catch (err) {
       console.error("Failed to send SMS OTP:", err);
     }

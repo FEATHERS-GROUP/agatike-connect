@@ -1,6 +1,7 @@
 import { Camera, MoreHorizontal, Phone, Mail, User, Calendar, Globe } from "lucide-react";
 import { UseFormRegister, FieldErrors } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
+import { COUNTRIES } from "@/lib/countries";
 
 function EditableInput({ icon: Icon, ...props }: any) {
   return (
@@ -87,6 +88,23 @@ export function SettingsProfileSidebar({
             placeholder="Add email address"
             error={errors.email?.message as string}
           />
+          <div className="flex items-start gap-3 group">
+            <Globe className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />
+            <div className="flex-1">
+              <select
+                {...register("country")}
+                className="w-full bg-transparent border border-transparent hover:bg-muted focus:bg-background focus:border-input focus:ring-2 focus:ring-ring px-2 py-1.5 -ml-2 rounded-md transition-all text-sm text-foreground font-medium focus:outline-none appearance-none"
+              >
+                <option value="">Select country...</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {errors.country && <p className="text-[10px] text-destructive ml-1">{errors.country.message as string}</p>}
+            </div>
+          </div>
         </div>
       </div>
 
