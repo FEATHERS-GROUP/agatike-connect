@@ -258,7 +258,7 @@ function SubscriptionsPage() {
         </p>
       </div>
 
-      {isFree && plan.name !== "Basic" && (
+      {isFree && plan.name === "Basic" && (
         <div
           className={`p-6 rounded-2xl border flex items-center justify-between gap-4 ${isTrialExpired ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-primary/10 border-primary/20 text-primary"}`}
         >
