@@ -419,6 +419,28 @@ Agatike creates subscription tiers (e.g., "Pro", "Enterprise") that explicitly d
 
 This entire equation is calculated dynamically in the `simulateTransaction` engine and enforced in the `PaymentModal` prior to any PawaPay charges. Upon successful completion in the webhook, the resulting net profit (or subsidized loss) is permanently logged into the `earnings` ledger.
 
+### 12.4 Platform Subscriptions & Earnings Architecture
+
+In addition to ticketing fees, the platform also derives revenue from **Organizer Subscriptions** (e.g., Business or Premium plans). The logic for subscription payments explicitly diverges from the ticketing fee model to ensure accurate financial reporting.
+
+**Key Logic:**
+- **Decoupled from Ticket Fees:** When an organizer pays for their own subscription, they are the customer. The system strictly bypasses the `customer_collection_fee_percentage` and `organizer_collection_fee_percentage`. Both are set to `0` during a subscription checkout to prevent double-charging the organizer.
+- **Dynamic Provider Cost:** Whether the organizer pays via **PawaPay** or **Card**, the system fetches the live `collection_percentage` for the specific network used from the `payment_provider_fees` table.
+- **Ledger Accuracy:** Platform Revenue = 100% of the Subscription Price. Net Profit = Platform Revenue - Network Provider Cost. This is logged transparently into the `earnings` table.
+- **Wallet Isolation:** Unlike ticket sales, subscription payments are payments *to* the platform, not *for* the organizer. The webhook strictly excludes `type === "subscription"` from depositing any funds into the organizer's workspace wallet.
+
+```mermaid
+flowchart TD
+    Org["Organizer"] -->|Purchases Subscription| Checkout["Checkout (PawaPay / Card)"]
+    Checkout --> FetchFee["Fetch live network fee from payment_provider_fees"]
+    FetchFee --> Calc["Platform Revenue = Price\nCost = Network Fee"]
+    Calc --> Insert["Insert exact Net Profit into earnings table"]
+    Insert --> Webhook["Webhook triggers on payment success"]
+    Webhook --> WalletCheck{Transaction Type?}
+    WalletCheck -->|Ticket Sale| Deposit["Deposit into Workspace Wallet"]
+    WalletCheck -->|Subscription| Skip["Do not deposit (Platform Retains)"]
+```
+
 ---
 
 ## Routing Architecture Reminder
