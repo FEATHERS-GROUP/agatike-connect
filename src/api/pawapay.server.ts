@@ -125,7 +125,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Safely fund the workspace wallet using the exactly computed net_amount (which securely deducts shortfalls!)
-        if (tx.workspace_id && tx.net_amount) {
+        if (tx.workspace_id && tx.net_amount && tx.type !== "subscription") {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
           await addMoneyToWorkspaceWallet({
             data: {

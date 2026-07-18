@@ -654,6 +654,55 @@ export const sendAccountConversionOtp = createServerFn({ method: "POST" }).handl
   return { success: true, token };
 });
 
+export const verifyConversionCredentials = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const data = ctx.data as unknown as {
+    password?: string;
+    otp?: string;
+    otpToken?: string;
+  };
+
+  if (!data.password || !data.otp || !data.otpToken) {
+    throw new Error("Missing verification details");
+  }
+
+  // Verify OTP
+  try {
+    const { payload } = await jwtVerify(data.otpToken, SECRET);
+    if (payload.type !== "conversion_otp") {
+      throw new Error("Invalid OTP token");
+    }
+
+    const isValidOtp = await bcrypt.compare(data.otp, payload.otp as string);
+    if (!isValidOtp) {
+      throw new Error("Incorrect OTP provided");
+    }
+  } catch (e: any) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  // Verify Password
+  const pwdQuery = `
+    query GetPassword($id: uuid!) {
+      organizers_by_pk(id: $id) {
+        password
+      }
+    }
+  `;
+  const pwdData = await hasuraRequest<{ organizers_by_pk: any }>(pwdQuery, {
+    id: session.sub,
+  });
+
+  if (!pwdData.organizers_by_pk) throw new Error("Organizer not found");
+
+  const validPwd = await bcrypt.compare(data.password, pwdData.organizers_by_pk.password);
+  if (!validPwd) throw new Error("Incorrect current password");
+
+  return { success: true };
+});
+
 export const convertOrganizerAccount = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
@@ -736,61 +785,6 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
     active: false,
   });
 
-  // Switch Plan if plan_id provided
-  if (data.plan_id) {
-    // 1. Cancel existing active subscription(s)
-    const GET_ACTIVE_SUB = `
-      query GetActiveSub($organizer_id: uuid!) {
-        subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }) {
-          id
-        }
-      }
-    `;
-    const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
-      organizer_id: session.sub,
-    });
-
-    if (activeSubRes.subscriptions.length > 0) {
-      const CANCEL_SUB = `
-        mutation CancelSub($id: uuid!) {
-          update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "canceled" }) {
-            id
-          }
-        }
-      `;
-      for (const sub of activeSubRes.subscriptions) {
-        await hasuraRequest(CANCEL_SUB, { id: sub.id });
-      }
-    }
-
-    // 2. Create new subscription
-    const nextBillingDate = new Date();
-    nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
-
-    const CREATE_SUB = `
-      mutation CreateSub($object: subscriptions_insert_input!) {
-        insert_subscriptions_one(
-          object: $object,
-          on_conflict: {
-            constraint: subscriptions_organizer_id_key,
-            update_columns: [plan_id, amount, status, next_billing_date]
-          }
-        ) {
-          id
-        }
-      }
-    `;
-
-    await hasuraRequest(CREATE_SUB, {
-      object: {
-        organizer_id: session.sub,
-        plan_id: data.plan_id,
-        amount: 0,
-        status: "active",
-        next_billing_date: nextBillingDate.toISOString(),
-      },
-    });
-  }
 
   // Slack webhook notification
   const slackUrl = process.env.SLACK_WEBHOOK_URL;

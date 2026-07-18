@@ -242,7 +242,7 @@ export const getPromotionalRules = createServerFn({ method: "GET" }).handler(asy
 export const upgradeSubscription = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const { organizer_id, plan_id, amount } = ctx.data;
+    const { organizer_id, plan_id, amount, insertEarnings, network } = ctx.data;
 
     // 1. Cancel existing
     const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
@@ -312,6 +312,74 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
         status: "paid",
       },
     });
+
+    if (insertEarnings && amount > 0) {
+      // Fetch provider fees for the network
+      const feeRes = await hasuraRequest<any>(
+        `query GetProviderFees($network: String!) {
+          payment_provider_fees(where: { network: { _eq: $network } }, limit: 1) {
+            collection_percentage
+            collection_fixed_fee
+            is_tiered
+            tiered_rules
+          }
+        }`,
+        { network: network || "Card" }
+      );
+
+      const pf = feeRes.payment_provider_fees?.[0] || {};
+      let providerPct = parseFloat(pf.collection_percentage) || 0;
+      let providerFixed = parseFloat(pf.collection_fixed_fee) || 0;
+
+      if (pf.is_tiered && pf.tiered_rules) {
+        let rules = pf.tiered_rules;
+        try {
+          if (typeof rules === "string") rules = JSON.parse(rules);
+          if (typeof rules === "string") rules = JSON.parse(rules);
+        } catch (e) {
+          console.error("Failed to parse tiered rules", e);
+        }
+
+        if (rules && rules.collection && Array.isArray(rules.collection)) {
+          const matchedRule =
+            rules.collection.find((r: any) => amount <= r.max) ||
+            rules.collection[rules.collection.length - 1];
+          if (matchedRule) {
+            providerPct = matchedRule.pct || 0;
+            providerFixed = matchedRule.fixed || 0;
+          }
+        }
+      }
+
+      const providerCost = amount * (providerPct / 100) + providerFixed;
+      const netProfit = amount - providerCost;
+
+      await hasuraRequest(
+        `mutation InsertEarnings(
+          $gross: numeric!, $cost: numeric!,
+          $rev: numeric!, $profit: numeric!, $curr: String!
+        ) {
+          insert_earnings_one(object: {
+            transaction_type: "subscription",
+            gross_amount: $gross,
+            provider_cost: $cost,
+            platform_revenue: $rev,
+            net_profit: $profit,
+            customer_fee: 0,
+            organizer_fee: 0,
+            currency: $curr,
+            status: "completed"
+          }) { id }
+        }`,
+        {
+          gross: amount,
+          cost: providerCost,
+          rev: amount, // platform revenue is the full amount paid by the organizer
+          profit: netProfit,
+          curr: "USD", // Card payments are in USD
+        }
+      );
+    }
 
     return { success: true };
   });

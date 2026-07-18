@@ -364,7 +364,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const baseAmt = parseFloat(baseAmount || amount);
     const calculatedCustomerFee =
       baseAmt * (custCollectionPct / 100) + custFixed + baseAmt * (custServicePct / 100);
-    const customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
+    let customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
 
     // ── Provider (PawaPay) cost ──────────────────────────────────────────────
     const pf = feeRes.payment_provider_fees?.[0] || {};
@@ -394,17 +394,25 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const providerCost = grossAmount * (providerPct / 100) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
-    const organizerFee =
+    let organizerFee =
       baseAmt * (orgCollectionPct / 100) + orgFixed + baseAmt * (orgPlatformPct / 100);
 
     // ── Platform revenue & profit ────────────────────────────────────────────
     // Platform Revenue = Customer Contribution + Organizer Contribution
     // Net Profit       = Platform Revenue − Provider (PawaPay) Cost
-    const platformRevenue = customerFee + organizerFee;
-    const netProfit = platformRevenue - providerCost;
+    let platformRevenue = customerFee + organizerFee;
+    let netProfit = platformRevenue - providerCost;
 
     // Organizer wallet receives base minus their contribution (Agatike absorbs any shortfall)
-    const organizerNetAmount = Math.max(0, baseAmt - organizerFee);
+    let organizerNetAmount = Math.max(0, baseAmt - organizerFee);
+
+    if (type === "subscription") {
+      customerFee = 0;
+      organizerFee = 0;
+      platformRevenue = grossAmount;
+      netProfit = platformRevenue - providerCost;
+      organizerNetAmount = 0; // Subscription is a payment to the platform, not a wallet deposit
+    }
 
     // ── Insert wallet transaction + earnings atomically ──────────────────────
     const txRes = await hasuraRequest<any>(
