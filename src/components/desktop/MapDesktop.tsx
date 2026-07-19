@@ -3,7 +3,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, MessageSquare, ArrowLeft, Maximize2, ZoomIn, ZoomOut, Compass } from "lucide-react";
+import { MapPin, MessageSquare, ArrowLeft, Maximize2, ZoomIn, ZoomOut, Compass, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -159,6 +159,7 @@ export function MapDesktop() {
           lng: parseFloat(firstStopWithCoords.longitude),
           image: e.cover || "https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=100",
           type: "event",
+          raw: e,
         });
       }
     });
@@ -174,6 +175,7 @@ export function MapDesktop() {
           lng: parseFloat(v.longitude),
           image: v.cover_url || "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=100",
           type: "venue",
+          raw: v,
         });
       }
     });
@@ -189,6 +191,7 @@ export function MapDesktop() {
           lng: parseFloat(org.lng),
           image: org.avatar || org.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`,
           type: "user",
+          raw: org,
         });
       }
     });
@@ -308,7 +311,122 @@ export function MapDesktop() {
       </div>
 
       {/* RIGHT COLUMN: Events & Past Events */}
-      <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden">
+      {selectedMarker ? (
+        <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden relative">
+          <div className="relative h-64 w-full shrink-0">
+             <img src={selectedMarker.image} className="h-full w-full object-cover" />
+             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+             <Button 
+               variant="ghost" 
+               size="icon" 
+               className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md"
+               onClick={() => setSelectedMarker(null)}
+             >
+               <X className="h-5 w-5" />
+             </Button>
+          </div>
+          <div className="flex flex-col p-6 space-y-6 flex-1 overflow-y-auto">
+             <div>
+               <div className="flex items-center justify-between mb-3">
+                 <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-tight text-primary border-primary/20 bg-primary/10">
+                   {selectedMarker.type}
+                 </div>
+                 {selectedMarker.type === "event" && selectedMarker.raw?.event_tickets?.some((t: any) => t.cost === 0) && (
+                   <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">FREE TIER AVAILABLE</span>
+                 )}
+               </div>
+               <h2 className="text-2xl font-bold tracking-tight">{selectedMarker.title}</h2>
+               
+               {/* Location / Date string */}
+               <div className="flex items-start gap-2 mt-3 text-sm text-muted-foreground">
+                 <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                 <span>{selectedMarker.date}</span>
+               </div>
+               
+               {/* Organizer / Additional Info */}
+               {selectedMarker.type === "event" && selectedMarker.raw?.workspaces?.organizer && (
+                 <div className="flex items-center gap-3 mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                   <img src={selectedMarker.raw.workspaces.organizer.image} className="h-10 w-10 rounded-full object-cover" />
+                   <div>
+                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Organized by</p>
+                     <p className="text-sm font-semibold">{selectedMarker.raw.workspaces.organizer.name}</p>
+                   </div>
+                 </div>
+               )}
+               
+               {selectedMarker.type === "event" && selectedMarker.raw?.event_tickets?.length > 0 && (
+                 <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40 flex items-center justify-between">
+                   <div>
+                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
+                     <p className="text-lg font-bold text-primary">
+                       {Math.min(...selectedMarker.raw.event_tickets.map((t: any) => t.cost))} {selectedMarker.raw.workspaces?.currency || "RWF"}
+                     </p>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Tickets</p>
+                     <p className="text-sm font-bold">{selectedMarker.raw.event_tickets.length} Types</p>
+                   </div>
+                 </div>
+               )}
+               
+               {/* Description */}
+               {selectedMarker.raw?.description && (
+                 <div className="mt-5">
+                   <h3 className="text-sm font-bold tracking-tight mb-2">About this {selectedMarker.type}</h3>
+                   <div 
+                     className="text-sm text-muted-foreground line-clamp-4 leading-relaxed"
+                     dangerouslySetInnerHTML={{ __html: selectedMarker.raw.description }} 
+                   />
+                 </div>
+               )}
+
+               {/* Lineup */}
+               {selectedMarker.type === "event" && selectedMarker.raw?.lineup?.length > 0 && (
+                 <div className="mt-5">
+                   <h3 className="text-sm font-bold tracking-tight mb-3">Lineup</h3>
+                   <div className="flex flex-wrap gap-2">
+                     {selectedMarker.raw.lineup.map((item: any, idx: number) => (
+                       <span key={idx} className="bg-secondary/40 border border-border/40 text-xs px-3 py-1.5 rounded-full font-medium">
+                         {item.name || item}
+                       </span>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
+               {selectedMarker.type === "venue" && selectedMarker.raw?.pricing_tiers?.length > 0 && (
+                 <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                   <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
+                   <p className="text-lg font-bold text-primary">
+                     {selectedMarker.raw.pricing_tiers[0]?.price} {selectedMarker.raw.currency || "RWF"}
+                   </p>
+                 </div>
+               )}
+             </div>
+             
+             {/* Action Button */}
+             <div className="mt-auto pt-6">
+                <Button 
+                  className="w-full rounded-full shadow-[var(--shadow-glow)] h-12"
+                  style={{ background: "var(--gradient-primary)" }}
+                  onClick={() => {
+                     const rawId = selectedMarker.id.split("-").slice(1).join("-");
+                     if (selectedMarker.type === "event") {
+                       router.navigate({ to: "/events/$eventId", params: { eventId: rawId } });
+                     } else if (selectedMarker.type === "venue") {
+                       router.navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
+                     } else {
+                       router.navigate({ to: "/organizers/$organizerId", params: { organizerId: rawId } });
+                     }
+                  }}
+                >
+                  View Details <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+             </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden">
         {/* Events Section */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
@@ -409,7 +527,7 @@ export function MapDesktop() {
           </div>
         </div>
       </div>
-
+      )}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
