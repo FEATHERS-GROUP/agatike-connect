@@ -134,34 +134,34 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
           const appUrl = process.env.PROJECT_PRODUCTION_URL ? `https://${process.env.PROJECT_PRODUCTION_URL}` : "https://agatike.com";
-          
+
           let eventName = "Your Event";
           let dateStr = "TBD";
           let eventLocation = "";
-          
+
           if (firstAtt?.events) {
             eventName = firstAtt.events.title || eventName;
-            const tourStops = Array.isArray(firstAtt.events.tour_stops) ? firstAtt.events.tour_stops : 
-               (firstAtt.events.tour_stops ? [firstAtt.events.tour_stops] : []);
+            const tourStops = Array.isArray(firstAtt.events.tour_stops) ? firstAtt.events.tour_stops :
+              (firstAtt.events.tour_stops ? [firstAtt.events.tour_stops] : []);
             const firstStop = tourStops[0] || {};
             dateStr = `${firstStop.date || "TBD"} ${firstStop.time || ""}`.trim();
             eventLocation = firstStop.venue || firstStop.city || "";
           }
 
           const ticketCodes = confirmedAttendees.map(a => a.qrcode_number).filter(Boolean).join(", ");
-          const productsText = confirmedOrders.length > 0 
-            ? `Products: ${confirmedOrders.map(o => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}` 
+          const productsText = confirmedOrders.length > 0
+            ? `Products: ${confirmedOrders.map(o => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}`
             : "";
           const feeText = customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
-          
+
           const detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
-          
+
           if (firstAtt) {
             const { sendAttendeeEmail } = await import("./email");
             const orgName = firstAtt.events?.workspaces?.name || "The Organizer";
 
             const emailAddresses = [...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean))];
-            
+
             for (const email of emailAddresses) {
               await sendAttendeeEmail({
                 data: {
@@ -246,7 +246,24 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         if (tx.type !== "event_ticket" && body?.payer?.address?.value) {
           const phone = body.payer.address.value;
           const { sendSMS } = await import("./pindo");
-          const msg = `Payment of ${tx.amount} confirmed! Thank you for your purchase. View your ticket/receipt at: https://agatike.com/profile`;
+
+          // Use the PawaPay callback's requestedAmount + currency — this is already
+          // converted to the customer's local currency (e.g. 56,650 RWF not $4.35 USD)
+          const currency = body?.currency || "";
+          const localAmount = body?.requestedAmount || body?.depositedAmount || tx.amount;
+          const amountDisplay = `${localAmount} ${currency}`.trim();
+
+          let msg = "";
+          if (tx.type === "subscription") {
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com/dashboard`;
+          } else if (tx.type === "space_subscription") {
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com/dashboard`;
+          } else if (tx.type === "venue_booking") {
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your venue booking is confirmed. Visit: https://agatike.com/dashboard`;
+          } else {
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Thank you for your purchase. Visit your profile at: https://agatike.com/profile`;
+          }
+
           try {
             await sendSMS(phone, msg);
           } catch (e) {
