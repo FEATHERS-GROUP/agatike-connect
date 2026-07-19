@@ -21,7 +21,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     if (providerReference) {
       // 1. Update the wallet transaction status
       const updateQuery = `
-        mutation UpdateWalletTransactionAndEarnings($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
+        mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
           update_wallet_transactions(
             where: { provider_reference: { _eq: $provider_reference } }, 
             _set: { 
@@ -41,15 +41,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               workspace_id
             }
           }
-          update_earnings(
-            where: { wallet_transaction: { provider_reference: { _eq: $provider_reference } } },
-            _set: {
-              status: $status,
-              updated_at: "now()"
-            }
-          ) {
-            affected_rows
-          }
         }
       `;
 
@@ -67,6 +58,16 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       const tx = res.update_wallet_transactions?.returning?.[0];
 
+      if (tx) {
+        // Now update earnings safely via wallet_transaction_id instead of relying on relationships
+        await hasuraRequest(
+          `mutation UpdateEarningsStatus($txId: uuid!, $status: String!) {
+             update_earnings(where: { wallet_transaction_id: { _eq: $txId } }, _set: { status: $status, updated_at: "now()" }) { affected_rows }
+          }`,
+          { txId: tx.id, status: tx.status }
+        );
+      }
+
       // 2. If it's a completed deposit, activate the associated ticket/subscription
       if (tx && tx.status === "completed") {
         if (tx.type === "event_ticket") {
@@ -77,17 +78,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 where: { custom_fields: { _contains: { booking_ref: $booking_ref } } },
                 _set: { status: "Confirmed" }
               ) {
-                affected_rows
+                returning {
+                  id
+                  email
+                  phone
+                  names
+                  event {
+                    title
+                    workspaces {
+                      name
+                    }
+                  }
+                }
               }
             }
           `;
-          await hasuraRequest(confirmQuery, { booking_ref: tx.reference_id });
+          const attendeeRes = await hasuraRequest<{ update_event_attendees: { returning: any[] } }>(confirmQuery, { booking_ref: tx.reference_id });
+          const confirmedAttendees = attendeeRes.update_event_attendees?.returning || [];
 
           // Also confirm any product_orders that are pending payment linked to tickets in this booking
           const confirmProductOrdersQuery = `
-            mutation ConfirmProductOrders($ticket_id: uuid!) {
+            mutation ConfirmProductOrders($booking_ref: String!) {
               update_product_orders(
-                where: { ticket_id: { _eq: $ticket_id }, status: { _eq: "Pending Payment" } },
+                where: { decrptions: { _eq: $booking_ref }, status: { _eq: "Pending Payment" } },
                 _set: { status: "Confirmed" }
               ) {
                 returning {
@@ -99,34 +112,38 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               }
             }
           `;
-          // Try to find the attendee's id to link product orders
-          const fetchAttendeeQuery = `
-            query GetAttendeeId($booking_ref: String!) {
-              event_attendees(
-                where: { custom_fields: { _contains: { booking_ref: $booking_ref } } },
-                limit: 1
-              ) {
-                id
-              }
-            }
-          `;
           try {
-            const attendeeRes = await hasuraRequest<{ event_attendees: { id: string }[] }>(
-              fetchAttendeeQuery, { booking_ref: tx.reference_id }
-            );
-            const attendeeId = attendeeRes?.event_attendees?.[0]?.id;
-            if (attendeeId) {
-              const confirmRes = await hasuraRequest<{ update_product_orders: any }>(confirmProductOrdersQuery, { ticket_id: attendeeId });
-              const confirmedOrders = confirmRes?.update_product_orders?.returning || [];
-              if (confirmedOrders.length > 0) {
-                const { deductInventoryFromOrders } = await import("./inventory.server");
-                await deductInventoryFromOrders(confirmedOrders);
-              }
+            const confirmRes = await hasuraRequest<{ update_product_orders: any }>(confirmProductOrdersQuery, { booking_ref: tx.reference_id });
+            const confirmedOrders = confirmRes?.update_product_orders?.returning || [];
+            if (confirmedOrders.length > 0) {
+              const { deductInventoryFromOrders } = await import("./inventory.server");
+              await deductInventoryFromOrders(confirmedOrders);
             }
           } catch (e) {
             console.error("[PawaPay] Failed to confirm product orders:", e);
           }
-          // Note: Email sending logic might need to be hooked up here if we want background PDF generation
+
+          if (confirmedAttendees.length > 0) {
+            const { sendAttendeeEmail } = await import("./email");
+            const firstAtt = confirmedAttendees[0];
+            const eventName = firstAtt.event?.title || "Your Event";
+            const orgName = firstAtt.event?.workspaces?.name || "The Organizer";
+
+            const emailAddresses = [...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean))];
+            
+            for (const email of emailAddresses) {
+              await sendAttendeeEmail({
+                data: {
+                  to: email,
+                  subject: `Your tickets for ${eventName} are confirmed!`,
+                  message: `Payment of ${tx.amount} ${body?.currency || ""} was successful. We have successfully confirmed your tickets for ${eventName}. Please log in or check your profile to access your QR codes.`,
+                  eventName: eventName,
+                  organizerName: orgName,
+                  appUrl: process.env.PROJECT_PRODUCTION_URL ? `https://${process.env.PROJECT_PRODUCTION_URL}` : "https://agatike.com",
+                }
+              } as any).catch(e => console.error("Failed to send attendee email", e));
+            }
+          }
         } else if (tx.type === "space_subscription") {
           const activateSubQuery = `
             mutation ActivateSpaceSubscription($id: uuid!) {

@@ -394,30 +394,35 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
       const productOrderObjects = Object.entries(cart)
         .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
-        .map(([key, qty]) => {
+        .map(([key, qty], index) => {
           const parts = key.split("_");
           const productId = parts[1];
           const size = parts[2] !== "NONE" ? parts[2] : null;
           const color = parts[3] !== "NONE" ? parts[3] : null;
           const merch = eventProducts.find((p: any) => p.id === productId);
+          const variantString = [size, color].filter(Boolean).join(" - ");
           return {
             product_id: productId,
             qty: String(qty),
             amount_paid: merch ? parseFloat(merch.price || 0) * qty : 0,
             status: isPawaPay ? "Pending Payment" : "Confirmed",
             phone: buyerPhone,
-            qr_code_string: `${qrBase}-${productId.substring(0, 6)}`,
-            ticket_id: returned[0]?.id || null,
+            qr_code_string: `${qrBase}-${productId.substring(0, 4)}-${index}`,
+            ticket_id: attendees[0]?.tierId || null,
+            decrptions: booking_ref,
             buyer_id: user?.id || null,
             picked: false,
-            ...(size || color ? { size, color } : {}),
+            ...(variantString ? { size: variantString } : {}),
           };
         });
 
       if (productOrderObjects.length > 0) {
-        await createProductOrders({ data: { objects: productOrderObjects } } as any).catch((e: any) => {
+        try {
+          await createProductOrders({ data: { objects: productOrderObjects } } as any);
+        } catch (e: any) {
           console.error("Failed to create product orders:", e);
-        });
+          throw new Error("Failed to secure merchandise inventory. Please try again.");
+        }
       }
 
       if (isPawaPay) {

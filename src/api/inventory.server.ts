@@ -42,22 +42,37 @@ export async function deductInventoryFromOrders(orders: any[]) {
           newStockLimit = Math.max(0, newStockLimit - qty);
         }
 
-        if (order.size) {
-          const sizeObj = sizes.find((s: any) => s.name === order.size);
+        let parsedSize = order.size;
+        let parsedColor = order.color;
+
+        if (order.size && !order.color && order.size.includes(" - ")) {
+          const parts = order.size.split(" - ");
+          parsedSize = parts[0];
+          parsedColor = parts[1];
+        }
+
+        if (parsedSize) {
+          const sizeObj = sizes.find((s: any) => s.name === parsedSize);
           if (sizeObj && typeof sizeObj.stock === 'number') {
             sizeObj.stock = Math.max(0, sizeObj.stock - qty);
             
-            if (order.color && Array.isArray(sizeObj.colors)) {
-              const colorObj = sizeObj.colors.find((c: any) => c.name === order.color);
+            if (parsedColor && Array.isArray(sizeObj.colors)) {
+              const colorObj = sizeObj.colors.find((c: any) => c.name === parsedColor);
               if (colorObj && typeof colorObj.stock === 'number') {
                 colorObj.stock = Math.max(0, colorObj.stock - qty);
               }
             }
+          } else if (!sizeObj && !parsedColor) {
+            // It might just be a color if there was no size selected
+            parsedColor = parsedSize;
+            parsedSize = null;
           }
-        } else if (order.color) {
+        } 
+        
+        if (!parsedSize && parsedColor) {
           for (const sizeObj of sizes) {
             if (Array.isArray(sizeObj.colors)) {
-              const colorObj = sizeObj.colors.find((c: any) => c.name === order.color);
+              const colorObj = sizeObj.colors.find((c: any) => c.name === parsedColor);
               if (colorObj && typeof colorObj.stock === 'number') {
                 colorObj.stock = Math.max(0, colorObj.stock - qty);
                 break;
