@@ -45,10 +45,21 @@ export function EventMerch({
   const handleAdd = (m: any) => {
     if (!setCart) return;
     const sel = selections[m.id] || {};
-    const sizes = m.available_sizes || [];
-    const colors = m.available_colors || [];
-    if (sizes.length > 0 && !sel.size) return;
-    if (colors.length > 0 && !sel.color) return;
+    const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+    
+    const hasSizes = sizesArr.length > 0;
+    if (hasSizes && !sel.size) return;
+
+    let hasColors = false;
+    if (sel.size) {
+      const sizeObj = sizesArr.find((s: any) => s.name === sel.size);
+      if (sizeObj && Array.isArray(sizeObj.colors) && sizeObj.colors.length > 0) {
+        hasColors = true;
+      }
+    }
+    
+    if (hasColors && !sel.color) return;
+
     const key = getMerchCartKey(m.id, sel.size, sel.color);
     setCart((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
   };
@@ -61,7 +72,14 @@ export function EventMerch({
   };
 
   const setSelection = (id: string, field: "size" | "color", value: string) => {
-    setSelections((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+    setSelections((prev) => {
+      const newSel = { ...prev[id], [field]: value };
+      // If changing size, clear the color because colors are size-dependent
+      if (field === "size") {
+        newSel.color = "";
+      }
+      return { ...prev, [id]: newSel };
+    });
   };
 
   return (
@@ -69,12 +87,24 @@ export function EventMerch({
       <h2 className="text-xl font-semibold">Merchandise &amp; add-ons</h2>
       <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
         {activeMerch.map((m: any) => {
-          const sizes: string[] = Array.isArray(m.available_sizes) ? m.available_sizes : [];
-          const colors: string[] = Array.isArray(m.available_colors) ? m.available_colors : [];
+          const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
           const sel = selections[m.id] || {};
           const qty = getItemQty(m);
-          const needsSize = sizes.length > 0 && !sel.size;
-          const needsColor = colors.length > 0 && !sel.color;
+          
+          let availableColors: any[] = [];
+          if (sel.size) {
+            const sizeObj = sizesArr.find((s: any) => s.name === sel.size);
+            if (sizeObj && Array.isArray(sizeObj.colors)) {
+              availableColors = sizeObj.colors;
+            }
+          } else if (sizesArr.length === 1 && sizesArr[0].name === "One Size") {
+            // Auto-select One Size if it's the only option and we haven't selected it yet
+            // Wait, we shouldn't auto-select in render, just show colors for it if selected.
+            // We'll require user to tap it, or we could handle default state.
+          }
+
+          const needsSize = sizesArr.length > 0 && !sel.size;
+          const needsColor = availableColors.length > 0 && !sel.color;
           const canAdd = !needsSize && !needsColor;
 
           return (
@@ -96,38 +126,40 @@ export function EventMerch({
                   </span>
                 )}
 
-                {sizes.length > 0 && (
+                {sizesArr.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground font-medium mb-1">Size</p>
+                    <p className="text-[10px] text-muted-foreground font-medium mb-1">Variant</p>
                     <div className="flex flex-wrap gap-1">
-                      {sizes.map((s) => (
+                      {sizesArr.map((s: any) => (
                         <button
-                          key={s}
-                          onClick={() => setSelection(m.id, "size", sel.size === s ? "" : s)}
+                          key={s.name}
+                          onClick={() => setSelection(m.id, "size", sel.size === s.name ? "" : s.name)}
                           className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${
-                            sel.size === s ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-secondary"
-                          }`}
+                            sel.size === s.name ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-secondary"
+                          } ${s.stock <= 0 ? "opacity-50 line-through" : ""}`}
+                          disabled={s.stock <= 0}
                         >
-                          {s}
+                          {s.name}
                         </button>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {colors.length > 0 && (
+                {availableColors.length > 0 && (
                   <div>
-                    <p className="text-[10px] text-muted-foreground font-medium mb-1">Color</p>
+                    <p className="text-[10px] text-muted-foreground font-medium mb-1">Sub-variant</p>
                     <div className="flex flex-wrap gap-1">
-                      {colors.map((c) => (
+                      {availableColors.map((c: any) => (
                         <button
-                          key={c}
-                          onClick={() => setSelection(m.id, "color", sel.color === c ? "" : c)}
+                          key={c.name}
+                          onClick={() => setSelection(m.id, "color", sel.color === c.name ? "" : c.name)}
                           className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${
-                            sel.color === c ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-secondary"
-                          }`}
+                            sel.color === c.name ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-secondary"
+                          } ${c.stock <= 0 ? "opacity-50 line-through" : ""}`}
+                          disabled={c.stock <= 0}
                         >
-                          {c}
+                          {c.name}
                         </button>
                       ))}
                     </div>
@@ -155,9 +187,9 @@ export function EventMerch({
                         className="rounded-full h-7 text-xs"
                         onClick={() => handleAdd(m)}
                         disabled={!canAdd}
-                        title={needsSize ? "Select a size first" : needsColor ? "Select a color first" : undefined}
+                        title={needsSize ? "Select a variant first" : needsColor ? "Select a sub-variant first" : undefined}
                       >
-                        {needsSize ? "Pick size" : needsColor ? "Pick color" : "Add"}
+                        {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add"}
                       </Button>
                     )
                   ) : (

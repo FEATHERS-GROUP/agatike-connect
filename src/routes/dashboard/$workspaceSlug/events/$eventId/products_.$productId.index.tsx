@@ -41,8 +41,7 @@ function ProductDetailsPage() {
   const isPhysical = product.type === "physical";
   const TypeIcon = isPhysical ? ShoppingBag : product.type === "voucher" ? Ticket : product.type === "punch_card" ? QrCode : Check;
 
-  const sizes: { name: string; stock: number }[] = Array.isArray(product.available_sizes) ? product.available_sizes.map((s: any) => typeof s === 'string' ? { name: s, stock: 0 } : s) : [];
-  const colors: { name: string; stock: number }[] = Array.isArray(product.available_colors) ? product.available_colors.map((c: any) => typeof c === 'string' ? { name: c, stock: 0 } : c) : [];
+  const sizes: { name: string; stock: number; colors?: { name: string; stock: number }[] }[] = Array.isArray(product.available_sizes) ? product.available_sizes.map((s: any) => typeof s === 'string' ? { name: s, stock: 0 } : s) : [];
   const specs = Array.isArray(product.specs) ? product.specs : [];
 
   return (
@@ -134,29 +133,30 @@ function ProductDetailsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div>
-                    <h4 className="text-sm font-bold text-foreground mb-4 uppercase tracking-widest border-b border-border/20 pb-2">Sizes</h4>
-                    <div className="flex flex-wrap gap-2">
+                    <h4 className="text-sm font-bold text-foreground mb-4 uppercase tracking-widest border-b border-border/20 pb-2">Variants & Sub-variants</h4>
+                    <div className="flex flex-col gap-4">
                       {sizes.length > 0 ? sizes.map(s => (
-                        <div key={s.name} className="flex flex-col items-center justify-center min-w-[3.5rem] bg-secondary/40 px-3 py-2 rounded-xl border border-border/40 transition-colors hover:border-primary/50">
-                          <span className="text-base font-bold">{s.name}</span>
-                          <span className={`text-[10px] font-bold mt-1 ${s.stock > 0 ? 'text-primary' : 'text-destructive'}`}>
-                            {s.stock} left
-                          </span>
+                        <div key={s.name} className="flex flex-col bg-secondary/20 rounded-2xl border border-border/30 overflow-hidden">
+                          <div className="flex justify-between items-center bg-secondary/40 px-4 py-3 border-b border-border/20">
+                            <span className="text-sm font-bold">{s.name}</span>
+                            <span className={`text-[10px] font-bold ${s.stock > 0 ? 'text-primary' : 'text-destructive'}`}>
+                              {s.stock} left
+                            </span>
+                          </div>
+                          {s.colors && s.colors.length > 0 && (
+                            <div className="flex flex-wrap gap-2 p-3 bg-background">
+                              {s.colors.map(c => (
+                                <div key={c.name} className="flex flex-col items-center justify-center min-w-[3.5rem] bg-secondary/30 px-3 py-1.5 rounded-lg border border-border/40">
+                                  <span className="text-xs font-bold">{c.name}</span>
+                                  <span className={`text-[9px] font-bold mt-0.5 ${c.stock > 0 ? 'text-primary' : 'text-destructive'}`}>
+                                    {c.stock} left
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )) : <span className="text-sm text-muted-foreground italic">No sizes specified</span>}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground mb-4 uppercase tracking-widest border-b border-border/20 pb-2">Colors</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {colors.length > 0 ? colors.map(c => (
-                        <div key={c.name} className="flex flex-col items-center justify-center min-w-[3.5rem] bg-secondary/40 px-3 py-2 rounded-xl border border-border/40 transition-colors hover:border-primary/50">
-                          <span className="text-base font-bold">{c.name}</span>
-                          <span className={`text-[10px] font-bold mt-1 ${c.stock > 0 ? 'text-primary' : 'text-destructive'}`}>
-                            {c.stock} left
-                          </span>
-                        </div>
-                      )) : <span className="text-sm text-muted-foreground italic">No colors specified</span>}
+                      )) : <span className="text-sm text-muted-foreground italic">No variants specified</span>}
                     </div>
                   </div>
                 </div>
@@ -242,8 +242,8 @@ function ProductDetailsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          {order.size && <span className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-medium border border-border/30">Size: {order.size}</span>}
-                          {order.color && <span className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-medium border border-border/30">Color: {order.color}</span>}
+                          {order.size && <span className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-medium border border-border/30">Variant: {order.size}</span>}
+                          {order.color && <span className="bg-secondary/50 px-2 py-0.5 rounded text-xs font-medium border border-border/30">Sub-variant: {order.color}</span>}
                           {!order.size && !order.color && <span className="text-muted-foreground italic text-xs">Standard</span>}
                         </div>
                       </td>

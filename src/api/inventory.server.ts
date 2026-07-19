@@ -21,7 +21,6 @@ export async function deductInventoryFromOrders(orders: any[]) {
             sold_count
             stock_limit
             available_sizes
-            available_colors
           }
         }
       `;
@@ -33,7 +32,6 @@ export async function deductInventoryFromOrders(orders: any[]) {
       let newStockLimit = product.stock_limit ? Number(product.stock_limit) : null;
       
       const sizes = Array.isArray(product.available_sizes) ? [...product.available_sizes] : [];
-      const colors = Array.isArray(product.available_colors) ? [...product.available_colors] : [];
 
       // 2. Process each order against the inventory
       for (const order of productOrders) {
@@ -48,13 +46,23 @@ export async function deductInventoryFromOrders(orders: any[]) {
           const sizeObj = sizes.find((s: any) => s.name === order.size);
           if (sizeObj && typeof sizeObj.stock === 'number') {
             sizeObj.stock = Math.max(0, sizeObj.stock - qty);
+            
+            if (order.color && Array.isArray(sizeObj.colors)) {
+              const colorObj = sizeObj.colors.find((c: any) => c.name === order.color);
+              if (colorObj && typeof colorObj.stock === 'number') {
+                colorObj.stock = Math.max(0, colorObj.stock - qty);
+              }
+            }
           }
-        }
-
-        if (order.color) {
-          const colorObj = colors.find((c: any) => c.name === order.color);
-          if (colorObj && typeof colorObj.stock === 'number') {
-            colorObj.stock = Math.max(0, colorObj.stock - qty);
+        } else if (order.color) {
+          for (const sizeObj of sizes) {
+            if (Array.isArray(sizeObj.colors)) {
+              const colorObj = sizeObj.colors.find((c: any) => c.name === order.color);
+              if (colorObj && typeof colorObj.stock === 'number') {
+                colorObj.stock = Math.max(0, colorObj.stock - qty);
+                break;
+              }
+            }
           }
         }
       }
@@ -74,7 +82,7 @@ export async function deductInventoryFromOrders(orders: any[]) {
               sold_count: $sold_count,
               stock_limit: $stock_limit,
               available_sizes: $available_sizes,
-              available_colors: $available_colors
+              available_colors: null
             }
           ) {
             id
@@ -87,7 +95,7 @@ export async function deductInventoryFromOrders(orders: any[]) {
         sold_count: String(newSoldCount),
         stock_limit: newStockLimit !== null ? String(newStockLimit) : null,
         available_sizes: sizes.length > 0 ? sizes : null,
-        available_colors: colors.length > 0 ? colors : null,
+        available_colors: null,
       });
 
       console.log(`[Inventory] Successfully updated stock for product ${productId}`);
