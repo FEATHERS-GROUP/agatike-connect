@@ -375,6 +375,40 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       });
 
       const res = await addEventAttendees({ data: { objects: attendeesPayload } } as any);
+      const returned = res?.insert_event_attendees?.returning || [];
+
+      // Insert product_orders for any merchandise in the cart
+      const primaryAttendee = attendees[0] || { phone: paymentDetails?.phone };
+      const buyerPhone = primaryAttendee?.phone || paymentDetails?.phone || "";
+      const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      const productOrderObjects = Object.entries(cart)
+        .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
+        .map(([key, qty]) => {
+          const parts = key.split("_");
+          const productId = parts[1];
+          const size = parts[2] || null;
+          const color = parts[3] || null;
+          const merch = eventProducts.find((p: any) => p.id === productId);
+          return {
+            product_id: productId,
+            qty: String(qty),
+            amount_paid: merch ? parseFloat(merch.price || 0) * qty : 0,
+            status: isPawaPay ? "Pending Payment" : "Confirmed",
+            phone: buyerPhone,
+            qr_code_string: `${qrBase}-${productId.substring(0, 6)}`,
+            ticket_id: returned[0]?.id || null,
+            buyer_id: user?.id || null,
+            picked: false,
+            ...(size || color ? { size, color } : {}),
+          };
+        });
+
+      if (productOrderObjects.length > 0) {
+        await createProductOrders({ data: { objects: productOrderObjects } } as any).catch((e: any) => {
+          console.error("Failed to create product orders:", e);
+        });
+      }
 
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
@@ -436,38 +470,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         setIsSuccess(true);
       }
 
-      // Insert product_orders for any merchandise in the cart
-      const primaryAttendee = attendees[0];
-      const buyerPhone = primaryAttendee?.phone || "";
-      const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-      const productOrderObjects = Object.entries(cart)
-        .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
-        .map(([key, qty]) => {
-          const parts = key.split("_");
-          const productId = parts[1];
-          const size = parts[2] || null;
-          const color = parts[3] || null;
-          const merch = eventProducts.find((p: any) => p.id === productId);
-          return {
-            product_id: productId,
-            qty: String(qty),
-            amount_paid: merch ? parseFloat(merch.price || 0) * qty : 0,
-            status: data.isPawaPay ? "Pending Payment" : "Confirmed",
-            phone: buyerPhone,
-            qr_code_string: `${qrBase}-${productId.substring(0, 6)}`,
-            ticket_id: returned[0]?.id || null,
-            buyer_id: user?.id || null,
-            picked: false,
-            ...(size || color ? { size, color } : {}),
-          };
-        });
-
-      if (productOrderObjects.length > 0) {
-        createProductOrders({ data: { objects: productOrderObjects } } as any).catch((e: any) => {
-          console.error("Failed to create product orders:", e);
-        });
-      }
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
@@ -615,6 +617,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   customerName: group.name,
                   venueName: event.title,
                   attachments: group.attachments,
+                  hasMerch: hasMerchInCart,
                 },
               } as any).catch((e) => {
                 console.error("Failed to email", email, e);
