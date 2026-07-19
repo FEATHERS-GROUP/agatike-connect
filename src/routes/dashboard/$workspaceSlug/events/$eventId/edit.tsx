@@ -88,7 +88,7 @@ export function AddressInput({
       {isOpen && (predictions.length > 0 || isLoading) && (
         <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover shadow-md">
           {isLoading && predictions.length === 0 && (
-            <div className="p-4 text-sm text-muted-foreground text-center">Loading...</div>
+            <div className="p-4 text-sm text-muted-foreground text-center">Searchng Location...</div>
           )}
           {predictions.map((p) => (
             <div
@@ -97,10 +97,14 @@ export function AddressInput({
               onMouseDown={async () => {
                 onChange(p.description);
                 setIsOpen(false);
+                if (p._lat && p._lng) {
+                  onSelectCoords(String(p._lat), String(p._lng));
+                  return;
+                }
                 try {
                   const coords = await getPlaceDetails({ data: p.place_id } as any);
                   if (coords?.lat && coords?.lng) onSelectCoords(coords.lat, coords.lng);
-                } catch {}
+                } catch { }
               }}
             >
               {p.description}
@@ -169,17 +173,17 @@ function EditEventPage() {
       Array.isArray(event.tour_stops) && event.tour_stops.length > 0
         ? event.tour_stops
         : [
-            {
-              id: generateId(),
-              venue: "",
-              city: "",
-              address: "",
-              date: "",
-              time: "",
-              latitude: null,
-              longitude: null,
-            },
-          ];
+          {
+            id: generateId(),
+            venue: "",
+            city: "",
+            address: "",
+            date: "",
+            time: "",
+            latitude: null,
+            longitude: null,
+          },
+        ];
 
     setForm({
       title: event.title || "",
@@ -253,15 +257,15 @@ function EditEventPage() {
             ...loc,
             ...(idx === 0
               ? {
-                  is_upcoming: form.isUpcoming,
-                  waitlist_url: form.isUpcoming ? form.waitlistUrl || null : null,
-                  timer_date: form.isUpcoming ? form.timerDate || null : null,
-                }
+                is_upcoming: form.isUpcoming,
+                waitlist_url: form.isUpcoming ? form.waitlistUrl || null : null,
+                timer_date: form.isUpcoming ? form.timerDate || null : null,
+              }
               : {
-                  is_upcoming: false,
-                  waitlist_url: null,
-                  timer_date: null,
-                }),
+                is_upcoming: false,
+                waitlist_url: null,
+                timer_date: null,
+              }),
           })),
           vipPerks: form.vipPerks,
           event_requency: event?.event_requency || {},

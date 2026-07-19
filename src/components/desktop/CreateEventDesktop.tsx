@@ -190,6 +190,10 @@ function AddressAutocomplete({
                 onClick={async () => {
                   onChange(p.description);
                   setIsOpen(false);
+                  if (p._lat && p._lng) {
+                    onSelectCoordinates(String(p._lat), String(p._lng));
+                    return;
+                  }
                   const coords = await getPlaceDetails({ data: p.place_id } as any);
                   if (coords && coords.lat && coords.lng) {
                     onSelectCoordinates(coords.lat, coords.lng);
