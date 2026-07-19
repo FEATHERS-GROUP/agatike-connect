@@ -88,16 +88,14 @@ export async function deductInventoryFromOrders(orders: any[]) {
           $id: uuid!, 
           $sold_count: String, 
           $stock_limit: String, 
-          $available_sizes: jsonb, 
-          $available_colors: jsonb
+          $available_sizes: jsonb
         ) {
           update_products_by_pk(
             pk_columns: { id: $id },
             _set: {
               sold_count: $sold_count,
               stock_limit: $stock_limit,
-              available_sizes: $available_sizes,
-              available_colors: null
+              available_sizes: $available_sizes
             }
           ) {
             id
@@ -110,7 +108,6 @@ export async function deductInventoryFromOrders(orders: any[]) {
         sold_count: String(newSoldCount),
         stock_limit: newStockLimit !== null ? String(newStockLimit) : null,
         available_sizes: sizes.length > 0 ? sizes : null,
-        available_colors: null,
       });
 
       console.log(`[Inventory] Successfully updated stock for product ${productId}`);

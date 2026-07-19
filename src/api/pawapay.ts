@@ -525,73 +525,20 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
           const pawaData = await response.json();
           const providerStatus = Array.isArray(pawaData) ? pawaData[0]?.status : pawaData.status;
 
-          if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED")) {
-            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
-
-            // Update local DB
-            const updateQuery = `
-              mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!) {
-                update_wallet_transactions(
-                  where: { provider_reference: { _eq: $provider_reference } }, 
-                  _set: { 
-                    provider_status: $provider_status, 
-                    status: $status,
-                    updated_at: "now()"
-                  }
-                ) {
-                  returning { id }
-                }
-              }
-            `;
-            await hasuraRequest(updateQuery, {
-              provider_reference: depositId,
-              provider_status: providerStatus,
-              status: newStatus,
-            });
-
-            // Trigger completion logic
-            if (newStatus === "completed") {
-              if (tx.type === "event_ticket") {
-                const confirmQuery = `
-                  mutation ConfirmEventAttendees($booking_ref: String!) {
-                    update_event_attendees(
-                      where: { custom_fields: { _contains: { booking_ref: $booking_ref } } },
-                      _set: { status: "Confirmed" }
-                    ) { affected_rows }
-                  }
-                `;
-                await hasuraRequest(confirmQuery, { booking_ref: tx.reference_id });
-              } else if (tx.type === "space_subscription") {
-                const activateSubQuery = `
-                  mutation ActivateSpaceSubscription($id: uuid!) {
-                    update_space_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "active" }) { id }
-                  }
-                `;
-                await hasuraRequest(activateSubQuery, { id: tx.reference_id });
-              } else if (tx.type === "movie_ticket") {
-                const bookingIds = tx.reference_id.split(",");
-                const confirmQuery = `
-                  mutation ConfirmCinemaBookings($ids: [uuid!]!) {
-                    update_cinema_bookings(
-                      where: { id: { _in: $ids } },
-                      _set: { status: "Confirmed" }
-                    ) { affected_rows }
-                  }
-                `;
-                await hasuraRequest(confirmQuery, { ids: bookingIds });
-              } else if (tx.type === "venue_booking") {
-                const bookingIds = tx.reference_id.split(",");
-                const confirmQuery = `
-                  mutation ConfirmVenueBooking($ids: [uuid!]!) {
-                    update_venue_bookings(
-                      where: { id: { _in: $ids } },
-                      _set: { payment_status: "Paid", status: "Confirmed" }
-                    ) { affected_rows }
-                  }
-                `;
-                await hasuraRequest(confirmQuery, { ids: bookingIds });
-              }
-            }
+            if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED")) {
+              const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
+              
+              // Simulate a webhook request to reuse the exact same completion/failure logic (Email, SMS, Wallet, Earnings)
+              const mockRequest = new Request("http://localhost:3000/api/pawapay/deposits", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(pawaPayload)
+              });
+              
+              const { handlePawaPayWebhook } = await import("./pawapay.server");
+              await handlePawaPayWebhook(mockRequest);
+              
+              const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
 
             // Update local object so the frontend sees it immediately
             tx.status = newStatus;

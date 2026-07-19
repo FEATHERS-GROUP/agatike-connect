@@ -58,14 +58,18 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       const tx = res.update_wallet_transactions?.returning?.[0];
 
+      let customerFee = 0;
       if (tx) {
         // Now update earnings safely via wallet_transaction_id instead of relying on relationships
-        await hasuraRequest(
+        const earnRes = await hasuraRequest<{ update_earnings: { returning: any[] } }>(
           `mutation UpdateEarningsStatus($txId: uuid!, $status: String!) {
-             update_earnings(where: { wallet_transaction_id: { _eq: $txId } }, _set: { status: $status, updated_at: "now()" }) { affected_rows }
+             update_earnings(where: { wallet_transaction_id: { _eq: $txId } }, _set: { status: $status, updated_at: "now()" }) { 
+               returning { customer_fee }
+             }
           }`,
           { txId: tx.id, status: tx.status }
         );
+        customerFee = earnRes.update_earnings?.returning?.[0]?.customer_fee || 0;
       }
 
       // 2. If it's a completed deposit, activate the associated ticket/subscription
@@ -83,7 +87,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   email
                   phone
                   names
-                  event {
+                  qrcode_number
+                  events {
                     title
                     workspaces {
                       name
@@ -107,13 +112,17 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   product_id
                   qty
                   size
+                  product {
+                    name
+                  }
                 }
               }
             }
           `;
+          let confirmedOrders: any[] = [];
           try {
             const confirmRes = await hasuraRequest<{ update_product_orders: any }>(confirmProductOrdersQuery, { booking_ref: tx.reference_id });
-            const confirmedOrders = confirmRes?.update_product_orders?.returning || [];
+            confirmedOrders = confirmRes?.update_product_orders?.returning || [];
             if (confirmedOrders.length > 0) {
               const { deductInventoryFromOrders } = await import("./inventory.server");
               await deductInventoryFromOrders(confirmedOrders);
@@ -122,11 +131,21 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             console.error("[PawaPay] Failed to confirm product orders:", e);
           }
 
-          if (confirmedAttendees.length > 0) {
+          const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
+          const appUrl = process.env.PROJECT_PRODUCTION_URL ? `https://${process.env.PROJECT_PRODUCTION_URL}` : "https://agatike.com";
+          
+          const ticketCodes = confirmedAttendees.map(a => a.qrcode_number).filter(Boolean).join(", ");
+          const productsText = confirmedOrders.length > 0 
+            ? `Products: ${confirmedOrders.map(o => `${o.qty}x ${o.product?.name || "Item"}`).join(", ")}` 
+            : "";
+          const feeText = customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
+          
+          const detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
+          
+          if (firstAtt) {
             const { sendAttendeeEmail } = await import("./email");
-            const firstAtt = confirmedAttendees[0];
-            const eventName = firstAtt.event?.title || "Your Event";
-            const orgName = firstAtt.event?.workspaces?.name || "The Organizer";
+            const eventName = firstAtt.events?.title || "Your Event";
+            const orgName = firstAtt.events?.workspaces?.name || "The Organizer";
 
             const emailAddresses = [...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean))];
             
@@ -134,13 +153,28 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               await sendAttendeeEmail({
                 data: {
                   to: email,
-                  subject: `Your tickets for ${eventName} are confirmed!`,
-                  message: `Payment of ${tx.amount} ${body?.currency || ""} was successful. We have successfully confirmed your tickets for ${eventName}. Please log in or check your profile to access your QR codes.`,
+                  subject: `Your purchase for ${eventName} is confirmed!`,
+                  message: detailedMessage,
                   eventName: eventName,
                   organizerName: orgName,
-                  appUrl: process.env.PROJECT_PRODUCTION_URL ? `https://${process.env.PROJECT_PRODUCTION_URL}` : "https://agatike.com",
+                  appUrl,
+                  badgeLink: `${appUrl}/ticket/${firstAtt.id}`,
                 }
               } as any).catch(e => console.error("Failed to send attendee email", e));
+            }
+          }
+
+          // Send Event SMS with direct ticket links and products
+          let phoneToNotify = body?.payer?.address?.value;
+          if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
+          if (!phoneToNotify && confirmedOrders.length > 0) phoneToNotify = confirmedOrders[0].phone;
+
+          if (phoneToNotify) {
+            const { sendSMS } = await import("./pindo");
+            try {
+              await sendSMS(phoneToNotify, detailedMessage);
+            } catch (e) {
+              console.error("[Pindo SMS] Failed to send payment confirmation:", e);
             }
           }
         } else if (tx.type === "space_subscription") {
@@ -195,8 +229,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           } as any);
         }
 
-        // Send SMS Confirmation via Pindo
-        if (body?.payer?.address?.value) {
+        // Send general SMS Confirmation via Pindo for other types
+        if (tx.type !== "event_ticket" && body?.payer?.address?.value) {
           const phone = body.payer.address.value;
           const { sendSMS } = await import("./pindo");
           const msg = `Payment of ${tx.amount} confirmed! Thank you for your purchase. View your ticket/receipt at: https://agatike.com/profile`;
