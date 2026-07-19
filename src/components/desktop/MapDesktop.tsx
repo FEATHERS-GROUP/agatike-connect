@@ -149,13 +149,14 @@ export function MapDesktop() {
     
     // Process Events
     dbEvents.forEach((e: any) => {
-      if (e.allowed_public && !e.deleted && e.lat && e.lng) {
+      const firstStopWithCoords = e.tour_stops?.find((s: any) => s.latitude && s.longitude);
+      if (e.allowed_public && !e.deleted && firstStopWithCoords) {
         markers.push({
           id: `event-${e.id}`,
           title: e.title,
           date: new Date(e.created_at).toLocaleDateString(),
-          lat: parseFloat(e.lat),
-          lng: parseFloat(e.lng),
+          lat: parseFloat(firstStopWithCoords.latitude),
+          lng: parseFloat(firstStopWithCoords.longitude),
           image: e.cover || "https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=100",
           type: "event",
         });
@@ -164,13 +165,13 @@ export function MapDesktop() {
 
     // Process Venues
     dbVenues.forEach((v: any) => {
-      if (v.lat && v.lng) {
+      if (v.latitude && v.longitude) {
         markers.push({
           id: `venue-${v.id}`,
           title: v.name,
           date: v.city,
-          lat: parseFloat(v.lat),
-          lng: parseFloat(v.lng),
+          lat: parseFloat(v.latitude),
+          lng: parseFloat(v.longitude),
           image: v.cover_url || "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=100",
           type: "venue",
         });

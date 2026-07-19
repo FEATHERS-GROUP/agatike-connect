@@ -202,6 +202,8 @@ const GET_PUBLIC_VENUES = `
       cover_url
       currency
       pricing_tiers
+      latitude
+      longitude
     }
   }
 `;
