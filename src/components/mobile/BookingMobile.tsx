@@ -151,7 +151,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     if (!isHydrated || Object.keys(cart).length === 0) return;
 
     // If we loaded attendees from session storage and the quantity matches the cart, don't wipe them out!
-    const totalTicketsInCart = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    // Only count ticket entries (not merch) for attendees comparison
+    const totalTicketsInCart = Object.entries(cart).reduce((sum, [key, qty]) => key.startsWith("merch_") ? sum : sum + qty, 0);
     if (attendees.length === totalTicketsInCart && totalTicketsInCart > 0) return;
 
     const availableSeats = [...selectedSeats];
@@ -159,6 +160,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
     Object.entries(cart).forEach(([cartKey, qty]) => {
       if (qty <= 0) return;
+      if (cartKey.startsWith("merch_")) return; // merchandise is not a ticket attendee
       const [stopIdxStr, tierId] = cartKey.split("_");
       const stopIdx = parseInt(stopIdxStr);
 
