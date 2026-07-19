@@ -387,6 +387,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         .map(([key, qty], index) => {
           const parts = key.split("_");
           const productId = parts[1];
+          const merch = eventProducts.find((p: any) => p.id === productId);
           const size = parts[2] !== "NONE" ? parts[2] : null;
           const color = parts[3] !== "NONE" ? parts[3] : null;
           const variantString = [size, color].filter(Boolean).join(" - ");

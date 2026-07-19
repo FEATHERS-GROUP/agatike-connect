@@ -29,10 +29,10 @@ async function migrate() {
     let count = 0;
     for (const product of products) {
       let sizes = Array.isArray(product.available_sizes) 
-        ? product.available_sizes.map(s => typeof s === 'string' ? { name: s, stock: 0 } : s)
+        ? product.available_sizes.map((s: any) => typeof s === 'string' ? { name: s, stock: 0 } : s)
         : [];
       const colors = Array.isArray(product.available_colors) 
-        ? product.available_colors.map(c => typeof c === 'string' ? { name: c, stock: 0 } : c)
+        ? product.available_colors.map((c: any) => typeof c === 'string' ? { name: c, stock: 0 } : c)
         : [];
 
       if (sizes.length === 0 && colors.length > 0) {
@@ -40,7 +40,7 @@ async function migrate() {
         sizes = [
           {
             name: "One Size",
-            stock: colors.reduce((acc, c) => acc + (c.stock || 0), 0),
+            stock: colors.reduce((acc: number, c: any) => acc + (c.stock || 0), 0),
             colors: colors
           }
         ];

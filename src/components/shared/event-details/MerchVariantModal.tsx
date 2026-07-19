@@ -7,8 +7,8 @@ interface MerchVariantModalProps {
   m: any;
   sizesArr: any[];
   hideSizeSelection: boolean;
-  effectiveSize: string;
-  selColor: string;
+  effectiveSize?: string;
+  selColor?: string;
   availableColors: any[];
   currencyCode: string;
   qty: number;
@@ -19,7 +19,7 @@ interface MerchVariantModalProps {
   needsColor: boolean;
   handleAdd: (m: any) => void;
   handleRemove: (m: any) => void;
-  setSelection: (id: string, field: string, value: string) => void;
+  setSelection: (id: string, field: "size" | "color", value: string) => void;
   setCart?: any;
 }
 

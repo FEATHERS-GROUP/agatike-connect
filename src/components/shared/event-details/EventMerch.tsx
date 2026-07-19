@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { MerchVariantModal } from "./MerchVariantModal";
+import { formatCurrency } from "@/lib/currency";
 
 const CATEGORY_LABELS: Record<string, string> = {
   tshirts: "T-Shirts",
