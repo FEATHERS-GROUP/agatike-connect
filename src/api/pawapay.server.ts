@@ -90,6 +90,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   qrcode_number
                   events {
                     title
+                    tour_stops
                     workspaces {
                       name
                     }
@@ -134,17 +135,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
           const appUrl = process.env.PROJECT_PRODUCTION_URL ? `https://${process.env.PROJECT_PRODUCTION_URL}` : "https://agatike.com";
           
+          let eventName = "Your Event";
+          let dateStr = "TBD";
+          let eventLocation = "";
+          
+          if (firstAtt?.events) {
+            eventName = firstAtt.events.title || eventName;
+            const tourStops = Array.isArray(firstAtt.events.tour_stops) ? firstAtt.events.tour_stops : 
+               (firstAtt.events.tour_stops ? [firstAtt.events.tour_stops] : []);
+            const firstStop = tourStops[0] || {};
+            dateStr = `${firstStop.date || "TBD"} ${firstStop.time || ""}`.trim();
+            eventLocation = firstStop.venue || firstStop.city || "";
+          }
+
           const ticketCodes = confirmedAttendees.map(a => a.qrcode_number).filter(Boolean).join(", ");
           const productsText = confirmedOrders.length > 0 
-            ? `Products: ${confirmedOrders.map(o => `${o.qty}x ${o.product?.name || "Item"}`).join(", ")}` 
+            ? `Products: ${confirmedOrders.map(o => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}` 
             : "";
           const feeText = customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
           
-          const detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
+          const detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
           
           if (firstAtt) {
             const { sendAttendeeEmail } = await import("./email");
-            const eventName = firstAtt.events?.title || "Your Event";
             const orgName = firstAtt.events?.workspaces?.name || "The Organizer";
 
             const emailAddresses = [...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean))];
