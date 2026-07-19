@@ -291,7 +291,7 @@ export function EventCheckoutSidebar({
                 </div>
 
                 <div className="mt-5 flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Total ({totalTickets} items)</span>
+                  <span className="text-muted-foreground">Total ({Object.values(cart).reduce((a, b) => a + b, 0)} items)</span>
                   <span className="text-lg font-semibold">
                     {formatCurrency(total, currencyCode)}
                   </span>

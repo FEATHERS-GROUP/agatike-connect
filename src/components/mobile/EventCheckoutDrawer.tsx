@@ -484,7 +484,7 @@ export function EventCheckoutDrawer({
                 {!isSuspended && (
                   <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                      Total ({totalTickets} items)
+                      Total ({Object.values(cart).reduce((a, b) => a + b, 0)} items)
                     </span>
                     <span className="text-lg font-bold text-foreground">
                       {formatCurrency(total, currencyCode)}

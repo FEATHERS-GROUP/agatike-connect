@@ -243,18 +243,14 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     if (isMock) return merch;
 
     const legacyMerch = (ev.merchandises || []).map((m: any) => ({
-      id: m.id,
-      name: m.name,
-      price: m.price,
+      ...m,
       image: m.image_url || ev.cover,
     }));
 
     const newMerch = (eventProducts || [])
       .filter((p: any) => p.type === "physical")
       .map((m: any) => ({
-        id: m.id,
-        name: m.name,
-        price: m.price,
+        ...m,
         image: m.image_url || ev.cover,
       }));
 
