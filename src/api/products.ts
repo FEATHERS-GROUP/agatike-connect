@@ -44,7 +44,7 @@ export const updateProduct = createServerFn({ method: "POST" }).handler(async (c
 
 const GET_WORKSPACE_PRODUCTS = `
   query GetWorkspaceProducts($workspace_id: uuid!) {
-    products(where: { workspace_id: { _eq: $workspace_id }, event_id: { _is_null: true } }, order_by: { created_at: desc }) {
+    products(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
       name
       type
@@ -61,6 +61,11 @@ const GET_WORKSPACE_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      event_id
+      event {
+        id
+        title
+      }
     }
   }
 `;

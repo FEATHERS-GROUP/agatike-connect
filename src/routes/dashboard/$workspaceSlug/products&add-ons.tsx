@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import { getWorkspaceProducts } from "@/api/products";
+import { getWorkspaceProducts, getWorkspaceRecentOrders } from "@/api/products";
+import { format } from "date-fns";
 import {
   getWorkspaceSponsoredVoucherBatches,
   batchGenerateSponsoredVouchers,
@@ -39,6 +40,7 @@ import { createProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/products&add-ons")({
   component: WorkspaceProductsView,
@@ -160,13 +162,135 @@ function BatchGenerateModal() {
   );
 }
 
+function WorkspaceOrdersTable() {
+  const { activeWorkspace } = useWorkspace();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ["workspace-recent-orders", activeWorkspace?.id],
+    queryFn: () => getWorkspaceRecentOrders({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const filteredOrders = orders.filter((order: any) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const orderId = order.id.split("-")[0].toLowerCase();
+    const buyerName = (order.user?.username || order.guest_name || order.buyer_id || "Guest").toLowerCase();
+    const phone = (order.phone || "").toLowerCase();
+    const qrCode = (order.qr_code_string || "").toLowerCase();
+    const productName = (order.product?.name || "").toLowerCase();
+    return (
+      orderId.includes(query) ||
+      buyerName.includes(query) ||
+      phone.includes(query) ||
+      qrCode.includes(query) ||
+      productName.includes(query)
+    );
+  });
+
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-4 gap-4">
+        <h3 className="font-semibold text-lg">All Orders</h3>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search orders..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-secondary/30 border border-border/40 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+          />
+        </div>
+      </div>
+      <div className="border-t border-border/60">
+        {isLoading ? (
+          <div className="p-12 flex flex-col items-center justify-center text-muted-foreground gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p className="text-sm">Loading orders...</p>
+          </div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="p-12 flex flex-col items-center justify-center text-muted-foreground gap-2">
+            <ShoppingBag className="h-8 w-8 opacity-20" />
+            <p className="text-sm">No matching orders found</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className="text-xs text-muted-foreground uppercase bg-secondary/30">
+                <tr>
+                  <th className="px-6 py-4 font-medium tracking-wider">Order ID</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Buyer</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Phone</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Product</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Qty</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Price</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">QR Code</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {filteredOrders.map((order: any) => (
+                  <tr key={order.id} className="hover:bg-secondary/10 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs text-muted-foreground">
+                      {order.id.split("-")[0]}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-foreground">
+                          {order.user?.username || order.guest_name || order.user?.handle || order.user?.email || order.buyer_id || "Guest"}
+                        </span>
+                        {order.user?.email && <span className="text-xs text-muted-foreground">{order.user.email}</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm">{order.phone || "-"}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{order.product?.name}</span>
+                        <div className="flex gap-2 mt-1">
+                          {order.size && <span className="text-xs text-muted-foreground">Variant: {order.size}</span>}
+                          {order.color && <span className="text-xs text-muted-foreground">Sub: {order.color}</span>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-bold">{order.qty || 1}</td>
+                    <td className="px-6 py-4 font-medium">
+                      {formatCurrency(order.amount_paid || 0, activeWorkspace?.currency)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-xs text-muted-foreground bg-secondary/30 px-2 py-1 rounded">{order.qr_code_string || "-"}</span>
+                    </td>
+                    <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                      {format(new Date(order.created_at), "MMM d, yyyy")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function WorkspaceProductsView() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [searchProduct, setSearchProduct] = useState("");
   const { activeWorkspace } = useWorkspace();
 
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ["workspace-products", activeWorkspace?.id],
     queryFn: () => getWorkspaceProducts({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ["workspace-recent-orders", activeWorkspace?.id],
+    queryFn: () => getWorkspaceRecentOrders({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -214,88 +338,149 @@ function WorkspaceProductsView() {
       sold: p.sold_count || 0,
     }));
 
-  const stats = {
-    totalSales: 0,
-    activeCampaigns: 0,
-    lowStockAlerts: 0,
+  // Real stats from actual order data
+  const totalRevenue = (orders as any[]).reduce((sum: number, o: any) => sum + Number(o.amount_paid || 0), 0);
+  const totalOrderCount = (orders as any[]).length;
+  const allProductItems = [...merchandise, ...allVouchers, ...punchCards];
+  const activeCampaigns = allProductItems.filter((item) => item.is_active !== false).length;
+  const lowStockAlerts = allProductItems.filter((item) => {
+    const stock = item.stock_limit;
+    return stock !== null && stock !== undefined && Number(stock) < 20 && Number(stock) > 0;
+  }).length;
+
+  const stats = { totalRevenue, activeCampaigns, lowStockAlerts, totalOrderCount };
+
+  // Filtered products for the merch tab search
+  const filteredMerch = merchandise.filter((p: any) => {
+    if (!searchProduct) return true;
+    const q = searchProduct.toLowerCase();
+    return (
+      (p.name || "").toLowerCase().includes(q) ||
+      (p.event?.title || "").toLowerCase().includes(q) ||
+      (p.category || "").toLowerCase().includes(q)
+    );
+  });
+  const filteredVouchers = allVouchers.filter((p: any) => !searchProduct || (p.name || "").toLowerCase().includes(searchProduct.toLowerCase()));
+  const filteredPunchCards = punchCards.filter((p: any) => !searchProduct || (p.name || "").toLowerCase().includes(searchProduct.toLowerCase()));
+
+  const renderTable = (items: any[], icon: any) => {
+    const Icon = icon;
+    return (
+      <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 pb-4 gap-4 border-b border-border/40">
+          <span className="text-sm font-medium text-muted-foreground">{items.length} item{items.length !== 1 ? "s" : ""}</span>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchProduct}
+              onChange={(e) => setSearchProduct(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-secondary/30 border border-border/40 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+            />
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left min-w-[700px]">
+            <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
+              <tr>
+                <th className="px-6 py-4 font-medium">Product</th>
+                <th className="px-6 py-4 font-medium">Source</th>
+                <th className="px-6 py-4 font-medium">Price</th>
+                <th className="px-6 py-4 font-medium">Variants</th>
+                <th className="px-6 py-4 font-medium">Stock</th>
+                <th className="px-6 py-4 font-medium">Sold</th>
+                <th className="px-6 py-4 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/60">
+              {items.map((m) => {
+                const sizes: any[] = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+                const totalVariantStock = sizes.reduce((sum: number, s: any) => {
+                  if (typeof s === "object" && Array.isArray(s.colors)) {
+                    return sum + s.colors.reduce((cs: number, c: any) => cs + Number(c.stock || 0), 0);
+                  }
+                  return sum + Number(s.stock || 0);
+                }, 0);
+                const stockDisplay = m.stock_limit !== null && m.stock_limit !== undefined
+                  ? (sizes.length > 0 ? totalVariantStock : Number(m.stock_limit))
+                  : "∞";
+                const isLow = typeof stockDisplay === "number" && stockDisplay < 20 && stockDisplay > 0;
+
+                return (
+                  <tr
+                    key={m.id}
+                    className="hover:bg-secondary/40 transition-colors cursor-pointer group"
+                    onClick={() => setSelectedItem(m)}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors overflow-hidden">
+                          {m.image_url ? (
+                            <img src={m.image_url} alt={m.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <Icon className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="font-semibold text-foreground">{m.name}</p>
+                          {m.category && <span className="text-xs text-muted-foreground">{m.category}</span>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {m.event?.title ? (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">{m.event.title}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Campaign</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium">
+                      {formatCurrency(m.price, activeWorkspace?.currency)}
+                    </td>
+                    <td className="px-6 py-4">
+                      {sizes.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 max-w-[160px]">
+                          {sizes.slice(0, 3).map((s: any, i: number) => (
+                            <span key={i} className="text-xs bg-secondary/60 px-1.5 py-0.5 rounded border border-border/30">
+                              {typeof s === "string" ? s : s.name}
+                            </span>
+                          ))}
+                          {sizes.length > 3 && <span className="text-xs text-muted-foreground">+{sizes.length - 3}</span>}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Standard</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`font-medium ${isLow ? "text-orange-500" : ""}`}>
+                        {stockDisplay}
+                        {isLow && <span className="ml-1 text-[10px] bg-orange-500/10 text-orange-500 px-1 py-0.5 rounded">Low</span>}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-green-500 font-medium">{m.sold_count || 0}</td>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${m.is_active !== false ? "bg-green-500/10 text-green-600" : "bg-secondary/60 text-muted-foreground"}`}>
+                        {m.is_active !== false ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground whitespace-normal">
+                    {searchProduct ? "No products match your search." : "No items found. Create one to get started."}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
   };
 
-  [...merchandise, ...allVouchers, ...punchCards].forEach((item) => {
-    const sold = Number(item.sold || 0);
-    const price = Number(item.price || 0);
-    stats.totalSales += sold * price;
-
-    if (item.is_active !== false) {
-      stats.activeCampaigns += 1;
-    }
-
-    const stock = item.stock;
-    if (stock !== "Unlimited" && stock !== undefined && stock !== null && Number(stock) < 100) {
-      stats.lowStockAlerts += 1;
-    }
-  });
-
-  const renderTable = (items: any[], icon: any) => (
-    <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left min-w-[600px] whitespace-nowrap">
-        <thead className="bg-secondary/30 text-muted-foreground text-xs uppercase tracking-wider">
-          <tr>
-            <th className="px-6 py-4 font-medium">Item Name</th>
-            <th className="px-6 py-4 font-medium">Price</th>
-            <th className="px-6 py-4 font-medium">Stock Remaining</th>
-            <th className="px-6 py-4 font-medium">Sold</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/60">
-          {items.map((m) => {
-            const Icon = icon;
-            return (
-              <tr
-                key={m.id}
-                className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                onClick={() => setSelectedItem(m)}
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors overflow-hidden">
-                      {m.image_url ? (
-                        <img
-                          src={m.image_url}
-                          alt={m.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <Icon className="h-5 w-5" />
-                      )}
-                    </div>
-                    <p className="font-semibold text-foreground">{m.name}</p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 font-medium">
-                  {formatCurrency(m.price, activeWorkspace?.currency)}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`font-medium ${m.stock < 100 ? "text-orange-500" : ""}`}>
-                    {m.stock}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-green-500 font-medium">{m.sold}</td>
-              </tr>
-            );
-          })}
-          {items.length === 0 && (
-            <tr>
-              <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground whitespace-normal">
-                No items found. Create one to get started.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-6 max-w-[1400px] w-full mx-auto px-2 sm:px-4 md:px-0 pb-10">
@@ -322,15 +507,19 @@ function WorkspaceProductsView() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Sales</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Revenue</p>
           <p className="text-2xl font-semibold mt-1">
-            {formatCurrency(stats.totalSales, activeWorkspace?.currency)}
+            {formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}
           </p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Active Campaigns</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Orders</p>
+          <p className="text-2xl font-semibold mt-1">{stats.totalOrderCount}</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">Active Products</p>
           <p className="text-2xl font-semibold mt-1">{stats.activeCampaigns}</p>
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-[var(--shadow-card)]">
@@ -341,17 +530,21 @@ function WorkspaceProductsView() {
         </div>
       </div>
 
-      <Tabs defaultValue="merch" className="w-full">
+      <Tabs defaultValue="orders" className="w-full">
         <div className="w-full overflow-x-auto pb-2 mb-2 no-scrollbar">
           <TabsList className="flex w-max min-w-full justify-start h-auto p-1 bg-secondary/50">
+            <TabsTrigger value="orders" className="rounded-full px-4 py-2">Orders</TabsTrigger>
             <TabsTrigger value="merch" className="rounded-full px-4 py-2">Physical Merch</TabsTrigger>
             <TabsTrigger value="vouchers" className="rounded-full px-4 py-2">Gift Cards & Vouchers</TabsTrigger>
             <TabsTrigger value="punchcards" className="rounded-full px-4 py-2">Punch Cards</TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value="merch">{renderTable(merchandise, ShoppingBag)}</TabsContent>
-        <TabsContent value="vouchers">{renderTable(allVouchers, Ticket)}</TabsContent>
-        <TabsContent value="punchcards">{renderTable(punchCards, QrCode)}</TabsContent>
+        <TabsContent value="orders">
+          <WorkspaceOrdersTable />
+        </TabsContent>
+        <TabsContent value="merch">{renderTable(filteredMerch, ShoppingBag)}</TabsContent>
+        <TabsContent value="vouchers">{renderTable(filteredVouchers, Ticket)}</TabsContent>
+        <TabsContent value="punchcards">{renderTable(filteredPunchCards, QrCode)}</TabsContent>
       </Tabs>
 
       <Sheet open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
