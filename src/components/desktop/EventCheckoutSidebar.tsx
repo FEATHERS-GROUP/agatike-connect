@@ -301,7 +301,7 @@ export function EventCheckoutSidebar({
 
             <Button
               asChild={!isPastEvent && !isSuspended}
-              disabled={isPastEvent || isSuspended || (totalTickets === 0 && !Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0))}
+              disabled={isPastEvent || isSuspended || totalTickets === 0}
               className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
               style={{
                 background:
@@ -310,8 +310,8 @@ export function EventCheckoutSidebar({
                     : total === 0 && totalTickets > 0
                       ? "var(--foreground)"
                       : "var(--gradient-primary)",
-                opacity: (isPastEvent || isSuspended || (totalTickets === 0 && !Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0))) ? 0.5 : 1,
-                pointerEvents: (isPastEvent || isSuspended || (totalTickets === 0 && !Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0))) ? "none" : "auto",
+                opacity: (isPastEvent || isSuspended || totalTickets === 0) ? 0.5 : 1,
+                pointerEvents: (isPastEvent || isSuspended || totalTickets === 0) ? "none" : "auto",
                 color: isPastEvent || isSuspended ? "var(--muted-foreground)" : undefined,
               }}
               onClick={() => {

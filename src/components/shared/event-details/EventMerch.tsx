@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/currency";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MerchVariantModal } from "./MerchVariantModal";
 
 const CATEGORY_LABELS: Record<string, string> = {
   tshirts: "T-Shirts",
@@ -218,90 +217,25 @@ export function EventMerch({
                 )}
 
                 {sizesArr.length > 0 ? (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant={globalQty > 0 ? "secondary" : "outline"} 
-                        className={`rounded-full h-7 text-xs w-full mt-2 ${globalQty > 0 ? "border-primary/30" : ""}`}
-                      >
-                        {globalQty > 0 ? `Selected (${globalQty})` : "Select Options"}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>{m.name}</DialogTitle>
-                      </DialogHeader>
-                      <div className="flex flex-col gap-4 py-2">
-                        {!hideSizeSelection && (
-                          <div>
-                            <p className="text-sm font-medium mb-2">Variant</p>
-                            <div className="flex flex-wrap gap-2">
-                              {sizesArr.map((s: any) => (
-                                <button
-                                  key={s.name}
-                                  onClick={() => setSelection(m.id, "size", effectiveSize === s.name ? "" : s.name)}
-                                  className={`text-sm font-semibold px-4 py-1.5 rounded-lg border transition-all ${
-                                    effectiveSize === s.name ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-secondary"
-                                  } ${s.stock <= 0 ? "opacity-50 line-through" : ""}`}
-                                  disabled={s.stock <= 0}
-                                >
-                                  {s.name}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {availableColors.length > 0 && (
-                          <div>
-                            <p className="text-sm font-medium mb-2">Sub-variant</p>
-                            <div className="flex flex-wrap gap-2">
-                              {availableColors.map((c: any) => (
-                                <button
-                                  key={c.name}
-                                  onClick={() => setSelection(m.id, "color", sel.color === c.name ? "" : c.name)}
-                                  className={`text-sm font-semibold px-4 py-1.5 rounded-lg border transition-all ${
-                                    sel.color === c.name ? "bg-primary text-primary-foreground border-primary" : "border-border bg-background hover:bg-secondary"
-                                  } ${c.stock <= 0 ? "opacity-50 line-through" : ""}`}
-                                  disabled={c.stock <= 0}
-                                >
-                                  {c.name}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between pt-4 border-t mt-2">
-                          <span className="font-semibold text-lg">{formatCurrency(m.price, currencyCode)}</span>
-                          
-                          {setCart ? (
-                            qty > 0 ? (
-                              <div className="flex items-center gap-2 bg-background rounded-full border px-1.5 shadow-sm">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => handleRemove(m)}>
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="text-sm font-semibold w-6 text-center">{qty}</span>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => handleAdd(m)} disabled={isStockExceeded}>
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <Button
-                                onClick={() => handleAdd(m)}
-                                disabled={!canAdd}
-                                className="rounded-full px-6"
-                                title={needsSize ? "Select a variant first" : needsColor ? "Select a sub-variant first" : isStockExceeded ? "Out of stock" : undefined}
-                              >
-                                {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add"}
-                              </Button>
-                            )
-                          ) : null}
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <MerchVariantModal
+                    m={m}
+                    sizesArr={sizesArr}
+                    hideSizeSelection={hideSizeSelection}
+                    effectiveSize={effectiveSize}
+                    selColor={sel.color}
+                    availableColors={availableColors}
+                    currencyCode={currencyCode || "USD"}
+                    qty={qty}
+                    globalQty={globalQty}
+                    isStockExceeded={isStockExceeded}
+                    canAdd={canAdd}
+                    needsSize={needsSize}
+                    needsColor={needsColor}
+                    handleAdd={handleAdd}
+                    handleRemove={handleRemove}
+                    setSelection={setSelection}
+                    setCart={setCart}
+                  />
                 ) : (
                   <div className="mt-auto flex items-center justify-between pt-1">
                     <span className="text-sm font-semibold">{formatCurrency(m.price, currencyCode)}</span>
