@@ -9,25 +9,36 @@ export const getCoordinates = createServerFn({ method: "POST" })
     const config = getServerConfig();
     const apiKey = config.googleApiKey;
 
-    if (!apiKey) {
-      console.error("Google API key is missing");
-      return { lat: null, lng: null };
+    if (apiKey) {
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+            address,
+          )}&key=${apiKey}`,
+        );
+        const data = await response.json();
+
+        if (data.results && data.results.length > 0) {
+          const location = data.results[0].geometry.location;
+          return { lat: String(location.lat), lng: String(location.lng) };
+        }
+      } catch (error) {
+        console.error("Error geocoding address:", error);
+      }
     }
 
+    // Fallback: OpenStreetMap Nominatim
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          address,
-        )}&key=${apiKey}`,
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+        { headers: { "User-Agent": "AgatikeConnect/1.0" } },
       );
       const data = await response.json();
-
-      if (data.results && data.results.length > 0) {
-        const location = data.results[0].geometry.location;
-        return { lat: String(location.lat), lng: String(location.lng) };
+      if (data && data.length > 0) {
+        return { lat: data[0].lat, lng: data[0].lon };
       }
-    } catch (error) {
-      console.error("Error geocoding address:", error);
+    } catch (err) {
+      console.error("Nominatim fallback error:", err);
     }
 
     return { lat: null, lng: null };

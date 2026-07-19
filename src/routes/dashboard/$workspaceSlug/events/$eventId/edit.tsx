@@ -88,7 +88,9 @@ export function AddressInput({
       {isOpen && (predictions.length > 0 || isLoading) && (
         <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover shadow-md">
           {isLoading && predictions.length === 0 && (
-            <div className="p-4 text-sm text-muted-foreground text-center">Loading...</div>
+            <div className="p-4 text-sm text-muted-foreground text-center">
+              Searchng Location...
+            </div>
           )}
           {predictions.map((p) => (
             <div
@@ -97,6 +99,10 @@ export function AddressInput({
               onMouseDown={async () => {
                 onChange(p.description);
                 setIsOpen(false);
+                if (p._lat && p._lng) {
+                  onSelectCoords(String(p._lat), String(p._lng));
+                  return;
+                }
                 try {
                   const coords = await getPlaceDetails({ data: p.place_id } as any);
                   if (coords?.lat && coords?.lng) onSelectCoords(coords.lat, coords.lng);

@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPricingPlans } from "@/api/billing";
-import { sendAccountConversionOtp, convertOrganizerAccount } from "@/api/organizers";
+import { useNavigate } from "@tanstack/react-router";
+import { getPricingPlans, upgradeSubscription } from "@/api/billing";
+import {
+  sendAccountConversionOtp,
+  convertOrganizerAccount,
+  verifyConversionCredentials,
+} from "@/api/organizers";
 import { uploadFile } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +47,7 @@ interface SettingsAccountTypeTabProps {
 
 export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [targetType, setTargetType] = useState<"business" | "personal">(
     profile?.business ? "business" : "personal",
   );
@@ -103,12 +109,33 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
       });
     },
     onSuccess: () => {
-      // The 60s loader handles the block, then we reset
-      setTimeout(() => {
+      const selectedPlan = availablePlans.find((p) => p.id === selectedPlanId);
+
+      setTimeout(async () => {
         toast.success("Account conversion requested successfully!");
         queryClient.invalidateQueries({ queryKey: ["organizerProfile"] });
         setIsFinalLoading(false);
         setStep(0);
+
+        if (selectedPlan && selectedPlan.price === 0) {
+          try {
+            toast.loading("Activating free plan...", { id: "activate-plan" });
+            await upgradeSubscription({
+              data: {
+                organizer_id: profile.id,
+                plan_id: selectedPlan.id,
+                amount: 0,
+              },
+            });
+            toast.success(`Successfully activated the ${selectedPlan.name} plan!`, {
+              id: "activate-plan",
+            });
+          } catch (err: any) {
+            toast.error("Failed to activate plan", { id: "activate-plan" });
+          }
+        }
+
+        window.location.reload();
       }, 60000);
     },
     onError: (err) => {
@@ -155,8 +182,19 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
       toast.error("Please enter the complete 6-digit code");
       return;
     }
+    const selectedPlan = availablePlans.find((p) => p.id === selectedPlanId);
+
     setIsFinalLoading(true);
-    setStep(5);
+
+    try {
+      await verifyConversionCredentials({
+        data: { password, otp, otpToken } as any,
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Verification failed");
+      setIsFinalLoading(false);
+      return;
+    }
 
     let certUrl = profile?.business_cert || "";
     if (certFile) {
@@ -175,6 +213,24 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
       }
     }
 
+    if (selectedPlan && selectedPlan.price > 0) {
+      sessionStorage.setItem(
+        "pendingConversionData",
+        JSON.stringify({
+          targetType,
+          password,
+          otp,
+          otpToken,
+          business_cert: certUrl,
+          plan_id: selectedPlan.id,
+        }),
+      );
+      setIsFinalLoading(false);
+      navigate({ to: `/dashboard/billing/subscriptions/checkout/${selectedPlan.id}` });
+      return;
+    }
+
+    setStep(5);
     convertMutation.mutate(certUrl);
   };
 
@@ -462,10 +518,20 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
             ← Back
           </Button>
           <h2 className="text-[17px] font-bold mb-2">Check your device</h2>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-muted-foreground mb-4">
             We sent a 6-digit verification code to your email and phone. Enter it below to finalize
             the conversion.
           </p>
+          {availablePlans.find((p) => p.id === selectedPlanId)?.price !== 0 && (
+            <div className="mb-6 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg flex items-start gap-3">
+              <ShieldAlert className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+              <div className="text-sm text-orange-700 dark:text-orange-400">
+                <span className="font-semibold block mb-1">Important:</span>
+                Your OTP expires in 15 minutes. Please complete your payment on the next screen
+                before it expires to successfully convert your account.
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-center mb-8">
             <InputOTP maxLength={6} value={otp} onChange={setOtp}>

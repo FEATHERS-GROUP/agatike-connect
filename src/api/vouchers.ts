@@ -57,7 +57,8 @@ const GET_VOUCHER_TRANSACTIONS = `
 // Fetch all transactions for an event's vouchers
 export const getEventVoucherTransactions = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
-    const { event_id } = ctx.data as unknown as { event_id: string };
+    const payload = (ctx.data as any).data || ctx.data;
+    const { event_id } = payload as { event_id: string };
     const data = await hasuraRequest<{ voucher_transactions: any[] }>(GET_VOUCHER_TRANSACTIONS, {
       event_id,
     }).catch(() => ({ voucher_transactions: [] }));
@@ -212,7 +213,8 @@ const GET_SPONSORED_VOUCHER_BATCHES = `
 
 export const getSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
-    const { event_id } = ctx.data as unknown as { event_id: string };
+    const payload = (ctx.data as any).data || ctx.data;
+    const { event_id } = payload as { event_id: string };
     const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
       GET_SPONSORED_VOUCHER_BATCHES,
       { event_id },
@@ -248,7 +250,8 @@ const GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES = `
 
 export const getWorkspaceSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
-    const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+    const payload = (ctx.data as any).data || ctx.data;
+    const { workspace_id } = payload as { workspace_id: string };
     const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
       GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES,
       { workspace_id },

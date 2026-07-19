@@ -54,7 +54,32 @@ export function formatCurrency(
   const upperCode = currencyCode.toUpperCase();
 
   // Custom formatting for specific currencies where Intl produces undesirable symbols
-  if (["RWF", "KES", "UGX", "TZS"].includes(upperCode)) {
+  if (
+    [
+      "RWF",
+      "KES",
+      "UGX",
+      "TZS",
+      "EUR",
+      "USD",
+      "GBP",
+      "JPY",
+      "AUD",
+      "CAD",
+      "CHF",
+      "CNY",
+      "INR",
+      "ZAR",
+      "NGN",
+      "GHS",
+      "AED",
+      "SAR",
+      "SGD",
+      "HKD",
+      "BRL",
+      "MXN",
+    ].includes(upperCode)
+  ) {
     const formattedNum = compact
       ? Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(
           numAmount,

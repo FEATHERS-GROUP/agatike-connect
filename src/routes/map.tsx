@@ -6,6 +6,9 @@ export const Route = createFileRoute("/map")({
 });
 
 const MapClient = lazy(() => import("@/components/site/MapClient"));
+const MapDesktop = lazy(() =>
+  import("@/components/desktop/MapDesktop").then((m) => ({ default: m.MapDesktop })),
+);
 
 function MapPage() {
   const [isClient, setIsClient] = useState(false);
@@ -30,7 +33,12 @@ function MapPage() {
         </div>
       }
     >
-      <MapClient />
+      <div className="md:hidden">
+        <MapClient />
+      </div>
+      <div className="hidden md:block">
+        <MapDesktop />
+      </div>
     </Suspense>
   );
 }

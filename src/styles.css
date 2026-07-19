@@ -103,18 +103,18 @@
 }
 
 .dark {
-  --background: oklch(0.15 0.01 0); /* Dark gray/black */
+  --background: oklch(0.18 0 0); /* Instagram-style not too black */
   --foreground: oklch(0.98 0.005 60);
-  --card: oklch(0.18 0.01 0);
+  --card: oklch(0.22 0 0);
   --card-foreground: oklch(0.98 0.005 60);
-  --popover: oklch(0.18 0.01 0);
+  --popover: oklch(0.22 0 0);
   --popover-foreground: oklch(0.98 0.005 60);
   --primary: oklch(0.65 0.25 35); /* Vibrant Orange */
   --primary-foreground: oklch(1 0 0);
   --primary-glow: oklch(0.75 0.2 40);
-  --secondary: oklch(0.22 0.01 0);
+  --secondary: oklch(0.25 0 0);
   --secondary-foreground: oklch(0.98 0.005 60);
-  --muted: oklch(0.22 0.01 0);
+  --muted: oklch(0.25 0 0);
   --muted-foreground: oklch(0.7 0.015 60);
   --accent: oklch(0.28 0.02 0);
   --accent-foreground: oklch(0.65 0.25 35);

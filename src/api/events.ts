@@ -344,7 +344,14 @@ const GET_EVENT_BY_ID = `
         image_url
         name
         price
+        available_sizes
+        available_colors
+        category
+        stock_limit
+        sold_count
+        specs
       }
+
       workspaces {
         city
         name

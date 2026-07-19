@@ -189,33 +189,27 @@ function NewVenueWizard() {
     facilities_data: [] as any[],
   };
 
-  const [formData, setFormData] = useState<typeof DEFAULT_FORM_DATA>(() => {
-    const saved = localStorage.getItem(DRAFT_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved).formData;
-        return {
-          ...DEFAULT_FORM_DATA,
-          ...parsed,
-          pricing_tiers: parsed.pricing_tiers || DEFAULT_FORM_DATA.pricing_tiers,
-        };
-      } catch (e) {
-        console.error("Failed to parse draft", e);
-      }
-    }
-    return DEFAULT_FORM_DATA;
-  });
+  const [formData, setFormData] = useState<typeof DEFAULT_FORM_DATA>(DEFAULT_FORM_DATA);
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(DRAFT_KEY);
-    if (saved && step === 0) {
+    if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.step && parsed.step > 0) {
+        if (parsed.formData) {
+          setFormData({
+            ...DEFAULT_FORM_DATA,
+            ...parsed.formData,
+            pricing_tiers: parsed.formData.pricing_tiers || DEFAULT_FORM_DATA.pricing_tiers,
+          });
+        }
+        if (parsed.step && parsed.step > 0 && step === 0) {
           navigate({ search: { step: parsed.step } as any, replace: true });
         }
       } catch (e) {}
     }
+    setIsDraftLoaded(true);
   }, [workspaceSlug]); // Run once on mount
 
   useEffect(() => {

@@ -215,17 +215,7 @@ function EventsBrowse() {
 
       {/* Mobile Header */}
       <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center justify-between gap-3">
-        {isLoggedIn ? (
-          <>
-            <button
-              onClick={() => router.history.back()}
-              className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </button>
-            <h1 className="font-bold text-lg tracking-tight">All Events</h1>
-          </>
-        ) : isMobileSearchOpen ? (
+        {isMobileSearchOpen ? (
           <div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-right-5 duration-200">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -257,9 +247,21 @@ function EventsBrowse() {
           </div>
         ) : (
           <div className="flex items-center justify-between w-full">
-            <Link to="/" className="flex items-center gap-2">
-              <img src="/agatike-logo.png" alt="Agatike" className="h-7 w-auto object-contain" />
-            </Link>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => router.history.back()}
+                  className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                >
+                  <ArrowLeft className="h-6 w-6" />
+                </button>
+                <h1 className="font-bold text-lg tracking-tight">All Events</h1>
+              </div>
+            ) : (
+              <Link to="/" className="flex items-center gap-2">
+                <img src="/agatike-logo.png" alt="Agatike" className="h-7 w-auto object-contain" />
+              </Link>
+            )}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsMobileSearchOpen(true)}
@@ -273,7 +275,7 @@ function EventsBrowse() {
         )}
       </div>
 
-      <section className="relative border-b border-border/40 overflow-hidden bg-background">
+      <section className="hidden md:block relative border-b border-border/40 overflow-hidden bg-background">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-50 blur-[100px]"></div>
 

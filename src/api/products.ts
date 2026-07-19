@@ -16,7 +16,9 @@ export const createProduct = createServerFn({ method: "POST" }).handler(async (c
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const productData = ctx.data as any;
+  const productData = (ctx.data as any).data
+    ? { ...(ctx.data as any).data }
+    : { ...(ctx.data as any) };
   productData.organizer_id = session.sub;
 
   return hasuraRequest(CREATE_PRODUCT, { object: productData });
@@ -36,14 +38,15 @@ export const updateProduct = createServerFn({ method: "POST" }).handler(async (c
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { id, ...setData } = ctx.data as any;
+  const payload = (ctx.data as any).data || ctx.data;
+  const { id, ...setData } = payload as any;
 
   return hasuraRequest(UPDATE_PRODUCT, { id, set: setData });
 });
 
 const GET_WORKSPACE_PRODUCTS = `
   query GetWorkspaceProducts($workspace_id: uuid!) {
-    products(where: { workspace_id: { _eq: $workspace_id }, event_id: { _is_null: true } }, order_by: { created_at: desc }) {
+    products(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
       name
       type
@@ -56,12 +59,22 @@ const GET_WORKSPACE_PRODUCTS = `
       reward_description
       image_url
       is_active
+      category
+      available_sizes
+      available_colors
+      specs
+      event_id
+      event {
+        id
+        title
+      }
     }
   }
 `;
 
 export const getWorkspaceProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { workspace_id } = ctx.data as unknown as { workspace_id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { workspace_id } = payload as { workspace_id: string };
   const data = await hasuraRequest<{ products: any[] }>(GET_WORKSPACE_PRODUCTS, { workspace_id });
   return data.products || [];
 });
@@ -81,12 +94,17 @@ const GET_EVENT_PRODUCTS = `
       reward_description
       image_url
       is_active
+      category
+      available_sizes
+      available_colors
+      specs
     }
   }
 `;
 
 export const getEventProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { event_id } = ctx.data as unknown as { event_id: string };
+  const payload = (ctx.data as any).data || ctx.data;
+  const { event_id } = payload as { event_id: string };
   const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, { event_id });
   return data.products || [];
 });
@@ -106,6 +124,10 @@ const GET_PRODUCT = `
       reward_description
       image_url
       is_active
+      category
+      available_sizes
+      available_colors
+      specs
     }
   }
 `;
@@ -121,15 +143,25 @@ const GET_WORKSPACE_RECENT_ORDERS = `
     product_orders(
       where: { product: { workspace_id: { _eq: $workspace_id } } },
       order_by: { created_at: desc },
-      limit: 5
+      limit: 250
     ) {
       id
       amount_paid
       status
+      picked
       created_at
+      qty
+      size
+      phone
+      qr_code_string
+      decrptions
+      buyer_id
       product {
         name
         type
+        specs 
+        available_sizes
+        available_colors
         event {
           title
         }
@@ -148,5 +180,52 @@ export const getWorkspaceRecentOrders = createServerFn({ method: "POST" }).handl
   const data = await hasuraRequest<{ product_orders: any[] }>(GET_WORKSPACE_RECENT_ORDERS, {
     workspace_id,
   });
-  return data.product_orders || [];
+
+  const orders = data.product_orders || [];
+
+  // Enhance guest orders with attendee names if they exist
+  const guestPhones = orders.filter((o: any) => !o.user && o.phone).map((o: any) => o.phone);
+  if (guestPhones.length > 0) {
+    const attendeesQuery = `
+      query GetGuestAttendees($phones: [String!]!) {
+        event_attendees(where: { phone: { _in: $phones } }) {
+          phone
+          names
+        }
+      }
+    `;
+    const attData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, {
+      phones: guestPhones,
+    });
+    const attendees = attData.event_attendees || [];
+    const phoneToName = attendees.reduce((acc: any, a: any) => {
+      if (a.phone && a.names) acc[a.phone] = a.names;
+      return acc;
+    }, {});
+
+    orders.forEach((o: any) => {
+      if (!o.user && o.phone && phoneToName[o.phone]) {
+        o.guest_name = phoneToName[o.phone];
+      }
+    });
+  }
+
+  return orders;
+});
+
+const CREATE_PRODUCT_ORDER = `
+  mutation CreateProductOrder($objects: [product_orders_insert_input!]!) {
+    insert_product_orders(objects: $objects) {
+      affected_rows
+      returning {
+        id
+        picked
+      }
+    }
+  }
+`;
+
+export const createProductOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const payload = (ctx.data as any).data || ctx.data;
+  return hasuraRequest(CREATE_PRODUCT_ORDER, { objects: payload.objects || payload });
 });

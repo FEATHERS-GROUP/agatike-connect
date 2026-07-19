@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { FeeCalculatorModal } from "@/components/shared/FeeCalculatorModal";
+import { COUNTRIES } from "@/lib/countries";
 
 export const Route = createFileRoute("/dashboard/create-organizer")({
   component: CreateOrganizerPage,
@@ -136,6 +137,7 @@ const formSchema = z
     confirm_password: z.string(),
     phone: z.string().min(8, "Valid phone number is required"),
     email: z.string().email("Valid email is required"),
+    country: z.string().min(1, "Country is required"),
     business: z.boolean(),
     terms: z.boolean().refine((val) => val === true, "You must accept the terms and conditions"),
     fee_acknowledgement: z
@@ -174,7 +176,7 @@ function CreateOrganizerPage() {
   const [step, setStep] = useState(1);
   const totalSteps = 6;
   const [isGeneratingHandle, setIsGeneratingHandle] = useState(false);
-  const { currentUser, isLoaded } = useWorkspace();
+  const { currentUser, isLoaded, refetch } = useWorkspace();
 
   useEffect(() => {
     if (isLoaded && currentUser) {
@@ -247,6 +249,7 @@ function CreateOrganizerPage() {
       phone: "",
       email: "",
       confirm_password: "",
+      country: "",
       terms: false,
       fee_acknowledgement: false,
     },
@@ -371,6 +374,7 @@ function CreateOrganizerPage() {
         national_id: finalNationalId,
         image: finalImage,
         field: values.field.join(", "),
+        country: values.country,
         user_id: syncUserId,
         speciality:
           values.speciality && values.speciality.length > 0 ? { tags: values.speciality } : {},
@@ -378,9 +382,15 @@ function CreateOrganizerPage() {
       };
       return await createOrganizerAccount({ data: payload } as any);
     },
-    onSuccess: () => {
-      toast.success("Profile created! Please log in with your new credentials.");
-      navigate({ to: "/dashboard/login" });
+    onSuccess: async () => {
+      if (syncUserId) {
+        toast.success("Account successfully converted to Organizer!");
+        await refetch();
+        navigate({ to: "/dashboard/workspaces" });
+      } else {
+        toast.success("Profile created! Please log in with your new credentials.");
+        navigate({ to: "/dashboard/login" });
+      }
     },
     onError: (error) => {
       toast.error("Failed to create profile. Please try again.");
@@ -389,6 +399,22 @@ function CreateOrganizerPage() {
   });
 
   const onSubmit = async (values: FormValues) => {
+    // Format phone with country code if missing
+    let formattedPhone = values.phone.replace(/\s+/g, "");
+    if (!formattedPhone.startsWith("+") && values.country) {
+      const countryObj = COUNTRIES.find((c) => c.name === values.country);
+      if (countryObj && countryObj.dialCode) {
+        if (formattedPhone.startsWith("0")) {
+          formattedPhone = countryObj.dialCode + formattedPhone.substring(1);
+        } else if (!formattedPhone.startsWith(countryObj.dialCode.replace("+", ""))) {
+          formattedPhone = countryObj.dialCode + formattedPhone;
+        } else {
+          formattedPhone = "+" + formattedPhone;
+        }
+      }
+    }
+    values.phone = formattedPhone;
+
     if (!otpStep) {
       setIsSendingOtp(true);
       try {
@@ -736,6 +762,36 @@ function CreateOrganizerPage() {
                       />
                       {errors.email && (
                         <p className="text-xs text-red-400">{errors.email.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="text-gray-700 dark:text-white/80">Country *</Label>
+                      <Select
+                        value={watch("country")}
+                        onValueChange={(val) => {
+                          setValue("country", val, { shouldValidate: true });
+                          // Optionally pre-fill phone with dial code
+                          const countryObj = COUNTRIES.find((c) => c.name === val);
+                          const currentPhone = watch("phone");
+                          if (countryObj && (!currentPhone || currentPhone.trim() === "")) {
+                            setValue("phone", countryObj.dialCode + " ");
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-12 rounded-xl bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus-visible:ring-primary focus-visible:border-primary">
+                          <SelectValue placeholder="Select your country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COUNTRIES.map((c) => (
+                            <SelectItem key={c.code} value={c.name}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.country && (
+                        <p className="text-xs text-red-400">{errors.country.message}</p>
                       )}
                     </div>
 

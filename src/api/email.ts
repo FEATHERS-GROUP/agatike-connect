@@ -154,6 +154,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       customerName,
       venueName,
       attachments, // Array of { filename: string, content: string (base64) }
+      hasMerch,
     } = ctx.data as any;
 
     const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -179,6 +180,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         <p>Hi ${customerName},</p>
         <p>Thank you for your booking! Your tickets are attached to this email as PDF documents.</p>
         <p>Please keep them handy as you will need the OTP printed on them for verification upon entry.</p>
+        ${hasMerch ? `<div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e8f0;"><p style="margin:0; font-weight: 600;">📦 Merchandise Included</p><p style="margin: 8px 0 0 0; font-size: 14px;">You also purchased merchandise! You can pick it up at the event by showing this email, your ticket QR code, or your phone number.</p></div>` : ""}
         <br/>
         <p>Enjoy your visit!</p>
       </div>

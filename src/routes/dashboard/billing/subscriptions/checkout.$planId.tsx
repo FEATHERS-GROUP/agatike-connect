@@ -16,7 +16,15 @@ import {
 } from "@/api/pawapay";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { COUNTRIES } from "@/lib/countries";
+import { convertOrganizerAccount } from "@/api/organizers";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -58,6 +66,7 @@ function CheckoutPage() {
 
   const [paymentMethod, setPaymentMethod] = useState("pawapay");
   const [paymentStep, setPaymentStep] = useState(1);
+  const [isConverting, setIsConverting] = useState(false);
   const [mobileNetwork, setMobileNetwork] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [countryCode, setCountryCode] = useState("+250");
@@ -154,6 +163,54 @@ function CheckoutPage() {
     fetchDetails();
   }, [planId, isAnnually, activeWorkspace]);
 
+  const handlePaymentSuccess = async () => {
+    const stored = sessionStorage.getItem("pendingConversionData");
+    let conversionData = null;
+    if (stored) {
+      try {
+        conversionData = JSON.parse(stored);
+      } catch (e) {}
+    }
+
+    if (conversionData && conversionData.plan_id === plan!.id) {
+      setIsConverting(true);
+      try {
+        await convertOrganizerAccount({ data: conversionData } as any);
+        await upgradeSubscription({
+          data: {
+            organizer_id: activeWorkspace!.orgnizer_id,
+            plan_id: plan!.id,
+            amount: finalUSDPrice,
+            insertEarnings: paymentMethod === "card",
+            network: "Card",
+          },
+        });
+
+        setTimeout(() => {
+          sessionStorage.removeItem("pendingConversionData");
+          toast.success(`Account converted and subscribed to ${plan!.name}!`);
+          window.location.href = "/dashboard/billing/subscriptions";
+        }, 60000);
+      } catch (err: any) {
+        setIsConverting(false);
+        setIsProcessing(false);
+        toast.error(err.message || "Conversion failed after payment.");
+      }
+    } else {
+      await upgradeSubscription({
+        data: {
+          organizer_id: activeWorkspace!.orgnizer_id,
+          plan_id: plan!.id,
+          amount: finalUSDPrice,
+          insertEarnings: paymentMethod === "card",
+          network: "Card",
+        },
+      });
+      toast.success(`Successfully subscribed to ${plan!.name}!`);
+      navigate({ to: "/dashboard/billing/subscriptions" });
+    }
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isPollingPawaPay && pawapayDepositId) {
@@ -164,17 +221,7 @@ function CheckoutPage() {
           } as any);
           if (status?.status === "completed") {
             setIsPollingPawaPay(false);
-
-            await upgradeSubscription({
-              data: {
-                organizer_id: activeWorkspace!.orgnizer_id,
-                plan_id: plan!.id,
-                amount: finalUSDPrice,
-              },
-            });
-
-            toast.success(`Successfully subscribed to ${plan!.name}!`);
-            navigate({ to: "/dashboard/billing/subscriptions" });
+            await handlePaymentSuccess();
           } else if (status?.status === "failed") {
             setIsPollingPawaPay(false);
             toast.error("Payment failed or was cancelled.");
@@ -234,17 +281,7 @@ function CheckoutPage() {
       // Mock for card payment
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Update our database
-      await upgradeSubscription({
-        data: {
-          organizer_id: activeWorkspace.orgnizer_id,
-          plan_id: plan.id,
-          amount: finalUSDPrice,
-        },
-      });
-
-      toast.success(`Successfully subscribed to ${plan.name}!`);
-      navigate({ to: "/dashboard/billing/subscriptions" });
+      await handlePaymentSuccess();
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "Payment failed. Please try again.");
@@ -517,15 +554,14 @@ function CheckoutPage() {
                         finalUSDPrice === 0 ||
                         (paymentMethod === "pawapay" ? !phoneNumber || !mobileNetwork : !cardNumber)
                       }
-                      className="w-full h-12 text-lg shadow-lg"
-                      style={{ background: "var(--gradient-primary)" }}
+                      className="w-full h-12 font-bold text-lg"
                     >
                       {isProcessing ? (
                         <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing Payment...
                         </>
                       ) : (
-                        `Pay ${formatCurrency(getConvertedAmount(finalUSDPrice))}`
+                        <>Pay {formatCurrency(getConvertedAmount(finalUSDPrice))}</>
                       )}
                     </Button>
                   )}
@@ -535,6 +571,26 @@ function CheckoutPage() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={isConverting} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md [&>button]:hidden bg-background/95 backdrop-blur-sm border-0 shadow-2xl">
+          <DialogHeader className="hidden">
+            <DialogTitle>Converting Account</DialogTitle>
+            <DialogDescription>Please wait</DialogDescription>
+          </DialogHeader>
+          <div className="py-12 flex flex-col items-center justify-center text-center">
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 animate-pulse" />
+              <Loader2 className="w-16 h-16 text-primary animate-spin relative z-10" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Converting your account...</h2>
+            <p className="text-sm text-muted-foreground max-w-[280px]">
+              Please do not close this window. We are updating your workspaces, generating new
+              billing profiles, and notifying the admin team.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="mt-12 flex justify-end">
         <div className="flex items-center gap-3">

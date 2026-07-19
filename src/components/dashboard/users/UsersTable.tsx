@@ -8,6 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,8 +59,9 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
   };
 
   const deleteMutation = useMutation({
-    mutationFn: async () => {
-      for (const id of selectedUsers) {
+    mutationFn: async (ids?: string[]) => {
+      const targetIds = ids || selectedUsers;
+      for (const id of targetIds) {
         await removeWorkspaceUser({ data: { id } } as any);
       }
     },
@@ -70,7 +78,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
 
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete ${selectedUsers.length} user(s)?`)) {
-      deleteMutation.mutate();
+      deleteMutation.mutate(selectedUsers);
     }
   };
 
@@ -188,57 +196,95 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
           </TableHeader>
           <TableBody>
             {users.map((user) => (
-              <TableRow
-                key={user.id}
-                className={selectedUsers.includes(user.id) ? "bg-primary/5" : ""}
-              >
-                <TableCell>
-                  <Checkbox
-                    checked={selectedUsers.includes(user.id)}
-                    onCheckedChange={() => toggleSelectUser(user.id)}
-                    aria-label={`Select ${user.name}`}
-                  />
-                </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-secondary overflow-hidden shrink-0">
-                      <img
-                        src={
-                          user.image ||
-                          `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=f97316`
-                        }
-                        alt={user.name}
-                        className="w-full h-full object-cover"
+              <ContextMenu key={user.id}>
+                <ContextMenuTrigger asChild>
+                  <TableRow className={selectedUsers.includes(user.id) ? "bg-primary/5" : ""}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedUsers.includes(user.id)}
+                        onCheckedChange={() => toggleSelectUser(user.id)}
+                        aria-label={`Select ${user.name}`}
                       />
-                    </div>
-                    <span>{user.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell className="capitalize">{user.role}</TableCell>
-                <TableCell>
-                  <Badge variant={user.status === "active" ? "default" : "secondary"}>
-                    {user.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{getWorkspaceNames(user.workspaces)}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {Array.isArray(user.modules) && user.modules.length > 0 ? (
-                      <span className="px-2 py-0.5 rounded-full bg-secondary text-xs font-medium">
-                        {user.modules.includes("ALL") ? "All" : user.modules.length}
-                      </span>
-                    ) : (
-                      "None"
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {user.is_temporary && user.expires_at
-                    ? format(new Date(user.expires_at), "PPP")
-                    : "Never"}
-                </TableCell>
-              </TableRow>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-secondary overflow-hidden shrink-0">
+                          <img
+                            src={
+                              user.image ||
+                              `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=f97316`
+                            }
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span>{user.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell className="capitalize">{user.role}</TableCell>
+                    <TableCell>
+                      <Badge variant={user.status === "active" ? "default" : "secondary"}>
+                        {user.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{getWorkspaceNames(user.workspaces)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {Array.isArray(user.modules) && user.modules.length > 0 ? (
+                          <span className="px-2 py-0.5 rounded-full bg-secondary text-xs font-medium">
+                            {user.modules.includes("ALL") ? "All" : user.modules.length}
+                          </span>
+                        ) : (
+                          "None"
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {user.is_temporary && user.expires_at
+                        ? format(new Date(user.expires_at), "PPP")
+                        : "Never"}
+                    </TableCell>
+                  </TableRow>
+                </ContextMenuTrigger>
+                <ContextMenuContent className="w-48">
+                  <ContextMenuItem
+                    onClick={() =>
+                      navigate({ to: `/dashboard/${workspaceSlug}/users/${user.id}/edit` })
+                    }
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit User
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onClick={() => {
+                      setSelectedUsers([user.id]);
+                      setDetailsOpen(true);
+                    }}
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                  </ContextMenuItem>
+                  {user.status === "pending" && (
+                    <ContextMenuItem onClick={() => resendMutation.mutate(user.id)}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Resend Invite
+                    </ContextMenuItem>
+                  )}
+                  <ContextMenuSeparator />
+                  <ContextMenuItem
+                    className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to delete ${user.name}?`)) {
+                        deleteMutation.mutate([user.id]);
+                      }
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete User
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             ))}
             {users.length === 0 && (
               <TableRow>

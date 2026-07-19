@@ -364,7 +364,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const baseAmt = parseFloat(baseAmount || amount);
     const calculatedCustomerFee =
       baseAmt * (custCollectionPct / 100) + custFixed + baseAmt * (custServicePct / 100);
-    const customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
+    let customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
 
     // ── Provider (PawaPay) cost ──────────────────────────────────────────────
     const pf = feeRes.payment_provider_fees?.[0] || {};
@@ -394,17 +394,30 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const providerCost = grossAmount * (providerPct / 100) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
-    const organizerFee =
+    let organizerFee =
       baseAmt * (orgCollectionPct / 100) + orgFixed + baseAmt * (orgPlatformPct / 100);
+
+    // If there is a shortfall on a micro-transaction, the organizer absorbs it to cover the network cost (README 12.1)
+    if (shortfall > 0) {
+      organizerFee += parseFloat(shortfall as any);
+    }
 
     // ── Platform revenue & profit ────────────────────────────────────────────
     // Platform Revenue = Customer Contribution + Organizer Contribution
     // Net Profit       = Platform Revenue − Provider (PawaPay) Cost
-    const platformRevenue = customerFee + organizerFee;
-    const netProfit = platformRevenue - providerCost;
+    let platformRevenue = customerFee + organizerFee;
+    let netProfit = platformRevenue - providerCost;
 
-    // Organizer wallet receives base minus their contribution (Agatike absorbs any shortfall)
-    const organizerNetAmount = Math.max(0, baseAmt - organizerFee);
+    // Organizer wallet receives base minus their total contribution (fees + shortfall)
+    let organizerNetAmount = Math.max(0, baseAmt - organizerFee);
+
+    if (type === "subscription") {
+      customerFee = 0;
+      organizerFee = 0;
+      platformRevenue = grossAmount;
+      netProfit = platformRevenue - providerCost;
+      organizerNetAmount = 0; // Subscription is a payment to the platform, not a wallet deposit
+    }
 
     // ── Insert wallet transaction + earnings atomically ──────────────────────
     const txRes = await hasuraRequest<any>(
@@ -412,7 +425,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         $amount: String!, $net_amount: String!, $currency: String!,
         $provider_reference: String!, $reference_id: String!,
         $type: String!, $provider_status: String!, $status: String!,
-        $wallet_id: uuid!,
+        $wallet_id: uuid!, $workspace_id: uuid!,
         $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!,
         $cust_fee: numeric!, $org_fee: numeric!, $platform_fee: numeric!
       ) {
@@ -420,7 +433,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
           amount: $amount, net_amount: $net_amount, currency: $currency,
           provider_reference: $provider_reference, reference_id: $reference_id,
           type: $type, provider_status: $provider_status, status: $status,
-          wallet_id: $wallet_id, description: "PawaPay Deposit",
+          wallet_id: $wallet_id, workspace_id: $workspace_id, description: "PawaPay Deposit",
           platform_fee: $platform_fee
         }) { id }
         insert_earnings_one(object: {
@@ -445,6 +458,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         provider_status: "PENDING",
         status: "pending",
         wallet_id: walletId,
+        workspace_id: workspaceId,
         gross: grossAmount,
         cost: providerCost,
         rev: platformRevenue,
@@ -512,72 +526,19 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
           const providerStatus = Array.isArray(pawaData) ? pawaData[0]?.status : pawaData.status;
 
           if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED")) {
-            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
+            const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
 
-            // Update local DB
-            const updateQuery = `
-              mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!) {
-                update_wallet_transactions(
-                  where: { provider_reference: { _eq: $provider_reference } }, 
-                  _set: { 
-                    provider_status: $provider_status, 
-                    status: $status,
-                    updated_at: "now()"
-                  }
-                ) {
-                  returning { id }
-                }
-              }
-            `;
-            await hasuraRequest(updateQuery, {
-              provider_reference: depositId,
-              provider_status: providerStatus,
-              status: newStatus,
+            // Simulate a webhook request to reuse the exact same completion/failure logic (Email, SMS, Wallet, Earnings)
+            const mockRequest = new Request("http://localhost:3000/api/pawapay/deposits", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(pawaPayload),
             });
 
-            // Trigger completion logic
-            if (newStatus === "completed") {
-              if (tx.type === "event_ticket") {
-                const confirmQuery = `
-                  mutation ConfirmEventAttendees($booking_ref: String!) {
-                    update_event_attendees(
-                      where: { custom_fields: { _contains: { booking_ref: $booking_ref } } },
-                      _set: { status: "Confirmed" }
-                    ) { affected_rows }
-                  }
-                `;
-                await hasuraRequest(confirmQuery, { booking_ref: tx.reference_id });
-              } else if (tx.type === "space_subscription") {
-                const activateSubQuery = `
-                  mutation ActivateSpaceSubscription($id: uuid!) {
-                    update_space_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "active" }) { id }
-                  }
-                `;
-                await hasuraRequest(activateSubQuery, { id: tx.reference_id });
-              } else if (tx.type === "movie_ticket") {
-                const bookingIds = tx.reference_id.split(",");
-                const confirmQuery = `
-                  mutation ConfirmCinemaBookings($ids: [uuid!]!) {
-                    update_cinema_bookings(
-                      where: { id: { _in: $ids } },
-                      _set: { status: "Confirmed" }
-                    ) { affected_rows }
-                  }
-                `;
-                await hasuraRequest(confirmQuery, { ids: bookingIds });
-              } else if (tx.type === "venue_booking") {
-                const bookingIds = tx.reference_id.split(",");
-                const confirmQuery = `
-                  mutation ConfirmVenueBooking($ids: [uuid!]!) {
-                    update_venue_bookings(
-                      where: { id: { _in: $ids } },
-                      _set: { payment_status: "Paid", status: "Confirmed" }
-                    ) { affected_rows }
-                  }
-                `;
-                await hasuraRequest(confirmQuery, { ids: bookingIds });
-              }
-            }
+            const { handlePawaPayWebhook } = await import("./pawapay.server");
+            await handlePawaPayWebhook(mockRequest);
+
+            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
 
             // Update local object so the frontend sees it immediately
             tx.status = newStatus;

@@ -419,6 +419,29 @@ Agatike creates subscription tiers (e.g., "Pro", "Enterprise") that explicitly d
 
 This entire equation is calculated dynamically in the `simulateTransaction` engine and enforced in the `PaymentModal` prior to any PawaPay charges. Upon successful completion in the webhook, the resulting net profit (or subsidized loss) is permanently logged into the `earnings` ledger.
 
+### 12.4 Platform Subscriptions & Earnings Architecture
+
+In addition to ticketing fees, the platform also derives revenue from **Organizer Subscriptions** (e.g., Business or Premium plans). The logic for subscription payments explicitly diverges from the ticketing fee model to ensure accurate financial reporting.
+
+**Key Logic:**
+
+- **Decoupled from Ticket Fees:** When an organizer pays for their own subscription, they are the customer. The system strictly bypasses the `customer_collection_fee_percentage` and `organizer_collection_fee_percentage`. Both are set to `0` during a subscription checkout to prevent double-charging the organizer.
+- **Dynamic Provider Cost:** Whether the organizer pays via **PawaPay** or **Card**, the system fetches the live `collection_percentage` for the specific network used from the `payment_provider_fees` table.
+- **Ledger Accuracy:** Platform Revenue = 100% of the Subscription Price. Net Profit = Platform Revenue - Network Provider Cost. This is logged transparently into the `earnings` table.
+- **Wallet Isolation:** Unlike ticket sales, subscription payments are payments _to_ the platform, not _for_ the organizer. The webhook strictly excludes `type === "subscription"` from depositing any funds into the organizer's workspace wallet.
+
+```mermaid
+flowchart TD
+    Org["Organizer"] -->|Purchases Subscription| Checkout["Checkout (PawaPay / Card)"]
+    Checkout --> FetchFee["Fetch live network fee from payment_provider_fees"]
+    FetchFee --> Calc["Platform Revenue = Price\nCost = Network Fee"]
+    Calc --> Insert["Insert exact Net Profit into earnings table"]
+    Insert --> Webhook["Webhook triggers on payment success"]
+    Webhook --> WalletCheck{Transaction Type?}
+    WalletCheck -->|Ticket Sale| Deposit["Deposit into Workspace Wallet"]
+    WalletCheck -->|Subscription| Skip["Do not deposit (Platform Retains)"]
+```
+
 ---
 
 ## Routing Architecture Reminder
@@ -2180,6 +2203,372 @@ If you attempt to fix this by modifying `vite.config.ts` with `rollupConfig.exte
    });
    ```
 4. **Never modify Vite external configs** to circumvent Vercel tracing. If the build freezes, your architecture is leaking backend dependencies into the frontend graph. Fix the import graph, not the bundler configuration.
+
+---
+
+## 25. Product & Merchandise System — Complete Architecture
+
+This section documents the full product system including how physical products are created, sold as part of event checkouts, how inventory is managed, and how all order data surfaces in the organizer dashboard.
+
+---
+
+### 25.1 Product Types & Data Model
+
+**Database Table:** `products`
+
+Products in Agatike fall into two scopes:
+
+| Scope                   | Description                                                                               | How Identified      |
+| ----------------------- | ----------------------------------------------------------------------------------------- | ------------------- |
+| **Standalone Campaign** | Products created independently under a workspace. Not tied to a specific event.           | `event_id IS NULL`  |
+| **Event Merchandise**   | Products explicitly created for a specific event (e.g., festival T-shirts, concert hats). | `event_id = <uuid>` |
+
+Both scopes share the same `products` table and are always scoped to a `workspace_id`.
+
+**Key Columns:**
+
+| Column            | Type                | Purpose                                             |
+| ----------------- | ------------------- | --------------------------------------------------- |
+| `id`              | `uuid`              | Primary key                                         |
+| `name`            | `string`            | Product name                                        |
+| `type`            | `enum`              | `physical`, `voucher`, `punch_card`, `loyalty_card` |
+| `price`           | `numeric`           | Unit price                                          |
+| `stock_limit`     | `string` (nullable) | Total stock. `null` = Unlimited                     |
+| `sold_count`      | `string`            | Number sold (updated at checkout)                   |
+| `available_sizes` | `jsonb`             | **Nested variant array** (see schema below)         |
+| `image_url`       | `string`            | Product image                                       |
+| `is_active`       | `boolean`           | Whether product is publicly available               |
+| `workspace_id`    | `uuid`              | Owner workspace                                     |
+| `event_id`        | `uuid` (nullable)   | Linked event, `null` for standalone                 |
+
+---
+
+### 25.2 Nested Variant Schema (`available_sizes`)
+
+Physical merchandise supports a **2-level variant hierarchy**: **Size → Color**.
+
+The `available_sizes` column is a JSONB array of objects:
+
+```json
+[
+  {
+    "name": "L",
+    "stock": 50,
+    "colors": [
+      { "name": "Black", "stock": 20 },
+      { "name": "White", "stock": 30 }
+    ]
+  },
+  {
+    "name": "XL",
+    "stock": 30,
+    "colors": [
+      { "name": "Black", "stock": 15 },
+      { "name": "Red", "stock": 15 }
+    ]
+  }
+]
+```
+
+> **Note:** The `available_colors` column was deprecated and its data migrated into the nested `colors` array inside `available_sizes`. The `src/scripts/migrate_variants.ts` script performed this one-time migration. All new products use the nested schema.
+
+**Cart Key Format:**
+When a customer adds merchandise to their cart, the key is constructed as:
+
+```
+merch_{productId}_{size}_{color}
+```
+
+Example: `merch_e045788d-8c7b-435e-a76e-fa85ec27d5c6_L_Black`
+
+This ensures each size/color combination is tracked as a separate line item in the cart state, with quantity independent of other variants.
+
+---
+
+### 25.3 Adding Merchandise to an Event Checkout
+
+Event merchandise is discovered from two sources and combined:
+
+```mermaid
+flowchart TD
+  EventPage["Event Details Page"] --> L1["getEventProducts (event_id filter)"]
+  EventPage --> L2["merchandises relation on events table"]
+  L1 --> Combine["activeMerch array (useEventDetails hook)"]
+  L2 --> Combine
+  Combine --> Sidebar["EventCheckoutSidebar / EventCheckoutDrawer"]
+  Sidebar --> CartKey["merch_{productId}_{size}_{color} keys"]
+  CartKey --> Cart["Cart state"]
+```
+
+**Cart Separation Rule:** The UI in both `EventCheckoutSidebar.tsx` and `EventCheckoutDrawer.tsx` uses a strict prefix filter to distinguish merchandise from tickets:
+
+```ts
+// Count tickets only (NOT merch)
+const ticketCount = Object.entries(cart)
+  .filter(([key]) => !key.startsWith("merch_"))
+  .reduce((sum, [, qty]) => sum + qty, 0);
+
+// Count merchandise only
+const merchCount = Object.entries(cart)
+  .filter(([key]) => key.startsWith("merch_"))
+  .reduce((sum, [, qty]) => sum + qty, 0);
+```
+
+The cart header now displays: **"Total (2 tickets, 1 product)"** — keeping tickets and products visually and logically separated.
+
+---
+
+### 25.4 Product Orders (`product_orders` table)
+
+When a customer completes checkout and their payment is confirmed via PawaPay webhook, product orders are created as separate records from ticket records.
+
+**Key Columns:**
+
+| Column           | Type              | Purpose                                                                   |
+| ---------------- | ----------------- | ------------------------------------------------------------------------- |
+| `id`             | `uuid`            | Primary key (first 8 chars = Order ID displayed)                          |
+| `product_id`     | `uuid`            | Which product was ordered                                                 |
+| `ticket_id`      | `uuid`            | The event ticket linked to this order                                     |
+| `buyer_id`       | `uuid` (nullable) | Authenticated user, or null for guests                                    |
+| `phone`          | `string`          | Buyer's phone number                                                      |
+| `qty`            | `string`          | Quantity ordered                                                          |
+| `size`           | `string`          | Variant selected (format: `"L - Black"`)                                  |
+| `amount_paid`    | `numeric`         | Total amount paid for this line item                                      |
+| `qr_code_string` | `string`          | Unique QR code for this order (format: `XXXXXXXX-{product_prefix}-{idx}`) |
+| `decrptions`     | `string`          | Booking reference (`booking_ref`) linking to the event attendee           |
+| `status`         | `string`          | `Pending Payment` → `Confirmed`                                           |
+| `picked`         | `boolean`         | Whether the item has been picked up at the event                          |
+
+---
+
+### 25.5 Full Checkout & Order Creation Flow
+
+```mermaid
+sequenceDiagram
+    participant Customer
+    participant Frontend as Event Checkout UI
+    participant Server as TanStack Start Server
+    participant PawaPay
+    participant DB as Hasura DB
+    participant Webhook as PawaPay Webhook Handler
+
+    Customer->>Frontend: Selects tickets + merchandise + enters phone
+    Frontend->>Server: doCheckout()
+    Server->>DB: Insert event_attendees (tickets only, merch excluded)
+    Server->>DB: Insert product_orders for each merch item (status = "Pending Payment")
+    Server->>DB: Insert wallet_transaction (status = "pending")
+    Server->>PawaPay: POST /v1/deposits
+    PawaPay-->>Server: 202 Accepted (depositId)
+    Server-->>Frontend: depositId (polling begins)
+
+    Note over Customer,PawaPay: Customer approves USSD prompt
+
+    PawaPay->>Webhook: POST /api/pawapay/deposits (status=COMPLETED)
+    Webhook->>DB: Update wallet_transaction → "completed"
+    Webhook->>DB: Update event_attendees WHERE booking_ref → "Confirmed"
+    Webhook->>DB: Update product_orders WHERE decrptions = booking_ref → "Confirmed"
+    Webhook->>Server: deductInventoryFromOrders (decrement sold_count + variant stock)
+    Webhook->>Server: Send SMS + Email with event details + QR codes
+```
+
+---
+
+### 25.6 Inventory Decrement Logic (`src/api/inventory.server.ts`)
+
+When a product order is confirmed, `deductInventoryFromOrders()` runs:
+
+```mermaid
+flowchart TD
+  Orders["Confirmed product_orders[]"] --> Loop["For each order"]
+  Loop --> FetchProduct["Fetch product by ID (sold_count, stock_limit, available_sizes)"]
+  FetchProduct --> UpdateSold["newSoldCount = sold_count + qty"]
+  FetchProduct --> CheckSizes{"Has available_sizes?"}
+  CheckSizes --> |Yes| FindSize["Find matching size entry"]
+  FindSize --> UpdateVariantStock["Decrement size.stock by qty"]
+  FindSize --> CheckColors{"Has nested colors?"}
+  CheckColors --> |Yes| FindColor["Find matching color entry"]
+  FindColor --> UpdateColorStock["Decrement color.stock by qty"]
+  CheckColors --> |No| Skip
+  CheckSizes --> |No| UpdateStockLimit["Decrement stock_limit directly"]
+  UpdateSold & UpdateVariantStock --> Mutation["UPDATE products SET sold_count, stock_limit, available_sizes"]
+```
+
+**Key GraphQL mutation used:**
+
+```graphql
+mutation UpdateProductInventory(
+  $id: uuid!
+  $sold_count: String
+  $stock_limit: String
+  $available_sizes: jsonb
+) {
+  update_products_by_pk(
+    pk_columns: { id: $id }
+    _set: { sold_count: $sold_count, stock_limit: $stock_limit, available_sizes: $available_sizes }
+  ) {
+    id
+  }
+}
+```
+
+> **Important:** The `available_colors` variable was removed from this mutation after migration. All color data now lives inside `available_sizes[].colors[]`.
+
+---
+
+### 25.7 Customer Notifications (SMS + Email)
+
+On payment confirmation, the webhook handler (`src/api/pawapay.server.ts`) sends:
+
+**SMS** (via Pindo):
+
+- Buyer's name, phone
+- Event name, date, time, location
+- All ticket QR code numbers (one per ticket)
+- All product orders with size/color and QR code per item
+
+**Email**:
+
+- Full event card with cover image, name, date, time, venue
+- Individual ticket sections with QR code numbers
+- Merchandise section with product name, variant (size - color), quantity
+
+**Guest Name Resolution:** For guest buyers (no `buyer_id`), the system queries `event_attendees` by matching `phone` to retrieve the attendee's `names` field, which is then displayed in the order table.
+
+---
+
+### 25.8 Products & Add-ons Dashboard (`/dashboard/$workspaceSlug/products&add-ons`)
+
+**Route:** `/dashboard/$workspaceSlug/products&add-ons`  
+**File:** `src/routes/dashboard/$workspaceSlug/products&add-ons.tsx`
+
+The Products & Add-ons page is the workspace-level product management hub. It has a **4-tab interface:**
+
+```mermaid
+graph LR
+  ProductsView --> T1["Orders Tab (default)"]
+  ProductsView --> T2["Physical Merch Tab"]
+  ProductsView --> T3["Gift Cards & Vouchers Tab"]
+  ProductsView --> T4["Punch Cards Tab"]
+```
+
+#### Stats Cards (top of page)
+
+Stats are computed from **real order data** fetched via `getWorkspaceRecentOrders`:
+
+| Card                 | Source                                                   |
+| -------------------- | -------------------------------------------------------- |
+| **Total Revenue**    | `SUM(amount_paid)` across all confirmed `product_orders` |
+| **Total Orders**     | Count of all `product_orders` for this workspace         |
+| **Active Products**  | Count of products where `is_active !== false`            |
+| **Low Stock Alerts** | Count of products with `stock_limit < 20`                |
+
+#### Orders Tab (`WorkspaceOrdersTable`)
+
+A full-width, searchable table of all `product_orders` for the workspace:
+
+| Column   | Source                                                                            |
+| -------- | --------------------------------------------------------------------------------- |
+| Order ID | `order.id.split("-")[0]` (first 8 chars)                                          |
+| Buyer    | `user.username` → `guest_name` (from attendee name lookup) → `buyer_id` → "Guest" |
+| Phone    | `order.phone`                                                                     |
+| Product  | `order.product.name` + `order.size` (variant)                                     |
+| Qty      | `order.qty`                                                                       |
+| Price    | `order.amount_paid` (formatted)                                                   |
+| QR Code  | `order.qr_code_string`                                                            |
+| Date     | `order.created_at`                                                                |
+
+**Search** filters across: Order ID, Buyer name, Phone, Product name, QR code.
+
+#### Physical Merch Tab
+
+Shows **all** physical products for the workspace — both event-linked and standalone campaigns combined:
+
+| Column   | Logic                                                                          |
+| -------- | ------------------------------------------------------------------------------ |
+| Product  | `name` + `category`                                                            |
+| Source   | `event.title` badge if event-linked, "Campaign" if standalone                  |
+| Price    | Formatted `price`                                                              |
+| Variants | Shows first 3 size names from `available_sizes` + overflow count               |
+| Stock    | Sum of variant stocks if variants exist, else `stock_limit`. "∞" if unlimited. |
+| Sold     | `sold_count`                                                                   |
+| Status   | Active/Inactive badge from `is_active`                                         |
+
+**Search** filters by product name, event title, or category.
+
+---
+
+### 25.9 Product Details Page (`/products/$productId`)
+
+**Route:** `/dashboard/$workspaceSlug/events/$eventId/products/$productId/`  
+**File:** `src/routes/dashboard/$workspaceSlug/events/$eventId/products_.$productId.index.tsx`
+
+Displays the full details of a single product including its **Recent Sales** table.
+
+#### Recent Sales Table
+
+Shows all `product_orders` for this product, with search:
+
+| Column   | Source                                                   |
+| -------- | -------------------------------------------------------- |
+| Order ID | `order.id.split("-")[0]`                                 |
+| Buyer    | Guest name resolved from phone → `event_attendees.names` |
+| Phone    | `order.phone`                                            |
+| QR Code  | `order.qr_code_string`                                   |
+| Qty      | `order.qty`                                              |
+| Variant  | `order.size` (format: `"L - Black"`)                     |
+| Date     | `order.created_at`                                       |
+
+**Search** filters by: Order ID, Buyer name, Phone, QR Code.
+
+---
+
+### 25.10 API Functions Reference
+
+#### `src/api/products.ts`
+
+| Function                   | Purpose                                                                                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getWorkspaceProducts`     | Fetch **all** products for a workspace (including event-linked). Returns `event { id, title }` relation. Previously filtered `event_id IS NULL` — this filter was removed so all products appear. |
+| `getEventProducts`         | Fetch products for a specific event only.                                                                                                                                                         |
+| `getProduct`               | Fetch a single product by `id`.                                                                                                                                                                   |
+| `getWorkspaceRecentOrders` | Fetch all `product_orders` for a workspace with buyer info, phone, QR code, size, qty. Also runs a secondary query to resolve guest phone numbers to attendee names (`guest_name`).               |
+| `createProduct`            | Create a new product (requires auth session).                                                                                                                                                     |
+| `updateProduct`            | Update product fields.                                                                                                                                                                            |
+| `createProductOrders`      | Bulk insert product orders during checkout.                                                                                                                                                       |
+
+#### `src/api/inventory.server.ts`
+
+| Function                    | Purpose                                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `deductInventoryFromOrders` | On payment confirmation, decrements `sold_count`, `stock_limit`, and nested variant stocks for each confirmed order. |
+
+#### `src/api/pawapay.server.ts` (relevant product logic)
+
+| Function               | Purpose                                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `handlePawaPayWebhook` | On `COMPLETED` status: confirms `product_orders`, runs `deductInventoryFromOrders`, sends SMS/Email with product details. |
+
+---
+
+### 25.11 Database Tables Reference
+
+| Table             | Purpose                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| `products`        | All product definitions — physical, voucher, punch_card, loyalty_card |
+| `product_orders`  | Individual purchase records per product per checkout                  |
+| `event_attendees` | Used for guest name resolution (match by `phone`)                     |
+
+---
+
+## 26. Interactive Map & Explore (`/explore` & `/`)
+
+**Logic:**
+
+- The interactive map (`MapDesktop.tsx` and `MapClient.tsx`) serves as a visual directory for Events, Venues, Spaces, and Cinemas.
+- **Marker Interactions:** Clicking a marker opens a detailed sidebar or bottom sheet with context-specific data:
+  - **Events:** Shows ticket pricing, organizers, and lineups.
+  - **Venues:** Displays starting prices and a **Dynamic Facilities List**. Users can see sub-facilities (like a VIP lounge or coworking desk) inside a venue and directly click "Book Now" to jump into the specific facility checkout flow (`/venues/$venueId/facilities/checkout/$facilityId`).
+- **Theming:** The map UI components strictly use dynamic CSS variables (`bg-secondary`, `text-muted-foreground`) to effortlessly switch between Light mode and our refined "Instagram-style" Dark mode (elevated dark grey backgrounds to reduce OLED smearing and harsh contrast).
 
 ---
 
