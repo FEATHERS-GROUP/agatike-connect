@@ -90,7 +90,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 where: { ticket_id: { _eq: $ticket_id }, status: { _eq: "Pending Payment" } },
                 _set: { status: "Confirmed" }
               ) {
-                affected_rows
+                returning {
+                  product_id
+                  qty
+                  size
+                  color
+                }
               }
             }
           `;
@@ -111,7 +116,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             );
             const attendeeId = attendeeRes?.event_attendees?.[0]?.id;
             if (attendeeId) {
-              await hasuraRequest(confirmProductOrdersQuery, { ticket_id: attendeeId });
+              const confirmRes = await hasuraRequest<{ update_product_orders: any }>(confirmProductOrdersQuery, { ticket_id: attendeeId });
+              const confirmedOrders = confirmRes?.update_product_orders?.returning || [];
+              if (confirmedOrders.length > 0) {
+                const { deductInventoryFromOrders } = await import("./inventory.server");
+                await deductInventoryFromOrders(confirmedOrders);
+              }
             }
           } catch (e) {
             console.error("[PawaPay] Failed to confirm product orders:", e);

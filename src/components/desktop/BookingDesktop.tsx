@@ -397,8 +397,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         .map(([key, qty]) => {
           const parts = key.split("_");
           const productId = parts[1];
-          const size = parts[2] || null;
-          const color = parts[3] || null;
+          const size = parts[2] !== "NONE" ? parts[2] : null;
+          const color = parts[3] !== "NONE" ? parts[3] : null;
           const merch = eventProducts.find((p: any) => p.id === productId);
           return {
             product_id: productId,
