@@ -319,6 +319,35 @@ export default function MapClient() {
               </div>
             )}
 
+            {/* Facilities (if Venue) */}
+            {selectedMarker.type === "venue" && selectedMarker.raw?.facilities_data?.length > 0 && (
+              <div className="mt-3">
+                <h3 className="text-xs font-bold tracking-tight mb-2">Facilities</h3>
+                <div className="flex flex-col gap-2">
+                  {selectedMarker.raw.facilities_data.map((facility: any) => (
+                    <div key={facility.id} className="flex gap-2 bg-secondary/30 p-2 rounded-xl border border-border/40">
+                      {facility.image_url && (
+                        <img src={facility.image_url} alt={facility.name} className="w-12 h-12 object-cover rounded-md shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
+                        <p className="font-bold text-xs truncate">{facility.name}</p>
+                        <p className="text-[9px] text-muted-foreground capitalize">{facility.type?.replace(/_/g, " ")}</p>
+                        <Link 
+                          to="/venues/$venueId/facilities/checkout/$facilityId" 
+                          params={{ venueId: selectedMarker.raw.id, facilityId: facility.id }}
+                          className="inline-block mt-1.5 w-full"
+                        >
+                          <Button size="sm" className="w-full h-7 text-[10px] rounded-full shadow-[var(--shadow-glow)] transition-all" style={{ background: "var(--gradient-primary)" }}>
+                            {facility.requires_approval ? "Request" : "Book"}
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Action Button */}
             <div className="mt-2">
               <Button 

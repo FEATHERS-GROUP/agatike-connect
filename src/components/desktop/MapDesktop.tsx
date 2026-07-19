@@ -500,6 +500,34 @@ export function MapDesktop() {
                  </div>
                )}
 
+               {selectedMarker.type === "venue" && selectedMarker.raw?.facilities_data?.length > 0 && (
+                 <div className="mt-5 space-y-3">
+                   <h3 className="text-sm font-bold tracking-tight mb-2">Facilities</h3>
+                   <div className="flex flex-col gap-3">
+                     {selectedMarker.raw.facilities_data.map((facility: any) => (
+                       <div key={facility.id} className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40">
+                         {facility.image_url && (
+                           <img src={facility.image_url} alt={facility.name} className="w-16 h-16 object-cover rounded-md shrink-0" />
+                         )}
+                         <div className="flex-1 min-w-0 flex flex-col justify-center">
+                           <p className="font-bold text-sm truncate">{facility.name}</p>
+                           <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{facility.type?.replace(/_/g, " ")}</p>
+                           <Link 
+                             to="/venues/$venueId/facilities/checkout/$facilityId" 
+                             params={{ venueId: selectedMarker.raw.id, facilityId: facility.id }}
+                             className="inline-block mt-2 w-full"
+                           >
+                             <Button size="sm" className="w-full h-8 text-xs rounded-full shadow-[var(--shadow-glow)] transition-all" style={{ background: "var(--gradient-primary)" }}>
+                               {facility.requires_approval ? "Request Booking" : "Book Now"}
+                             </Button>
+                           </Link>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
                {selectedMarker.type === "space" && selectedMarker.raw?.plans?.length > 0 && (
                  <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
