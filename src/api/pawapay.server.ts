@@ -107,7 +107,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   product_id
                   qty
                   size
-                  color
                 }
               }
             }

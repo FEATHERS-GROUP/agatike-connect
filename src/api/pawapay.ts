@@ -397,13 +397,18 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     let organizerFee =
       baseAmt * (orgCollectionPct / 100) + orgFixed + baseAmt * (orgPlatformPct / 100);
 
+    // If there is a shortfall on a micro-transaction, the organizer absorbs it to cover the network cost (README 12.1)
+    if (shortfall > 0) {
+      organizerFee += parseFloat(shortfall as any);
+    }
+
     // ── Platform revenue & profit ────────────────────────────────────────────
     // Platform Revenue = Customer Contribution + Organizer Contribution
     // Net Profit       = Platform Revenue − Provider (PawaPay) Cost
     let platformRevenue = customerFee + organizerFee;
     let netProfit = platformRevenue - providerCost;
 
-    // Organizer wallet receives base minus their contribution (Agatike absorbs any shortfall)
+    // Organizer wallet receives base minus their total contribution (fees + shortfall)
     let organizerNetAmount = Math.max(0, baseAmt - organizerFee);
 
     if (type === "subscription") {
@@ -420,7 +425,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         $amount: String!, $net_amount: String!, $currency: String!,
         $provider_reference: String!, $reference_id: String!,
         $type: String!, $provider_status: String!, $status: String!,
-        $wallet_id: uuid!,
+        $wallet_id: uuid!, $workspace_id: uuid!,
         $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!,
         $cust_fee: numeric!, $org_fee: numeric!, $platform_fee: numeric!
       ) {
@@ -428,7 +433,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
           amount: $amount, net_amount: $net_amount, currency: $currency,
           provider_reference: $provider_reference, reference_id: $reference_id,
           type: $type, provider_status: $provider_status, status: $status,
-          wallet_id: $wallet_id, description: "PawaPay Deposit",
+          wallet_id: $wallet_id, workspace_id: $workspace_id, description: "PawaPay Deposit",
           platform_fee: $platform_fee
         }) { id }
         insert_earnings_one(object: {
@@ -453,6 +458,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         provider_status: "PENDING",
         status: "pending",
         wallet_id: walletId,
+        workspace_id: workspaceId,
         gross: grossAmount,
         cost: providerCost,
         rev: platformRevenue,
