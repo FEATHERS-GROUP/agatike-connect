@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -9,38 +9,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { getPublicEvents } from "@/api/events";
 import { getPublicVenues } from "@/api/venues";
+import { getPublicSpaces } from "@/api/spaces";
 import { getOrganizers } from "@/api/organizers";
 import { getUserAllTickets } from "@/api/user_tickets";
-import { isWeekendEvent } from "@/lib/utils"; // Assuming we want to filter upcoming by weekend or just take all public events
+import { getPublicCinemas, getPublicMovieSchedules } from "@/api/cinemas";
+import { useTheme } from "@/contexts/ThemeContext";
+import { isWeekendEvent } from "@/lib/utils"; 
 
-// --- CATEGORY CONSTANTS ---
+const normalizeCityName = (city?: string) => {
+  if (!city) return "Unknown";
+  const clean = city.trim().toLowerCase();
+  if (clean === "kgali" || clean === "kiigali" || clean === "kigali") return "Kigali";
+  return clean.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+};
 
-const CATEGORIES = [
-  {
-    id: "venues",
-    title: "Venues",
-    rating: "4.8",
-    image: "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=800",
-  },
-  {
-    id: "facilities",
-    title: "Facilities",
-    rating: "4.6",
-    image: "https://images.unsplash.com/photo-1571204829887-3b8d69e4094d?auto=format&fit=crop&w=800",
-  },
-  {
-    id: "events",
-    title: "Events",
-    rating: "4.5",
-    image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800",
-  },
-  {
-    id: "organizers",
-    title: "Organizers",
-    rating: "4.3",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800",
-  },
-];
+
 
 // --- MAP COMPONENTS ---
 
@@ -59,7 +42,7 @@ function MapController({ selectedEvent }: { selectedEvent: any | null }) {
 function ZoomControls() {
   const map = useMap();
   return (
-    <div className="absolute bottom-6 left-6 z-[400] flex flex-col gap-2">
+    <div className="absolute bottom-6 right-6 z-[400] flex flex-col gap-2">
       <button
         onClick={() => map.zoomIn()}
         className="flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-lg transition-transform hover:scale-105"
@@ -80,7 +63,20 @@ function ZoomControls() {
 
 export function MapDesktop() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [selectedMarker, setSelectedMarker] = useState<any | null>(null);
+  const [mapRef, setMapRef] = useState<L.Map | null>(null);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      setIsDark(true);
+    } else if (theme === "light") {
+      setIsDark(false);
+    } else {
+      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+  }, [theme]);
 
   const defaultCenter: [number, number] = [-1.9441, 30.0619];
 
@@ -93,6 +89,21 @@ export function MapDesktop() {
   const { data: dbVenues = [] } = useQuery({
     queryKey: ["public-venues"],
     queryFn: () => getPublicVenues(),
+  });
+
+  const { data: dbSpaces = [] } = useQuery({
+    queryKey: ["public-spaces"],
+    queryFn: () => getPublicSpaces(),
+  });
+
+  const { data: dbCinemas = [] } = useQuery({
+    queryKey: ["public-cinemas"],
+    queryFn: () => getPublicCinemas(),
+  });
+
+  const { data: dbSchedules = [] } = useQuery({
+    queryKey: ["public-cinema-schedules"],
+    queryFn: () => getPublicMovieSchedules(),
   });
 
   const { data: dbOrganizers = [] } = useQuery({
@@ -159,6 +170,7 @@ export function MapDesktop() {
           lng: parseFloat(firstStopWithCoords.longitude),
           image: e.cover || "https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=100",
           type: "event",
+          city: normalizeCityName(firstStopWithCoords.city),
           raw: e,
         });
       }
@@ -175,6 +187,7 @@ export function MapDesktop() {
           lng: parseFloat(v.longitude),
           image: v.cover_url || "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=100",
           type: "venue",
+          city: normalizeCityName(v.city),
           raw: v,
         });
       }
@@ -191,13 +204,83 @@ export function MapDesktop() {
           lng: parseFloat(org.lng),
           image: org.avatar || org.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`,
           type: "user",
+          city: normalizeCityName("Unknown"), // Organizers don't typically have a direct city mapped here
           raw: org,
         });
       }
     });
 
+    // Process Spaces
+    dbSpaces.forEach((s: any) => {
+      const firstLoc = s.locations?.[0];
+      if (firstLoc && firstLoc.lat && firstLoc.lng) {
+        markers.push({
+          id: `space-${s.id}`,
+          title: s.name,
+          date: firstLoc.city,
+          lat: parseFloat(firstLoc.lat),
+          lng: parseFloat(firstLoc.lng),
+          image: s.cover_url || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=100",
+          type: "space",
+          city: normalizeCityName(firstLoc.city),
+          raw: s,
+        });
+      }
+    });
+
+    // Process Cinemas
+    dbCinemas.forEach((c: any) => {
+      if (c.latitude && c.longitude) {
+        markers.push({
+          id: `cinema-${c.id}`,
+          title: c.name,
+          date: c.city,
+          lat: parseFloat(c.latitude),
+          lng: parseFloat(c.longitude),
+          image: c.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=100",
+          type: "cinema",
+          city: normalizeCityName(c.city),
+          raw: c,
+        });
+      }
+    });
+
     return markers.filter(m => !isNaN(m.lat) && !isNaN(m.lng) && isFinite(m.lat) && isFinite(m.lng));
-  }, [dbEvents, dbVenues, dbOrganizers]);
+  }, [dbEvents, dbVenues, dbOrganizers, dbSpaces, dbCinemas]);
+
+  const groupedCities = useMemo(() => {
+    const cityMap = new Map<string, { name: string, count: number, lat: number, lng: number, image: string, bounds: [number, number][] }>();
+    
+    mapMarkers.forEach(m => {
+      if (m.type === "user") return; // Skip users for city grouping
+      const c = m.city;
+      if (!cityMap.has(c)) {
+        cityMap.set(c, {
+          name: c,
+          count: 0,
+          lat: m.lat,
+          lng: m.lng,
+          image: m.image,
+          bounds: []
+        });
+      }
+      const existing = cityMap.get(c)!;
+      existing.count += 1;
+      existing.bounds.push([m.lat, m.lng]);
+    });
+
+    return Array.from(cityMap.values()).sort((a, b) => b.count - a.count);
+  }, [mapMarkers]);
+
+  const handleCityClick = (city: any) => {
+    if (mapRef && city.bounds.length > 0) {
+      if (city.bounds.length === 1) {
+         mapRef.flyTo(city.bounds[0], 13);
+      } else {
+         mapRef.flyToBounds(city.bounds, { padding: [50, 50] });
+      }
+    }
+  };
 
   const createCustomIcon = (marker: any) => {
     if (marker.type === "event" || marker.type === "venue") {
@@ -246,29 +329,31 @@ export function MapDesktop() {
           <ArrowLeft className="h-5 w-5" />
         </button>
 
-        <h2 className="mb-4 text-xl font-bold tracking-tight px-1 shrink-0">Categories</h2>
+        <h2 className="mb-4 text-xl font-bold tracking-tight px-1 shrink-0">Locations</h2>
         
         <div className="flex flex-col gap-4">
-          {CATEGORIES.map((cat) => (
+          {groupedCities.map((city) => (
             <div
-              key={cat.id}
+              key={city.name}
+              onClick={() => handleCityClick(city)}
               className="group relative h-40 w-full overflow-hidden rounded-3xl cursor-pointer shadow-sm transition-transform hover:scale-[1.02] shrink-0"
             >
               <img
-                src={cat.image}
-                alt={cat.title}
+                src={city.image}
+                alt={city.name}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               
-              <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
-                <span className="text-[10px]">★</span> {cat.rating}
-              </div>
-
-              <div className="absolute bottom-4 left-4">
-                <h3 className="text-white font-bold text-lg bg-black/40 backdrop-blur-md px-3 py-1 rounded-full">
-                  {cat.title}
-                </h3>
+              <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-white tracking-tight leading-none drop-shadow-md">
+                    {city.name}
+                  </h3>
+                  <div className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 backdrop-blur-md border border-white/10">
+                    <span className="text-xs font-bold text-white">{city.count} Places</span>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
@@ -277,10 +362,21 @@ export function MapDesktop() {
 
       {/* CENTER COLUMN: Map */}
       <div className="relative flex-1 bg-muted">
-        <MapContainer center={defaultCenter} zoom={13} className="h-full w-full" zoomControl={false}>
+        <div className="absolute inset-0 z-0">
+          <MapContainer 
+            center={defaultCenter} 
+            zoom={13} 
+            className="h-full w-full z-0" 
+            zoomControl={false}
+            ref={setMapRef}
+          >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            url={
+              isDark
+                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            }
           />
           
           <MapController selectedEvent={selectedMarker} />
@@ -298,6 +394,7 @@ export function MapDesktop() {
 
           <ZoomControls />
         </MapContainer>
+        </div>
 
         {/* Map Header Overlay */}
         <div className="absolute top-6 right-6 z-[400] flex gap-2">
@@ -402,6 +499,37 @@ export function MapDesktop() {
                    </p>
                  </div>
                )}
+
+               {selectedMarker.type === "space" && selectedMarker.raw?.plans?.length > 0 && (
+                 <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                   <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
+                   <p className="text-lg font-bold text-primary">
+                     {selectedMarker.raw.plans[0]?.price} {selectedMarker.raw.currency || "RWF"}
+                   </p>
+                 </div>
+               )}
+
+               {selectedMarker.type === "cinema" && (
+                 <div className="mt-5 space-y-3">
+                   <h3 className="text-sm font-bold tracking-tight mb-2">Playing Today</h3>
+                   {dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).length > 0 ? (
+                     dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).map((schedule: any) => (
+                       <div key={schedule.id} className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40">
+                         {schedule.movie?.cover_url && (
+                           <img src={schedule.movie.cover_url} alt={schedule.movie.title} className="w-12 h-16 object-cover rounded-md" />
+                         )}
+                         <div className="flex-1 min-w-0">
+                           <p className="font-bold text-sm truncate">{schedule.movie?.title}</p>
+                           <p className="text-[10px] text-muted-foreground mt-0.5">{schedule.movie?.genre} • {schedule.movie?.duration_minutes}m</p>
+                           <p className="text-xs font-semibold text-primary mt-1">{schedule.start_time.substring(0,5)}</p>
+                         </div>
+                       </div>
+                     ))
+                   ) : (
+                     <p className="text-xs text-muted-foreground">No movies scheduled for today.</p>
+                   )}
+                 </div>
+               )}
              </div>
              
              {/* Action Button */}
@@ -415,6 +543,10 @@ export function MapDesktop() {
                        router.navigate({ to: "/events/$eventId", params: { eventId: rawId } });
                      } else if (selectedMarker.type === "venue") {
                        router.navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
+                     } else if (selectedMarker.type === "space") {
+                       router.navigate({ to: "/spaces/$spaceId", params: { spaceId: rawId } });
+                     } else if (selectedMarker.type === "cinema") {
+                       router.navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
                      } else {
                        router.navigate({ to: "/organizers/$organizerId", params: { organizerId: rawId } });
                      }

@@ -3,6 +3,26 @@ import { hasuraRequest } from "./graphql.server";
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
+const GET_PUBLIC_CINEMAS = `
+  query GetPublicCinemas {
+    cinemas(
+      where: { status: { _eq: "active" } }
+      order_by: { created_at: desc }
+    ) {
+      id
+      name
+      description
+      city
+      address
+      country
+      latitude
+      longitude
+      cover_url
+      logo_url
+    }
+  }
+`;
+
 const GET_CINEMAS = `
   query GetCinemas($workspace_id: uuid!) {
     cinemas(
@@ -157,6 +177,12 @@ const DELETE_CINEMA = `
 `;
 
 // ─── Server Functions ─────────────────────────────────────────────────────────
+
+export const getPublicCinemas = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const res = await hasuraRequest<{ cinemas: any[] }>(GET_PUBLIC_CINEMAS);
+    return res.cinemas;
+  });
 
 export const getCinemas = createServerFn({ method: "POST" })
   .validator((d: any) => d)
