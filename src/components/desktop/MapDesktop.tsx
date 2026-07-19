@@ -548,7 +548,7 @@ export function MapDesktop() {
                      } else if (selectedMarker.type === "cinema") {
                        router.navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
                      } else {
-                       router.navigate({ to: "/organizers/$organizerId", params: { organizerId: rawId } });
+                       router.navigate({ to: "/organizers" });
                      }
                   }}
                 >
