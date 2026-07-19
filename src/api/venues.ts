@@ -197,7 +197,6 @@ const GET_PUBLIC_VENUES = `
     rentable_venues(order_by: { created_at: desc }) {
       id
       name
-      folder_id
       type
       city
       cover_url
