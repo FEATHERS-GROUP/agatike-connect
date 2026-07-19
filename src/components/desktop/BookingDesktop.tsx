@@ -748,6 +748,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
               isCheckingOut={isCheckingOut}
               isFormValid={isFormValid}
               getTierDetails={getTierDetails}
+              eventProducts={eventProducts}
               onRetryGeneration={() => {
                 setIsGenerating(true);
                 setIsPaymentModalOpen(true);

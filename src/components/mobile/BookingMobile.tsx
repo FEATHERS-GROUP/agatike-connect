@@ -10,6 +10,9 @@ import {
   Calendar,
   Clock,
   CheckCircle2,
+  CalendarDays,
+  User,
+  Tag,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
@@ -24,6 +27,7 @@ import { getWorkspaceVenueProjects } from "@/api/venues";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
+import { getEventProducts, createProductOrders } from "@/api/products";
 import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
@@ -106,6 +110,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   const { data: bookedAttendees } = useQuery({
     queryKey: ["event-attendees", eventId],
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+    enabled: !!eventId,
+  });
+
+  // Fetch event products (merchandise)
+  const { data: eventProducts = [] } = useQuery({
+    queryKey: ["event-products", eventId],
+    queryFn: () => getEventProducts({ data: { event_id: eventId } } as any),
     enabled: !!eventId,
   });
 
@@ -223,6 +234,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
+    if (key.startsWith("merch_")) {
+      const id = key.split("_")[1];
+      const merch = eventProducts.find((p: any) => p.id === id);
+      return sum + (merch ? parseFloat(merch.price || 0) * qty : 0);
+    }
     const [, tierId] = key.split("_");
     const tier = getTierDetails(tierId);
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
@@ -416,6 +432,39 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       } else {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
+      }
+
+      // Insert product_orders for any merchandise in the cart
+      const primaryAttendee = attendees[0];
+      const buyerPhone = primaryAttendee?.phone || "";
+      const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      const productOrderObjects = Object.entries(cart)
+        .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
+        .map(([key, qty]) => {
+          const parts = key.split("_");
+          const productId = parts[1];
+          const size = parts[2] || null;
+          const color = parts[3] || null;
+          const merch = eventProducts.find((p: any) => p.id === productId);
+          return {
+            product_id: productId,
+            qty: String(qty),
+            amount_paid: merch ? parseFloat(merch.price || 0) * qty : 0,
+            status: data.isPawaPay ? "Pending Payment" : "Confirmed",
+            phone: buyerPhone,
+            qr_code_string: `${qrBase}-${productId.substring(0, 6)}`,
+            ticket_id: returned[0]?.id || null,
+            buyer_id: user?.id || null,
+            picked: false,
+            ...(size || color ? { size, color } : {}),
+          };
+        });
+
+      if (productOrderObjects.length > 0) {
+        createProductOrders({ data: { objects: productOrderObjects } } as any).catch((e: any) => {
+          console.error("Failed to create product orders:", e);
+        });
       }
     },
     onError: (e: any) => {
@@ -693,6 +742,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     );
   }
 
+  const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
+
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
@@ -701,12 +752,44 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         </div>
         <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
-          .
+          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}.
         </p>
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Redirecting to event details...
-        </p>
+
+        {hasMerchInCart && (
+          <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <svg className="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+              </div>
+              <div>
+                <p className="font-semibold">Merchandise Order</p>
+                <p className="text-xs text-muted-foreground">Pickup instructions</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Your merchandise can be picked up <strong className="text-foreground">on the day of the event</strong>.
+              Please collect it at the merchandise desk using either method below:
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
+                <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Phone Number Pickup</p>
+                  <p className="text-xs text-muted-foreground">Show your registered phone number at the merchandise desk.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
+                <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
+                  <p className="text-xs text-muted-foreground">Show your event ticket QR code — staff will scan it and hand you your order.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
       </div>
     );
   }
@@ -725,20 +808,81 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       <div className="px-4 py-6 space-y-8">
         {/* Order Summary */}
         <div>
-          <h2 className="text-lg font-bold mb-4">Order Summary ({totalTickets} items)</h2>
-          <div className="flex gap-4 bg-card/60 rounded-3xl p-4 border border-border/40 backdrop-blur mb-4">
-            <img src={event.cover} className="h-24 w-20 rounded-xl object-cover" />
-            <div className="flex flex-col flex-1 py-1">
-              <h3 className="font-bold text-base leading-tight mb-1">{event.title}</h3>
-              <p className="text-xs text-muted-foreground mb-auto">
-                {(event as any).date} • {(event as any).venue || (event as any).city}
-              </p>
+          <h2 className="text-lg font-bold mb-4">Order Summary</h2>
+
+          {/* Event cover banner */}
+          <div className="relative rounded-2xl overflow-hidden mb-4 aspect-[16/7] w-full">
+            <img
+              src={event.cover}
+              alt={event.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <h3 className="text-white font-bold text-base leading-tight drop-shadow">{event.title}</h3>
+              {event.category && (
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/70 bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20">
+                  <Tag className="h-2.5 w-2.5" />{event.category}
+                </span>
+              )}
             </div>
+          </div>
+
+          {/* Event meta */}
+          <div className="space-y-2 mb-4 bg-card/60 rounded-2xl p-4 border border-border/40">
+            {((event as any).date || event.tour_stops?.[0]?.date) && (
+              <div className="flex items-center gap-2.5 text-sm">
+                <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="font-medium">{(event as any).date || event.tour_stops?.[0]?.date}</span>
+              </div>
+            )}
+            {((event as any).time || event.tour_stops?.[0]?.time) && (
+              <div className="flex items-center gap-2.5 text-sm">
+                <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="font-medium">{(event as any).time || event.tour_stops?.[0]?.time}</span>
+              </div>
+            )}
+            {((event as any).venue || (event as any).city || event.tour_stops?.[0]?.venue || event.tour_stops?.[0]?.city) && (
+              <div className="flex items-center gap-2.5 text-sm">
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="font-medium">
+                  {[(event as any).venue || event.tour_stops?.[0]?.venue, (event as any).city || event.tour_stops?.[0]?.city]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              </div>
+            )}
+            {(event.workspaces?.organizer?.name || event.workspaces?.name) && (
+              <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                <User className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>Hosted by <span className="text-foreground font-medium">{event.workspaces?.organizer?.name || event.workspaces?.name}</span></span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3 bg-secondary/20 p-4 rounded-2xl border border-border/40">
             {Object.entries(cart).map(([cartKey, qty]) => {
               if (qty <= 0) return null;
+
+              if (cartKey.startsWith("merch_")) {
+                const parts = cartKey.split("_");
+                const productId = parts[1];
+                const variantInfo = parts.slice(2).join(" · ");
+                const merch = eventProducts.find((p: any) => p.id === productId);
+                const lineTotal = merch ? parseFloat(merch.price || 0) * qty : 0;
+                return (
+                  <div key={cartKey} className="flex justify-between items-start text-sm">
+                    <span className="flex flex-col">
+                      <span>{qty}x {merch?.name || "Merchandise"}</span>
+                      {variantInfo && (
+                        <span className="text-[11px] text-muted-foreground">{variantInfo}</span>
+                      )}
+                    </span>
+                    <span className="font-medium">{formatCurrency(lineTotal, currency)}</span>
+                  </div>
+                );
+              }
+
               const [, tierId] = cartKey.split("_");
               const tier = getTierDetails(tierId);
               if (!tier) return null;
