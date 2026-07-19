@@ -1,6 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { HomeMobile } from "@/components/mobile/HomeMobile";
 import { HomeDesktop } from "@/components/desktop/HomeDesktop";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,6 +24,21 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { isLoggedIn } = useUserAuth();
+  const router = useRouter();
+  const [isMobileRedirecting, setIsMobileRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn && window.innerWidth < 768) {
+      setIsMobileRedirecting(true);
+      router.navigate({ to: "/events" });
+    }
+  }, [isLoggedIn, router]);
+
+  if (isMobileRedirecting) {
+    return null; // Return null while redirecting to avoid flashing mobile home
+  }
+
   return (
     <>
       <div className="md:hidden">
