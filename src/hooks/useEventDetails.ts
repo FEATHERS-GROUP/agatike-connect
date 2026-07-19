@@ -14,6 +14,7 @@ import {
 } from "@/lib/mock-data";
 import { getDistanceFromLatLonInKm } from "@/lib/utils";
 import { getPublicVipPrivileges } from "@/api/vip";
+import { getEventProducts } from "@/api/products";
 
 export function useEventDetails(eventId: string, initialEvent?: any) {
   const ev = useMemo(() => {
@@ -232,14 +233,34 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     return !isNaN(eventDate.getTime()) && eventDate < today;
   }, [date]);
 
-  const activeMerch = isMock
-    ? merch
-    : (ev.merchandises || []).map((m: any) => ({
+  const { data: eventProducts } = useQuery({
+    queryKey: ["event-products", eventId],
+    queryFn: () => getEventProducts({ data: { event_id: eventId } } as any),
+    enabled: !isMock,
+  });
+
+  const activeMerch = useMemo(() => {
+    if (isMock) return merch;
+
+    const legacyMerch = (ev.merchandises || []).map((m: any) => ({
+      id: m.id,
+      name: m.name,
+      price: m.price,
+      image: m.image_url || ev.cover,
+    }));
+
+    const newMerch = (eventProducts || [])
+      .filter((p: any) => p.type === "physical")
+      .map((m: any) => ({
         id: m.id,
         name: m.name,
         price: m.price,
         image: m.image_url || ev.cover,
       }));
+
+    const merged = [...legacyMerch, ...newMerch];
+    return Array.from(new Map(merged.map((m) => [m.id, m])).values());
+  }, [isMock, ev.merchandises, ev.cover, eventProducts]);
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedSeatsObj, setSelectedSeatsObj] = useState<any[]>([]);
@@ -267,12 +288,22 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
-    const [stopIdx, tierId] = key.split("_");
+    if (key.startsWith("merch_")) {
+      // key format: merch_<id>_<size?>_<color?>
+      const parts = key.split("_");
+      const id = parts[1];
+      const merch = activeMerch.find((m: any) => m.id === id);
+      return sum + (merch ? merch.price * qty : 0);
+    }
+    const [, tierId] = key.split("_");
     const tier = allTicketTiers.find((t: any) => t.id === tierId);
     return sum + (tier ? tier.price * qty : 0);
   }, 0);
 
-  const totalTickets = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  const totalTickets = Object.entries(cart).reduce((sum, [key, qty]) => {
+    if (key.startsWith("merch_")) return sum; // don't count merch as tickets
+    return sum + qty;
+  }, 0);
 
   const { data: feedbackData } = useQuery({
     queryKey: ["public-feedback", eventId],

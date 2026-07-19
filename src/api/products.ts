@@ -57,6 +57,10 @@ const GET_WORKSPACE_PRODUCTS = `
       reward_description
       image_url
       is_active
+      category
+      available_sizes
+      available_colors
+      specs
     }
   }
 `;
@@ -83,6 +87,10 @@ const GET_EVENT_PRODUCTS = `
       reward_description
       image_url
       is_active
+      category
+      available_sizes
+      available_colors
+      specs
     }
   }
 `;
@@ -109,6 +117,10 @@ const GET_PRODUCT = `
       reward_description
       image_url
       is_active
+      category
+      available_sizes
+      available_colors
+      specs
     }
   }
 `;
@@ -129,6 +141,7 @@ const GET_WORKSPACE_RECENT_ORDERS = `
       id
       amount_paid
       status
+      picked
       created_at
       product {
         name
@@ -152,4 +165,21 @@ export const getWorkspaceRecentOrders = createServerFn({ method: "POST" }).handl
     workspace_id,
   });
   return data.product_orders || [];
+});
+
+const CREATE_PRODUCT_ORDER = `
+  mutation CreateProductOrder($objects: [product_orders_insert_input!]!) {
+    insert_product_orders(objects: $objects) {
+      affected_rows
+      returning {
+        id
+        picked
+      }
+    }
+  }
+`;
+
+export const createProductOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const payload = (ctx.data as any).data || ctx.data;
+  return hasuraRequest(CREATE_PRODUCT_ORDER, { objects: payload.objects || payload });
 });

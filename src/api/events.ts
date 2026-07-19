@@ -345,6 +345,7 @@ const GET_EVENT_BY_ID = `
         name
         price
       }
+
       workspaces {
         city
         name

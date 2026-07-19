@@ -71,7 +71,7 @@ export function EventDetailsDesktop({
 
           <EventLineup staffList={d.staffList} isExperience={d.isExperience} />
 
-          <EventMerch activeMerch={d.activeMerch} currencyCode={d.currencyCode} />
+          <EventMerch activeMerch={d.activeMerch} currencyCode={d.currencyCode} cart={d.cart} setCart={d.setCart} />
 
           <EventIncluded isExperience={d.isExperience} included={d.included} />
 

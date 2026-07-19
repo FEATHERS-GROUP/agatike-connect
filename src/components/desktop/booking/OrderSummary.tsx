@@ -46,6 +46,24 @@ export function OrderSummary({
       <div className="space-y-4 text-sm border-y border-border/60 py-4 mb-4">
         {Object.entries(cart).map(([cartKey, qty]) => {
           if (qty <= 0) return null;
+
+          if (cartKey.startsWith("merch_")) {
+            // merch_<id>_<size?>_<color?>
+            const parts = cartKey.split("_");
+            const variantInfo = parts.slice(2).join(" · ");
+            return (
+              <div key={cartKey} className="flex justify-between items-center">
+                <span className="flex flex-col">
+                  <span>{qty}x Merchandise</span>
+                  {variantInfo && (
+                    <span className="text-[11px] text-muted-foreground">{variantInfo}</span>
+                  )}
+                </span>
+                <span className="font-medium text-muted-foreground">—</span>
+              </div>
+            );
+          }
+
           const [, tierId] = cartKey.split("_");
           const tier = getTierDetails(tierId);
           if (!tier) return null;

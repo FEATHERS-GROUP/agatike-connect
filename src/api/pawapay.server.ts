@@ -82,6 +82,40 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             }
           `;
           await hasuraRequest(confirmQuery, { booking_ref: tx.reference_id });
+
+          // Also confirm any product_orders that are pending payment linked to tickets in this booking
+          const confirmProductOrdersQuery = `
+            mutation ConfirmProductOrders($ticket_id: uuid!) {
+              update_product_orders(
+                where: { ticket_id: { _eq: $ticket_id }, status: { _eq: "Pending Payment" } },
+                _set: { status: "Confirmed" }
+              ) {
+                affected_rows
+              }
+            }
+          `;
+          // Try to find the attendee's id to link product orders
+          const fetchAttendeeQuery = `
+            query GetAttendeeId($booking_ref: String!) {
+              event_attendees(
+                where: { custom_fields: { _contains: { booking_ref: $booking_ref } } },
+                limit: 1
+              ) {
+                id
+              }
+            }
+          `;
+          try {
+            const attendeeRes = await hasuraRequest<{ event_attendees: { id: string }[] }>(
+              fetchAttendeeQuery, { booking_ref: tx.reference_id }
+            );
+            const attendeeId = attendeeRes?.event_attendees?.[0]?.id;
+            if (attendeeId) {
+              await hasuraRequest(confirmProductOrdersQuery, { ticket_id: attendeeId });
+            }
+          } catch (e) {
+            console.error("[PawaPay] Failed to confirm product orders:", e);
+          }
           // Note: Email sending logic might need to be hooked up here if we want background PDF generation
         } else if (tx.type === "space_subscription") {
           const activateSubQuery = `

@@ -77,6 +77,10 @@ function ProductModal({
     value_amount: "",
     punch_count: "",
     reward_description: "",
+    category: "",
+    available_sizes: "",
+    available_colors: "",
+    specs: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -94,6 +98,10 @@ function ProductModal({
         value_amount: editingProduct.value_amount || "",
         punch_count: editingProduct.punch_count || "",
         reward_description: editingProduct.reward_description || "",
+        category: editingProduct.category || "",
+        available_sizes: Array.isArray(editingProduct.available_sizes) ? editingProduct.available_sizes.join(", ") : (editingProduct.available_sizes || ""),
+        available_colors: Array.isArray(editingProduct.available_colors) ? editingProduct.available_colors.join(", ") : (editingProduct.available_colors || ""),
+        specs: editingProduct.specs ? JSON.stringify(editingProduct.specs) : "",
       });
       setImagePreview(editingProduct.image_url || "");
     } else if (open && !editingProduct) {
@@ -106,6 +114,10 @@ function ProductModal({
         value_amount: "",
         punch_count: "",
         reward_description: "",
+        category: "",
+        available_sizes: "",
+        available_colors: "",
+        specs: "",
       });
       setImagePreview("");
       setStep(1);
@@ -132,6 +144,20 @@ function ProductModal({
         reward_description: formData.type === "loyalty_card" ? formData.reward_description : null,
         is_active: true,
       };
+
+      // Parse variant fields for physical merchandise
+      if (formData.type === "physical") {
+        if (formData.category) payload.category = formData.category;
+        if (formData.available_sizes) {
+          payload.available_sizes = formData.available_sizes.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+        if (formData.available_colors) {
+          payload.available_colors = formData.available_colors.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+        if (formData.specs) {
+          try { payload.specs = JSON.parse(formData.specs); } catch { /* ignore invalid JSON */ }
+        }
+      }
 
       if (imageFile) {
         payload.image_url = await uploadFileToStorage(imageFile, "events/products");
@@ -431,6 +457,52 @@ function ProductModal({
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
+
+            {/* Physical Merch Variant Fields */}
+            {formData.type === "physical" && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(v) => setFormData({ ...formData, category: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tshirts">T-Shirts</SelectItem>
+                      <SelectItem value="caps">Caps / Hats</SelectItem>
+                      <SelectItem value="jumpers">Jumpers / Hoodies</SelectItem>
+                      <SelectItem value="clothes">Clothes / Apparel</SelectItem>
+                      <SelectItem value="devices">Devices / Electronics</SelectItem>
+                      <SelectItem value="accessories">Accessories</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Available Sizes <span className="text-muted-foreground font-normal">(comma-separated)</span></Label>
+                  <Input
+                    placeholder="e.g. XS, S, M, L, XL, XXL"
+                    value={formData.available_sizes}
+                    onChange={(e) => setFormData({ ...formData, available_sizes: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">Leave blank if no sizes apply.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Available Colors <span className="text-muted-foreground font-normal">(comma-separated)</span></Label>
+                  <Input
+                    placeholder="e.g. Black, White, Red, Blue"
+                    value={formData.available_colors}
+                    onChange={(e) => setFormData({ ...formData, available_colors: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">Leave blank if no color options apply.</p>
+                </div>
+              </div>
+            )}
 
             <div className="pt-4 flex justify-end gap-2 border-t">
               <Button variant="ghost" type="button" onClick={() => setOpen(false)}>

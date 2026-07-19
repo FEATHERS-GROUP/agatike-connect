@@ -13,6 +13,7 @@ import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
+import { getEventProducts, createProductOrders } from "@/api/products";
 import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
@@ -92,6 +93,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     queryFn: () =>
       getWorkspaceVipPrivileges({ data: { workspace_id: event?.workspace_id! } } as any),
     enabled: !!event?.workspace_id,
+  });
+
+  // Fetch event products (merchandise)
+  const { data: eventProducts = [] } = useQuery({
+    queryKey: ["event-products", eventId],
+    queryFn: () => getEventProducts({ data: { event_id: eventId } } as any),
+    enabled: !!eventId,
   });
 
   // Load cart, selected seats, and session-persisted form inputs
@@ -227,6 +235,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (qty <= 0) return sum;
+    if (key.startsWith("merch_")) {
+      const id = key.split("_")[1];
+      const merch = eventProducts.find((p: any) => p.id === id);
+      return sum + (merch ? parseFloat(merch.price || 0) * qty : 0);
+    }
     const [, tierId] = key.split("_");
     const tier = getTierDetails(tierId);
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
@@ -431,6 +444,40 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       } else {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
+      }
+
+      // Insert product_orders for any merchandise in the cart
+      const primaryAttendee = attendees[0];
+      const buyerPhone = primaryAttendee?.phone || "";
+      const buyerEmail = primaryAttendee?.email || "";
+      const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      const productOrderObjects = Object.entries(cart)
+        .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
+        .map(([key, qty]) => {
+          const parts = key.split("_");
+          const productId = parts[1];
+          const size = parts[2] || null;
+          const color = parts[3] || null;
+          const merch = eventProducts.find((p: any) => p.id === productId);
+          return {
+            product_id: productId,
+            qty: String(qty),
+            amount_paid: merch ? parseFloat(merch.price || 0) * qty : 0,
+            status: data.isPawaPay ? "Pending Payment" : "Confirmed",
+            phone: buyerPhone,
+            qr_code_string: `${qrBase}-${productId.substring(0, 6)}`,
+            ticket_id: returned[0]?.id || null,
+            buyer_id: user?.id || null,
+            picked: false,
+            ...(size || color ? { size, color } : {}),
+          };
+        });
+
+      if (productOrderObjects.length > 0) {
+        createProductOrders({ data: { objects: productOrderObjects } } as any).catch((e: any) => {
+          console.error("Failed to create product orders:", e);
+        });
       }
     },
     onError: (e: any) => {
@@ -655,8 +702,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     );
   }
 
+  const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
+
   if (isSuccess) {
-    return <SuccessState eventTitle={event.title} recipientEmail={attendees[0]?.email} />;
+    return <SuccessState eventTitle={event.title} recipientEmail={attendees[0]?.email} hasMerch={hasMerchInCart} />;
   }
 
   return (
