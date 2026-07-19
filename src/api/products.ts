@@ -136,16 +136,25 @@ const GET_WORKSPACE_RECENT_ORDERS = `
     product_orders(
       where: { product: { workspace_id: { _eq: $workspace_id } } },
       order_by: { created_at: desc },
-      limit: 5
+      limit: 250
     ) {
       id
       amount_paid
       status
       picked
       created_at
+      qty
+      size
+      phone
+      qr_code_string
+      decrptions
+      buyer_id
       product {
         name
         type
+        specs 
+        available_sizes
+        available_colors
         event {
           title
         }
@@ -164,7 +173,35 @@ export const getWorkspaceRecentOrders = createServerFn({ method: "POST" }).handl
   const data = await hasuraRequest<{ product_orders: any[] }>(GET_WORKSPACE_RECENT_ORDERS, {
     workspace_id,
   });
-  return data.product_orders || [];
+
+  const orders = data.product_orders || [];
+
+  // Enhance guest orders with attendee names if they exist
+  const guestPhones = orders.filter((o: any) => !o.user && o.phone).map((o: any) => o.phone);
+  if (guestPhones.length > 0) {
+    const attendeesQuery = `
+      query GetGuestAttendees($phones: [String!]!) {
+        event_attendees(where: { phone: { _in: $phones } }) {
+          phone
+          names
+        }
+      }
+    `;
+    const attData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, { phones: guestPhones });
+    const attendees = attData.event_attendees || [];
+    const phoneToName = attendees.reduce((acc: any, a: any) => {
+      if (a.phone && a.names) acc[a.phone] = a.names;
+      return acc;
+    }, {});
+
+    orders.forEach((o: any) => {
+      if (!o.user && o.phone && phoneToName[o.phone]) {
+        o.guest_name = phoneToName[o.phone];
+      }
+    });
+  }
+
+  return orders;
 });
 
 const CREATE_PRODUCT_ORDER = `

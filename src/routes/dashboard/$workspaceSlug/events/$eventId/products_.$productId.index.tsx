@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
-import { ChevronLeft, Edit, ShoppingBag, Ticket, QrCode, Check, Loader2, Image as ImageIcon, Box } from "lucide-react";
+import { ChevronLeft, Edit, ShoppingBag, Ticket, QrCode, Check, Loader2, Image as ImageIcon, Box, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getProduct, getWorkspaceRecentOrders } from "@/api/products";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -17,6 +18,7 @@ function ProductDetailsPage() {
   const productId = params.productId as string;
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", productId],
@@ -29,6 +31,21 @@ function ProductDetailsPage() {
   });
 
   const productOrders = recentOrders?.filter((o: any) => o.product?.name === product?.name) || [];
+
+  const filteredOrders = productOrders.filter((order: any) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const orderId = order.id.split("-")[0].toLowerCase();
+    const buyerName = (order.user?.username || order.guest_name || order.buyer_id || "Guest").toLowerCase();
+    const phone = (order.phone || "").toLowerCase();
+    const qrCode = (order.qr_code_string || "").toLowerCase();
+    return (
+      orderId.includes(query) ||
+      buyerName.includes(query) ||
+      phone.includes(query) ||
+      qrCode.includes(query)
+    );
+  });
 
   if (isLoading) {
     return <div className="p-10 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
@@ -203,16 +220,28 @@ function ProductDetailsPage() {
 
       {/* Orders Section */}
       <div className="mt-16 pt-12 border-t border-border/40">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-2xl font-bold tracking-tight">Recent Sales</h3>
-          <span className="bg-secondary text-secondary-foreground px-4 py-1.5 rounded-full text-sm font-medium">
-            {productOrders.length} Orders
-          </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <h3 className="text-2xl font-bold tracking-tight">Recent Sales</h3>
+            <span className="bg-secondary text-secondary-foreground px-4 py-1.5 rounded-full text-sm font-medium">
+              {productOrders.length} Orders
+            </span>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-secondary/30 border border-border/40 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
+            />
+          </div>
         </div>
 
         {isLoadingOrders ? (
           <div className="p-12 flex justify-center border border-border/40 rounded-3xl bg-card"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-        ) : productOrders.length > 0 ? (
+        ) : filteredOrders.length > 0 ? (
           <div className="bg-card border border-border/40 rounded-3xl shadow-[var(--shadow-card)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -220,25 +249,33 @@ function ProductDetailsPage() {
                   <tr>
                     <th className="px-6 py-5 font-bold tracking-wider">Order ID</th>
                     <th className="px-6 py-5 font-bold tracking-wider">Buyer</th>
+                    <th className="px-6 py-5 font-bold tracking-wider">Phone</th>
+                    <th className="px-6 py-5 font-bold tracking-wider">QR Code</th>
                     <th className="px-6 py-5 font-bold tracking-wider">Qty</th>
                     <th className="px-6 py-5 font-bold tracking-wider">Variant</th>
                     <th className="px-6 py-5 font-bold tracking-wider">Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {productOrders.map((order: any) => (
+                  {filteredOrders.map((order: any) => (
                     <tr key={order.id} className="border-b border-border/20 last:border-0 hover:bg-secondary/10 transition-colors">
                       <td className="px-6 py-4 font-mono text-xs text-muted-foreground">
                         {order.id.split("-")[0]}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-foreground">{order.user?.username || order.buyer_id || "Guest"}</span>
+                          <span className="font-semibold text-foreground">{order.user?.username || order.guest_name || order.buyer_id || "Guest"}</span>
                           {order.user?.email && <span className="text-xs text-muted-foreground">{order.user.email}</span>}
                         </div>
                       </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm">{order.phone || "-"}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-xs text-muted-foreground bg-secondary/30 px-2 py-1 rounded">{order.qr_code_string || "-"}</span>
+                      </td>
                       <td className="px-6 py-4 font-bold">
-                        {order.qty}
+                        {order.qty || 1}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
@@ -260,8 +297,8 @@ function ProductDetailsPage() {
           <div className="py-16 text-center text-muted-foreground bg-secondary/10 rounded-3xl border border-dashed border-border/60">
             <div className="flex flex-col items-center justify-center gap-3">
               <ShoppingBag className="h-12 w-12 text-muted-foreground/30" />
-              <p className="text-lg font-medium">No sales yet.</p>
-              <p className="text-sm">When users purchase this item, their orders will appear here.</p>
+              <p className="text-lg font-medium">{productOrders.length > 0 ? "No matching orders found." : "No sales yet."}</p>
+              <p className="text-sm">{productOrders.length > 0 ? "Try adjusting your search query." : "When users purchase this item, their orders will appear here."}</p>
             </div>
           </div>
         )}

@@ -45,12 +45,14 @@ export function DesktopRecentOrders() {
                   <div className="min-w-0">
                     <p className="font-medium truncate">
                       {order.user?.username ||
+                        order.guest_name ||
                         order.user?.handle ||
                         order.user?.email ||
-                        "Unknown User"}
+                        order.buyer_id ||
+                        "Guest"}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                      <span className="font-medium text-foreground/80">{order.product?.name}</span>
+                      <span className="font-medium text-foreground/80">{order.qty || 1}x {order.product?.name}</span>
                       {order.product?.event?.title && (
                         <>
                           <span className="opacity-50">•</span>
