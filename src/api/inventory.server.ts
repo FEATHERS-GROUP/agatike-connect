@@ -30,14 +30,14 @@ export async function deductInventoryFromOrders(orders: any[]) {
 
       let newSoldCount = Number(product.sold_count || 0);
       let newStockLimit = product.stock_limit ? Number(product.stock_limit) : null;
-      
+
       const sizes = Array.isArray(product.available_sizes) ? [...product.available_sizes] : [];
 
       // 2. Process each order against the inventory
       for (const order of productOrders) {
         const qty = Number(order.qty || 1);
         newSoldCount += qty;
-        
+
         if (newStockLimit !== null) {
           newStockLimit = Math.max(0, newStockLimit - qty);
         }
@@ -53,12 +53,12 @@ export async function deductInventoryFromOrders(orders: any[]) {
 
         if (parsedSize) {
           const sizeObj = sizes.find((s: any) => s.name === parsedSize);
-          if (sizeObj && typeof sizeObj.stock === 'number') {
+          if (sizeObj && typeof sizeObj.stock === "number") {
             sizeObj.stock = Math.max(0, sizeObj.stock - qty);
-            
+
             if (parsedColor && Array.isArray(sizeObj.colors)) {
               const colorObj = sizeObj.colors.find((c: any) => c.name === parsedColor);
-              if (colorObj && typeof colorObj.stock === 'number') {
+              if (colorObj && typeof colorObj.stock === "number") {
                 colorObj.stock = Math.max(0, colorObj.stock - qty);
               }
             }
@@ -67,13 +67,13 @@ export async function deductInventoryFromOrders(orders: any[]) {
             parsedColor = parsedSize;
             parsedSize = null;
           }
-        } 
-        
+        }
+
         if (!parsedSize && parsedColor) {
           for (const sizeObj of sizes) {
             if (Array.isArray(sizeObj.colors)) {
               const colorObj = sizeObj.colors.find((c: any) => c.name === parsedColor);
-              if (colorObj && typeof colorObj.stock === 'number') {
+              if (colorObj && typeof colorObj.stock === "number") {
                 colorObj.stock = Math.max(0, colorObj.stock - qty);
                 break;
               }
@@ -102,7 +102,7 @@ export async function deductInventoryFromOrders(orders: any[]) {
           }
         }
       `;
-      
+
       await hasuraRequest(updateQuery, {
         id: productId,
         sold_count: String(newSoldCount),

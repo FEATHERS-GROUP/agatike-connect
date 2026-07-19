@@ -525,20 +525,20 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
           const pawaData = await response.json();
           const providerStatus = Array.isArray(pawaData) ? pawaData[0]?.status : pawaData.status;
 
-            if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED")) {
-              const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
-              
-              // Simulate a webhook request to reuse the exact same completion/failure logic (Email, SMS, Wallet, Earnings)
-              const mockRequest = new Request("http://localhost:3000/api/pawapay/deposits", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(pawaPayload)
-              });
-              
-              const { handlePawaPayWebhook } = await import("./pawapay.server");
-              await handlePawaPayWebhook(mockRequest);
-              
-              const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
+          if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED")) {
+            const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
+
+            // Simulate a webhook request to reuse the exact same completion/failure logic (Email, SMS, Wallet, Earnings)
+            const mockRequest = new Request("http://localhost:3000/api/pawapay/deposits", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(pawaPayload),
+            });
+
+            const { handlePawaPayWebhook } = await import("./pawapay.server");
+            await handlePawaPayWebhook(mockRequest);
+
+            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
 
             // Update local object so the frontend sees it immediately
             tx.status = newStatus;

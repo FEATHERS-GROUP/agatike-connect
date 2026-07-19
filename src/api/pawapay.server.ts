@@ -67,7 +67,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                returning { customer_fee }
              }
           }`,
-          { txId: tx.id, status: tx.status }
+          { txId: tx.id, status: tx.status },
         );
         customerFee = earnRes.update_earnings?.returning?.[0]?.customer_fee || 0;
       }
@@ -99,7 +99,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               }
             }
           `;
-          const attendeeRes = await hasuraRequest<{ update_event_attendees: { returning: any[] } }>(confirmQuery, { booking_ref: tx.reference_id });
+          const attendeeRes = await hasuraRequest<{ update_event_attendees: { returning: any[] } }>(
+            confirmQuery,
+            { booking_ref: tx.reference_id },
+          );
           const confirmedAttendees = attendeeRes.update_event_attendees?.returning || [];
 
           // Also confirm any product_orders that are pending payment linked to tickets in this booking
@@ -122,7 +125,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           `;
           let confirmedOrders: any[] = [];
           try {
-            const confirmRes = await hasuraRequest<{ update_product_orders: any }>(confirmProductOrdersQuery, { booking_ref: tx.reference_id });
+            const confirmRes = await hasuraRequest<{ update_product_orders: any }>(
+              confirmProductOrdersQuery,
+              { booking_ref: tx.reference_id },
+            );
             confirmedOrders = confirmRes?.update_product_orders?.returning || [];
             if (confirmedOrders.length > 0) {
               const { deductInventoryFromOrders } = await import("./inventory.server");
@@ -133,7 +139,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           }
 
           const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
-          const appUrl = process.env.PROJECT_PRODUCTION_URL ? `https://${process.env.PROJECT_PRODUCTION_URL}` : "https://agatike.com";
+          const appUrl = process.env.PROJECT_PRODUCTION_URL
+            ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+            : "https://agatike.com";
 
           let eventName = "Your Event";
           let dateStr = "TBD";
@@ -141,26 +149,37 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           if (firstAtt?.events) {
             eventName = firstAtt.events.title || eventName;
-            const tourStops = Array.isArray(firstAtt.events.tour_stops) ? firstAtt.events.tour_stops :
-              (firstAtt.events.tour_stops ? [firstAtt.events.tour_stops] : []);
+            const tourStops = Array.isArray(firstAtt.events.tour_stops)
+              ? firstAtt.events.tour_stops
+              : firstAtt.events.tour_stops
+                ? [firstAtt.events.tour_stops]
+                : [];
             const firstStop = tourStops[0] || {};
             dateStr = `${firstStop.date || "TBD"} ${firstStop.time || ""}`.trim();
             eventLocation = firstStop.venue || firstStop.city || "";
           }
 
-          const ticketCodes = confirmedAttendees.map(a => a.qrcode_number).filter(Boolean).join(", ");
-          const productsText = confirmedOrders.length > 0
-            ? `Products: ${confirmedOrders.map(o => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}`
-            : "";
-          const feeText = customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
+          const ticketCodes = confirmedAttendees
+            .map((a) => a.qrcode_number)
+            .filter(Boolean)
+            .join(", ");
+          const productsText =
+            confirmedOrders.length > 0
+              ? `Products: ${confirmedOrders.map((o) => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}`
+              : "";
+          const feeText =
+            customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
 
-          const detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
+          const detailedMessage =
+            `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
 
           if (firstAtt) {
             const { sendAttendeeEmail } = await import("./email");
             const orgName = firstAtt.events?.workspaces?.name || "The Organizer";
 
-            const emailAddresses = [...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean))];
+            const emailAddresses = [
+              ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
+            ];
 
             for (const email of emailAddresses) {
               await sendAttendeeEmail({
@@ -172,15 +191,16 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   organizerName: orgName,
                   appUrl,
                   badgeLink: `${appUrl}/ticket/${firstAtt.id}`,
-                }
-              } as any).catch(e => console.error("Failed to send attendee email", e));
+                },
+              } as any).catch((e) => console.error("Failed to send attendee email", e));
             }
           }
 
           // Send Event SMS with direct ticket links and products
           let phoneToNotify = body?.payer?.address?.value;
           if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
-          if (!phoneToNotify && confirmedOrders.length > 0) phoneToNotify = confirmedOrders[0].phone;
+          if (!phoneToNotify && confirmedOrders.length > 0)
+            phoneToNotify = confirmedOrders[0].phone;
 
           if (phoneToNotify) {
             const { sendSMS } = await import("./pindo");

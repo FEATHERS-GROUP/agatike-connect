@@ -55,7 +55,8 @@ export function OrderSummary({
           <h3 className="text-white font-bold text-lg leading-tight drop-shadow">{event.title}</h3>
           {category && (
             <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/70 bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20">
-              <Tag className="h-2.5 w-2.5" />{category}
+              <Tag className="h-2.5 w-2.5" />
+              {category}
             </span>
           )}
         </div>
@@ -92,7 +93,9 @@ export function OrderSummary({
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <User className="h-3.5 w-3.5 text-primary" />
             </div>
-            <span>Hosted by <span className="text-foreground font-medium">{organizer}</span></span>
+            <span>
+              Hosted by <span className="text-foreground font-medium">{organizer}</span>
+            </span>
           </div>
         )}
       </div>
@@ -110,14 +113,14 @@ export function OrderSummary({
             return (
               <div key={cartKey} className="flex justify-between items-start">
                 <span className="flex flex-col">
-                  <span>{qty}x {merch?.name || "Merchandise"}</span>
+                  <span>
+                    {qty}x {merch?.name || "Merchandise"}
+                  </span>
                   {variantInfo && (
                     <span className="text-[11px] text-muted-foreground">{variantInfo}</span>
                   )}
                 </span>
-                <span className="font-medium">
-                  {formatCurrency(lineTotal, currency)}
-                </span>
+                <span className="font-medium">{formatCurrency(lineTotal, currency)}</span>
               </div>
             );
           }

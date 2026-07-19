@@ -133,7 +133,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     if (!isHydrated || Object.keys(cart).length === 0) return;
 
     // Only count ticket entries (not merch) for attendees comparison
-    const totalTicketsInCart = Object.entries(cart).reduce((sum, [key, qty]) => key.startsWith("merch_") ? sum : sum + qty, 0);
+    const totalTicketsInCart = Object.entries(cart).reduce(
+      (sum, [key, qty]) => (key.startsWith("merch_") ? sum : sum + qty),
+      0,
+    );
     if (attendees.length === totalTicketsInCart && totalTicketsInCart > 0) return;
 
     const availableSeats = [...selectedSeats];
@@ -485,7 +488,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
       }
-
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
@@ -713,7 +715,13 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
 
   if (isSuccess) {
-    return <SuccessState eventTitle={event.title} recipientEmail={attendees[0]?.email} hasMerch={hasMerchInCart} />;
+    return (
+      <SuccessState
+        eventTitle={event.title}
+        recipientEmail={attendees[0]?.email}
+        hasMerch={hasMerchInCart}
+      />
+    );
   }
 
   return (

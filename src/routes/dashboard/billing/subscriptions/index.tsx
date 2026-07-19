@@ -177,7 +177,6 @@ function SubscriptionsPage() {
             asChild
             size="lg"
             className="rounded-full px-10 h-14 text-lg shadow-[var(--shadow-glow)] transition-transform hover:-translate-y-1 hover:scale-105 relative z-10"
-
             style={{ background: "var(--gradient-primary)" }}
           >
             <Link to="/dashboard/billing/subscriptions/pricingplans">

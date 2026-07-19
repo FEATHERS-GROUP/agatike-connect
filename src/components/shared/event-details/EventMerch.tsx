@@ -25,7 +25,9 @@ export function EventMerch({
   cart?: Record<string, number>;
   setCart?: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
 }) {
-  const [selections, setSelections] = useState<Record<string, { size?: string; color?: string }>>({});
+  const [selections, setSelections] = useState<Record<string, { size?: string; color?: string }>>(
+    {},
+  );
 
   if (activeMerch.length === 0) return null;
 
@@ -47,16 +49,16 @@ export function EventMerch({
       // Keys are formatted as merch_ID_SIZE_COLOR
       if (key.startsWith(`merch_${m.id}`)) {
         globalQty += val;
-        
+
         if (effectiveSize) {
-           // We need to match the size exactly, so we include the underscore
-           const sizePrefix = `merch_${m.id}_${effectiveSize}`;
-           if (key === sizePrefix || key.startsWith(`${sizePrefix}_`)) {
-             sizeQty += val;
-             if (selectedColor && key === `${sizePrefix}_${selectedColor}`) {
-               colorQty += val;
-             }
-           }
+          // We need to match the size exactly, so we include the underscore
+          const sizePrefix = `merch_${m.id}_${effectiveSize}`;
+          if (key === sizePrefix || key.startsWith(`${sizePrefix}_`)) {
+            sizeQty += val;
+            if (selectedColor && key === `${sizePrefix}_${selectedColor}`) {
+              colorQty += val;
+            }
+          }
         }
       }
     });
@@ -80,7 +82,7 @@ export function EventMerch({
     if (!setCart) return;
     const sel = selections[m.id] || {};
     const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
-    
+
     let effectiveSize = sel.size;
     if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
       effectiveSize = "One Size";
@@ -92,7 +94,7 @@ export function EventMerch({
     let hasColors = false;
     let colorLimit = Number.POSITIVE_INFINITY;
     let sizeLimit = Number.POSITIVE_INFINITY;
-    
+
     if (effectiveSize) {
       const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
       if (sizeObj) {
@@ -106,14 +108,16 @@ export function EventMerch({
         }
       }
     }
-    
+
     if (hasColors && !sel.color) return;
 
     const { globalQty, sizeQty, colorQty } = getCartTotals(m, effectiveSize, sel.color);
-    
+
     const parsedStockLimit = parseInt(m.stock_limit, 10);
     const parsedSoldCount = parseInt(m.sold_count, 10) || 0;
-    const globalLimit = !isNaN(parsedStockLimit) ? parsedStockLimit - parsedSoldCount : Number.POSITIVE_INFINITY;
+    const globalLimit = !isNaN(parsedStockLimit)
+      ? parsedStockLimit - parsedSoldCount
+      : Number.POSITIVE_INFINITY;
 
     if (globalQty >= globalLimit) return;
     if (sizeQty >= sizeLimit) return;
@@ -154,12 +158,12 @@ export function EventMerch({
           const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
           const sel = selections[m.id] || {};
           const qty = getItemQty(m);
-          
+
           let effectiveSize = sel.size;
           if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
             effectiveSize = "One Size";
           }
-          
+
           let availableColors: any[] = [];
           if (effectiveSize) {
             const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
@@ -172,7 +176,7 @@ export function EventMerch({
 
           const needsSize = sizesArr.length > 0 && !effectiveSize;
           const needsColor = availableColors.length > 0 && !sel.color;
-          
+
           let colorLimit = Number.POSITIVE_INFINITY;
           let sizeLimit = Number.POSITIVE_INFINITY;
 
@@ -190,18 +194,29 @@ export function EventMerch({
           }
 
           const { globalQty, sizeQty, colorQty } = getCartTotals(m, effectiveSize, sel.color);
-          
+
           const parsedStockLimit = parseInt(m.stock_limit, 10);
           const parsedSoldCount = parseInt(m.sold_count, 10) || 0;
-          const globalLimit = !isNaN(parsedStockLimit) ? parsedStockLimit - parsedSoldCount : Number.POSITIVE_INFINITY;
+          const globalLimit = !isNaN(parsedStockLimit)
+            ? parsedStockLimit - parsedSoldCount
+            : Number.POSITIVE_INFINITY;
 
-          const isStockExceeded = globalQty >= globalLimit || sizeQty >= sizeLimit || colorQty >= colorLimit;
+          const isStockExceeded =
+            globalQty >= globalLimit || sizeQty >= sizeLimit || colorQty >= colorLimit;
           const canAdd = !needsSize && !needsColor && !isStockExceeded;
 
           return (
-            <div key={m.id} className="overflow-hidden rounded-2xl border border-border/60 bg-card flex flex-col">
+            <div
+              key={m.id}
+              className="overflow-hidden rounded-2xl border border-border/60 bg-card flex flex-col"
+            >
               {m.image ? (
-                <img src={m.image} alt={m.name} className="aspect-square w-full object-cover" loading="lazy" />
+                <img
+                  src={m.image}
+                  alt={m.name}
+                  className="aspect-square w-full object-cover"
+                  loading="lazy"
+                />
               ) : (
                 <div className="aspect-square w-full bg-secondary/40 flex items-center justify-center">
                   <ShoppingBag className="h-10 w-10 text-muted-foreground/30" />
@@ -239,16 +254,29 @@ export function EventMerch({
                   />
                 ) : (
                   <div className="mt-auto flex items-center justify-between pt-1">
-                    <span className="text-sm font-semibold">{formatCurrency(m.price, currencyCode)}</span>
+                    <span className="text-sm font-semibold">
+                      {formatCurrency(m.price, currencyCode)}
+                    </span>
 
                     {setCart ? (
                       qty > 0 ? (
                         <div className="flex items-center gap-1.5 bg-background rounded-full border px-1 shadow-sm">
-                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => handleRemove(m)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 rounded-full"
+                            onClick={() => handleRemove(m)}
+                          >
                             <Minus className="h-3 w-3" />
                           </Button>
                           <span className="text-xs font-semibold w-4 text-center">{qty}</span>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => handleAdd(m)} disabled={isStockExceeded}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 rounded-full"
+                            onClick={() => handleAdd(m)}
+                            disabled={isStockExceeded}
+                          >
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
@@ -265,7 +293,9 @@ export function EventMerch({
                         </Button>
                       )
                     ) : (
-                      <Button size="sm" variant="outline" className="rounded-full h-7 text-xs">Add</Button>
+                      <Button size="sm" variant="outline" className="rounded-full h-7 text-xs">
+                        Add
+                      </Button>
                     )}
                   </div>
                 )}

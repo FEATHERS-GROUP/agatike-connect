@@ -7,7 +7,7 @@ export const Route = createFileRoute("/map")({
 
 const MapClient = lazy(() => import("@/components/site/MapClient"));
 const MapDesktop = lazy(() =>
-  import("@/components/desktop/MapDesktop").then((m) => ({ default: m.MapDesktop }))
+  import("@/components/desktop/MapDesktop").then((m) => ({ default: m.MapDesktop })),
 );
 
 function MapPage() {

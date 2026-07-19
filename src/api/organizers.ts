@@ -654,54 +654,56 @@ export const sendAccountConversionOtp = createServerFn({ method: "POST" }).handl
   return { success: true, token };
 });
 
-export const verifyConversionCredentials = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const session = await getSession();
-  if (!session || !session.sub) throw new Error("unauthenticated");
+export const verifyConversionCredentials = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const session = await getSession();
+    if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const data = ctx.data as unknown as {
-    password?: string;
-    otp?: string;
-    otpToken?: string;
-  };
+    const data = ctx.data as unknown as {
+      password?: string;
+      otp?: string;
+      otpToken?: string;
+    };
 
-  if (!data.password || !data.otp || !data.otpToken) {
-    throw new Error("Missing verification details");
-  }
-
-  // Verify OTP
-  try {
-    const { payload } = await jwtVerify(data.otpToken, SECRET);
-    if (payload.type !== "conversion_otp") {
-      throw new Error("Invalid OTP token");
+    if (!data.password || !data.otp || !data.otpToken) {
+      throw new Error("Missing verification details");
     }
 
-    const isValidOtp = await bcrypt.compare(data.otp, payload.otp as string);
-    if (!isValidOtp) {
-      throw new Error("Incorrect OTP provided");
-    }
-  } catch (e: any) {
-    throw new Error("Invalid or expired OTP");
-  }
+    // Verify OTP
+    try {
+      const { payload } = await jwtVerify(data.otpToken, SECRET);
+      if (payload.type !== "conversion_otp") {
+        throw new Error("Invalid OTP token");
+      }
 
-  // Verify Password
-  const pwdQuery = `
+      const isValidOtp = await bcrypt.compare(data.otp, payload.otp as string);
+      if (!isValidOtp) {
+        throw new Error("Incorrect OTP provided");
+      }
+    } catch (e: any) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    // Verify Password
+    const pwdQuery = `
     query GetPassword($id: uuid!) {
       organizers_by_pk(id: $id) {
         password
       }
     }
   `;
-  const pwdData = await hasuraRequest<{ organizers_by_pk: any }>(pwdQuery, {
-    id: session.sub,
-  });
+    const pwdData = await hasuraRequest<{ organizers_by_pk: any }>(pwdQuery, {
+      id: session.sub,
+    });
 
-  if (!pwdData.organizers_by_pk) throw new Error("Organizer not found");
+    if (!pwdData.organizers_by_pk) throw new Error("Organizer not found");
 
-  const validPwd = await bcrypt.compare(data.password, pwdData.organizers_by_pk.password);
-  if (!validPwd) throw new Error("Incorrect current password");
+    const validPwd = await bcrypt.compare(data.password, pwdData.organizers_by_pk.password);
+    if (!validPwd) throw new Error("Incorrect current password");
 
-  return { success: true };
-});
+    return { success: true };
+  },
+);
 
 export const convertOrganizerAccount = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const session = await getSession();
@@ -784,7 +786,6 @@ export const convertOrganizerAccount = createServerFn({ method: "POST" }).handle
     business_cert: data.business_cert || "",
     active: false,
   });
-
 
   // Slack webhook notification
   const slackUrl = process.env.SLACK_WEBHOOK_URL;

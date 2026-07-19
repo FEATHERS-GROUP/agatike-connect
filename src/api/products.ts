@@ -16,7 +16,9 @@ export const createProduct = createServerFn({ method: "POST" }).handler(async (c
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const productData = (ctx.data as any).data ? { ...(ctx.data as any).data } : { ...(ctx.data as any) };
+  const productData = (ctx.data as any).data
+    ? { ...(ctx.data as any).data }
+    : { ...(ctx.data as any) };
   productData.organizer_id = session.sub;
 
   return hasuraRequest(CREATE_PRODUCT, { object: productData });
@@ -192,7 +194,9 @@ export const getWorkspaceRecentOrders = createServerFn({ method: "POST" }).handl
         }
       }
     `;
-    const attData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, { phones: guestPhones });
+    const attData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, {
+      phones: guestPhones,
+    });
     const attendees = attData.event_attendees || [];
     const phoneToName = attendees.reduce((acc: any, a: any) => {
       if (a.phone && a.names) acc[a.phone] = a.names;

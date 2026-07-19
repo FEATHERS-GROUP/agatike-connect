@@ -152,7 +152,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
     // If we loaded attendees from session storage and the quantity matches the cart, don't wipe them out!
     // Only count ticket entries (not merch) for attendees comparison
-    const totalTicketsInCart = Object.entries(cart).reduce((sum, [key, qty]) => key.startsWith("merch_") ? sum : sum + qty, 0);
+    const totalTicketsInCart = Object.entries(cart).reduce(
+      (sum, [key, qty]) => (key.startsWith("merch_") ? sum : sum + qty),
+      0,
+    );
     if (attendees.length === totalTicketsInCart && totalTicketsInCart > 0) return;
 
     const availableSeats = [...selectedSeats];
@@ -474,7 +477,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
       }
-
     },
     onError: (e: any) => {
       toast.error(e.message || "Checkout failed");
@@ -762,14 +764,24 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         </div>
         <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}.
+          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
+          .
         </p>
 
         {hasMerchInCart && (
           <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <svg className="h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                <svg
+                  className="h-5 w-5 text-primary"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                </svg>
               </div>
               <div>
                 <p className="font-semibold">Merchandise Order</p>
@@ -777,29 +789,36 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Your merchandise can be picked up <strong className="text-foreground">on the day of the event</strong>.
-              Please collect it at the merchandise desk using either method below:
+              Your merchandise can be picked up{" "}
+              <strong className="text-foreground">on the day of the event</strong>. Please collect
+              it at the merchandise desk using either method below:
             </p>
             <div className="space-y-3">
               <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
                 <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Phone Number Pickup</p>
-                  <p className="text-xs text-muted-foreground">Show your registered phone number at the merchandise desk.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Show your registered phone number at the merchandise desk.
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
                 <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
-                  <p className="text-xs text-muted-foreground">Show your event ticket QR code — staff will scan it and hand you your order.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Show your event ticket QR code — staff will scan it and hand you your order.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
+        <p className="text-sm text-muted-foreground animate-pulse">
+          Redirecting to event details...
+        </p>
       </div>
     );
   }
@@ -829,10 +848,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-3">
-              <h3 className="text-white font-bold text-base leading-tight drop-shadow">{event.title}</h3>
+              <h3 className="text-white font-bold text-base leading-tight drop-shadow">
+                {event.title}
+              </h3>
               {event.category && (
                 <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/70 bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20">
-                  <Tag className="h-2.5 w-2.5" />{event.category}
+                  <Tag className="h-2.5 w-2.5" />
+                  {event.category}
                 </span>
               )}
             </div>
@@ -843,20 +865,30 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             {((event as any).date || event.tour_stops?.[0]?.date) && (
               <div className="flex items-center gap-2.5 text-sm">
                 <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="font-medium">{(event as any).date || event.tour_stops?.[0]?.date}</span>
+                <span className="font-medium">
+                  {(event as any).date || event.tour_stops?.[0]?.date}
+                </span>
               </div>
             )}
             {((event as any).time || event.tour_stops?.[0]?.time) && (
               <div className="flex items-center gap-2.5 text-sm">
                 <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="font-medium">{(event as any).time || event.tour_stops?.[0]?.time}</span>
+                <span className="font-medium">
+                  {(event as any).time || event.tour_stops?.[0]?.time}
+                </span>
               </div>
             )}
-            {((event as any).venue || (event as any).city || event.tour_stops?.[0]?.venue || event.tour_stops?.[0]?.city) && (
+            {((event as any).venue ||
+              (event as any).city ||
+              event.tour_stops?.[0]?.venue ||
+              event.tour_stops?.[0]?.city) && (
               <div className="flex items-center gap-2.5 text-sm">
                 <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
                 <span className="font-medium">
-                  {[(event as any).venue || event.tour_stops?.[0]?.venue, (event as any).city || event.tour_stops?.[0]?.city]
+                  {[
+                    (event as any).venue || event.tour_stops?.[0]?.venue,
+                    (event as any).city || event.tour_stops?.[0]?.city,
+                  ]
                     .filter(Boolean)
                     .join(", ")}
                 </span>
@@ -865,7 +897,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             {(event.workspaces?.organizer?.name || event.workspaces?.name) && (
               <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <User className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span>Hosted by <span className="text-foreground font-medium">{event.workspaces?.organizer?.name || event.workspaces?.name}</span></span>
+                <span>
+                  Hosted by{" "}
+                  <span className="text-foreground font-medium">
+                    {event.workspaces?.organizer?.name || event.workspaces?.name}
+                  </span>
+                </span>
               </div>
             )}
           </div>
@@ -883,7 +920,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 return (
                   <div key={cartKey} className="flex justify-between items-start text-sm">
                     <span className="flex flex-col">
-                      <span>{qty}x {merch?.name || "Merchandise"}</span>
+                      <span>
+                        {qty}x {merch?.name || "Merchandise"}
+                      </span>
                       {variantInfo && (
                         <span className="text-[11px] text-muted-foreground">{variantInfo}</span>
                       )}

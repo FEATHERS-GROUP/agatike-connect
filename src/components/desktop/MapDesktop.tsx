@@ -3,7 +3,17 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, MessageSquare, ArrowLeft, Maximize2, ZoomIn, ZoomOut, Compass, X, ChevronRight } from "lucide-react";
+import {
+  MapPin,
+  MessageSquare,
+  ArrowLeft,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+  Compass,
+  X,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -14,16 +24,17 @@ import { getOrganizers } from "@/api/organizers";
 import { getUserAllTickets } from "@/api/user_tickets";
 import { getPublicCinemas, getPublicMovieSchedules } from "@/api/cinemas";
 import { useTheme } from "@/contexts/ThemeContext";
-import { isWeekendEvent } from "@/lib/utils"; 
+import { isWeekendEvent } from "@/lib/utils";
 
 const normalizeCityName = (city?: string) => {
   if (!city) return "Unknown";
   const clean = city.trim().toLowerCase();
   if (clean === "kgali" || clean === "kiigali" || clean === "kigali") return "Kigali";
-  return clean.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  return clean
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 };
-
-
 
 // --- MAP COMPONENTS ---
 
@@ -119,7 +130,7 @@ export function MapDesktop() {
   // Data processing
   const upcomingEvents = useMemo(() => {
     const publicEvents = dbEvents.filter(
-      (e: any) => e.allowed_public === true && e.deleted !== true
+      (e: any) => e.allowed_public === true && e.deleted !== true,
     );
     // Return first 10 for display
     return publicEvents.slice(0, 10).map((e: any) => {
@@ -134,7 +145,9 @@ export function MapDesktop() {
           month: "long",
           year: "numeric",
         }),
-        image: e.cover || "https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=200",
+        image:
+          e.cover ||
+          "https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=200",
       };
     });
   }, [dbEvents]);
@@ -151,13 +164,13 @@ export function MapDesktop() {
         name: t.venueName || t.cinema || "Organizer",
         avatar: t.cover,
       },
-      link: t.isVenueBooking ? `/dashboard/tickets/${t.id}` : `/tickets/${t.id}`
+      link: t.isVenueBooking ? `/dashboard/tickets/${t.id}` : `/tickets/${t.id}`,
     }));
   }, [userTickets]);
 
   const mapMarkers = useMemo(() => {
     const markers: any[] = [];
-    
+
     // Process Events
     dbEvents.forEach((e: any) => {
       const firstStopWithCoords = e.tour_stops?.find((s: any) => s.latitude && s.longitude);
@@ -168,7 +181,9 @@ export function MapDesktop() {
           date: new Date(e.created_at).toLocaleDateString(),
           lat: parseFloat(firstStopWithCoords.latitude),
           lng: parseFloat(firstStopWithCoords.longitude),
-          image: e.cover || "https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=100",
+          image:
+            e.cover ||
+            "https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=100",
           type: "event",
           city: normalizeCityName(firstStopWithCoords.city),
           raw: e,
@@ -185,7 +200,9 @@ export function MapDesktop() {
           date: v.city,
           lat: parseFloat(v.latitude),
           lng: parseFloat(v.longitude),
-          image: v.cover_url || "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=100",
+          image:
+            v.cover_url ||
+            "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=100",
           type: "venue",
           city: normalizeCityName(v.city),
           raw: v,
@@ -202,7 +219,10 @@ export function MapDesktop() {
           title: org.name,
           lat: parseFloat(org.lat),
           lng: parseFloat(org.lng),
-          image: org.avatar || org.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`,
+          image:
+            org.avatar ||
+            org.image ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`,
           type: "user",
           city: normalizeCityName("Unknown"), // Organizers don't typically have a direct city mapped here
           raw: org,
@@ -220,7 +240,9 @@ export function MapDesktop() {
           date: firstLoc.city,
           lat: parseFloat(firstLoc.lat),
           lng: parseFloat(firstLoc.lng),
-          image: s.cover_url || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=100",
+          image:
+            s.cover_url ||
+            "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=100",
           type: "space",
           city: normalizeCityName(firstLoc.city),
           raw: s,
@@ -237,7 +259,9 @@ export function MapDesktop() {
           date: c.city,
           lat: parseFloat(c.latitude),
           lng: parseFloat(c.longitude),
-          image: c.cover_url || "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=100",
+          image:
+            c.cover_url ||
+            "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=100",
           type: "cinema",
           city: normalizeCityName(c.city),
           raw: c,
@@ -245,13 +269,25 @@ export function MapDesktop() {
       }
     });
 
-    return markers.filter(m => !isNaN(m.lat) && !isNaN(m.lng) && isFinite(m.lat) && isFinite(m.lng));
+    return markers.filter(
+      (m) => !isNaN(m.lat) && !isNaN(m.lng) && isFinite(m.lat) && isFinite(m.lng),
+    );
   }, [dbEvents, dbVenues, dbOrganizers, dbSpaces, dbCinemas]);
 
   const groupedCities = useMemo(() => {
-    const cityMap = new Map<string, { name: string, count: number, lat: number, lng: number, image: string, bounds: [number, number][] }>();
-    
-    mapMarkers.forEach(m => {
+    const cityMap = new Map<
+      string,
+      {
+        name: string;
+        count: number;
+        lat: number;
+        lng: number;
+        image: string;
+        bounds: [number, number][];
+      }
+    >();
+
+    mapMarkers.forEach((m) => {
       if (m.type === "user") return; // Skip users for city grouping
       const c = m.city;
       if (!cityMap.has(c)) {
@@ -261,7 +297,7 @@ export function MapDesktop() {
           lat: m.lat,
           lng: m.lng,
           image: m.image,
-          bounds: []
+          bounds: [],
         });
       }
       const existing = cityMap.get(c)!;
@@ -275,9 +311,9 @@ export function MapDesktop() {
   const handleCityClick = (city: any) => {
     if (mapRef && city.bounds.length > 0) {
       if (city.bounds.length === 1) {
-         mapRef.flyTo(city.bounds[0], 13);
+        mapRef.flyTo(city.bounds[0], 13);
       } else {
-         mapRef.flyToBounds(city.bounds, { padding: [50, 50] });
+        mapRef.flyToBounds(city.bounds, { padding: [50, 50] });
       }
     }
   };
@@ -330,7 +366,7 @@ export function MapDesktop() {
         </button>
 
         <h2 className="mb-4 text-xl font-bold tracking-tight px-1 shrink-0">Locations</h2>
-        
+
         <div className="flex flex-col gap-4">
           {groupedCities.map((city) => (
             <div
@@ -344,7 +380,7 @@ export function MapDesktop() {
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              
+
               <div className="absolute inset-0 p-4 flex flex-col justify-end">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold text-white tracking-tight leading-none drop-shadow-md">
@@ -363,45 +399,51 @@ export function MapDesktop() {
       {/* CENTER COLUMN: Map */}
       <div className="relative flex-1 bg-muted">
         <div className="absolute inset-0 z-0">
-          <MapContainer 
-            center={defaultCenter} 
-            zoom={13} 
-            className="h-full w-full z-0" 
+          <MapContainer
+            center={defaultCenter}
+            zoom={13}
+            className="h-full w-full z-0"
             zoomControl={false}
             ref={setMapRef}
           >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url={
-              isDark
-                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            }
-          />
-          
-          <MapController selectedEvent={selectedMarker} />
-          
-          {mapMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
-              position={[marker.lat, marker.lng]}
-              icon={createCustomIcon(marker)}
-              eventHandlers={{
-                click: () => setSelectedMarker(marker),
-              }}
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url={
+                isDark
+                  ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                  : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              }
             />
-          ))}
 
-          <ZoomControls />
-        </MapContainer>
+            <MapController selectedEvent={selectedMarker} />
+
+            {mapMarkers.map((marker) => (
+              <Marker
+                key={marker.id}
+                position={[marker.lat, marker.lng]}
+                icon={createCustomIcon(marker)}
+                eventHandlers={{
+                  click: () => setSelectedMarker(marker),
+                }}
+              />
+            ))}
+
+            <ZoomControls />
+          </MapContainer>
         </div>
 
         {/* Map Header Overlay */}
         <div className="absolute top-6 right-6 z-[400] flex gap-2">
-          <Button variant="secondary" className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40">
+          <Button
+            variant="secondary"
+            className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40"
+          >
             <Compass className="h-5 w-5" />
           </Button>
-          <Button variant="secondary" className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40">
+          <Button
+            variant="secondary"
+            className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40"
+          >
             <Maximize2 className="h-5 w-5" />
           </Button>
         </div>
@@ -411,282 +453,339 @@ export function MapDesktop() {
       {selectedMarker ? (
         <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden relative">
           <div className="relative h-64 w-full shrink-0">
-             <img src={selectedMarker.image} className="h-full w-full object-cover" />
-             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-             <Button 
-               variant="ghost" 
-               size="icon" 
-               className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md"
-               onClick={() => setSelectedMarker(null)}
-             >
-               <X className="h-5 w-5" />
-             </Button>
+            <img src={selectedMarker.image} className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md"
+              onClick={() => setSelectedMarker(null)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
           <div className="flex flex-col p-6 space-y-6 flex-1 overflow-y-auto">
-             <div>
-               <div className="flex items-center justify-between mb-3">
-                 <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-tight text-primary border-primary/20 bg-primary/10">
-                   {selectedMarker.type}
-                 </div>
-                 {selectedMarker.type === "event" && selectedMarker.raw?.event_tickets?.some((t: any) => t.cost === 0) && (
-                   <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">FREE TIER AVAILABLE</span>
-                 )}
-               </div>
-               <h2 className="text-2xl font-bold tracking-tight">{selectedMarker.title}</h2>
-               
-               {/* Location / Date string */}
-               <div className="flex items-start gap-2 mt-3 text-sm text-muted-foreground">
-                 <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                 <span>{selectedMarker.date}</span>
-               </div>
-               
-               {/* Organizer / Additional Info */}
-               {selectedMarker.type === "event" && selectedMarker.raw?.workspaces?.organizer && (
-                 <div className="flex items-center gap-3 mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
-                   <img src={selectedMarker.raw.workspaces.organizer.image} className="h-10 w-10 rounded-full object-cover" />
-                   <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Organized by</p>
-                     <p className="text-sm font-semibold">{selectedMarker.raw.workspaces.organizer.name}</p>
-                   </div>
-                 </div>
-               )}
-               
-               {selectedMarker.type === "event" && selectedMarker.raw?.event_tickets?.length > 0 && (
-                 <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40 flex items-center justify-between">
-                   <div>
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
-                     <p className="text-lg font-bold text-primary">
-                       {Math.min(...selectedMarker.raw.event_tickets.map((t: any) => t.cost))} {selectedMarker.raw.workspaces?.currency || "RWF"}
-                     </p>
-                   </div>
-                   <div className="text-right">
-                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Tickets</p>
-                     <p className="text-sm font-bold">{selectedMarker.raw.event_tickets.length} Types</p>
-                   </div>
-                 </div>
-               )}
-               
-               {/* Description */}
-               {selectedMarker.raw?.description && (
-                 <div className="mt-5">
-                   <h3 className="text-sm font-bold tracking-tight mb-2">About this {selectedMarker.type}</h3>
-                   <div 
-                     className="text-sm text-muted-foreground line-clamp-4 leading-relaxed"
-                     dangerouslySetInnerHTML={{ __html: selectedMarker.raw.description }} 
-                   />
-                 </div>
-               )}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-tight text-primary border-primary/20 bg-primary/10">
+                  {selectedMarker.type}
+                </div>
+                {selectedMarker.type === "event" &&
+                  selectedMarker.raw?.event_tickets?.some((t: any) => t.cost === 0) && (
+                    <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">
+                      FREE TIER AVAILABLE
+                    </span>
+                  )}
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight">{selectedMarker.title}</h2>
 
-               {/* Lineup */}
-               {selectedMarker.type === "event" && selectedMarker.raw?.lineup?.length > 0 && (
-                 <div className="mt-5">
-                   <h3 className="text-sm font-bold tracking-tight mb-3">Lineup</h3>
-                   <div className="flex flex-wrap gap-2">
-                     {selectedMarker.raw.lineup.map((item: any, idx: number) => (
-                       <span key={idx} className="bg-secondary/40 border border-border/40 text-xs px-3 py-1.5 rounded-full font-medium">
-                         {item.name || item}
-                       </span>
-                     ))}
-                   </div>
-                 </div>
-               )}
+              {/* Location / Date string */}
+              <div className="flex items-start gap-2 mt-3 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>{selectedMarker.date}</span>
+              </div>
 
-               {selectedMarker.type === "venue" && selectedMarker.raw?.pricing_tiers?.length > 0 && (
-                 <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
-                   <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
-                   <p className="text-lg font-bold text-primary">
-                     {selectedMarker.raw.pricing_tiers[0]?.price} {selectedMarker.raw.currency || "RWF"}
-                   </p>
-                 </div>
-               )}
+              {/* Organizer / Additional Info */}
+              {selectedMarker.type === "event" && selectedMarker.raw?.workspaces?.organizer && (
+                <div className="flex items-center gap-3 mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                  <img
+                    src={selectedMarker.raw.workspaces.organizer.image}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                      Organized by
+                    </p>
+                    <p className="text-sm font-semibold">
+                      {selectedMarker.raw.workspaces.organizer.name}
+                    </p>
+                  </div>
+                </div>
+              )}
 
-               {selectedMarker.type === "venue" && selectedMarker.raw?.facilities_data?.length > 0 && (
-                 <div className="mt-5 space-y-3">
-                   <h3 className="text-sm font-bold tracking-tight mb-2">Facilities</h3>
-                   <div className="flex flex-col gap-3">
-                     {selectedMarker.raw.facilities_data.map((facility: any) => (
-                       <div key={facility.id} className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40">
-                         {facility.image_url && (
-                           <img src={facility.image_url} alt={facility.name} className="w-16 h-16 object-cover rounded-md shrink-0" />
-                         )}
-                         <div className="flex-1 min-w-0 flex flex-col justify-center">
-                           <p className="font-bold text-sm truncate">{facility.name}</p>
-                           <p className="text-[10px] text-muted-foreground capitalize mt-0.5">{facility.type?.replace(/_/g, " ")}</p>
-                           <Link 
-                             to="/venues/$venueId/facilities/checkout/$facilityId" 
-                             params={{ venueId: selectedMarker.raw.id, facilityId: facility.id }}
-                             className="inline-block mt-2 w-full"
-                           >
-                             <Button size="sm" className="w-full h-8 text-xs rounded-full shadow-[var(--shadow-glow)] transition-all" style={{ background: "var(--gradient-primary)" }}>
-                               {facility.requires_approval ? "Request Booking" : "Book Now"}
-                             </Button>
-                           </Link>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
+              {selectedMarker.type === "event" && selectedMarker.raw?.event_tickets?.length > 0 && (
+                <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                      Starting from
+                    </p>
+                    <p className="text-lg font-bold text-primary">
+                      {Math.min(...selectedMarker.raw.event_tickets.map((t: any) => t.cost))}{" "}
+                      {selectedMarker.raw.workspaces?.currency || "RWF"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                      Tickets
+                    </p>
+                    <p className="text-sm font-bold">
+                      {selectedMarker.raw.event_tickets.length} Types
+                    </p>
+                  </div>
+                </div>
+              )}
 
-               {selectedMarker.type === "space" && selectedMarker.raw?.plans?.length > 0 && (
-                 <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
-                   <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">Starting from</p>
-                   <p className="text-lg font-bold text-primary">
-                     {selectedMarker.raw.plans[0]?.price} {selectedMarker.raw.currency || "RWF"}
-                   </p>
-                 </div>
-               )}
+              {/* Description */}
+              {selectedMarker.raw?.description && (
+                <div className="mt-5">
+                  <h3 className="text-sm font-bold tracking-tight mb-2">
+                    About this {selectedMarker.type}
+                  </h3>
+                  <div
+                    className="text-sm text-muted-foreground line-clamp-4 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: selectedMarker.raw.description }}
+                  />
+                </div>
+              )}
 
-               {selectedMarker.type === "cinema" && (
-                 <div className="mt-5 space-y-3">
-                   <h3 className="text-sm font-bold tracking-tight mb-2">Playing Today</h3>
-                   {dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).length > 0 ? (
-                     dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).map((schedule: any) => (
-                       <div key={schedule.id} className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40">
-                         {schedule.movie?.cover_url && (
-                           <img src={schedule.movie.cover_url} alt={schedule.movie.title} className="w-12 h-16 object-cover rounded-md" />
-                         )}
-                         <div className="flex-1 min-w-0">
-                           <p className="font-bold text-sm truncate">{schedule.movie?.title}</p>
-                           <p className="text-[10px] text-muted-foreground mt-0.5">{schedule.movie?.genre} • {schedule.movie?.duration_minutes}m</p>
-                           <p className="text-xs font-semibold text-primary mt-1">{schedule.start_time.substring(0,5)}</p>
-                         </div>
-                       </div>
-                     ))
-                   ) : (
-                     <p className="text-xs text-muted-foreground">No movies scheduled for today.</p>
-                   )}
-                 </div>
-               )}
-             </div>
-             
-             {/* Action Button */}
-             <div className="mt-auto pt-6">
-                <Button 
-                  className="w-full rounded-full shadow-[var(--shadow-glow)] h-12"
-                  style={{ background: "var(--gradient-primary)" }}
-                  onClick={() => {
-                     const rawId = selectedMarker.id.split("-").slice(1).join("-");
-                     if (selectedMarker.type === "event") {
-                       router.navigate({ to: "/events/$eventId", params: { eventId: rawId } });
-                     } else if (selectedMarker.type === "venue") {
-                       router.navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
-                     } else if (selectedMarker.type === "space") {
-                       router.navigate({ to: "/spaces/$spaceId", params: { spaceId: rawId } });
-                     } else if (selectedMarker.type === "cinema") {
-                       router.navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
-                     } else {
-                       router.navigate({ to: "/organizers" });
-                     }
-                  }}
-                >
-                  View Details <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-             </div>
+              {/* Lineup */}
+              {selectedMarker.type === "event" && selectedMarker.raw?.lineup?.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="text-sm font-bold tracking-tight mb-3">Lineup</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedMarker.raw.lineup.map((item: any, idx: number) => (
+                      <span
+                        key={idx}
+                        className="bg-secondary/40 border border-border/40 text-xs px-3 py-1.5 rounded-full font-medium"
+                      >
+                        {item.name || item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedMarker.type === "venue" && selectedMarker.raw?.pricing_tiers?.length > 0 && (
+                <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                    Starting from
+                  </p>
+                  <p className="text-lg font-bold text-primary">
+                    {selectedMarker.raw.pricing_tiers[0]?.price}{" "}
+                    {selectedMarker.raw.currency || "RWF"}
+                  </p>
+                </div>
+              )}
+
+              {selectedMarker.type === "venue" &&
+                selectedMarker.raw?.facilities_data?.length > 0 && (
+                  <div className="mt-5 space-y-3">
+                    <h3 className="text-sm font-bold tracking-tight mb-2">Facilities</h3>
+                    <div className="flex flex-col gap-3">
+                      {selectedMarker.raw.facilities_data.map((facility: any) => (
+                        <div
+                          key={facility.id}
+                          className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40"
+                        >
+                          {facility.image_url && (
+                            <img
+                              src={facility.image_url}
+                              alt={facility.name}
+                              className="w-16 h-16 object-cover rounded-md shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0 flex flex-col justify-center">
+                            <p className="font-bold text-sm truncate">{facility.name}</p>
+                            <p className="text-[10px] text-muted-foreground capitalize mt-0.5">
+                              {facility.type?.replace(/_/g, " ")}
+                            </p>
+                            <Link
+                              to="/venues/$venueId/facilities/checkout/$facilityId"
+                              params={{ venueId: selectedMarker.raw.id, facilityId: facility.id }}
+                              className="inline-block mt-2 w-full"
+                            >
+                              <Button
+                                size="sm"
+                                className="w-full h-8 text-xs rounded-full shadow-[var(--shadow-glow)] transition-all"
+                                style={{ background: "var(--gradient-primary)" }}
+                              >
+                                {facility.requires_approval ? "Request Booking" : "Book Now"}
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {selectedMarker.type === "space" && selectedMarker.raw?.plans?.length > 0 && (
+                <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                    Starting from
+                  </p>
+                  <p className="text-lg font-bold text-primary">
+                    {selectedMarker.raw.plans[0]?.price} {selectedMarker.raw.currency || "RWF"}
+                  </p>
+                </div>
+              )}
+
+              {selectedMarker.type === "cinema" && (
+                <div className="mt-5 space-y-3">
+                  <h3 className="text-sm font-bold tracking-tight mb-2">Playing Today</h3>
+                  {dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).length >
+                  0 ? (
+                    dbSchedules
+                      .filter((s: any) => s.cinema?.id === selectedMarker.raw.id)
+                      .map((schedule: any) => (
+                        <div
+                          key={schedule.id}
+                          className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40"
+                        >
+                          {schedule.movie?.cover_url && (
+                            <img
+                              src={schedule.movie.cover_url}
+                              alt={schedule.movie.title}
+                              className="w-12 h-16 object-cover rounded-md"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm truncate">{schedule.movie?.title}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {schedule.movie?.genre} • {schedule.movie?.duration_minutes}m
+                            </p>
+                            <p className="text-xs font-semibold text-primary mt-1">
+                              {schedule.start_time.substring(0, 5)}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No movies scheduled for today.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Action Button */}
+            <div className="mt-auto pt-6">
+              <Button
+                className="w-full rounded-full shadow-[var(--shadow-glow)] h-12"
+                style={{ background: "var(--gradient-primary)" }}
+                onClick={() => {
+                  const rawId = selectedMarker.id.split("-").slice(1).join("-");
+                  if (selectedMarker.type === "event") {
+                    router.navigate({ to: "/events/$eventId", params: { eventId: rawId } });
+                  } else if (selectedMarker.type === "venue") {
+                    router.navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
+                  } else if (selectedMarker.type === "space") {
+                    router.navigate({ to: "/spaces/$spaceId", params: { spaceId: rawId } });
+                  } else if (selectedMarker.type === "cinema") {
+                    router.navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
+                  } else {
+                    router.navigate({ to: "/organizers" });
+                  }
+                }}
+              >
+                View Details <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       ) : (
         <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden">
-        {/* Events Section */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
-            <h2 className="text-xl font-bold tracking-tight">Events</h2>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-              <MapPin className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
-            {isLoadingEvents ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex gap-4 p-2">
-                  <Skeleton className="h-16 w-16 rounded-xl shrink-0" />
-                  <div className="flex flex-col justify-center flex-1 space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
-              ))
-            ) : upcomingEvents.length === 0 ? (
-              <div className="text-center py-6 text-sm text-muted-foreground">
-                No upcoming events found.
-              </div>
-            ) : (
-              upcomingEvents.map((event: any) => (
-                <Link
-                  key={event.id}
-                  to="/events/$eventId"
-                  params={{ eventId: event.id }}
-                  className="group flex gap-4 rounded-2xl bg-secondary/30 p-2 cursor-pointer transition-colors hover:bg-secondary/60 block"
-                >
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="h-16 w-16 shrink-0 rounded-xl object-cover shadow-sm"
-                  />
-                  <div className="flex flex-col justify-center min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{event.title}</h3>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{event.venue}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">{event.date}</p>
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
+          {/* Events Section */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
+              <h2 className="text-xl font-bold tracking-tight">Events</h2>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <MapPin className="h-4 w-4" />
+              </Button>
+            </div>
 
-        {/* Past Events Section */}
-        <div className="h-[45%] flex flex-col border-t border-border/40 bg-secondary/10">
-          <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
-            <h2 className="text-xl font-bold tracking-tight">Previous Events</h2>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-              <MessageSquare className="h-4 w-4" />
-            </Button>
+            <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
+              {isLoadingEvents ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex gap-4 p-2">
+                    <Skeleton className="h-16 w-16 rounded-xl shrink-0" />
+                    <div className="flex flex-col justify-center flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-3 w-2/3" />
+                    </div>
+                  </div>
+                ))
+              ) : upcomingEvents.length === 0 ? (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  No upcoming events found.
+                </div>
+              ) : (
+                upcomingEvents.map((event: any) => (
+                  <Link
+                    key={event.id}
+                    to="/events/$eventId"
+                    params={{ eventId: event.id }}
+                    className="group flex gap-4 rounded-2xl bg-secondary/30 p-2 cursor-pointer transition-colors hover:bg-secondary/60 block"
+                  >
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="h-16 w-16 shrink-0 rounded-xl object-cover shadow-sm"
+                    />
+                    <div className="flex flex-col justify-center min-w-0">
+                      <h3 className="font-semibold text-sm truncate">{event.title}</h3>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{event.venue}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">{event.date}</p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
           </div>
-          
-          <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
-            {isLoadingTickets ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex gap-3 p-3 border border-border/40 rounded-2xl">
-                  <Skeleton className="h-10 w-10 rounded-full shrink-0" />
-                  <div className="flex flex-col justify-center flex-1 space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
-              ))
-            ) : pastEvents.length === 0 ? (
-              <div className="text-center py-6 text-sm text-muted-foreground">
-                You haven't attended any events yet.
-              </div>
-            ) : (
-              pastEvents.map((event: any) => (
-                <div
-                  key={event.id}
-                  className="group relative overflow-hidden rounded-2xl bg-card p-3 shadow-sm border border-border/40 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative shrink-0">
-                      <img
-                        src={event.organizer.avatar}
-                        alt={event.organizer.name}
-                        className="h-10 w-10 rounded-full object-cover border border-border/40 bg-muted"
-                      />
-                      <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm truncate">{event.organizer.name}</h3>
-                      <p className="text-xs text-muted-foreground truncate">Attended {event.title}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{event.date}</p>
+
+          {/* Past Events Section */}
+          <div className="h-[45%] flex flex-col border-t border-border/40 bg-secondary/10">
+            <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
+              <h2 className="text-xl font-bold tracking-tight">Previous Events</h2>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <MessageSquare className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
+              {isLoadingTickets ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex gap-3 p-3 border border-border/40 rounded-2xl">
+                    <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                    <div className="flex flex-col justify-center flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-3 w-2/3" />
                     </div>
                   </div>
+                ))
+              ) : pastEvents.length === 0 ? (
+                <div className="text-center py-6 text-sm text-muted-foreground">
+                  You haven't attended any events yet.
                 </div>
-              ))
-            )}
+              ) : (
+                pastEvents.map((event: any) => (
+                  <div
+                    key={event.id}
+                    className="group relative overflow-hidden rounded-2xl bg-card p-3 shadow-sm border border-border/40 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative shrink-0">
+                        <img
+                          src={event.organizer.avatar}
+                          alt={event.organizer.name}
+                          className="h-10 w-10 rounded-full object-cover border border-border/40 bg-muted"
+                        />
+                        <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm truncate">{event.organizer.name}</h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          Attended {event.title}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{event.date}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
       )}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {

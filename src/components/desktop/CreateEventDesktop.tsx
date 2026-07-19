@@ -1408,7 +1408,8 @@ function PublishReview({
         <div className="space-y-1">
           <Label className="text-base font-semibold">Make Event Public</Label>
           <p className="text-sm text-muted-foreground">
-            Allow anyone on the internet to find and register for this event. Keep this off if you want it to be private.
+            Allow anyone on the internet to find and register for this event. Keep this off if you
+            want it to be private.
           </p>
         </div>
         <Switch

@@ -145,7 +145,8 @@ function SpacesListingsPage() {
               </div>
               <h3 className="text-2xl font-bold tracking-tight mb-3">No spaces yet</h3>
               <p className="text-muted-foreground max-w-sm mb-8 text-sm md:text-base">
-                Create your first coworking space, gym, or studio to start managing locations, plans, and members.
+                Create your first coworking space, gym, or studio to start managing locations,
+                plans, and members.
               </p>
               <Button
                 onClick={handleCreate}

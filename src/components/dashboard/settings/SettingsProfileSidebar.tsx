@@ -102,7 +102,11 @@ export function SettingsProfileSidebar({
                   </option>
                 ))}
               </select>
-              {errors.country && <p className="text-[10px] text-destructive ml-1">{errors.country.message as string}</p>}
+              {errors.country && (
+                <p className="text-[10px] text-destructive ml-1">
+                  {errors.country.message as string}
+                </p>
+              )}
             </div>
           </div>
         </div>

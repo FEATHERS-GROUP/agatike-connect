@@ -215,15 +215,16 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     phone.trim() !== "" &&
     attendees.every((att) => att.name.trim() !== "");
 
-  const total = (venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
-    ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
-    : []
-  )
-    .concat(venue?.pricing_tiers || [])
-    .reduce((acc: number, tier: any) => {
-      const qty = ticketsData[tier.name || "Standard Entry"] || 0;
-      return acc + qty * (Number(tier.amount) || 0);
-    }, 0) || 0;
+  const total =
+    (venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
+      ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
+      : []
+    )
+      .concat(venue?.pricing_tiers || [])
+      .reduce((acc: number, tier: any) => {
+        const qty = ticketsData[tier.name || "Standard Entry"] || 0;
+        return acc + qty * (Number(tier.amount) || 0);
+      }, 0) || 0;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -692,75 +693,81 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                       )
                         .concat(venue?.pricing_tiers || [])
                         .map((tier: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
-                        >
-                          <div>
-                            <p className="font-semibold">{tier.name || "Standard Entry"}</p>
-                            <p className="text-sm text-muted-foreground mt-0.5">
-                              {tier.amount > 0
-                                ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
-                                : "Free"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
-                            {venue?.rental_model === "ENTIRE_VENUE" ? (
-                              <Button
-                                type="button"
-                                variant={
-                                  ticketsData[tier.name || "Standard Entry"] ? "default" : "outline"
-                                }
-                                onClick={() => {
-                                  setTicketsData({ [tier.name || "Standard Entry"]: 1 });
-                                }}
-                                className="h-8 rounded-lg text-xs"
-                              >
-                                {ticketsData[tier.name || "Standard Entry"] ? "Selected" : "Select"}
-                              </Button>
-                            ) : (
-                              <>
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
+                          >
+                            <div>
+                              <p className="font-semibold">{tier.name || "Standard Entry"}</p>
+                              <p className="text-sm text-muted-foreground mt-0.5">
+                                {tier.amount > 0
+                                  ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
+                                  : "Free"}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
+                              {venue?.rental_model === "ENTIRE_VENUE" ? (
                                 <Button
                                   type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  disabled={(ticketsData[tier.name || "Standard Entry"] || 0) <= 0}
+                                  variant={
+                                    ticketsData[tier.name || "Standard Entry"]
+                                      ? "default"
+                                      : "outline"
+                                  }
                                   onClick={() => {
-                                    const val = ticketsData[tier.name || "Standard Entry"] || 0;
-                                    if (val > 0) {
+                                    setTicketsData({ [tier.name || "Standard Entry"]: 1 });
+                                  }}
+                                  className="h-8 rounded-lg text-xs"
+                                >
+                                  {ticketsData[tier.name || "Standard Entry"]
+                                    ? "Selected"
+                                    : "Select"}
+                                </Button>
+                              ) : (
+                                <>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    disabled={
+                                      (ticketsData[tier.name || "Standard Entry"] || 0) <= 0
+                                    }
+                                    onClick={() => {
+                                      const val = ticketsData[tier.name || "Standard Entry"] || 0;
+                                      if (val > 0) {
+                                        setTicketsData((p) => ({
+                                          ...p,
+                                          [tier.name || "Standard Entry"]: val - 1,
+                                        }));
+                                      }
+                                    }}
+                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
+                                  >
+                                    <Minus className="h-4 w-4" />
+                                  </Button>
+                                  <span className="w-10 text-center font-bold text-sm tracking-tight">
+                                    {ticketsData[tier.name || "Standard Entry"] || 0}
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                      const val = ticketsData[tier.name || "Standard Entry"] || 0;
                                       setTicketsData((p) => ({
                                         ...p,
-                                        [tier.name || "Standard Entry"]: val - 1,
+                                        [tier.name || "Standard Entry"]: val + 1,
                                       }));
-                                    }
-                                  }}
-                                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="w-10 text-center font-bold text-sm tracking-tight">
-                                  {ticketsData[tier.name || "Standard Entry"] || 0}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    const val = ticketsData[tier.name || "Standard Entry"] || 0;
-                                    setTicketsData((p) => ({
-                                      ...p,
-                                      [tier.name || "Standard Entry"]: val + 1,
-                                    }));
-                                  }}
-                                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
+                                    }}
+                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   </div>
 
@@ -1012,9 +1019,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 {Object.entries(ticketsData)
                   .filter(([_, qty]) => qty > 0)
                   .map(([name, qty], i) => {
-                    const tier = name === "Standard Entry"
-                      ? { amount: venue?.entrance_fee || 0 }
-                      : venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
+                    const tier =
+                      name === "Standard Entry"
+                        ? { amount: venue?.entrance_fee || 0 }
+                        : venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
                     return (
                       <div key={i} className="flex justify-between">
                         <span className="text-muted-foreground">

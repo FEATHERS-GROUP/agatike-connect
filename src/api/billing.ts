@@ -324,7 +324,7 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
             tiered_rules
           }
         }`,
-        { network: network || "Card" }
+        { network: network || "Card" },
       );
 
       const pf = feeRes.payment_provider_fees?.[0] || {};
@@ -377,7 +377,7 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
           rev: amount, // platform revenue is the full amount paid by the organizer
           profit: netProfit,
           curr: "USD", // Card payments are in USD
-        }
+        },
       );
     }
 

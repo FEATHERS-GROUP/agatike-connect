@@ -29,8 +29,9 @@ export function SuccessState({ eventTitle, recipientEmail, hasMerch }: SuccessSt
             </div>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Your merchandise can be picked up <strong className="text-foreground">on the day of the event</strong>. 
-            Please collect it at the merchandise desk using either of the methods below:
+            Your merchandise can be picked up{" "}
+            <strong className="text-foreground">on the day of the event</strong>. Please collect it
+            at the merchandise desk using either of the methods below:
           </p>
           <div className="space-y-3">
             <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">

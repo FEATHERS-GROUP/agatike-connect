@@ -291,7 +291,13 @@ export function EventCheckoutSidebar({
                 </div>
 
                 <div className="mt-5 flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{(() => { const t = totalTickets; const m = Object.values(cart).reduce((a, b) => a + b, 0) - t; return `Total (${t} ticket${t !== 1 ? "s" : ""}${m > 0 ? `, ${m} product${m !== 1 ? "s" : ""}` : ""})`; })()}</span>
+                  <span className="text-muted-foreground">
+                    {(() => {
+                      const t = totalTickets;
+                      const m = Object.values(cart).reduce((a, b) => a + b, 0) - t;
+                      return `Total (${t} ticket${t !== 1 ? "s" : ""}${m > 0 ? `, ${m} product${m !== 1 ? "s" : ""}` : ""})`;
+                    })()}
+                  </span>
                   <span className="text-lg font-semibold">
                     {formatCurrency(total, currencyCode)}
                   </span>
@@ -310,8 +316,8 @@ export function EventCheckoutSidebar({
                     : total === 0 && totalTickets > 0
                       ? "var(--foreground)"
                       : "var(--gradient-primary)",
-                opacity: (isPastEvent || isSuspended || totalTickets === 0) ? 0.5 : 1,
-                pointerEvents: (isPastEvent || isSuspended || totalTickets === 0) ? "none" : "auto",
+                opacity: isPastEvent || isSuspended || totalTickets === 0 ? 0.5 : 1,
+                pointerEvents: isPastEvent || isSuspended || totalTickets === 0 ? "none" : "auto",
                 color: isPastEvent || isSuspended ? "var(--muted-foreground)" : undefined,
               }}
               onClick={() => {

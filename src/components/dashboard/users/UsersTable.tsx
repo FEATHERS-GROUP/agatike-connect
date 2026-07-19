@@ -198,9 +198,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
             {users.map((user) => (
               <ContextMenu key={user.id}>
                 <ContextMenuTrigger asChild>
-                  <TableRow
-                    className={selectedUsers.includes(user.id) ? "bg-primary/5" : ""}
-                  >
+                  <TableRow className={selectedUsers.includes(user.id) ? "bg-primary/5" : ""}>
                     <TableCell>
                       <Checkbox
                         checked={selectedUsers.includes(user.id)}
@@ -251,12 +249,19 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                 </ContextMenuTrigger>
                 <ContextMenuContent className="w-48">
                   <ContextMenuItem
-                    onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/users/${user.id}/edit` })}
+                    onClick={() =>
+                      navigate({ to: `/dashboard/${workspaceSlug}/users/${user.id}/edit` })
+                    }
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit User
                   </ContextMenuItem>
-                  <ContextMenuItem onClick={() => { setSelectedUsers([user.id]); setDetailsOpen(true); }}>
+                  <ContextMenuItem
+                    onClick={() => {
+                      setSelectedUsers([user.id]);
+                      setDetailsOpen(true);
+                    }}
+                  >
                     <Eye className="mr-2 h-4 w-4" />
                     View Details
                   </ContextMenuItem>
@@ -267,7 +272,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                     </ContextMenuItem>
                   )}
                   <ContextMenuSeparator />
-                  <ContextMenuItem 
+                  <ContextMenuItem
                     className="text-destructive focus:text-destructive focus:bg-destructive/10"
                     onClick={() => {
                       if (confirm(`Are you sure you want to delete ${user.name}?`)) {

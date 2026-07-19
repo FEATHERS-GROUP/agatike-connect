@@ -59,7 +59,10 @@ export const sendSMS = async (to: string, text: string, organizerId?: string) =>
           }
         }
       `;
-      const data = await hasuraRequest<{ organizers_by_pk: { phone: string; country?: string } }>(query, { id: organizerId });
+      const data = await hasuraRequest<{ organizers_by_pk: { phone: string; country?: string } }>(
+        query,
+        { id: organizerId },
+      );
       if (data?.organizers_by_pk?.phone) {
         phone = data.organizers_by_pk.phone;
       }

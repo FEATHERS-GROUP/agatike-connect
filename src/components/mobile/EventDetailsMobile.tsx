@@ -126,7 +126,12 @@ export function EventDetailsMobile({
 
         <EventLineup staffList={d.staffList} isExperience={d.isExperience} />
 
-        <EventMerch activeMerch={d.activeMerch} currencyCode={d.currencyCode} cart={d.cart} setCart={d.setCart} />
+        <EventMerch
+          activeMerch={d.activeMerch}
+          currencyCode={d.currencyCode}
+          cart={d.cart}
+          setCart={d.setCart}
+        />
 
         <EventIncluded isExperience={d.isExperience} included={d.included} />
 

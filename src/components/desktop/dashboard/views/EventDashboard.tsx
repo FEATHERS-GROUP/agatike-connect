@@ -59,9 +59,7 @@ function StatCard({
         {trend && trendLabel && (
           <span
             className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-              trend === "up"
-                ? "text-emerald-500 bg-emerald-500/10"
-                : "text-rose-500 bg-rose-500/10"
+              trend === "up" ? "text-emerald-500 bg-emerald-500/10" : "text-rose-500 bg-rose-500/10"
             }`}
           >
             {trend === "up" ? (
@@ -74,7 +72,9 @@ function StatCard({
         )}
       </div>
       <div>
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{label}</p>
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+          {label}
+        </p>
         <p className="text-2xl font-bold mt-1 tracking-tight">{value}</p>
       </div>
     </div>
@@ -261,7 +261,6 @@ export function EventDashboard() {
 
       {/* ── Row 2: Revenue Chart + Activity + Top Events ─────── */}
       <section className="grid lg:grid-cols-12 gap-4">
-
         {/* Revenue Breakdown */}
         <div className="lg:col-span-5 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-1">
@@ -294,18 +293,29 @@ export function EventDashboard() {
                   fontSize: 12,
                 }}
               />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} opacity={0.85} />
+              <Bar
+                dataKey="revenue"
+                fill="hsl(var(--primary))"
+                radius={[6, 6, 0, 0]}
+                opacity={0.85}
+              />
             </BarChart>
           </ResponsiveContainer>
 
           {/* Revenue Summary Row */}
           <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-border/40">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Revenue</p>
-              <p className="font-bold text-sm">{formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                Total Revenue
+              </p>
+              <p className="font-bold text-sm">
+                {formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Completed Events</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                Completed Events
+              </p>
               <p className="font-bold text-sm">{stats.completedCount}</p>
             </div>
           </div>
@@ -331,19 +341,27 @@ export function EventDashboard() {
           ) : (
             <div className="flex flex-col gap-3 flex-1">
               {stats.recentActivity.map((a) => (
-                <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-secondary/30 transition-colors">
+                <div
+                  key={a.id}
+                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-secondary/30 transition-colors"
+                >
                   <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
                     {(a.name || "G").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{a.name}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {a.product || "Order"}{a.event ? ` · ${a.event}` : ""}
+                      {a.product || "Order"}
+                      {a.event ? ` · ${a.event}` : ""}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold">{formatCurrency(a.amount || 0, activeWorkspace?.currency)}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(a.date), "MMM d")}</p>
+                    <p className="text-sm font-bold">
+                      {formatCurrency(a.amount || 0, activeWorkspace?.currency)}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {format(new Date(a.date), "MMM d")}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -356,7 +374,9 @@ export function EventDashboard() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-base">Ticket Summary</h3>
           </div>
-          <p className="text-3xl font-bold tracking-tight">{stats.totalTicketsSold.toLocaleString()}</p>
+          <p className="text-3xl font-bold tracking-tight">
+            {stats.totalTicketsSold.toLocaleString()}
+          </p>
           <p className="text-xs text-muted-foreground mb-4">Tickets Sold Total</p>
 
           {/* Tabs */}
@@ -385,7 +405,11 @@ export function EventDashboard() {
                     <div className="flex items-center gap-2">
                       <div className="h-7 w-7 rounded-lg overflow-hidden bg-secondary shrink-0">
                         {ev.cover ? (
-                          <img src={ev.cover} alt={ev.title} className="h-full w-full object-cover" />
+                          <img
+                            src={ev.cover}
+                            alt={ev.title}
+                            className="h-full w-full object-cover"
+                          />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center text-[10px] font-bold text-primary">
                             {ev.title.charAt(0)}
@@ -394,7 +418,9 @@ export function EventDashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate">{ev.title}</p>
-                        <p className="text-[10px] text-muted-foreground">{ev.sold.toLocaleString()} sold</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {ev.sold.toLocaleString()} sold
+                        </p>
                       </div>
                       <span className="text-xs font-bold text-muted-foreground">{pct}%</span>
                     </div>
@@ -440,7 +466,9 @@ export function EventDashboard() {
           <div className="mt-4 pt-4 border-t border-border/40 grid grid-cols-1 gap-2">
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Total Revenue</span>
-              <span className="font-bold">{formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}</span>
+              <span className="font-bold">
+                {formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}
+              </span>
             </div>
           </div>
         </div>
@@ -448,7 +476,6 @@ export function EventDashboard() {
 
       {/* ── Row 3: Upcoming Events + Overtime Chart ─────────── */}
       <section className="grid lg:grid-cols-12 gap-4">
-
         {/* Upcoming Events List */}
         <div className="lg:col-span-5 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-center justify-between mb-4">
@@ -470,11 +497,22 @@ export function EventDashboard() {
             <div className="flex flex-col gap-3">
               {rawEvents.slice(0, 4).map((e: any) => {
                 const firstStop = (e.tour_stops || [])[0];
-                const ticketsSold = (e.event_tickets || []).reduce((s: number, t: any) => s + Number(t.sold || 0), 0);
-                const revenue = (e.event_tickets || []).reduce((s: number, t: any) => s + Number(t.sold || 0) * Number(t.cost || 0), 0);
-                const lowestPrice = Math.min(...(e.event_tickets || []).map((t: any) => Number(t.cost || 0)));
+                const ticketsSold = (e.event_tickets || []).reduce(
+                  (s: number, t: any) => s + Number(t.sold || 0),
+                  0,
+                );
+                const revenue = (e.event_tickets || []).reduce(
+                  (s: number, t: any) => s + Number(t.sold || 0) * Number(t.cost || 0),
+                  0,
+                );
+                const lowestPrice = Math.min(
+                  ...(e.event_tickets || []).map((t: any) => Number(t.cost || 0)),
+                );
                 return (
-                  <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/30 hover:border-primary/30 hover:bg-secondary/20 transition-all cursor-pointer group">
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-border/30 hover:border-primary/30 hover:bg-secondary/20 transition-all cursor-pointer group"
+                  >
                     <div className="h-12 w-12 rounded-xl overflow-hidden bg-secondary shrink-0">
                       {e.cover ? (
                         <img src={e.cover} alt={e.title} className="h-full w-full object-cover" />
@@ -485,7 +523,9 @@ export function EventDashboard() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{e.title}</p>
+                      <p className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+                        {e.title}
+                      </p>
                       <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                         {firstStop?.date && (
                           <span className="flex items-center gap-1">
@@ -502,7 +542,11 @@ export function EventDashboard() {
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-xs font-bold">{lowestPrice > 0 ? formatCurrency(lowestPrice, activeWorkspace?.currency) : "Free"}</p>
+                      <p className="text-xs font-bold">
+                        {lowestPrice > 0
+                          ? formatCurrency(lowestPrice, activeWorkspace?.currency)
+                          : "Free"}
+                      </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">{ticketsSold} sold</p>
                     </div>
                   </div>
@@ -532,7 +576,7 @@ export function EventDashboard() {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+                tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v)}
               />
               <Tooltip
                 formatter={(v: any) => [formatCurrency(v, activeWorkspace?.currency), "Revenue"]}
@@ -543,7 +587,12 @@ export function EventDashboard() {
                   fontSize: 12,
                 }}
               />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} opacity={0.8} />
+              <Bar
+                dataKey="revenue"
+                fill="hsl(var(--primary))"
+                radius={[6, 6, 0, 0]}
+                opacity={0.8}
+              />
             </BarChart>
           </ResponsiveContainer>
 
@@ -561,7 +610,9 @@ export function EventDashboard() {
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 <span className="text-muted-foreground">Total Revenue</span>
               </div>
-              <p className="font-bold text-sm pl-3.5">{formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}</p>
+              <p className="font-bold text-sm pl-3.5">
+                {formatCurrency(stats.totalRevenue, activeWorkspace?.currency)}
+              </p>
             </div>
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
@@ -569,7 +620,10 @@ export function EventDashboard() {
                 <span className="text-muted-foreground">Avg per Event</span>
               </div>
               <p className="font-bold text-sm pl-3.5">
-                {formatCurrency(stats.totalEvents > 0 ? stats.totalRevenue / stats.totalEvents : 0, activeWorkspace?.currency)}
+                {formatCurrency(
+                  stats.totalEvents > 0 ? stats.totalRevenue / stats.totalEvents : 0,
+                  activeWorkspace?.currency,
+                )}
               </p>
             </div>
           </div>

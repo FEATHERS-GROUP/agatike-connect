@@ -1,12 +1,5 @@
 import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
-import {
-  Plus,
-  ShoppingBag,
-  Ticket,
-  QrCode,
-  Check,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Plus, ShoppingBag, Ticket, QrCode, Check, Image as ImageIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -112,30 +105,50 @@ function ProductsAndAddonsView() {
                 return (
                   <tr
                     key={m.id}
-                    onClick={() => navigate({ to: `/dashboard/$workspaceSlug/events/$eventId/products/$productId`, params: { ...params, productId: m.id } })}
+                    onClick={() =>
+                      navigate({
+                        to: `/dashboard/$workspaceSlug/events/$eventId/products/$productId`,
+                        params: { ...params, productId: m.id },
+                      })
+                    }
                     className="border-b border-border/50 last:border-0 hover:bg-secondary/20 transition-colors cursor-pointer group"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-xl bg-secondary/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                           {m.image_url ? (
-                            <img src={m.image_url} alt={m.name} className="h-full w-full object-cover" />
+                            <img
+                              src={m.image_url}
+                              alt={m.name}
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             <Icon className="h-6 w-6 text-muted-foreground/50" />
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">{m.name}</p>
-                          <p className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]">{m.description || "No description"}</p>
+                          <p className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">
+                            {m.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]">
+                            {m.description || "No description"}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium text-foreground">
-                      {m.type === "loyalty_card" ? "Free" : formatCurrency(m.type === "voucher" ? m.value_amount : m.price, activeWorkspace?.currency)}
+                      {m.type === "loyalty_card"
+                        ? "Free"
+                        : formatCurrency(
+                            m.type === "voucher" ? m.value_amount : m.price,
+                            activeWorkspace?.currency,
+                          )}
                     </td>
                     <td className="px-6 py-4">
                       {m.stock_limit !== null ? (
-                        <span className={`font-semibold ${Number(m.stock_limit) < 10 ? 'text-orange-500' : ''}`}>
+                        <span
+                          className={`font-semibold ${Number(m.stock_limit) < 10 ? "text-orange-500" : ""}`}
+                        >
                           {m.stock_limit}
                         </span>
                       ) : (
@@ -148,7 +161,11 @@ function ProductsAndAddonsView() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
                         View Details
                       </Button>
                     </td>
@@ -172,7 +189,9 @@ function ProductsAndAddonsView() {
           </p>
         </div>
         <Button
-          onClick={() => navigate({ to: `/dashboard/$workspaceSlug/events/$eventId/products/new`, params })}
+          onClick={() =>
+            navigate({ to: `/dashboard/$workspaceSlug/events/$eventId/products/new`, params })
+          }
           className="rounded-full shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}
         >

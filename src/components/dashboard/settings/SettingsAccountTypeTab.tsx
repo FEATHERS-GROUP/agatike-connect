@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { getPricingPlans, upgradeSubscription } from "@/api/billing";
-import { sendAccountConversionOtp, convertOrganizerAccount, verifyConversionCredentials } from "@/api/organizers";
+import {
+  sendAccountConversionOtp,
+  convertOrganizerAccount,
+  verifyConversionCredentials,
+} from "@/api/organizers";
 import { uploadFile } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,12 +127,14 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
                 amount: 0,
               },
             });
-            toast.success(`Successfully activated the ${selectedPlan.name} plan!`, { id: "activate-plan" });
+            toast.success(`Successfully activated the ${selectedPlan.name} plan!`, {
+              id: "activate-plan",
+            });
           } catch (err: any) {
             toast.error("Failed to activate plan", { id: "activate-plan" });
           }
         }
-        
+
         window.location.reload();
       }, 60000);
     },
@@ -182,7 +188,7 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
 
     try {
       await verifyConversionCredentials({
-        data: { password, otp, otpToken } as any
+        data: { password, otp, otpToken } as any,
       });
     } catch (err: any) {
       toast.error(err.message || "Verification failed");
@@ -217,7 +223,7 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
           otpToken,
           business_cert: certUrl,
           plan_id: selectedPlan.id,
-        })
+        }),
       );
       setIsFinalLoading(false);
       navigate({ to: `/dashboard/billing/subscriptions/checkout/${selectedPlan.id}` });
@@ -521,7 +527,8 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
               <ShieldAlert className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
               <div className="text-sm text-orange-700 dark:text-orange-400">
                 <span className="font-semibold block mb-1">Important:</span>
-                Your OTP expires in 15 minutes. Please complete your payment on the next screen before it expires to successfully convert your account.
+                Your OTP expires in 15 minutes. Please complete your payment on the next screen
+                before it expires to successfully convert your account.
               </div>
             </div>
           )}

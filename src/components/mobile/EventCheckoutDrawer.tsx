@@ -484,7 +484,11 @@ export function EventCheckoutDrawer({
                 {!isSuspended && (
                   <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                      {(() => { const t = totalTickets; const m = Object.values(cart).reduce((a, b) => a + b, 0) - t; return `Total (${t} ticket${t !== 1 ? "s" : ""}${m > 0 ? `, ${m} product${m !== 1 ? "s" : ""}` : ""})`; })()}
+                      {(() => {
+                        const t = totalTickets;
+                        const m = Object.values(cart).reduce((a, b) => a + b, 0) - t;
+                        return `Total (${t} ticket${t !== 1 ? "s" : ""}${m > 0 ? `, ${m} product${m !== 1 ? "s" : ""}` : ""})`;
+                      })()}
                     </span>
                     <span className="text-lg font-bold text-foreground">
                       {formatCurrency(total, currencyCode)}

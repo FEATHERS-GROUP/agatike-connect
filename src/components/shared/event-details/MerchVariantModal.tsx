@@ -1,6 +1,12 @@
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/currency";
 
 interface MerchVariantModalProps {
@@ -45,9 +51,9 @@ export function MerchVariantModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button 
-          size="sm" 
-          variant={globalQty > 0 ? "secondary" : "outline"} 
+        <Button
+          size="sm"
+          variant={globalQty > 0 ? "secondary" : "outline"}
           className={`rounded-full h-7 text-xs w-full mt-2 ${globalQty > 0 ? "border-primary/30" : ""}`}
         >
           {globalQty > 0 ? `Selected (${globalQty})` : "Select Options"}
@@ -60,7 +66,7 @@ export function MerchVariantModal({
               <img src={m.image} alt={m.name} className="w-full h-full object-cover" />
             </div>
           )}
-          
+
           <div className="p-5 flex flex-col gap-4">
             <DialogHeader className="p-0 text-left">
               <DialogTitle className="text-xl md:text-2xl">{m.name}</DialogTitle>
@@ -69,7 +75,7 @@ export function MerchVariantModal({
                   {m.description}
                 </p>
               )}
-              
+
               {m.specs && Array.isArray(m.specs) && m.specs.length > 0 && (
                 <div className="mt-4 flex flex-col gap-2 border-t pt-4">
                   <p className="text-sm font-semibold">Specifications</p>
@@ -93,10 +99,12 @@ export function MerchVariantModal({
                     {sizesArr.map((s: any) => (
                       <button
                         key={s.name}
-                        onClick={() => setSelection(m.id, "size", effectiveSize === s.name ? "" : s.name)}
+                        onClick={() =>
+                          setSelection(m.id, "size", effectiveSize === s.name ? "" : s.name)
+                        }
                         className={`text-sm font-semibold px-4 py-2 rounded-xl border transition-all ${
-                          effectiveSize === s.name 
-                            ? "bg-primary text-primary-foreground border-primary shadow-md" 
+                          effectiveSize === s.name
+                            ? "bg-primary text-primary-foreground border-primary shadow-md"
                             : "border-border bg-background hover:bg-secondary/50"
                         } ${s.stock <= 0 ? "opacity-40 line-through" : ""}`}
                         disabled={s.stock <= 0}
@@ -115,10 +123,12 @@ export function MerchVariantModal({
                     {availableColors.map((c: any) => (
                       <button
                         key={c.name}
-                        onClick={() => setSelection(m.id, "color", selColor === c.name ? "" : c.name)}
+                        onClick={() =>
+                          setSelection(m.id, "color", selColor === c.name ? "" : c.name)
+                        }
                         className={`text-sm font-semibold px-4 py-2 rounded-xl border transition-all ${
-                          selColor === c.name 
-                            ? "bg-primary text-primary-foreground border-primary shadow-md" 
+                          selColor === c.name
+                            ? "bg-primary text-primary-foreground border-primary shadow-md"
                             : "border-border bg-background hover:bg-secondary/50"
                         } ${c.stock <= 0 ? "opacity-40 line-through" : ""}`}
                         disabled={c.stock <= 0}
@@ -139,15 +149,26 @@ export function MerchVariantModal({
                     </span>
                   )}
                 </div>
-                
+
                 {setCart ? (
                   qty > 0 ? (
                     <div className="flex items-center gap-3 bg-background rounded-full border px-2 py-1 shadow-sm">
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-secondary" onClick={() => handleRemove(m)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full hover:bg-secondary"
+                        onClick={() => handleRemove(m)}
+                      >
                         <Minus className="h-5 w-5" />
                       </Button>
                       <span className="text-base font-semibold w-6 text-center">{qty}</span>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-secondary" onClick={() => handleAdd(m)} disabled={isStockExceeded}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full hover:bg-secondary"
+                        onClick={() => handleAdd(m)}
+                        disabled={isStockExceeded}
+                      >
                         <Plus className="h-5 w-5" />
                       </Button>
                     </div>
@@ -156,7 +177,15 @@ export function MerchVariantModal({
                       onClick={() => handleAdd(m)}
                       disabled={!canAdd}
                       className="rounded-full px-8 py-6 text-base font-semibold shadow-md"
-                      title={needsSize ? "Select a variant first" : needsColor ? "Select a sub-variant first" : isStockExceeded ? "Out of stock" : undefined}
+                      title={
+                        needsSize
+                          ? "Select a variant first"
+                          : needsColor
+                            ? "Select a sub-variant first"
+                            : isStockExceeded
+                              ? "Out of stock"
+                              : undefined
+                      }
                     >
                       {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add to Cart"}
                     </Button>

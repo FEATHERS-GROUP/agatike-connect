@@ -163,15 +163,13 @@ function CheckoutPage() {
     fetchDetails();
   }, [planId, isAnnually, activeWorkspace]);
 
-
-
   const handlePaymentSuccess = async () => {
     const stored = sessionStorage.getItem("pendingConversionData");
     let conversionData = null;
     if (stored) {
       try {
         conversionData = JSON.parse(stored);
-      } catch(e) {}
+      } catch (e) {}
     }
 
     if (conversionData && conversionData.plan_id === plan!.id) {
@@ -187,7 +185,7 @@ function CheckoutPage() {
             network: "Card",
           },
         });
-        
+
         setTimeout(() => {
           sessionStorage.removeItem("pendingConversionData");
           toast.success(`Account converted and subscribed to ${plan!.name}!`);

@@ -46,11 +46,7 @@ import {
   type DragEndEvent,
   type DragOverEvent,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/book/tasks")({
@@ -83,8 +79,22 @@ const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; dot: str
   },
 };
 
-const STATUS_COLUMNS: { id: Status; label: string; icon: any; color: string; bg: string; dotColor: string }[] = [
-  { id: "todo", label: "To Do", icon: CheckSquare, color: "text-slate-500", bg: "bg-slate-500/10", dotColor: "bg-slate-400" },
+const STATUS_COLUMNS: {
+  id: Status;
+  label: string;
+  icon: any;
+  color: string;
+  bg: string;
+  dotColor: string;
+}[] = [
+  {
+    id: "todo",
+    label: "To Do",
+    icon: CheckSquare,
+    color: "text-slate-500",
+    bg: "bg-slate-500/10",
+    dotColor: "bg-slate-400",
+  },
   {
     id: "in_progress",
     label: "In Progress",
@@ -93,7 +103,14 @@ const STATUS_COLUMNS: { id: Status; label: string; icon: any; color: string; bg:
     bg: "bg-amber-500/10",
     dotColor: "bg-amber-400",
   },
-  { id: "done", label: "Done", icon: Check, color: "text-green-500", bg: "bg-green-500/10", dotColor: "bg-green-500" },
+  {
+    id: "done",
+    label: "Done",
+    icon: Check,
+    color: "text-green-500",
+    bg: "bg-green-500/10",
+    dotColor: "bg-green-500",
+  },
 ];
 
 // ─── Sortable Task Card Wrapper ──────────────────────────────────────────────
@@ -110,14 +127,9 @@ function SortableTaskCard({
   onDelete: () => void;
   onClick: () => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -197,10 +209,7 @@ function DroppableColumn({
 
       {/* Cards */}
       <div className="p-3 space-y-2.5 flex-1 overflow-y-auto min-h-[250px]">
-        <SortableContext
-          items={colTasks.map((t) => t.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={colTasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {colTasks.map((task: any) => (
             <SortableTaskCard
               key={task.id}

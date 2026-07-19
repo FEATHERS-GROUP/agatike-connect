@@ -178,11 +178,10 @@ const DELETE_CINEMA = `
 
 // ─── Server Functions ─────────────────────────────────────────────────────────
 
-export const getPublicCinemas = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const res = await hasuraRequest<{ cinemas: any[] }>(GET_PUBLIC_CINEMAS);
-    return res.cinemas;
-  });
+export const getPublicCinemas = createServerFn({ method: "GET" }).handler(async () => {
+  const res = await hasuraRequest<{ cinemas: any[] }>(GET_PUBLIC_CINEMAS);
+  return res.cinemas;
+});
 
 export const getCinemas = createServerFn({ method: "POST" })
   .validator((d: any) => d)
