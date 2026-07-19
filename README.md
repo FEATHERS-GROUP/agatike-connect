@@ -2552,4 +2552,16 @@ Shows all `product_orders` for this product, with search:
 
 ---
 
+## 26. Interactive Map & Explore (`/explore` & `/`)
+
+**Logic:**
+
+- The interactive map (`MapDesktop.tsx` and `MapClient.tsx`) serves as a visual directory for Events, Venues, Spaces, and Cinemas.
+- **Marker Interactions:** Clicking a marker opens a detailed sidebar or bottom sheet with context-specific data:
+  - **Events:** Shows ticket pricing, organizers, and lineups.
+  - **Venues:** Displays starting prices and a **Dynamic Facilities List**. Users can see sub-facilities (like a VIP lounge or coworking desk) inside a venue and directly click "Book Now" to jump into the specific facility checkout flow (`/venues/$venueId/facilities/checkout/$facilityId`).
+- **Theming:** The map UI components strictly use dynamic CSS variables (`bg-secondary`, `text-muted-foreground`) to effortlessly switch between Light mode and our refined "Instagram-style" Dark mode (elevated dark grey backgrounds to reduce OLED smearing and harsh contrast).
+
+---
+
 _Last updated: July 2026 — Agatike Connect_
