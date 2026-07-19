@@ -349,6 +349,7 @@ const GET_EVENT_BY_ID = `
         category
         stock_limit
         sold_count
+        specs
       }
 
       workspaces {

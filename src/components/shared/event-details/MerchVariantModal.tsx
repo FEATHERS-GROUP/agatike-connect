@@ -69,6 +69,20 @@ export function MerchVariantModal({
                   {m.description}
                 </p>
               )}
+              
+              {m.specs && Array.isArray(m.specs) && m.specs.length > 0 && (
+                <div className="mt-4 flex flex-col gap-2 border-t pt-4">
+                  <p className="text-sm font-semibold">Specifications</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    {m.specs.map((spec: any, idx: number) => (
+                      <li key={idx} className="flex justify-between">
+                        <span className="font-medium">{spec.key}:</span>
+                        <span>{spec.value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </DialogHeader>
 
             <div className="flex flex-col gap-5 py-2">
