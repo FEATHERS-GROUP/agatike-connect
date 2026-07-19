@@ -191,7 +191,7 @@ function CheckoutPage() {
         setTimeout(() => {
           sessionStorage.removeItem("pendingConversionData");
           toast.success(`Account converted and subscribed to ${plan!.name}!`);
-          navigate({ to: "/dashboard/billing/subscriptions" });
+          window.location.href = "/dashboard/billing/subscriptions";
         }, 60000);
       } catch (err: any) {
         setIsConverting(false);

@@ -128,6 +128,8 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
             toast.error("Failed to activate plan", { id: "activate-plan" });
           }
         }
+        
+        window.location.reload();
       }, 60000);
     },
     onError: (err) => {
