@@ -150,7 +150,7 @@ export function VenueSeatSelector({
 
   const isMobile = useIsMobile();
 
-  const [zoomScale, setZoomScale] = useState(isMobile ? 1.65 : 1);
+  const [zoomScale, setZoomScale] = useState(isMobile ? 1.65 : 2);
   const [panPos, setPanPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -167,9 +167,9 @@ export function VenueSeatSelector({
   useEffect(() => {
     // Reset manual zoom/pan whenever the active tier changes — the SVG
     // viewBox below auto-fits to the targeted sections like an image.
-    setZoomScale(isMobile ? 1.65 : 1);
+    setZoomScale(isMobile ? 1.65 : (activeSectionForModal ? 1 : 2));
     setPanPos({ x: 0, y: 0 });
-  }, [activeTicketId, isMobile]);
+  }, [activeTicketId, activeSectionForModal, isMobile]);
 
   // Compute a bounding-box-driven viewBox so the active tier (or whole
   // venue) is rendered fitted to the container like an SVG illustration.
@@ -184,8 +184,13 @@ export function VenueSeatSelector({
       h: bh + defaultPad * 2,
     };
 
-    if (!activeTicketId) return fullVB;
-    const targets = sections.filter((s) => s.ticketId === activeTicketId);
+    let targets = [];
+    if (activeSectionForModal) {
+      targets = [activeSectionForModal];
+    } else if (activeTicketId) {
+      targets = sections.filter((s) => s.ticketId === activeTicketId);
+    }
+
     if (targets.length === 0) return fullVB;
 
     let minX = Infinity,
@@ -219,7 +224,7 @@ export function VenueSeatSelector({
       w: bbW + padX * 2,
       h: bbH + padY * 2,
     };
-  }, [activeTicketId, sections, venueProject.boundary_width, venueProject.boundary_height]);
+  }, [activeTicketId, activeSectionForModal, sections, venueProject.boundary_width, venueProject.boundary_height]);
 
   // REALTIME SYNC (Mocking WebSocket behavior across tabs)
   const [lockedSeats, setLockedSeats] = useState<string[]>([]);
@@ -1021,6 +1026,7 @@ export function VenueSeatSelector({
 
               const isActive = !activeTicketId || sec.ticketId === activeTicketId;
               const isTarget = activeTicketId && sec.ticketId === activeTicketId;
+              const isSelectedSectionForModal = activeSectionForModal?.id === sec.id;
               const baseScaleX = sec.scaleX || 1;
               const baseScaleY = sec.scaleY || 1;
 
@@ -1046,12 +1052,12 @@ export function VenueSeatSelector({
                   ) : (
                     <path
                       d={d}
-                      fill={sec.color}
-                      stroke="hsl(var(--background))"
+                      fill={isSelectedSectionForModal ? "hsl(var(--primary))" : sec.color}
+                      stroke={isSelectedSectionForModal ? "hsl(var(--primary))" : "hsl(var(--background))"}
                       strokeWidth="6"
                       strokeLinejoin="round"
-                      className={`transition-all duration-200 ${sec.ticketId ? "hover:brightness-125" : "opacity-40"} ${selectedSeats.includes(`GA-${sec.id}`) ? "brightness-125 drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : ""}`}
-                      fillOpacity={0.2}
+                      className={`transition-all duration-200 ${sec.ticketId ? "hover:brightness-125" : "opacity-40"} ${selectedSeats.includes(`GA-${sec.id}`) || isSelectedSectionForModal ? "brightness-125 drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : ""}`}
+                      fillOpacity={isSelectedSectionForModal ? 0.4 : 0.2}
                     >
                       <title>{sec.name}</title>
                     </path>
