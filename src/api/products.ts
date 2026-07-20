@@ -229,3 +229,39 @@ export const createProductOrders = createServerFn({ method: "POST" }).handler(as
   const payload = (ctx.data as any).data || ctx.data;
   return hasuraRequest(CREATE_PRODUCT_ORDER, { objects: payload.objects || payload });
 });
+
+const GET_BOOKING_PRODUCT_ORDERS = `
+  query GetBookingProductOrders($buyer_id: uuid!) {
+    product_orders(
+      where: { buyer_id: { _eq: $buyer_id }, status: { _eq: "Confirmed" } },
+      order_by: { created_at: desc }
+    ) {
+      id
+      amount_paid
+      status
+      picked
+      created_at
+      qty
+      size
+      phone
+      qr_code_string
+      product {
+        name
+        type
+        specs 
+        image_url
+      }
+    }
+  }
+`;
+
+export const getBookingProductOrders = createServerFn({ method: "POST" })
+  .validator((d: { data: { buyer_id?: string } }) => d)
+  .handler(async (ctx) => {
+    const payload = (ctx.data as any).data || ctx.data;
+    const { buyer_id } = payload as { buyer_id: string };
+    const data = await hasuraRequest<{ product_orders: any[] }>(GET_BOOKING_PRODUCT_ORDERS, {
+      buyer_id,
+    });
+    return data.product_orders || [];
+  });

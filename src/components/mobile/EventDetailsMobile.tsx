@@ -13,7 +13,13 @@ import { EventReviews } from "@/components/shared/event-details/EventReviews";
 import { EventVipPrivileges } from "@/components/shared/event-details/EventVipPrivileges";
 import { EventCheckoutDrawer } from "./EventCheckoutDrawer";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
@@ -298,67 +304,97 @@ export function EventDetailsMobile({
       {d.currentVenueProject && d.activeTicketIdForMap && (
         <>
           <Drawer open={d.isSeatModalOpen} onOpenChange={d.setIsSeatModalOpen}>
-            <DrawerContent className="h-[95vh] flex flex-col bg-background/95 backdrop-blur-xl px-0 pb-safe border-border/40">
-              {!d.isSectionActive && (
-                <DrawerHeader className="border-b border-border/40 flex items-center justify-between p-4 shrink-0 text-left">
-                  <div>
-                    <DrawerTitle className="text-lg font-bold">Select Seats</DrawerTitle>
-                    <p className="text-xs text-muted-foreground">
-                      For{" "}
-                      {d.activeTicketTiers.find((t: any) => t.id === d.activeTicketIdForMap)?.name}
-                    </p>
-                  </div>
-                </DrawerHeader>
-              )}
-              <div className="flex-1 w-full bg-secondary/30 relative overflow-hidden pb-24">
-                <VenueSeatSelector
-                  venueProject={d.currentVenueProject}
-                  eventTickets={d.activeTicketTiers}
-                  bookedSeats={
-                    d.rawAttendeesList
-                      ?.filter((a: any) => a.custom_fields?.tour_stop_idx === d.selectedStopIdx)
-                      .map((a: any) => a.custom_fields?.seat)
-                      .filter(Boolean) || []
-                  }
-                  selectedSeats={d.selectedSeatsObj.map((s) => s.code)}
-                  onSeatSelect={d.handleSeatSelect}
-                  onSeatDeselect={d.handleSeatDeselect}
-                  maxSelectable={0}
-                  currency={d.currencyCode}
-                  activeTicketId={d.activeTicketIdForMap}
-                  hideLegend={true}
-                  onSectionActive={d.setIsSectionActive}
-                />
+            <DrawerContent className="h-[100dvh] max-h-[100dvh] flex flex-col bg-background px-0 pb-0 border-none rounded-none focus:outline-none">
+              <DrawerTitle className="sr-only">Select Seat</DrawerTitle>
+              <DrawerDescription className="sr-only">
+                Select your seats from the map
+              </DrawerDescription>
+
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 shrink-0 bg-background z-10 relative">
+                <button
+                  onClick={() => d.setIsSeatModalOpen(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-xl border border-border/60 hover:bg-secondary/20 active:scale-95 transition-all"
+                >
+                  <ChevronLeft className="w-5 h-5 text-foreground" />
+                </button>
+                <span className="font-bold text-lg text-foreground absolute left-1/2 -translate-x-1/2">
+                  Select Seat
+                </span>
+                <div className="w-10 h-10" />
               </div>
 
-              <div className="mt-auto p-4 border-t border-border bg-background flex items-center justify-between shadow-[0_-8px_30px_rgb(0,0,0,0.12)] pb-safe shrink-0">
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">
-                    {d.selectedSeatsObj.length} Seat{d.selectedSeatsObj.length !== 1 ? "s" : ""}{" "}
-                    Selected
+              {/* Map Area */}
+              <div className="flex-1 w-full relative overflow-hidden bg-background flex flex-col items-center">
+                {/* Curved Arc ("Screen This Way") */}
+                <div className="absolute top-4 left-0 right-0 flex flex-col items-center z-10 pointer-events-none">
+                  <div className="w-[70%] max-w-[280px] h-8 relative opacity-90 overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-[100px] rounded-[50%] border-[4px] border-primary blur-[2px] opacity-40" />
+                    <div className="absolute top-0 left-0 right-0 h-[100px] rounded-[50%] border-[3px] border-primary drop-shadow-md" />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground mt-2">
+                    Screen This Way
                   </span>
-                  <span className="text-xs text-muted-foreground max-w-[150px] truncate">
+                </div>
+
+                <div className="w-full h-full pb-20 pt-16">
+                  <VenueSeatSelector
+                    venueProject={d.currentVenueProject}
+                    eventTickets={d.activeTicketTiers}
+                    bookedSeats={
+                      d.rawAttendeesList
+                        ?.filter((a: any) => a.custom_fields?.tour_stop_idx === d.selectedStopIdx)
+                        .map((a: any) => a.custom_fields?.seat)
+                        .filter(Boolean) || []
+                    }
+                    selectedSeats={d.selectedSeatsObj.map((s) => s.code)}
+                    onSeatSelect={d.handleSeatSelect}
+                    onSeatDeselect={d.handleSeatDeselect}
+                    maxSelectable={0}
+                    currency={d.currencyCode}
+                    activeTicketId={d.activeTicketIdForMap}
+                    hideLegend={true}
+                    onSectionActive={d.setIsSectionActive}
+                  />
+                </div>
+
+                {/* Legend */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between z-10 border-t border-border/40 pt-4 px-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-background border-[2px] border-border/80" />
+                    <span className="text-xs font-medium text-foreground">Available</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">Taken</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                    <span className="text-xs font-medium text-foreground">Selected</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Bar */}
+              <div className="p-4 border-t border-border/20 bg-background shrink-0 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+                <div className="flex items-center justify-between mb-4 px-2">
+                  <span className="font-bold text-foreground">Your Seat</span>
+                  <span className="font-bold text-foreground tracking-wider">
                     {d.selectedSeatsObj.length > 0
-                      ? d.selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
+                      ? d.selectedSeatsObj
+                          .map((s) => s.seatName || s.code.split("-").pop())
+                          .join(", ")
                       : "None"}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-12 px-6 rounded-2xl text-base font-bold"
-                    onClick={() => d.setIsSeatModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="h-12 px-6 rounded-2xl text-base font-bold shadow-[var(--shadow-glow)]"
-                    style={{ background: "var(--gradient-primary)" }}
-                    onClick={() => d.setIsSeatModalOpen(false)}
-                  >
-                    Confirm
-                  </Button>
-                </div>
+                <Button
+                  className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-[0_8px_20px_rgb(var(--primary)_/_0.3)] active:scale-[0.98] transition-all"
+                  style={{ background: "var(--gradient-primary)" }}
+                  onClick={() => d.setIsSeatModalOpen(false)}
+                  disabled={d.selectedSeatsObj.length === 0}
+                >
+                  Confirm Seat
+                </Button>
               </div>
             </DrawerContent>
           </Drawer>

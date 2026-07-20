@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserAllTickets } from "@/api/user_tickets";
+import { getBookingProductOrders } from "@/api/products";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useState } from "react";
 import * as htmlToImage from "html-to-image";
 import { jsPDF } from "jspdf";
@@ -30,6 +32,13 @@ function TicketViewer() {
 
   const ticket = tickets.find((t: any) => t.id === ticketId);
   const [isDownloading, setIsDownloading] = useState(false);
+  const { user } = useUserAuth();
+
+  const { data: productOrders = [], isLoading: isProductsLoading } = useQuery({
+    queryKey: ["booking-products", user?.id],
+    queryFn: () => getBookingProductOrders({ data: { buyer_id: user?.id } }),
+    enabled: !!user?.id,
+  });
 
   const handleDownload = async () => {
     if (isDownloading) return;
@@ -106,33 +115,32 @@ function TicketViewer() {
   }
 
   return (
-    <div className="relative h-screen h-[100dvh] font-sans overflow-hidden flex flex-col items-center justify-between text-foreground">
-      {/* Ambient background — blurred cover image */}
+    <div className="relative min-h-screen font-sans flex flex-col text-foreground bg-[#0a0a0a] overflow-x-hidden selection:bg-primary/30">
+      {/* Ambient background — blurred cover image with richer overlay */}
       {ticket.cover && (
-        <>
+        <div className="fixed inset-0 z-0 flex items-center justify-center">
           <img
             src={ticket.cover}
             alt=""
             aria-hidden
-            className="absolute inset-0 w-full h-full object-cover scale-110 blur-3xl opacity-60 pointer-events-none select-none"
+            className="absolute inset-0 w-full h-full object-cover scale-125 blur-[100px] opacity-40 saturate-150 pointer-events-none select-none"
           />
-          {/* Dark gradient scrim so text stays readable */}
-          <div className="absolute inset-0 bg-black/50 pointer-events-none" />
-        </>
+          {/* Noise texture and radial gradient for premium feel */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.03] via-black/60 to-black pointer-events-none" />
+        </div>
       )}
 
-      {/* Centered responsive container */}
-      <div className="relative z-10 w-full max-w-md px-4 flex flex-col justify-between h-full max-h-screen max-h-[100dvh] py-4 md:py-6 overflow-hidden">
+      {/* Scrollable Container */}
+      <div className="relative z-10 w-full max-w-[420px] mx-auto px-5 py-8 flex flex-col gap-8 pb-40">
         {/* Header */}
-        <div className="flex items-center justify-between flex-none">
+        <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-700">
           <Link
             to="/profile"
-            className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition-colors"
+            className="w-11 h-11 bg-white/[0.08] backdrop-blur-xl rounded-2xl flex items-center justify-center hover:bg-white/[0.15] hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
           >
-            <ChevronLeft className="w-5 h-5 text-white" />
+            <ChevronLeft className="w-5 h-5 text-white/90" />
           </Link>
-          <span className="font-bold text-sm text-white tracking-wide">
-            Upcoming{" "}
+          <span className="font-bold text-[13px] tracking-[0.2em] text-white/60 uppercase">
             {ticket.ticketCategory === "movie"
               ? "Movie"
               : ticket.ticketCategory === "conference"
@@ -141,103 +149,179 @@ function TicketViewer() {
                   ? "Entrance Pass"
                   : ticket.ticketCategory === "venue"
                     ? "Venue Booking"
-                    : "Event"}
+                    : "Event Ticket"}
           </span>
-          <div className="w-10" />
+          <div className="w-11" />
         </div>
 
-        {/* Content area: Title + Pass card */}
-        <div className="flex-1 flex flex-col justify-center min-h-0 my-2 overflow-hidden">
-          {/* Event Meta */}
-          <div className="mb-2 text-center flex-none">
-            <p className="text-white/75 text-xs font-semibold uppercase tracking-wider mb-0.5">
+        {/* Event Meta */}
+        <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
+          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md mb-4 shadow-sm">
+            <Calendar className="w-3.5 h-3.5 text-primary" />
+            <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
               {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
-            </p>
-            <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-white drop-shadow-md line-clamp-1 leading-tight">
-              {ticket.title}
-            </h1>
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-2xl leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+            {ticket.title}
+          </h1>
+        </div>
+
+        {/* Ticket Card */}
+        <div className="flex justify-center w-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both perspective-[1000px]">
+          <div className="w-full max-w-[360px] mx-auto hover:rotate-x-[2deg] hover:rotate-y-[-2deg] hover:scale-[1.02] transition-transform duration-500 rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
+            <DynamicPass ticket={ticket} />
+          </div>
+        </div>
+
+        {/* Sections Wrapper with Staggered Animation */}
+        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
+          {/* Product Orders Section */}
+          <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white/90 font-semibold text-base flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-orange-500/20 text-orange-400">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                Merch & Add-ons
+              </h2>
+            </div>
+            <div className="flex flex-col gap-3">
+              {isProductsLoading ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
+                </div>
+              ) : productOrders.length > 0 ? (
+                productOrders.map((order: any) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]"
+                  >
+                    {order.product?.image_url ? (
+                      <img
+                        src={order.product.image_url}
+                        alt={order.product.name}
+                        className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/10"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
+                        <Briefcase className="w-5 h-5 text-white/40" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium text-white/90 text-sm line-clamp-1">
+                        {order.product?.name || "Product"}
+                      </p>
+                      <p className="text-[13px] text-white/50 mt-0.5">
+                        Qty: {order.qty} {order.size ? `· Size: ${order.size}` : ""}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {order.picked ? (
+                        <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                          Picked Up
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-[11px] font-semibold text-orange-400 bg-orange-500/10 px-2 py-1 rounded border border-orange-500/20">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
+                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
+                    <Briefcase className="w-5 h-5 text-white/40" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-white/90 text-sm">No items purchased</p>
+                    <p className="text-[13px] text-white/50 mt-0.5">
+                      Explore the shop for exclusive merch.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Dynamic Ticket Card */}
-          <div className="ticket-card-wrapper flex-1 flex items-center justify-center min-h-0 relative overflow-hidden">
-            <div className="ticket-card-scaler origin-center transition-transform">
-              <DynamicPass ticket={ticket} />
+          {/* Gift Cards Section */}
+          <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
+            <h2 className="text-white/90 font-semibold text-base mb-4 flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
+                <TicketIcon className="w-4 h-4" />
+              </div>
+              Gift Cards & Vouchers
+            </h2>
+            <div className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
+              <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
+                <TicketIcon className="w-5 h-5 text-white/40" />
+              </div>
+              <div>
+                <p className="font-medium text-white/90 text-sm">No active vouchers</p>
+                <p className="text-[13px] text-white/50 mt-0.5">
+                  Any claimed gifts will appear here.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Other Details */}
+          <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
+            <h2 className="text-white/90 font-semibold text-base mb-4">Order Details</h2>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center py-1">
+                <span className="text-white/50 text-[13px] font-medium">Order Reference</span>
+                <span className="text-white/90 font-mono text-sm tracking-wider bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
+                  {ticket.orderId}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-white/50 text-[13px] font-medium">Status</span>
+                <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span className="font-semibold text-[13px]">Confirmed</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-white/50 text-[13px] font-medium">Purchased On</span>
+                <span className="text-white/90 font-medium text-[13px]">
+                  {ticket.created_at
+                    ? new Date(ticket.created_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "N/A"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Download Button */}
-        <div className="w-full flex-none mt-2">
+      {/* Download Button - Fixed at bottom with gorgeous glass floating bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none pb-safe-bottom">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent pointer-events-none h-40 bottom-0 top-auto" />
+        <div className="max-w-[420px] mx-auto px-5 pb-6 pointer-events-auto relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500 fill-mode-both">
           <button
             onClick={handleDownload}
             disabled={isDownloading}
-            className="bg-orange-500 text-white font-bold py-3.5 px-6 rounded-2xl w-full flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(249,115,22,0.4)] hover:bg-orange-600 transition-colors text-base disabled:opacity-70 disabled:cursor-not-allowed active:scale-[0.98]"
+            className="group relative w-full overflow-hidden bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(var(--primary)_/_0.4)] hover:shadow-[0_8px_40px_rgb(var(--primary)_/_0.6)] hover:-translate-y-1 transition-all duration-300 text-[15px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:scale-[0.98]"
+            style={{ background: "var(--gradient-primary)" }}
           >
-            {isDownloading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Download className="w-5 h-5" />
-            )}
-            {isDownloading ? "Generating PDF..." : "Download PDF"}
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            <div className="relative flex items-center gap-2">
+              {isDownloading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Download className="w-5 h-5" />
+              )}
+              {isDownloading ? "Generating PDF..." : "Save PDF Ticket"}
+            </div>
           </button>
         </div>
       </div>
-
-      {/* Styles for dynamic card height and width scaling */}
-      <style>{`
-        .ticket-card-scaler {
-          transform: scale(1);
-          transform-origin: center center;
-          transition: transform 0.15s ease-out;
-          width: 350px;
-          max-width: 100%;
-        }
-        
-        /* Height-based scaling */
-        @media (max-height: 850px) { .ticket-card-scaler { transform: scale(0.95); } }
-        @media (max-height: 800px) { .ticket-card-scaler { transform: scale(0.90); } }
-        @media (max-height: 750px) { .ticket-card-scaler { transform: scale(0.85); } }
-        @media (max-height: 700px) {
-          .ticket-card-scaler { transform: scale(0.80); }
-          .ticket-card-inner {
-            padding: 1.25rem !important; /* p-5 */
-            padding-bottom: 1.5rem !important; /* pb-6 */
-          }
-          .ticket-card-inner .mb-6 { margin-bottom: 1rem !important; }
-          .ticket-card-inner .mb-4 { margin-bottom: 0.75rem !important; }
-          .ticket-card-inner .mt-6 { margin-top: 1rem !important; }
-          .ticket-card-inner .pb-5 { padding-bottom: 0.75rem !important; }
-        }
-        @media (max-height: 650px) { .ticket-card-scaler { transform: scale(0.72); } }
-        @media (max-height: 600px) { .ticket-card-scaler { transform: scale(0.65); } }
-        @media (max-height: 550px) {
-          .ticket-card-scaler { transform: scale(0.58); }
-          .ticket-card-inner {
-            padding: 1rem !important; /* p-4 */
-            padding-bottom: 1.25rem !important; /* pb-5 */
-          }
-          .ticket-card-inner .mb-6 { margin-bottom: 0.75rem !important; }
-          .ticket-card-inner .mb-4 { margin-bottom: 0.5rem !important; }
-          .ticket-card-inner .mt-6 { margin-top: 0.75rem !important; }
-          .ticket-card-inner .pb-5 { padding-bottom: 0.5rem !important; }
-        }
-        @media (max-height: 500px) { .ticket-card-scaler { transform: scale(0.50); } }
-        @media (max-height: 450px) { .ticket-card-scaler { transform: scale(0.45); } }
-
-        /* Width-based scaling (to prevent horizontal overflow on narrow screens) */
-        @media (max-width: 380px) {
-          .ticket-card-scaler { transform: scale(0.9); }
-          @media (max-height: 700px) { .ticket-card-scaler { transform: scale(0.75); } }
-          @media (max-height: 650px) { .ticket-card-scaler { transform: scale(0.68); } }
-          @media (max-height: 600px) { .ticket-card-scaler { transform: scale(0.60); } }
-        }
-        @media (max-width: 340px) {
-          .ticket-card-scaler { transform: scale(0.8); }
-          @media (max-height: 700px) { .ticket-card-scaler { transform: scale(0.68); } }
-          @media (max-height: 650px) { .ticket-card-scaler { transform: scale(0.60); } }
-          @media (max-height: 600px) { .ticket-card-scaler { transform: scale(0.55); } }
-        }
-      `}</style>
 
       {/* Hidden PDF Printable Layer */}
       <PrintableTicket id="printable-ticket" ticket={ticket} />
