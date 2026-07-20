@@ -338,8 +338,20 @@ function EventsBrowse() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="mt-16 rounded-3xl border border-dashed border-border p-16 text-center">
-            <p className="text-lg font-semibold">No events match your search</p>
-            <p className="mt-1 text-sm text-muted-foreground">Try a different city or category.</p>
+            {!isLoggedIn ? (
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-lg font-semibold">Start hosting events and Experiences create your account</p>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">The dashboard is accessible on computer only for easy use.</p>
+                <Link to="/dashboard">
+                  <Button size="lg" className="mt-2 rounded-full font-semibold">Become a host</Button>
+                </Link>
+              </div>
+            ) : (
+              <>
+                <p className="text-lg font-semibold">No events match your search</p>
+                <p className="mt-1 text-sm text-muted-foreground">Try a different city or category.</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

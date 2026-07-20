@@ -451,13 +451,13 @@ function VenueView() {
                   <Map className="h-6 w-6 text-primary" /> Interactive Seating Layout
                 </h3>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                   {/* Left Column: Live Occupancy Map */}
-                  <div className="flex flex-col">
+                  <div className="flex flex-col w-full h-[500px] lg:h-[600px] shrink-0">
                     {!assignedProject ||
                     !assignedProject.sections_data ||
                     assignedProject.sections_data.length === 0 ? (
-                      <div className="h-full min-h-[400px] border-2 border-dashed border-border/60 rounded-2xl flex flex-col items-center justify-center bg-secondary/10 p-6 text-center">
+                      <div className="h-full w-full border-2 border-dashed border-border/60 rounded-2xl flex flex-col items-center justify-center bg-secondary/10 p-6 text-center">
                         <Map className="h-10 w-10 text-muted-foreground/50 mb-3" />
                         <h4 className="font-medium text-muted-foreground">No Layout Assigned</h4>
                         <p className="text-sm text-muted-foreground/70 mt-1">
@@ -465,7 +465,7 @@ function VenueView() {
                         </p>
                       </div>
                     ) : (
-                      <div className="bg-secondary/10 rounded-2xl border border-border/50 h-full">
+                      <div className="bg-secondary/10 rounded-2xl border border-border/50 h-full w-full overflow-hidden relative">
                         <VenueSeatSelector
                           venueProject={assignedProject}
                           eventTickets={event.event_tickets || []}
@@ -481,7 +481,7 @@ function VenueView() {
                   </div>
 
                   {/* Right Column: Mapping Controls */}
-                  <div className="space-y-6">
+                  <div className="flex flex-col space-y-6 w-full h-[500px] lg:h-[600px]">
                     {!assignedProject ? (
                       <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">
@@ -524,8 +524,8 @@ function VenueView() {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between bg-secondary/30 p-3 rounded-lg border border-border">
+                      <div className="flex flex-col h-full min-h-0 space-y-4">
+                        <div className="flex items-center justify-between bg-secondary/30 p-3 rounded-lg border border-border shrink-0">
                           <div>
                             <p className="text-sm font-medium">{assignedProject.name}</p>
                             <p className="text-xs text-muted-foreground">Assigned Layout</p>
@@ -557,16 +557,17 @@ function VenueView() {
                           </div>
                         </div>
 
-                        <div className="space-y-3 mt-4">
-                          <h4 className="text-sm font-medium">Map Tickets to Sections</h4>
+                        <div className="flex flex-col flex-1 min-h-0 space-y-3 mt-4 overflow-hidden">
+                          <h4 className="text-sm font-medium shrink-0">Map Tickets to Sections</h4>
                           {!assignedProject.sections_data ||
                           assignedProject.sections_data.filter((s: any) => s.shape !== "pitch")
                             .length === 0 ? (
-                            <p className="text-sm text-muted-foreground italic">
+                            <p className="text-sm text-muted-foreground italic shrink-0">
                               No mappable sections defined in this layout.
                             </p>
                           ) : (
-                            assignedProject.sections_data.map((section: any, sIdx: number) => {
+                            <div className="flex-1 overflow-y-auto pr-2 space-y-2">
+                              {assignedProject.sections_data.map((section: any, sIdx: number) => {
                               if (section.shape === "pitch") return null;
                               return (
                                 <div
@@ -610,7 +611,8 @@ function VenueView() {
                                   </select>
                                 </div>
                               );
-                            })
+                            })}
+                            </div>
                           )}
                         </div>
                       </div>

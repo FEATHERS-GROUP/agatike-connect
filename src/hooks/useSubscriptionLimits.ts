@@ -33,12 +33,12 @@ export function useSubscriptionLimits(
   const dbLimits: Record<string, any> =
     typeof rawLimits === "string"
       ? (() => {
-          try {
-            return JSON.parse(rawLimits);
-          } catch {
-            return {};
-          }
-        })()
+        try {
+          return JSON.parse(rawLimits);
+        } catch {
+          return {};
+        }
+      })()
       : rawLimits || {};
 
   const { currentUser } = useWorkspace() as any;
@@ -46,16 +46,16 @@ export function useSubscriptionLimits(
 
   const limits: Record<string, any> = isTrial
     ? new Proxy(
-        {},
-        {
-          get: (target, prop) => {
-            if (typeof prop === "string" && (prop.startsWith("has_") || prop.startsWith("can_"))) {
-              return true;
-            }
-            return -1;
-          },
+      {},
+      {
+        get: (target, prop) => {
+          if (typeof prop === "string" && (prop.startsWith("has_") || prop.startsWith("can_"))) {
+            return true;
+          }
+          return -1;
         },
-      )
+      },
+    )
     : dbLimits;
 
   const isLoading = subLoading || statsLoading || (!!workspaceId && wsStatsLoading);

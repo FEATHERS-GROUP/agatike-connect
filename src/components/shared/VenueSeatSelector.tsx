@@ -150,7 +150,7 @@ export function VenueSeatSelector({
 
   const isMobile = useIsMobile();
 
-  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomScale, setZoomScale] = useState(isMobile ? 1.65 : 1);
   const [panPos, setPanPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
@@ -167,9 +167,9 @@ export function VenueSeatSelector({
   useEffect(() => {
     // Reset manual zoom/pan whenever the active tier changes — the SVG
     // viewBox below auto-fits to the targeted sections like an image.
-    setZoomScale(1);
+    setZoomScale(isMobile ? 1.65 : 1);
     setPanPos({ x: 0, y: 0 });
-  }, [activeTicketId]);
+  }, [activeTicketId, isMobile]);
 
   // Compute a bounding-box-driven viewBox so the active tier (or whole
   // venue) is rendered fitted to the container like an SVG illustration.
@@ -1059,9 +1059,16 @@ export function VenueSeatSelector({
                     const isBooked = bookedSeats.includes(seat.code);
                     const isSelected = selectedSeats.includes(seat.code);
 
-                    let fill = sec.color || "#333";
-                    if (isBooked) fill = "rgba(128,128,128,0.3)";
-                    if (isSelected) fill = "var(--primary)";
+                    let fill = "hsl(var(--background))";
+                    let stroke = "hsl(var(--foreground))";
+                    
+                    if (isBooked) {
+                      fill = "hsl(var(--muted-foreground))";
+                      stroke = "transparent";
+                    } else if (isSelected) {
+                      fill = "hsl(var(--primary))";
+                      stroke = "transparent";
+                    }
 
                     const size = seat.r * 2.5;
                     const half = size / 2;
@@ -1070,28 +1077,20 @@ export function VenueSeatSelector({
                       <g
                         key={seat.code}
                         transform={`translate(${seat.cx}, ${seat.cy}) rotate(${seat.rot || 0})`}
-                        className={`transition-all duration-200 ${isBooked ? "opacity-50" : "hover:brightness-125"} ${isSelected ? "drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" : ""}`}
+                        className={`transition-all duration-200 ${isBooked ? "opacity-50" : "hover:scale-110 cursor-pointer"} ${isSelected ? "drop-shadow-md scale-110" : ""}`}
                       >
-                        <title>{`Seat ${seat.num}${isBooked ? " (Sold)" : ""}`}</title>
-                        <circle
-                          cx="0"
-                          cy="0"
-                          r={size * 0.45}
+                        <title>{`Seat ${seat.num}${isBooked ? " (Taken)" : ""}`}</title>
+                        <rect
+                          x={-size * 0.45}
+                          y={-size * 0.45}
+                          width={size * 0.9}
+                          height={size * 0.9}
+                          rx={size * 0.2}
                           fill={fill}
-                          stroke="hsl(var(--background))"
+                          stroke={stroke}
                           strokeWidth={size * 0.1}
-                          opacity={isBooked ? 0.3 : 1}
+                          opacity={isBooked ? 0.8 : 1}
                         />
-                        {isSelected && (
-                          <circle
-                            cx="0"
-                            cy="0"
-                            r={size * 0.55}
-                            fill="none"
-                            stroke="var(--primary)"
-                            strokeWidth={size * 0.15}
-                          />
-                        )}
                       </g>
                     );
                   })}
