@@ -1,4 +1,3 @@
-import { UUID } from "crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
