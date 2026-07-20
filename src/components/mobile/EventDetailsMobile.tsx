@@ -13,7 +13,7 @@ import { EventReviews } from "@/components/shared/event-details/EventReviews";
 import { EventVipPrivileges } from "@/components/shared/event-details/EventVipPrivileges";
 import { EventCheckoutDrawer } from "./EventCheckoutDrawer";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
@@ -299,6 +299,8 @@ export function EventDetailsMobile({
         <>
           <Drawer open={d.isSeatModalOpen} onOpenChange={d.setIsSeatModalOpen}>
             <DrawerContent className="h-[100dvh] max-h-[100dvh] flex flex-col bg-background px-0 pb-0 border-none rounded-none focus:outline-none">
+              <DrawerTitle className="sr-only">Select Seat</DrawerTitle>
+              <DrawerDescription className="sr-only">Select your seats from the map</DrawerDescription>
               
               {/* Header */}
               <div className="flex items-center justify-between p-4 shrink-0 bg-background z-10 relative">
