@@ -159,7 +159,7 @@ function TicketViewer() {
           <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md mb-4 shadow-sm">
             <Calendar className="w-3.5 h-3.5 text-primary" />
             <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
-               {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
+              {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-2xl leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
@@ -176,7 +176,6 @@ function TicketViewer() {
 
         {/* Sections Wrapper with Staggered Animation */}
         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-          
           {/* Product Orders Section */}
           <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
@@ -194,37 +193,52 @@ function TicketViewer() {
                 </div>
               ) : productOrders.length > 0 ? (
                 productOrders.map((order: any) => (
-                  <div key={order.id} className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
+                  <div
+                    key={order.id}
+                    className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]"
+                  >
                     {order.product?.image_url ? (
-                      <img src={order.product.image_url} alt={order.product.name} className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/10" />
+                      <img
+                        src={order.product.image_url}
+                        alt={order.product.name}
+                        className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/10"
+                      />
                     ) : (
                       <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
                         <Briefcase className="w-5 h-5 text-white/40" />
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="font-medium text-white/90 text-sm line-clamp-1">{order.product?.name || "Product"}</p>
+                      <p className="font-medium text-white/90 text-sm line-clamp-1">
+                        {order.product?.name || "Product"}
+                      </p>
                       <p className="text-[13px] text-white/50 mt-0.5">
                         Qty: {order.qty} {order.size ? `· Size: ${order.size}` : ""}
                       </p>
                     </div>
                     <div className="text-right">
-                       {order.picked ? (
-                         <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">Picked Up</span>
-                       ) : (
-                         <span className="inline-flex items-center text-[11px] font-semibold text-orange-400 bg-orange-500/10 px-2 py-1 rounded border border-orange-500/20">Pending</span>
-                       )}
+                      {order.picked ? (
+                        <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                          Picked Up
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-[11px] font-semibold text-orange-400 bg-orange-500/10 px-2 py-1 rounded border border-orange-500/20">
+                          Pending
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
                   <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
-                      <Briefcase className="w-5 h-5 text-white/40" />
+                    <Briefcase className="w-5 h-5 text-white/40" />
                   </div>
                   <div>
                     <p className="font-medium text-white/90 text-sm">No items purchased</p>
-                    <p className="text-[13px] text-white/50 mt-0.5">Explore the shop for exclusive merch.</p>
+                    <p className="text-[13px] text-white/50 mt-0.5">
+                      Explore the shop for exclusive merch.
+                    </p>
                   </div>
                 </div>
               )}
@@ -241,11 +255,13 @@ function TicketViewer() {
             </h2>
             <div className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
               <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
-                  <TicketIcon className="w-5 h-5 text-white/40" />
+                <TicketIcon className="w-5 h-5 text-white/40" />
               </div>
               <div>
                 <p className="font-medium text-white/90 text-sm">No active vouchers</p>
-                <p className="text-[13px] text-white/50 mt-0.5">Any claimed gifts will appear here.</p>
+                <p className="text-[13px] text-white/50 mt-0.5">
+                  Any claimed gifts will appear here.
+                </p>
               </div>
             </div>
           </div>
@@ -256,7 +272,9 @@ function TicketViewer() {
             <div className="space-y-3">
               <div className="flex justify-between items-center py-1">
                 <span className="text-white/50 text-[13px] font-medium">Order Reference</span>
-                <span className="text-white/90 font-mono text-sm tracking-wider bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">{ticket.orderId}</span>
+                <span className="text-white/90 font-mono text-sm tracking-wider bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
+                  {ticket.orderId}
+                </span>
               </div>
               <div className="flex justify-between items-center py-1">
                 <span className="text-white/50 text-[13px] font-medium">Status</span>
@@ -268,7 +286,13 @@ function TicketViewer() {
               <div className="flex justify-between items-center py-1">
                 <span className="text-white/50 text-[13px] font-medium">Purchased On</span>
                 <span className="text-white/90 font-medium text-[13px]">
-                  {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "N/A"}
+                  {ticket.created_at
+                    ? new Date(ticket.created_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "N/A"}
                 </span>
               </div>
             </div>

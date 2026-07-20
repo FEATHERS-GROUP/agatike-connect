@@ -568,50 +568,53 @@ function VenueView() {
                           ) : (
                             <div className="flex-1 overflow-y-auto pr-2 space-y-2">
                               {assignedProject.sections_data.map((section: any, sIdx: number) => {
-                              if (section.shape === "pitch") return null;
-                              return (
-                                <div
-                                  key={section.id || sIdx}
-                                  className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors"
-                                >
-                                  <span className="text-sm font-medium flex-1">
-                                    {section.name || "Unnamed Section"}
-                                  </span>
-                                  <select
-                                    className="flex h-9 w-[200px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    value={section.ticketId || ""}
-                                    onChange={(e) => {
-                                      const newSections = [...assignedProject.sections_data];
-                                      newSections[sIdx] = { ...section, ticketId: e.target.value };
-                                      const updatedProject = {
-                                        ...assignedProject,
-                                        sections_data: newSections,
-                                      };
-                                      saveMappingMutation.mutate(updatedProject);
-                                    }}
+                                if (section.shape === "pitch") return null;
+                                return (
+                                  <div
+                                    key={section.id || sIdx}
+                                    className="flex items-center justify-between gap-4 p-2 rounded-md hover:bg-secondary/20 border border-transparent hover:border-border/50 transition-colors"
                                   >
-                                    <option value="">No Ticket Mapped</option>
-                                    {event.event_tickets
-                                      ?.filter(
-                                        (t: any) =>
-                                          !t.deleted &&
-                                          (tourStops.length > 1 ? t.tour_stop_idx === idx : true),
-                                      )
-                                      .map((t: any) => (
-                                        <option key={t.id} value={t.id}>
-                                          {t.name || t.type} -{" "}
-                                          {t.cost
-                                            ? formatCurrency(
-                                                t.cost,
-                                                activeWorkspace?.currency || "RWF",
-                                              )
-                                            : "Free"}
-                                        </option>
-                                      ))}
-                                  </select>
-                                </div>
-                              );
-                            })}
+                                    <span className="text-sm font-medium flex-1">
+                                      {section.name || "Unnamed Section"}
+                                    </span>
+                                    <select
+                                      className="flex h-9 w-[200px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                      value={section.ticketId || ""}
+                                      onChange={(e) => {
+                                        const newSections = [...assignedProject.sections_data];
+                                        newSections[sIdx] = {
+                                          ...section,
+                                          ticketId: e.target.value,
+                                        };
+                                        const updatedProject = {
+                                          ...assignedProject,
+                                          sections_data: newSections,
+                                        };
+                                        saveMappingMutation.mutate(updatedProject);
+                                      }}
+                                    >
+                                      <option value="">No Ticket Mapped</option>
+                                      {event.event_tickets
+                                        ?.filter(
+                                          (t: any) =>
+                                            !t.deleted &&
+                                            (tourStops.length > 1 ? t.tour_stop_idx === idx : true),
+                                        )
+                                        .map((t: any) => (
+                                          <option key={t.id} value={t.id}>
+                                            {t.name || t.type} -{" "}
+                                            {t.cost
+                                              ? formatCurrency(
+                                                  t.cost,
+                                                  activeWorkspace?.currency || "RWF",
+                                                )
+                                              : "Free"}
+                                          </option>
+                                        ))}
+                                    </select>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>

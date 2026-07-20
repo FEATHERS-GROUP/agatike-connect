@@ -13,7 +13,13 @@ import { EventReviews } from "@/components/shared/event-details/EventReviews";
 import { EventVipPrivileges } from "@/components/shared/event-details/EventVipPrivileges";
 import { EventCheckoutDrawer } from "./EventCheckoutDrawer";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 
 const VenueMap = lazy(() => import("@/components/site/VenueMap"));
 const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
@@ -300,8 +306,10 @@ export function EventDetailsMobile({
           <Drawer open={d.isSeatModalOpen} onOpenChange={d.setIsSeatModalOpen}>
             <DrawerContent className="h-[100dvh] max-h-[100dvh] flex flex-col bg-background px-0 pb-0 border-none rounded-none focus:outline-none">
               <DrawerTitle className="sr-only">Select Seat</DrawerTitle>
-              <DrawerDescription className="sr-only">Select your seats from the map</DrawerDescription>
-              
+              <DrawerDescription className="sr-only">
+                Select your seats from the map
+              </DrawerDescription>
+
               {/* Header */}
               <div className="flex items-center justify-between p-4 shrink-0 bg-background z-10 relative">
                 <button
@@ -318,14 +326,15 @@ export function EventDetailsMobile({
 
               {/* Map Area */}
               <div className="flex-1 w-full relative overflow-hidden bg-background flex flex-col items-center">
-                
                 {/* Curved Arc ("Screen This Way") */}
                 <div className="absolute top-4 left-0 right-0 flex flex-col items-center z-10 pointer-events-none">
                   <div className="w-[70%] max-w-[280px] h-8 relative opacity-90 overflow-hidden">
-                     <div className="absolute top-0 left-0 right-0 h-[100px] rounded-[50%] border-[4px] border-primary blur-[2px] opacity-40" />
-                     <div className="absolute top-0 left-0 right-0 h-[100px] rounded-[50%] border-[3px] border-primary drop-shadow-md" />
+                    <div className="absolute top-0 left-0 right-0 h-[100px] rounded-[50%] border-[4px] border-primary blur-[2px] opacity-40" />
+                    <div className="absolute top-0 left-0 right-0 h-[100px] rounded-[50%] border-[3px] border-primary drop-shadow-md" />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground mt-2">Screen This Way</span>
+                  <span className="text-xs font-medium text-muted-foreground mt-2">
+                    Screen This Way
+                  </span>
                 </div>
 
                 <div className="w-full h-full pb-20 pt-16">
@@ -364,7 +373,6 @@ export function EventDetailsMobile({
                     <span className="text-xs font-medium text-foreground">Selected</span>
                   </div>
                 </div>
-
               </div>
 
               {/* Bottom Bar */}
@@ -373,7 +381,9 @@ export function EventDetailsMobile({
                   <span className="font-bold text-foreground">Your Seat</span>
                   <span className="font-bold text-foreground tracking-wider">
                     {d.selectedSeatsObj.length > 0
-                      ? d.selectedSeatsObj.map((s) => s.seatName || s.code.split("-").pop()).join(", ")
+                      ? d.selectedSeatsObj
+                          .map((s) => s.seatName || s.code.split("-").pop())
+                          .join(", ")
                       : "None"}
                   </span>
                 </div>
@@ -386,7 +396,6 @@ export function EventDetailsMobile({
                   Confirm Seat
                 </Button>
               </div>
-
             </DrawerContent>
           </Drawer>
         </>

@@ -211,15 +211,15 @@ export function EventDetailsDesktop({
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">
           <div className="bg-background w-[95vw] max-w-[1400px] h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200">
-              <div className="p-4 border-b flex items-center justify-between bg-card shrink-0">
-                <div>
-                  <h2 className="text-xl font-bold">Select Seats</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Pick your seats for{" "}
-                    {d.activeTicketTiers.find((t: any) => t.id === d.activeTicketIdForMap)?.name}
-                  </p>
-                </div>
+            <div className="p-4 border-b flex items-center justify-between bg-card shrink-0">
+              <div>
+                <h2 className="text-xl font-bold">Select Seats</h2>
+                <p className="text-sm text-muted-foreground">
+                  Pick your seats for{" "}
+                  {d.activeTicketTiers.find((t: any) => t.id === d.activeTicketIdForMap)?.name}
+                </p>
               </div>
+            </div>
             <div className="flex-1 bg-secondary/10 p-0 overflow-hidden relative">
               <VenueSeatSelector
                 venueProject={d.currentVenueProject}
@@ -240,25 +240,25 @@ export function EventDetailsDesktop({
                 onSectionActive={d.setIsSectionActive}
               />
             </div>
-              <div className="p-4 border-t flex items-center justify-between bg-background shrink-0">
-                <div className="flex flex-col">
-                  <span className="text-base font-bold text-foreground">
-                    {d.selectedSeatsObj.length} Seat{d.selectedSeatsObj.length !== 1 ? "s" : ""}{" "}
-                    Selected
-                  </span>
-                  <span className="text-sm text-muted-foreground max-w-[300px] truncate">
-                    {d.selectedSeatsObj.length > 0
-                      ? d.selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
-                      : "None"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" onClick={() => d.setIsSeatModalOpen(false)}>
-                    Back
-                  </Button>
-                  <Button onClick={() => d.setIsSeatModalOpen(false)}>Confirm Selection</Button>
-                </div>
+            <div className="p-4 border-t flex items-center justify-between bg-background shrink-0">
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-foreground">
+                  {d.selectedSeatsObj.length} Seat{d.selectedSeatsObj.length !== 1 ? "s" : ""}{" "}
+                  Selected
+                </span>
+                <span className="text-sm text-muted-foreground max-w-[300px] truncate">
+                  {d.selectedSeatsObj.length > 0
+                    ? d.selectedSeatsObj.map((s) => s.seatName || s.code).join(", ")
+                    : "None"}
+                </span>
               </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => d.setIsSeatModalOpen(false)}>
+                  Back
+                </Button>
+                <Button onClick={() => d.setIsSeatModalOpen(false)}>Confirm Selection</Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,3 +1,4 @@
+import { UUID } from "crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
@@ -255,10 +256,13 @@ const GET_BOOKING_PRODUCT_ORDERS = `
   }
 `;
 
-export const getBookingProductOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const payload = (ctx.data as any).data || ctx.data;
-  const { buyer_id } = payload as { buyer_id: string };
-  const data = await hasuraRequest<{ product_orders: any[] }>(GET_BOOKING_PRODUCT_ORDERS, { buyer_id });
-  return data.product_orders || [];
-});
-
+export const getBookingProductOrders = createServerFn({ method: "POST" })
+  .validator((d: { data: { buyer_id?: string } }) => d)
+  .handler(async (ctx) => {
+    const payload = (ctx.data as any).data || ctx.data;
+    const { buyer_id } = payload as { buyer_id: string };
+    const data = await hasuraRequest<{ product_orders: any[] }>(GET_BOOKING_PRODUCT_ORDERS, {
+      buyer_id,
+    });
+    return data.product_orders || [];
+  });
