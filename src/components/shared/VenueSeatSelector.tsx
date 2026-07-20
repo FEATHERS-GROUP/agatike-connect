@@ -369,7 +369,8 @@ export function VenueSeatSelector({
     setActiveSectionForModal(sec);
   };
 
-  if (activeSectionForModal) {
+  const renderSingleSection = () => {
+    if (!activeSectionForModal) return null;
     const sec = activeSectionForModal;
     const pitch = sections.find((s) => s.shape === "pitch");
 
@@ -530,7 +531,7 @@ export function VenueSeatSelector({
       <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
         {/* Premium gradient header */}
         <div
-          className="relative shrink-0 overflow-hidden"
+          className="relative shrink-0 overflow-hidden border-b border-border/40"
           style={{
             background: `linear-gradient(135deg, ${sec.color || "#0ea5e9"}22, transparent 70%), linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%)`,
           }}
@@ -541,67 +542,69 @@ export function VenueSeatSelector({
               background: `radial-gradient(circle at 20% 0%, ${sec.color || "#0ea5e9"}33, transparent 50%)`,
             }}
           />
-          <div className="relative p-4 sm:p-5 flex items-center justify-between gap-3 border-b border-border/40">
-            <div className="flex items-center gap-3 min-w-0">
-              <div
-                className="h-11 w-11 shrink-0 rounded-2xl grid place-items-center text-white shadow-lg"
-                style={{ background: sec.color || "#0ea5e9" }}
-              >
-                <MapIcon className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-                  {isGA ? "General Admission" : "Reserved Seating"}
-                </p>
-                <h2 className="text-lg sm:text-xl font-bold truncate">{sec.name}</h2>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {ticket && (
-                <div className="hidden sm:flex flex-col items-end px-3 py-1.5 rounded-xl bg-background/80 backdrop-blur border border-border/60">
-                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                    From
-                  </span>
-                  <span className="text-sm font-bold text-primary leading-none">
-                    {formatCurrency(ticket.cost, currency || "RWF")}
-                  </span>
-                </div>
-              )}
-              {remainingCount > 0 && (
-                <button
-                  className="px-3 sm:px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-colors text-xs sm:text-sm shadow-sm flex items-center gap-1.5"
-                  onClick={handleSelectAllRemaining}
+          
+          <div className="relative p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div
+                  className="h-12 w-12 shrink-0 rounded-2xl grid place-items-center text-white shadow-lg"
+                  style={{ background: sec.color || "#0ea5e9" }}
                 >
-                  <span className="hidden sm:inline">Take All</span>
-                  <span className="sm:hidden">All</span>
-                  <span className="bg-background/20 px-1.5 py-0.5 rounded-md text-[10px] ml-0.5">
-                    {remainingCount}
-                  </span>
+                  <MapIcon className="h-6 w-6" />
+                </div>
+                <div className="min-w-0 flex flex-col justify-center">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl sm:text-2xl font-bold truncate leading-none">{sec.name}</h2>
+                    {ticket && (
+                      <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary text-[10px] sm:text-xs font-bold leading-none border border-primary/20">
+                        {formatCurrency(ticket.cost || 0, currency || "RWF")}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-semibold mt-1.5">
+                    {isGA ? "General Admission" : "Reserved Seating"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {remainingCount > 0 && (
+                  <button
+                    className="h-9 px-3 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-colors text-xs shadow-sm flex items-center gap-1.5"
+                    onClick={handleSelectAllRemaining}
+                  >
+                    <span className="hidden sm:inline">Take All</span>
+                    <span className="sm:hidden">Take All</span>
+                    <span className="bg-background/20 px-1.5 py-0.5 rounded-md text-[10px]">
+                      {remainingCount}
+                    </span>
+                  </button>
+                )}
+                <button
+                  className="h-9 px-3 sm:px-4 bg-secondary hover:bg-secondary/80 border border-border/60 text-foreground font-bold rounded-xl transition-colors text-xs flex items-center gap-1.5 shadow-sm"
+                  onClick={() => setActiveSectionForModal(null)}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="hidden sm:inline">Back to Map</span>
                 </button>
-              )}
-              <button
-                className="px-3 sm:px-4 py-2 bg-background hover:bg-secondary border border-border/60 text-foreground font-semibold rounded-xl transition-colors text-xs sm:text-sm shadow-sm flex items-center gap-1.5"
-                onClick={() => setActiveSectionForModal(null)}
-              >
-                <X className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Back to Map</span>
-                <span className="sm:hidden">Close</span>
-              </button>
+              </div>
             </div>
-          </div>
-          {/* Capacity bar */}
-          <div className="relative px-5 pb-4 flex items-center gap-3">
-            <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{
-                  width: `${Math.min(100, (ticketRemaining / Math.max(1, tierTotalCapacity2)) * 100)}%`,
-                  background: `linear-gradient(90deg, ${sec.color || "#0ea5e9"}, ${sec.color || "#0ea5e9"}aa)`,
-                }}
-              />
+
+            {/* Capacity bar */}
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${Math.min(100, (ticketRemaining / Math.max(1, tierTotalCapacity2)) * 100)}%`,
+                    background: `linear-gradient(90deg, ${sec.color || "#0ea5e9"}, ${sec.color || "#0ea5e9"}aa)`,
+                  }}
+                />
+              </div>
+              <span className="text-[10px] sm:text-xs font-bold text-muted-foreground tabular-nums shrink-0">
+                <span className="text-foreground">{ticketRemaining}</span> / {tierTotalCapacity2} left
+              </span>
             </div>
-            <span className="text-xs font-bold text-muted-foreground tabular-nums">
-              <span className="text-foreground">{ticketRemaining}</span> / {tierTotalCapacity2} left
-            </span>
           </div>
         </div>
 
@@ -761,10 +764,10 @@ export function VenueSeatSelector({
         </div>
       </div>
     );
-  }
+  };
 
-  return (
-    <div className="w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm">
+  const renderMap = () => (
+    <div className={`w-full h-full relative bg-background rounded-2xl border border-border overflow-hidden flex flex-col shadow-sm ${activeSectionForModal && !isMobile ? "border-r-0 rounded-r-none" : ""}`}>
       {!hideLegend && (
         <>
           {/* Top-left header pill */}
@@ -1131,4 +1134,20 @@ export function VenueSeatSelector({
       </div>
     </div>
   );
+
+  if (activeSectionForModal) {
+    if (isMobile) return renderSingleSection();
+    return (
+      <div className="w-full h-full flex items-stretch">
+        <div className="flex-1 min-w-0 transition-all duration-300">
+          {renderMap()}
+        </div>
+        <div className="w-[50%] lg:w-[55%] min-w-0 shrink-0 border-l border-border bg-background shadow-[-10px_0_30px_rgba(0,0,0,0.05)] z-10 animate-in slide-in-from-right-4 duration-300 rounded-r-2xl overflow-hidden">
+          {renderSingleSection()}
+        </div>
+      </div>
+    );
+  }
+
+  return renderMap();
 }
