@@ -2,6 +2,8 @@ import { createFileRoute, useParams, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { getVenueBookings, createVenueBooking } from "@/api/venue_bookings";
+import { sendVenueBookingEmail } from "@/api/email";
+import { sendSMS } from "@/api/pindo";
 import { ArrowLeft, Calendar as CalendarIcon, Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,8 @@ function FacilityBookingsPage() {
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [amountPaid, setAmountPaid] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("Paid");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
@@ -157,6 +161,15 @@ function FacilityBookingsPage() {
     return days;
   }, [date]);
 
+  const getBookedPassesForDate = (dateToCheck: Date) => {
+    return facilityBookings.filter((b: any) => {
+      const bDate = new Date(b.start_time);
+      return bDate.getDate() === dateToCheck.getDate() &&
+        bDate.getMonth() === dateToCheck.getMonth() &&
+        bDate.getFullYear() === dateToCheck.getFullYear();
+    }).reduce((sum: number, b: any) => sum + (b.tickets_data?.["Facility Access"] || 1), 0);
+  };
+
   const getSlotStatusAcrossRange = (slotMins: number) => {
     let finalStatus = "available";
     let maxBookedCount = 0;
@@ -205,19 +218,82 @@ function FacilityBookingsPage() {
     ? perSessionRate
     : hourlyRate * (durationMinutes / 60);
 
-  const subTotal = selectedSlots.length * slotPrice * daysInRange.length;
+  const minAvailableCapacityAcrossSelected = useMemo(() => {
+    const maxCap = Number(facility?.max_capacity);
+    if (isNaN(maxCap) || maxCap === -1) return Infinity;
+
+    if (isSharedAccess) {
+      if (daysInRange.length === 0) return maxCap;
+      let maxBooked = 0;
+      for (const d of daysInRange) {
+        const booked = getBookedPassesForDate(d);
+        if (booked > maxBooked) maxBooked = booked;
+      }
+      return Math.max(0, maxCap - maxBooked);
+    }
+
+    if (selectedSlots.length === 0) return maxCap;
+
+    let minAvailable = maxCap;
+    for (const slotMins of selectedSlots) {
+      const res = getSlotStatusAcrossRange(slotMins);
+      const available = res.maxCapacity - res.bookedCount;
+      if (available < minAvailable) minAvailable = available;
+    }
+    return Math.max(0, minAvailable);
+  }, [selectedSlots, daysInRange, facilityBookings, facility?.max_capacity, isSharedAccess]);
+
+  const subTotal = selectedSlots.length * slotPrice * daysInRange.length * quantity;
   // Let's assume no GST or taxes for now, but we can display the total directly
   const totalAmount = subTotal;
 
   const createBookingMutation = useMutation({
     mutationFn: createVenueBooking,
-    onSuccess: () => {
+    onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
       toast.success("Booking created successfully!");
+      
+      const bRef = data?.bookingRef;
+      if (bRef && (customerPhone || customerEmail)) {
+        const dateRangeStr = date?.from
+          ? date.to && date.from.getTime() !== date.to.getTime()
+            ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+            : format(date.from, "LLL dd, y")
+          : "";
+        
+        const minSlot = Math.min(...selectedSlots);
+        const maxSlot = Math.max(...selectedSlots);
+        const timeRangeStr = (isSharedAccess || selectedSlots.length === 0)
+          ? "Full Day"
+          : `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
+        
+        if (customerPhone) {
+          const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${bRef}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
+          await sendSMS(customerPhone, msg).catch(console.error);
+        }
+        
+        if (customerEmail) {
+          await sendVenueBookingEmail({
+            data: {
+              to: customerEmail,
+              customerName: customerName || "Customer",
+              facilityName: facility?.name || "Facility",
+              venueName: venue.name,
+              venueLocation: venue.address || venue.city || "Venue Location",
+              dateRange: dateRangeStr,
+              timeRange: timeRangeStr,
+              bookingRef: bRef,
+            },
+          } as any).catch(console.error);
+        }
+      }
+
       setSelectedSlots([]);
       setCustomerName("");
       setCustomerPhone("");
+      setCustomerEmail("");
       setAmountPaid("");
+      setQuantity(1);
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to create booking.");
@@ -231,6 +307,10 @@ function FacilityBookingsPage() {
     }
     if (!customerName) {
       toast.error("Customer name is required.");
+      return;
+    }
+    if ((isSharedSlot || isSharedAccess) && quantity > minAvailableCapacityAcrossSelected) {
+      toast.error(`Quantity exceeds available capacity (${minAvailableCapacityAcrossSelected} available).`);
       return;
     }
 
@@ -262,7 +342,7 @@ function FacilityBookingsPage() {
         amount: totalAmount,
         total_amount: totalAmount,
         booking_type: "facility",
-        tickets_data: null,
+        tickets_data: (isSharedSlot || isSharedAccess) ? { "Facility Access": quantity } : null,
       } as any,
     });
   };
@@ -542,6 +622,43 @@ function FacilityBookingsPage() {
                   onChange={(e) => setCustomerName(e.target.value)}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Customer Email</Label>
+                <Input
+                  type="email"
+                  className="h-12 bg-secondary/30 rounded-xl"
+                  placeholder="e.g. email@example.com"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                />
+              </div>
+              
+              {(isSharedSlot || isSharedAccess) && (
+                <div className="space-y-2 pt-2">
+                  <Label>Quantity (Tickets / People)</Label>
+                  <div className="flex items-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-12 w-12 rounded-xl"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                    >
+                      -
+                    </Button>
+                    <span className="text-xl font-bold w-12 text-center">{quantity}</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-12 w-12 rounded-xl"
+                      onClick={() => setQuantity(Math.min(minAvailableCapacityAcrossSelected, quantity + 1))}
+                      disabled={quantity >= minAvailableCapacityAcrossSelected}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-secondary/30 rounded-2xl border border-border/60 p-5 space-y-4">
