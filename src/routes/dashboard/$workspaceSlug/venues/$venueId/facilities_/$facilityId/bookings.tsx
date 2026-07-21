@@ -196,6 +196,45 @@ function FacilityBookingsPage() {
     });
   };
 
+  const handleBlockSlots = () => {
+    if (!date?.from || selectedSlots.length === 0) {
+      toast.error("Please select a date and at least one time slot to block.");
+      return;
+    }
+
+    const minSlot = Math.min(...selectedSlots);
+    const maxSlot = Math.max(...selectedSlots);
+    
+    const startTime = new Date(date.from);
+    startTime.setHours(Math.floor(minSlot / 60), minSlot % 60, 0, 0);
+
+    const endDay = date.to || date.from;
+    const endTime = new Date(endDay);
+    const endMins = maxSlot + durationMinutes;
+    endTime.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+
+    createBookingMutation.mutate({
+      data: {
+        workspace_id: venue.workspace_id,
+        venue_id: venue.id,
+        user_id: session?.id,
+        facility_id: facilityId,
+        customer_name: "Blocked by Admin",
+        customer_phone: "",
+        customer_email: "",
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        status: "Blocked",
+        payment_status: "Unpaid",
+        payment_method: "cash",
+        amount: 0,
+        total_amount: 0,
+        booking_type: "facility",
+        tickets_data: null,
+      } as any,
+    });
+  };
+
   const handleQuickDateSelect = (daysOffset: number) => {
     const d = addDays(startOfDay(new Date()), daysOffset);
     setDate({ from: d, to: d });
@@ -465,20 +504,30 @@ function FacilityBookingsPage() {
               </div>
             </div>
 
-            <Button
-              className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] mt-4"
-              style={{ background: "var(--gradient-primary)" }}
-              onClick={handleCreateBooking}
-              disabled={createBookingMutation.isPending || selectedSlots.length === 0}
-            >
-              {createBookingMutation.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...
-                </>
-              ) : (
-                "Create Booking"
-              )}
-            </Button>
+            <div className="flex flex-col gap-3 mt-4">
+              <Button
+                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+                onClick={handleCreateBooking}
+                disabled={createBookingMutation.isPending || selectedSlots.length === 0}
+              >
+                {createBookingMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...
+                  </>
+                ) : (
+                  "Create Booking"
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-12 text-sm font-bold rounded-2xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                onClick={handleBlockSlots}
+                disabled={createBookingMutation.isPending || selectedSlots.length === 0}
+              >
+                Block Selected Slots
+              </Button>
+            </div>
           </div>
         </div>
       </div>

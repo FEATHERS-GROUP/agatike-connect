@@ -86,6 +86,13 @@ function FacilityCheckoutPage() {
     return slots;
   }, [durationMinutes]);
 
+  const groupedSlots = useMemo(() => {
+    const morning = DYNAMIC_SLOTS.filter((s) => s < 12 * 60);
+    const afternoon = DYNAMIC_SLOTS.filter((s) => s >= 12 * 60 && s < 17 * 60);
+    const evening = DYNAMIC_SLOTS.filter((s) => s >= 17 * 60);
+    return { morning, afternoon, evening };
+  }, [DYNAMIC_SLOTS]);
+
   const formatSlot = (mins: number) => {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
@@ -129,7 +136,10 @@ function FacilityCheckoutPage() {
   });
 
   const facilityBookings = useMemo(() => {
-    return bookings.filter((b: any) => b.facility_id === facilityId && b.status !== "Cancelled");
+    return bookings.filter((b: any) => {
+      if (b.status === "Cancelled") return false;
+      return b.facility_id === facilityId || (!b.facility_id && b.status === "Blocked");
+    });
   }, [bookings, facilityId]);
 
   const isSlotBooked = (dateToCheck: Date, slotStartMins: number) => {
@@ -768,40 +778,70 @@ function FacilityCheckoutPage() {
                     </div>
                   )}
 
-                  {date?.from && !isSharedAccess && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                      <Label>Available Time Slots</Label>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Select one or more continuous slots. These slots will be booked for{" "}
-                        <strong>every day</strong> in your selected range.
-                      </p>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
-                        {DYNAMIC_SLOTS.map((slotMins) => {
-                          const booked = isSlotBookedAcrossRange(slotMins);
-                          const isSelected = selectedSlots.includes(slotMins);
-                          const timeString = formatSlot(slotMins);
+                  {date?.from && !isSharedAccess && (() => {
+                    const isWholeDayAvailable = DYNAMIC_SLOTS.length > 0 && DYNAMIC_SLOTS.every((slot) => !isSlotBookedAcrossRange(slot));
+                    
+                    const renderSlotGrid = (label: string, slots: number[]) => {
+                      if (slots.length === 0) return null;
+                      return (
+                        <div className="flex items-start gap-4 py-4 border-b border-border/50 last:border-0">
+                          <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">{label}</div>
+                          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                            {slots.map((slotMins) => {
+                              const booked = isSlotBookedAcrossRange(slotMins);
+                              const isSelected = selectedSlots.includes(slotMins);
+                              const timeString = formatSlot(slotMins);
 
-                          return (
-                            <Button
-                              key={slotMins}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={cn(
-                                "h-10 rounded-xl transition-all",
-                                booked && "opacity-50 cursor-not-allowed line-through",
-                                isSelected &&
-                                  "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30",
-                              )}
-                              disabled={booked}
-                              onClick={() => handleSlotClick(slotMins)}
-                            >
-                              {timeString}
-                            </Button>
-                          );
-                        })}
+                              return (
+                                <Button
+                                  key={slotMins}
+                                  type="button"
+                                  variant={isSelected ? "default" : "outline"}
+                                  className={cn(
+                                    "h-10 rounded-xl transition-all font-medium text-sm border-border/60",
+                                    booked && "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20",
+                                    isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
+                                  )}
+                                  disabled={booked}
+                                  onClick={() => handleSlotClick(slotMins)}
+                                >
+                                  {timeString}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    };
+
+                    return (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <Label>Available Time Slots</Label>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Select continuous slots. These will be booked for <strong>every day</strong> in your selected range.
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="rounded-xl"
+                            disabled={!isWholeDayAvailable}
+                            onClick={() => setSelectedSlots(DYNAMIC_SLOTS)}
+                          >
+                            Book Whole Day
+                          </Button>
+                        </div>
+                        
+                        <div className="bg-background/50 rounded-2xl p-4 sm:p-6 border border-border/60 shadow-inner mt-4">
+                          {renderSlotGrid("Morning", groupedSlots.morning)}
+                          {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
+                          {renderSlotGrid("Evening", groupedSlots.evening)}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
 
