@@ -201,7 +201,7 @@ function VenueFacilitiesPage() {
                 </h3>
                 <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  {facility.type === "exclusive_slot" ? "Exclusive Slot" : "Shared Access"}
+                  {facility.type === "exclusive_slot" ? "Exclusive Slot" : facility.type === "shared_slot" ? "Shared Session" : "Shared Access"}
                 </p>
               </div>
 
@@ -230,7 +230,7 @@ function VenueFacilitiesPage() {
                     </span>
                   </div>
                 )}
-                {facility.type === "shared_access" && facility.max_capacity && (
+                {(facility.type === "shared_access" || facility.type === "shared_slot") && facility.max_capacity && (
                   <div className="flex flex-col">
                     <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Capacity</span>
                     <span className="text-sm font-semibold text-foreground">{facility.max_capacity}</span>
@@ -299,6 +299,9 @@ function VenueFacilitiesPage() {
                       onChange={(e) => updateActiveFacility("type", e.target.value)}
                     >
                       <option value="exclusive_slot">Exclusive Slot (Only 1 group per time)</option>
+                      <option value="shared_slot">
+                        Shared Session (Multiple groups per time slot up to capacity)
+                      </option>
                       <option value="shared_access">
                         Shared Access (Passes per day up to capacity)
                       </option>
@@ -362,7 +365,7 @@ function VenueFacilitiesPage() {
                       <option value="240">4 Hours (240 Mins)</option>
                     </select>
                   </div>
-                  {activeFacility.type === "shared_access" && (
+                  {(activeFacility.type === "shared_access" || activeFacility.type === "shared_slot") && (
                     <div className="space-y-2">
                       <Label className="text-base">Max Capacity</Label>
                       <Input

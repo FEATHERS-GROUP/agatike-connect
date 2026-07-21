@@ -57,6 +57,7 @@ function FacilityBookingsPage() {
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
   const isSharedAccess = facility?.type === "shared_access";
+  const isSharedSlot = facility?.type === "shared_slot";
   const durationMinutes = Number(facility?.duration_minutes) || 60;
   const perSessionRate = Number(facility?.pricing?.per_session_rate) || 0;
   const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
@@ -80,11 +81,52 @@ function FacilityBookingsPage() {
   };
 
   const facilityBookings = useMemo(() => {
-    return bookings.filter((b: any) => b.facility_id === facilityId && b.status !== "Cancelled");
+    return bookings.filter((b: any) => {
+      if (b.status === "Cancelled") return false;
+      return b.facility_id === facilityId || (!b.facility_id && b.status === "Blocked");
+    });
   }, [bookings, facilityId]);
 
-  const isSlotBooked = (dateToCheck: Date, slotStartMins: number) => {
-    return facilityBookings.some((b: any) => {
+  const getSlotStatus = (dateToCheck: Date, slotStartMins: number) => {
+    if (isSharedSlot) {
+      const slotStart = new Date(dateToCheck);
+      slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
+      
+      let hasCustomerBooking = false;
+      let hasBlock = false;
+
+      const totalBooked = facilityBookings.filter((b: any) => {
+        const bStart = new Date(b.start_time).getTime();
+        const bEnd = new Date(b.end_time).getTime();
+        const slotEnd = new Date(dateToCheck);
+        const endMins = slotStartMins + durationMinutes;
+        slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+
+        if (bStart < slotEnd.getTime() && slotStart.getTime() < bEnd) {
+          if (b.status === "Blocked" || (!b.facility_id && b.status === "Blocked")) {
+            hasBlock = true;
+          } else {
+            hasCustomerBooking = true;
+          }
+          return true;
+        }
+        return false;
+      }).reduce((sum: number, b: any) => {
+        if (!b.facility_id && b.status === "Blocked") return Infinity;
+        return sum + (b.tickets_data?.["Facility Access"] || 1);
+      }, 0);
+
+      const maxCap = Number(facility?.max_capacity);
+      if (isNaN(maxCap) || maxCap === -1) return { status: "available", bookedCount: totalBooked, maxCapacity: Infinity };
+      
+      if (totalBooked + 1 > maxCap) {
+         if (hasCustomerBooking && !hasBlock) return { status: "booked", bookedCount: totalBooked, maxCapacity: maxCap };
+         return { status: "blocked", bookedCount: totalBooked, maxCapacity: maxCap };
+      }
+      return { status: "available", bookedCount: totalBooked, maxCapacity: maxCap };
+    }
+
+    const booking = facilityBookings.find((b: any) => {
       const bStart = new Date(b.start_time).getTime();
       const bEnd = new Date(b.end_time).getTime();
       const slotStart = new Date(dateToCheck);
@@ -94,6 +136,10 @@ function FacilityBookingsPage() {
       slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
       return bStart < slotEnd.getTime() && slotStart.getTime() < bEnd;
     });
+
+    if (!booking) return { status: "available", bookedCount: 0, maxCapacity: 1 };
+    if (booking.status === "Blocked" || (!booking.facility_id && booking.status === "Blocked")) return { status: "blocked", bookedCount: 1, maxCapacity: 1 };
+    return { status: "booked", bookedCount: 1, maxCapacity: 1 };
   };
 
   const daysInRange = useMemo(() => {
@@ -111,9 +157,34 @@ function FacilityBookingsPage() {
     return days;
   }, [date]);
 
-  const isSlotBookedAcrossRange = (slotMins: number) => {
-    return daysInRange.some((d) => isSlotBooked(d, slotMins));
+  const getSlotStatusAcrossRange = (slotMins: number) => {
+    let finalStatus = "available";
+    let maxBookedCount = 0;
+    let capacity = 1;
+
+    for (const d of daysInRange) {
+      const res = getSlotStatus(d, slotMins);
+      capacity = res.maxCapacity;
+      if (res.bookedCount > maxBookedCount) maxBookedCount = res.bookedCount;
+      if (res.status === "blocked") return { status: "blocked", bookedCount: maxBookedCount, maxCapacity: capacity };
+      if (res.status === "booked") finalStatus = "booked";
+    }
+    return { status: finalStatus, bookedCount: maxBookedCount, maxCapacity: capacity };
   };
+
+  const bookingsInDateRange = useMemo(() => {
+    if (daysInRange.length === 0) return [];
+    
+    const rangeStart = new Date(daysInRange[0]);
+    rangeStart.setHours(0,0,0,0);
+    const rangeEnd = new Date(daysInRange[daysInRange.length - 1]);
+    rangeEnd.setHours(23,59,59,999);
+
+    return facilityBookings.filter((b: any) => {
+       const bStart = new Date(b.start_time).getTime();
+       return bStart >= rangeStart.getTime() && bStart <= rangeEnd.getTime() && b.status !== "Blocked";
+    }).sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+  }, [facilityBookings, daysInRange]);
 
   const handleSlotClick = (slotMins: number) => {
     if (selectedSlots.includes(slotMins)) {
@@ -130,7 +201,7 @@ function FacilityBookingsPage() {
     return { morning, afternoon, evening };
   }, [DYNAMIC_SLOTS]);
 
-  const slotPrice = isSharedAccess || facility?.category === "activity"
+  const slotPrice = (isSharedAccess || isSharedSlot) || facility?.category === "activity"
     ? perSessionRate
     : hourlyRate * (durationMinutes / 60);
 
@@ -248,9 +319,34 @@ function FacilityBookingsPage() {
         <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">{label}</div>
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {slots.map((slotMins) => {
-            const booked = isSlotBookedAcrossRange(slotMins);
+            const { status, bookedCount, maxCapacity } = getSlotStatusAcrossRange(slotMins);
+            const isBooked = status !== "available";
             const isSelected = selectedSlots.includes(slotMins);
             const timeString = formatSlot(slotMins);
+
+            let dynamicClass = "";
+
+            if (status === "blocked") {
+              dynamicClass = "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
+            } else if (isSharedSlot && maxCapacity > 0 && maxCapacity !== Infinity) {
+              const fillPercentage = Math.min(100, Math.round((bookedCount / maxCapacity) * 100));
+              
+              if (fillPercentage >= 100) {
+                 dynamicClass = "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary hover:bg-primary";
+              } else if (fillPercentage > 0) {
+                 if (fillPercentage < 25) {
+                   dynamicClass = "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
+                 } else if (fillPercentage < 50) {
+                   dynamicClass = "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
+                 } else if (fillPercentage < 75) {
+                   dynamicClass = "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
+                 } else {
+                   dynamicClass = "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
+                 }
+              }
+            } else if (status === "booked") {
+              dynamicClass = "opacity-80 cursor-not-allowed bg-primary/10 text-primary border-primary/30 hover:bg-primary/10";
+            }
 
             return (
               <Button
@@ -259,10 +355,10 @@ function FacilityBookingsPage() {
                 variant={isSelected ? "default" : "outline"}
                 className={cn(
                   "h-12 rounded-xl transition-all font-medium text-sm border-border/60",
-                  booked && "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20",
+                  dynamicClass,
                   isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
                 )}
-                disabled={booked}
+                disabled={isBooked}
                 onClick={() => handleSlotClick(slotMins)}
               >
                 {timeString}
@@ -387,6 +483,38 @@ function FacilityBookingsPage() {
               {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
               {renderSlotGrid("Evening", groupedSlots.evening)}
             </div>
+
+            {bookingsInDateRange.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-border/60 animate-in fade-in slide-in-from-bottom-4">
+                <h4 className="font-bold text-lg mb-4 text-foreground flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  Customer Bookings on Selected Dates
+                </h4>
+                <div className="space-y-3">
+                  {bookingsInDateRange.map((booking: any) => (
+                    <div key={booking.id} className="bg-secondary/20 border border-border/40 p-4 rounded-xl flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                      <div>
+                        <p className="font-bold text-sm">{booking.customer_name}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                          {booking.customer_phone} {booking.customer_email ? `• ${booking.customer_email}` : ''}
+                        </p>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p className="font-semibold text-sm text-primary">
+                          {format(new Date(booking.start_time), "MMM dd, yyyy")} 
+                          <span className="text-muted-foreground ml-1 font-normal">
+                            {format(new Date(booking.start_time), "HH:mm")} - {format(new Date(booking.end_time), "HH:mm")}
+                          </span>
+                        </p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 mt-1 bg-green-500/10 inline-block px-2 py-0.5 rounded-full">
+                          {booking.status}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

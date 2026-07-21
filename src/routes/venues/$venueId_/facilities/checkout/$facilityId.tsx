@@ -2,13 +2,13 @@ import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-ro
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
 import { sendVenueBookingEmail } from "@/api/email";
+import { sendSMS } from "@/api/pindo";
 import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   Calendar as CalendarIcon,
-  Clock,
   ArrowRight,
   CheckCircle2,
   Smartphone,
@@ -72,6 +72,7 @@ function FacilityCheckoutPage() {
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
   const isSharedAccess = facility?.type === "shared_access";
+  const isSharedSlot = facility?.type === "shared_slot";
   const isActivity = facility?.category === "activity";
   const durationMinutes = Number(facility?.duration_minutes) || 60;
   const perSessionRate = Number(facility?.pricing?.per_session_rate) || 0;
@@ -142,28 +143,64 @@ function FacilityCheckoutPage() {
     });
   }, [bookings, facilityId]);
 
-  const isSlotBooked = (dateToCheck: Date, slotStartMins: number) => {
-    return facilityBookings.some((b: any) => {
-      const bStart = new Date(b.start_time).getTime();
-      const bEnd = new Date(b.end_time).getTime();
-      
+  const getSlotStatus = (dateToCheck: Date, slotStartMins: number) => {
+    if (isSharedSlot) {
       const slotStart = new Date(dateToCheck);
       slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
-      
+
+      let hasBlock = false;
+
+      const totalBooked = facilityBookings.filter((b: any) => {
+        const bStart = new Date(b.start_time).getTime();
+        const bEnd = new Date(b.end_time).getTime();
+        const slotEnd = new Date(dateToCheck);
+        const endMins = slotStartMins + durationMinutes;
+        slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+
+        if (bStart < slotEnd.getTime() && slotStart.getTime() < bEnd) {
+          if (b.status === "Blocked" || (!b.facility_id && b.status === "Blocked")) {
+            hasBlock = true;
+          }
+          return true;
+        }
+        return false;
+      }).reduce((sum: number, b: any) => {
+        if (!b.facility_id && b.status === "Blocked") return Infinity;
+        return sum + (b.tickets_data?.["Facility Access"] || 1);
+      }, 0);
+
+      const maxCap = Number(facility?.max_capacity);
+      if (isNaN(maxCap) || maxCap === -1) return { isBooked: hasBlock, bookedCount: totalBooked, maxCapacity: Infinity, isBlockedByAdmin: hasBlock };
+      return { isBooked: hasBlock || totalBooked + quantity > maxCap, bookedCount: totalBooked, maxCapacity: maxCap, isBlockedByAdmin: hasBlock };
+    }
+
+    const booking = facilityBookings.find((b: any) => {
+      const bStart = new Date(b.start_time).getTime();
+      const bEnd = new Date(b.end_time).getTime();
+
+      const slotStart = new Date(dateToCheck);
+      slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
+
       const slotEnd = new Date(dateToCheck);
       const endMins = slotStartMins + durationMinutes;
       slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
 
       return bStart < slotEnd.getTime() && slotStart.getTime() < bEnd;
     });
+
+    if (booking) {
+      const isBlock = booking.status === "Blocked" || (!booking.facility_id && booking.status === "Blocked");
+      return { isBooked: true, bookedCount: 1, maxCapacity: 1, isBlockedByAdmin: isBlock };
+    }
+    return { isBooked: false, bookedCount: 0, maxCapacity: 1, isBlockedByAdmin: false };
   };
 
   const getBookedPassesForDate = (dateToCheck: Date) => {
     return facilityBookings.filter((b: any) => {
       const bDate = new Date(b.start_time);
       return bDate.getDate() === dateToCheck.getDate() &&
-             bDate.getMonth() === dateToCheck.getMonth() &&
-             bDate.getFullYear() === dateToCheck.getFullYear();
+        bDate.getMonth() === dateToCheck.getMonth() &&
+        bDate.getFullYear() === dateToCheck.getFullYear();
     }).reduce((sum: number, b: any) => sum + (b.tickets_data?.["Facility Access"] || 1), 0);
   };
 
@@ -173,7 +210,7 @@ function FacilityCheckoutPage() {
       if (isNaN(maxCap) || maxCap === -1) return false;
       return getBookedPassesForDate(dateToCheck) >= maxCap;
     }
-    return DYNAMIC_SLOTS.every((slot) => isSlotBooked(dateToCheck, slot));
+    return DYNAMIC_SLOTS.every((slot) => getSlotStatus(dateToCheck, slot).isBooked);
   };
 
   const daysInRange = useMemo(() => {
@@ -191,15 +228,29 @@ function FacilityCheckoutPage() {
     return days;
   }, [date]);
 
-  const isSlotBookedAcrossRange = (slotMins: number) => {
-    return daysInRange.some((d) => isSlotBooked(d, slotMins));
+  const getSlotStatusAcrossRange = (slotMins: number) => {
+    let finalIsBooked = false;
+    let finalIsBlocked = false;
+    let maxBookedCount = 0;
+    let capacity = 1;
+
+    for (const d of daysInRange) {
+      const res = getSlotStatus(d, slotMins);
+      capacity = res.maxCapacity;
+      if (res.bookedCount > maxBookedCount) maxBookedCount = res.bookedCount;
+      if (res.isBlockedByAdmin) finalIsBlocked = true;
+      if (res.isBooked) finalIsBooked = true;
+    }
+    return { isBooked: finalIsBooked, bookedCount: maxBookedCount, maxCapacity: capacity, isBlockedByAdmin: finalIsBlocked };
   };
 
   const availableCapacity = useMemo(() => {
-    if (!isSharedAccess) return 1;
+    if (!isSharedAccess && !isSharedSlot) return 1;
     const maxCap = Number(facility?.max_capacity);
     if (isNaN(maxCap) || maxCap === -1) return Infinity; // Unlimited
-    
+
+    if (isSharedSlot) return maxCap; // For slots, capacity depends on the slot, so max stepper limit is maxCap
+
     if (daysInRange.length === 0) return maxCap;
 
     let maxBooked = 0;
@@ -207,15 +258,15 @@ function FacilityCheckoutPage() {
       const booked = getBookedPassesForDate(d);
       if (booked > maxBooked) maxBooked = booked;
     }
-    
+
     return Math.max(0, maxCap - maxBooked);
-  }, [daysInRange, facilityBookings, facility?.max_capacity, isSharedAccess]);
+  }, [daysInRange, facilityBookings, facility?.max_capacity, isSharedAccess, isSharedSlot]);
 
   useEffect(() => {
-    if (isSharedAccess && quantity > availableCapacity && availableCapacity > 0) {
+    if ((isSharedAccess || isSharedSlot) && quantity > availableCapacity && availableCapacity > 0) {
       setQuantity(availableCapacity);
     }
-  }, [availableCapacity, isSharedAccess, quantity]);
+  }, [availableCapacity, isSharedAccess, isSharedSlot, quantity]);
 
   const totalAmount = useMemo(() => {
     if (daysInRange.length === 0) return 0;
@@ -223,13 +274,36 @@ function FacilityCheckoutPage() {
       return daysInRange.length * quantity * dailyRate;
     }
     if (selectedSlots.length === 0) return 0;
-    
+
+    if (isSharedSlot) {
+      return daysInRange.length * selectedSlots.length * quantity * (perSessionRate > 0 ? perSessionRate : hourlyRate * (durationMinutes / 60));
+    }
+
     if (isActivity && perSessionRate > 0) {
       return daysInRange.length * selectedSlots.length * perSessionRate;
     }
-    
+
     return daysInRange.length * selectedSlots.length * hourlyRate * (durationMinutes / 60);
-  }, [daysInRange.length, selectedSlots.length, hourlyRate, isSharedAccess, quantity, dailyRate, isActivity, perSessionRate, durationMinutes]);
+  }, [daysInRange.length, selectedSlots.length, hourlyRate, isSharedAccess, isSharedSlot, quantity, dailyRate, isActivity, perSessionRate, durationMinutes]);
+
+  const sendSmsAlert = async (bRef: string) => {
+    try {
+      if (!phone) return;
+      const dateRangeStr = date?.from
+        ? date.to
+          ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+          : format(date.from, "LLL dd, y")
+        : "";
+      const timeRangeStr = (isSharedAccess || selectedSlots.length === 0)
+        ? "Full Day"
+        : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+      const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${bRef}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
+      await sendSMS(phone, msg);
+    } catch (e) {
+      console.error("Failed to send SMS:", e);
+    }
+  };
 
   const bookingMutation = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -264,13 +338,13 @@ function FacilityCheckoutPage() {
         customer_phone: phone,
         status: isPawaPay ? "Pending" : bookingStatus,
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
-        amount: isSharedAccess ? quantity * dailyRate : (isActivity && perSessionRate > 0 ? selectedSlots.length * perSessionRate : selectedSlots.length * hourlyRate * (durationMinutes / 60)),
-        total_amount: isSharedAccess ? quantity * dailyRate : (isActivity && perSessionRate > 0 ? selectedSlots.length * perSessionRate : selectedSlots.length * hourlyRate * (durationMinutes / 60)),
+        amount: totalAmount,
+        total_amount: totalAmount,
         venue_name: venue.name,
         venue_currency: currency,
         booking_type: "facility",
         tickets_data: {
-          "Facility Access": isSharedAccess ? quantity : 1,
+          "Facility Access": (isSharedAccess || isSharedSlot) ? quantity : 1,
           booking_ref: currentRef,
           payment_ref: paymentRef,
         },
@@ -324,16 +398,16 @@ function FacilityCheckoutPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
 
-      const sendEmail = async () => {
+      const sendEmail = async (bRef: string) => {
         try {
           const dateRangeStr = date?.from
             ? date.to
               ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
               : format(date.from, "LLL dd, y")
             : "";
-          const minSlot = Math.min(...selectedSlots);
-          const maxSlot = Math.max(...selectedSlots);
-          const timeRangeStr = `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
+          const timeRangeStr = (isSharedAccess || selectedSlots.length === 0)
+            ? "Full Day"
+            : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
 
           await sendVenueBookingEmail({
             data: {
@@ -344,7 +418,7 @@ function FacilityCheckoutPage() {
               venueLocation: venue.address || venue.city || "Venue Location",
               dateRange: dateRangeStr,
               timeRange: timeRangeStr,
-              bookingRef: data.bookingRef,
+              bookingRef: bRef,
             },
           } as any);
         } catch (e) {
@@ -363,7 +437,8 @@ function FacilityCheckoutPage() {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
-        await sendEmail();
+        await sendSmsAlert(data.bookingRef || bookingRef);
+        await sendEmail(data.bookingRef || bookingRef);
       }
     },
     onError: (err: any) => {
@@ -391,9 +466,12 @@ function FacilityCheckoutPage() {
                 ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
                 : format(date.from, "LLL dd, y")
               : "";
-            const minSlot = Math.min(...selectedSlots);
-            const maxSlot = Math.max(...selectedSlots);
-            const timeRangeStr = `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
+            const timeRangeStr = (isSharedAccess || selectedSlots.length === 0)
+              ? "Full Day"
+              : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+            await sendSmsAlert(bookingRef);
+
             await sendVenueBookingEmail({
               data: {
                 to: email,
@@ -507,6 +585,8 @@ function FacilityCheckoutPage() {
                 attachments,
               } as any,
             });
+            await sendSmsAlert(bookingRef);
+
             toast.success("Booking confirmed and tickets emailed!");
           } else {
             toast.success("Booking confirmed!");
@@ -739,11 +819,11 @@ function FacilityCheckoutPage() {
                     </Popover>
                   </div>
 
-                  {date?.from && isSharedAccess && (
+                  {date?.from && (isSharedAccess || isSharedSlot) && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                       <Label>Quantity (Passes)</Label>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Select the number of passes you need per day.
+                        {isSharedSlot ? "Select the number of passes you need per session." : "Select the number of passes you need per day."}
                       </p>
                       <div className="flex items-center gap-4 mt-2">
                         <Button
@@ -779,8 +859,8 @@ function FacilityCheckoutPage() {
                   )}
 
                   {date?.from && !isSharedAccess && (() => {
-                    const isWholeDayAvailable = DYNAMIC_SLOTS.length > 0 && DYNAMIC_SLOTS.every((slot) => !isSlotBookedAcrossRange(slot));
-                    
+                    const isWholeDayAvailable = DYNAMIC_SLOTS.length > 0 && DYNAMIC_SLOTS.every((slot) => !getSlotStatusAcrossRange(slot).isBooked);
+
                     const renderSlotGrid = (label: string, slots: number[]) => {
                       if (slots.length === 0) return null;
                       return (
@@ -788,9 +868,45 @@ function FacilityCheckoutPage() {
                           <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">{label}</div>
                           <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                             {slots.map((slotMins) => {
-                              const booked = isSlotBookedAcrossRange(slotMins);
+                              const { isBooked, bookedCount, maxCapacity, isBlockedByAdmin } = getSlotStatusAcrossRange(slotMins);
                               const isSelected = selectedSlots.includes(slotMins);
                               const timeString = formatSlot(slotMins);
+
+                              let dynamicClass = "";
+
+                              if (isBlockedByAdmin) {
+                                dynamicClass = "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
+                              } else if (bookedCount > 0) {
+                                const fillPercentage = maxCapacity === Infinity ? 0 : Math.min(100, Math.round((bookedCount / maxCapacity) * 100));
+                                
+                                if (fillPercentage >= 100 || isBooked) {
+                                   if (fillPercentage >= 100 || maxCapacity === 1) {
+                                      dynamicClass = "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary";
+                                   } else {
+                                      if (fillPercentage < 25) {
+                                        dynamicClass = "opacity-80 cursor-not-allowed bg-primary/20 text-primary border-primary/30";
+                                      } else if (fillPercentage < 50) {
+                                        dynamicClass = "opacity-80 cursor-not-allowed bg-primary/40 text-primary-foreground border-primary/50";
+                                      } else if (fillPercentage < 75) {
+                                        dynamicClass = "opacity-80 cursor-not-allowed bg-primary/60 text-primary-foreground border-primary/70";
+                                      } else {
+                                        dynamicClass = "opacity-80 cursor-not-allowed bg-primary/80 text-primary-foreground border-primary/90";
+                                      }
+                                   }
+                                } else if (fillPercentage > 0) {
+                                   if (fillPercentage < 25) {
+                                     dynamicClass = "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
+                                   } else if (fillPercentage < 50) {
+                                     dynamicClass = "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
+                                   } else if (fillPercentage < 75) {
+                                     dynamicClass = "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
+                                   } else {
+                                     dynamicClass = "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
+                                   }
+                                }
+                              } else if (isBooked) {
+                                dynamicClass = "opacity-40 cursor-not-allowed bg-secondary/30";
+                              }
 
                               return (
                                 <Button
@@ -799,10 +915,10 @@ function FacilityCheckoutPage() {
                                   variant={isSelected ? "default" : "outline"}
                                   className={cn(
                                     "h-10 rounded-xl transition-all font-medium text-sm border-border/60",
-                                    booked && "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20",
+                                    dynamicClass,
                                     isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
                                   )}
-                                  disabled={booked}
+                                  disabled={isBooked}
                                   onClick={() => handleSlotClick(slotMins)}
                                 >
                                   {timeString}
@@ -833,7 +949,7 @@ function FacilityCheckoutPage() {
                             Book Whole Day
                           </Button>
                         </div>
-                        
+
                         <div className="bg-background/50 rounded-2xl p-4 sm:p-6 border border-border/60 shadow-inner mt-4">
                           {renderSlotGrid("Morning", groupedSlots.morning)}
                           {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
