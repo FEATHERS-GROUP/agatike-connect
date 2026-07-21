@@ -1,13 +1,20 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
-import { getVenueBookings } from "@/api/venue_bookings";
-import { ArrowLeft } from "lucide-react";
-import type { View } from "react-big-calendar";
-import { Suspense, lazy } from "react";
-const Calendar = lazy(() => import("@/components/lazy/LazyCalendar"));
-import { useState } from "react";
+import { getVenueBookings, createVenueBooking } from "@/api/venue_bookings";
+import { ArrowLeft, Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { format, isBefore, startOfDay, addDays } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
+import { formatCurrency } from "@/lib/currency";
+import { toast } from "sonner";
+import { getUserSession } from "@/api/auth";
 
 export const Route = createFileRoute(
   "/dashboard/$workspaceSlug/venues/$venueId/facilities_/$facilityId/bookings",
@@ -17,9 +24,24 @@ export const Route = createFileRoute(
 
 function FacilityBookingsPage() {
   const { workspaceSlug, venueId, facilityId } = useParams({ strict: false }) as any;
+  const queryClient = useQueryClient();
 
-  const [currentView, setCurrentView] = useState<View>("week");
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: startOfDay(new Date()),
+    to: startOfDay(new Date()),
+  });
+  
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [amountPaid, setAmountPaid] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("Paid");
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: () => getUserSession(),
+  });
 
   const { data: venue, isLoading: venueLoading } = useQuery({
     queryKey: ["venue", venueId],
@@ -34,47 +56,180 @@ function FacilityBookingsPage() {
   });
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
+  const isSharedAccess = facility?.type === "shared_access";
+  const durationMinutes = Number(facility?.duration_minutes) || 60;
+  const perSessionRate = Number(facility?.pricing?.per_session_rate) || 0;
+  const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
+  const currency = venue?.currency || "RWF";
 
-  const myEvents = bookings
-    .filter((b: any) => b.facility_id === facilityId)
-    .map((b: any) => {
-      return {
-        title: b.customer_name,
-        start: new Date(b.start_time),
-        end: new Date(b.end_time),
-        allDay: false,
-        data: {
-          paymentStatus: b.payment_status,
-          status: b.status,
-        },
-      };
+  // Dynamic slots logic
+  const DYNAMIC_SLOTS = useMemo(() => {
+    const slots = [];
+    const startMins = 6 * 60; // 06:00
+    const endMins = 23 * 60; // 23:00
+    for (let m = startMins; m < endMins; m += durationMinutes) {
+      slots.push(m);
+    }
+    return slots;
+  }, [durationMinutes]);
+
+  const formatSlot = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  };
+
+  const facilityBookings = useMemo(() => {
+    return bookings.filter((b: any) => b.facility_id === facilityId && b.status !== "Cancelled");
+  }, [bookings, facilityId]);
+
+  const isSlotBooked = (dateToCheck: Date, slotStartMins: number) => {
+    return facilityBookings.some((b: any) => {
+      const bStart = new Date(b.start_time).getTime();
+      const bEnd = new Date(b.end_time).getTime();
+      const slotStart = new Date(dateToCheck);
+      slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
+      const slotEnd = new Date(dateToCheck);
+      const endMins = slotStartMins + durationMinutes;
+      slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+      return bStart < slotEnd.getTime() && slotStart.getTime() < bEnd;
     });
+  };
 
-  const CustomEvent = ({ event }: any) => {
-    const isPaid = event.data.paymentStatus === "Paid";
-    const isBlocked = event.data.status === "Blocked";
+  const daysInRange = useMemo(() => {
+    const days = [];
+    if (date?.from) {
+      let current = new Date(date.from);
+      const end = date.to || date.from;
+      let safety = 0;
+      while (current.getTime() <= end.getTime() && safety < 100) {
+        days.push(new Date(current));
+        current = addDays(current, 1);
+        safety++;
+      }
+    }
+    return days;
+  }, [date]);
 
-    if (isBlocked) {
-      return (
-        <div className="flex flex-col justify-center h-full w-full p-2 bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg border border-red-500/20 shadow-sm backdrop-blur-sm transition-all hover:bg-red-500/20">
-          <span className="font-semibold text-xs leading-tight truncate">❌ Blocked</span>
-          <span className="text-[10px] truncate opacity-80 mt-0.5">{event.title}</span>
-        </div>
-      );
+  const isSlotBookedAcrossRange = (slotMins: number) => {
+    return daysInRange.some((d) => isSlotBooked(d, slotMins));
+  };
+
+  const handleSlotClick = (slotMins: number) => {
+    if (selectedSlots.includes(slotMins)) {
+      setSelectedSlots((prev) => prev.filter((s) => s !== slotMins).sort((a, b) => a - b));
+    } else {
+      setSelectedSlots((prev) => [...prev, slotMins].sort((a, b) => a - b));
+    }
+  };
+
+  const groupedSlots = useMemo(() => {
+    const morning = DYNAMIC_SLOTS.filter((s) => s < 12 * 60);
+    const afternoon = DYNAMIC_SLOTS.filter((s) => s >= 12 * 60 && s < 17 * 60);
+    const evening = DYNAMIC_SLOTS.filter((s) => s >= 17 * 60);
+    return { morning, afternoon, evening };
+  }, [DYNAMIC_SLOTS]);
+
+  const slotPrice = isSharedAccess || facility?.category === "activity"
+    ? perSessionRate
+    : hourlyRate * (durationMinutes / 60);
+
+  const subTotal = selectedSlots.length * slotPrice * daysInRange.length;
+  // Let's assume no GST or taxes for now, but we can display the total directly
+  const totalAmount = subTotal;
+
+  const createBookingMutation = useMutation({
+    mutationFn: createVenueBooking,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
+      toast.success("Booking created successfully!");
+      setSelectedSlots([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setAmountPaid("");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to create booking.");
+    },
+  });
+
+  const handleCreateBooking = () => {
+    if (!date?.from || selectedSlots.length === 0) {
+      toast.error("Please select a date and at least one time slot.");
+      return;
+    }
+    if (!customerName) {
+      toast.error("Customer name is required.");
+      return;
     }
 
+    const minSlot = Math.min(...selectedSlots);
+    const maxSlot = Math.max(...selectedSlots);
+    
+    const startTime = new Date(date.from);
+    startTime.setHours(Math.floor(minSlot / 60), minSlot % 60, 0, 0);
+
+    const endDay = date.to || date.from;
+    const endTime = new Date(endDay);
+    const endMins = maxSlot + durationMinutes;
+    endTime.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+
+    createBookingMutation.mutate({
+      data: {
+        workspace_id: venue.workspace_id,
+        venue_id: venue.id,
+        user_id: session?.id,
+        facility_id: facilityId,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: "",
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        status: "Confirmed",
+        payment_status: paymentStatus,
+        payment_method: paymentMethod.toLowerCase(),
+        amount: totalAmount,
+        total_amount: totalAmount,
+        booking_type: "facility",
+        tickets_data: null,
+      } as any,
+    });
+  };
+
+  const handleQuickDateSelect = (daysOffset: number) => {
+    const d = addDays(startOfDay(new Date()), daysOffset);
+    setDate({ from: d, to: d });
+    setSelectedSlots([]);
+  };
+
+  const renderSlotGrid = (label: string, slots: number[]) => {
+    if (slots.length === 0) return null;
     return (
-      <div className="flex flex-col h-full w-full p-2 bg-primary text-primary-foreground rounded-lg border border-primary/20 shadow-sm hover:shadow-md transition-all hover:brightness-110">
-        <span className="font-semibold text-xs leading-tight truncate">{event.title}</span>
-        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-          <span className="px-1.5 py-0.5 rounded-md bg-background/20 text-[9px] uppercase tracking-wider font-bold backdrop-blur-md">
-            {event.data.status}
-          </span>
-          <span
-            className={`px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider font-bold backdrop-blur-md ${isPaid ? "bg-green-400/30 text-green-50" : "bg-orange-400/30 text-orange-50"}`}
-          >
-            {event.data.paymentStatus}
-          </span>
+      <div className="flex items-start gap-4 py-4 border-b border-border/50 last:border-0">
+        <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">{label}</div>
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {slots.map((slotMins) => {
+            const booked = isSlotBookedAcrossRange(slotMins);
+            const isSelected = selectedSlots.includes(slotMins);
+            const timeString = formatSlot(slotMins);
+
+            return (
+              <Button
+                key={slotMins}
+                type="button"
+                variant={isSelected ? "default" : "outline"}
+                className={cn(
+                  "h-12 rounded-xl transition-all font-medium text-sm border-border/60",
+                  booked && "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20",
+                  isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
+                )}
+                disabled={booked}
+                onClick={() => handleSlotClick(slotMins)}
+              >
+                {timeString}
+              </Button>
+            );
+          })}
         </div>
       </div>
     );
@@ -87,7 +242,8 @@ function FacilityBookingsPage() {
     return <div className="p-8 text-center text-red-500 font-semibold">Facility not found.</div>;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1600px] mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-4 bg-card p-6 rounded-3xl border border-border/60 shadow-sm">
         <Link
           to="/dashboard/$workspaceSlug/venues/$venueId/facilities"
@@ -100,151 +256,230 @@ function FacilityBookingsPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{facility.name} - Bookings</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            View the specific schedule and availability for this sub-venue.
+            Manage bookings and availability for this space/activity.
           </p>
         </div>
       </div>
 
-      <div className="bg-card rounded-3xl border border-border/60 p-6 h-[750px] flex flex-col shadow-sm">
-        <div className="flex-1 bg-background/50 rounded-2xl p-4 overflow-hidden border border-border/60 shadow-inner">
-          <style>{`
-            /* Reset calendar font */
-            .rbc-calendar { 
-              font-family: inherit; 
-              color: hsl(var(--foreground));
-            }
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6 items-start">
+        {/* Left Column: Grid */}
+        <div className="bg-card rounded-3xl border border-border/60 p-6 shadow-sm">
+          {/* Quick Date Filters */}
+          <div className="flex flex-wrap items-center gap-2 mb-8">
+            <Button
+              variant={date?.from && date?.from?.getTime() === startOfDay(new Date()).getTime() && date?.to?.getTime() === startOfDay(new Date()).getTime() ? "default" : "outline"}
+              className="rounded-xl px-6 h-10"
+              onClick={() => handleQuickDateSelect(0)}
+            >
+              Today
+            </Button>
+            <Button
+              variant={date?.from && date?.from?.getTime() === addDays(startOfDay(new Date()), 1).getTime() && date?.to?.getTime() === addDays(startOfDay(new Date()), 1).getTime() ? "default" : "outline"}
+              className="rounded-xl px-6 h-10"
+              onClick={() => handleQuickDateSelect(1)}
+            >
+              Tomorrow
+            </Button>
             
-            /* Toolbar styling */
-            .rbc-toolbar {
-              margin-bottom: 24px;
-              gap: 16px;
-              flex-wrap: wrap;
-            }
-            .rbc-toolbar-label {
-              font-size: 1.125rem;
-              font-weight: 600;
-              color: hsl(var(--foreground));
-            }
-            .rbc-btn-group {
-              display: flex;
-              gap: 4px;
-            }
-            .rbc-btn-group button { 
-              color: hsl(var(--muted-foreground)); 
-              background: hsl(var(--secondary)/0.5);
-              border: 1px solid hsl(var(--border)); 
-              border-radius: 8px !important;
-              padding: 6px 16px;
-              font-size: 0.875rem;
-              font-weight: 500;
-              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .rbc-btn-group button:hover {
-              background: hsl(var(--secondary));
-              color: hsl(var(--foreground));
-            }
-            .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
-              background-color: hsl(var(--primary)) !important; 
-              color: hsl(var(--primary-foreground)) !important; 
-              border-color: hsl(var(--primary)) !important;
-              box-shadow: 0 4px 12px hsl(var(--primary)/0.25);
-            }
+            <div className="h-6 w-px bg-border mx-2" />
             
-            /* Header and Grid styling */
-            .rbc-header { 
-              padding: 16px 8px; 
-              font-weight: 600;
-              font-size: 0.875rem; 
-              color: hsl(var(--muted-foreground));
-              border-bottom: 1px solid hsl(var(--border));
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-            }
-            .rbc-time-header-cell {
-              border-left: 1px solid hsl(var(--border)/0.5);
-            }
-            .rbc-time-view, .rbc-month-view, .rbc-agenda-view {
-              border: 1px solid hsl(var(--border));
-              border-radius: 16px;
-              overflow: hidden;
-              background-color: hsl(var(--card));
-              box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            }
-            .rbc-day-bg + .rbc-day-bg, .rbc-month-row + .rbc-month-row, .rbc-time-content > * + * > * {
-              border-color: hsl(var(--border)/0.5);
-            }
-            .rbc-timeslot-group { 
-              border-color: hsl(var(--border)/0.3); 
-              min-height: 48px;
-            }
-            .rbc-time-gutter {
-               color: hsl(var(--muted-foreground));
-               font-size: 0.75rem;
-               font-weight: 500;
-               background-color: hsl(var(--secondary)/0.3);
-               border-right: 1px solid hsl(var(--border)/0.5);
-               padding: 0 8px;
-            }
-            
-            /* Event styling - remove default backgrounds to let Tailwind handle it */
-            .rbc-event {
-              background: transparent !important;
-              border: none !important;
-              padding: 2px !important;
-            }
-            .rbc-event-content {
-              height: 100%;
-            }
-            .rbc-event.rbc-selected {
-              background: transparent !important;
-            }
-            
-            /* Time indicator */
-            .rbc-current-time-indicator {
-              background-color: hsl(var(--primary));
-              height: 2px;
-              z-index: 3;
-            }
-            .rbc-current-time-indicator::before {
-              content: '';
-              position: absolute;
-              left: -4px;
-              top: -3px;
-              width: 8px;
-              height: 8px;
-              border-radius: 50%;
-              background-color: hsl(var(--primary));
-            }
-            
-            /* Today highlight */
-            .rbc-today {
-              background-color: hsl(var(--primary)/0.03);
-            }
-            .rbc-off-range-bg {
-              background-color: hsl(var(--secondary)/0.3);
-            }
-          `}</style>
-          <Suspense fallback={<div className="animate-pulse bg-muted/20 h-96 rounded-xl" />}>
-            <Calendar
-              events={myEvents}
-              startAccessor="start"
-              endAccessor="end"
-              view={currentView}
-              date={currentDate}
-              onView={(view) => setCurrentView(view)}
-              onNavigate={(date) => setCurrentDate(date)}
-              components={{
-                event: CustomEvent,
-              }}
-              formats={{
-                eventTimeRangeFormat: () => "",
-              }}
-              popup
-              tooltipAccessor={(e: any) =>
-                `${e.title}\nStatus: ${e.data.status}\nPayment: ${e.data.paymentStatus}`
-              }
-            />
-          </Suspense>
+            {[2, 3, 4, 5].map(offset => {
+              const d = addDays(startOfDay(new Date()), offset);
+              const isSelected = date?.from?.getTime() === d.getTime() && date?.to?.getTime() === d.getTime();
+              return (
+                <Button
+                  key={offset}
+                  variant={isSelected ? "default" : "outline"}
+                  className="rounded-xl px-4 h-10"
+                  onClick={() => handleQuickDateSelect(offset)}
+                >
+                  {format(d, "EEE, dd")}
+                </Button>
+              );
+            })}
+
+            <div className="h-6 w-px bg-border mx-2" />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "rounded-xl h-10 px-6",
+                    date?.from && date.from.getTime() !== date.to?.getTime() && "border-primary text-primary bg-primary/5"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Custom Range
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  selected={date}
+                  onSelect={(d) => {
+                    setDate(d);
+                    setSelectedSlots([]);
+                  }}
+                  disabled={(d) => isBefore(d, startOfDay(new Date()))}
+                  initialFocus
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Grid Area */}
+          <div className="bg-background/50 rounded-2xl p-6 border border-border/60 shadow-inner">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-border/60">
+              <div className="flex items-center gap-3">
+                <h3 className="font-bold text-lg">{facility.name}</h3>
+                <span className="bg-green-500/10 text-green-600 dark:text-green-400 text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                  Active
+                </span>
+              </div>
+              <div className="text-right text-sm font-medium text-muted-foreground flex items-center gap-2">
+                {formatCurrency(slotPrice, currency)} / {durationMinutes} mins
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {renderSlotGrid("Morning", groupedSlots.morning)}
+              {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
+              {renderSlotGrid("Evening", groupedSlots.evening)}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Sidebar */}
+        <div className="bg-card rounded-3xl border border-border/60 p-6 shadow-sm sticky top-24">
+          <h3 className="text-xl font-bold mb-6">New Booking</h3>
+
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Customer Phone Number</Label>
+                <Input
+                  className="h-12 bg-secondary/30 rounded-xl"
+                  placeholder="+250 700 000 000"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Customer Name</Label>
+                <Input
+                  className="h-12 bg-secondary/30 rounded-xl"
+                  placeholder="e.g. John Doe"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="bg-secondary/30 rounded-2xl border border-border/60 p-5 space-y-4">
+              <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Invoice</h4>
+              
+              <div className="space-y-2 min-h-[100px] max-h-[250px] overflow-y-auto pr-2">
+                {selectedSlots.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No slots selected</p>
+                ) : (
+                  selectedSlots.map((slot) => (
+                    <div key={slot} className="flex justify-between text-sm items-center py-1">
+                      <span className="text-foreground font-medium">
+                        {facility.name} ({formatSlot(slot)} - {formatSlot(slot + durationMinutes)})
+                      </span>
+                      <span className="text-muted-foreground font-semibold">
+                        {formatCurrency(slotPrice, currency)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-border/60 space-y-2">
+                {daysInRange.length > 1 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground font-medium">Days</span>
+                    <span className="font-semibold text-foreground">× {daysInRange.length}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground font-medium">Sub Total</span>
+                  <span className="font-semibold text-foreground">{formatCurrency(subTotal, currency)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="font-bold text-lg">Total</span>
+                  <span className="font-black text-xl text-primary">{formatCurrency(totalAmount, currency)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Amount Paid</Label>
+              <Input
+                className="h-12 bg-secondary/30 rounded-xl font-bold"
+                placeholder={totalAmount.toString()}
+                value={amountPaid}
+                onChange={(e) => setAmountPaid(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Payment Status</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={paymentStatus === "Paid" ? "default" : "outline"}
+                    className={cn("flex-1 h-10 rounded-xl", paymentStatus === "Paid" && "bg-green-500 hover:bg-green-600 text-white")}
+                    onClick={() => setPaymentStatus("Paid")}
+                  >
+                    Paid
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={paymentStatus === "Unpaid" ? "default" : "outline"}
+                    className={cn("flex-1 h-10 rounded-xl", paymentStatus === "Unpaid" && "bg-orange-500 hover:bg-orange-600 text-white")}
+                    onClick={() => setPaymentStatus("Unpaid")}
+                  >
+                    Unpaid
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Mode</Label>
+                <div className="flex gap-2">
+                  {["Cash", "MoMo", "Card"].map((mode) => (
+                    <Button
+                      key={mode}
+                      type="button"
+                      variant={paymentMethod === mode ? "default" : "outline"}
+                      className="flex-1 h-10 rounded-xl px-0 text-xs"
+                      onClick={() => setPaymentMethod(mode)}
+                    >
+                      {mode}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] mt-4"
+              style={{ background: "var(--gradient-primary)" }}
+              onClick={handleCreateBooking}
+              disabled={createBookingMutation.isPending || selectedSlots.length === 0}
+            >
+              {createBookingMutation.isPending ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...
+                </>
+              ) : (
+                "Create Booking"
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
