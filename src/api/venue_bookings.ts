@@ -11,6 +11,7 @@ const CREATE_VENUE_BOOKING = `
       end_time
       status
       payment_status
+      payment_method
       tickets_data
     }
   }
@@ -118,6 +119,7 @@ export const createVenueBooking = createServerFn({ method: "POST" })
         end_time,
         status,
         payment_status,
+        payment_method,
         amount,
         number_of_attendees,
         tickets_data: final_tickets_data,
@@ -164,6 +166,7 @@ const GET_VENUE_BOOKINGS = `
       end_time
       status
       payment_status
+      payment_method
       amount
       number_of_attendees
       tickets_data

@@ -2,13 +2,13 @@ import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-ro
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
 import { sendVenueBookingEmail } from "@/api/email";
+import { sendSMSServer } from "@/api/pindo";
 import { getUserSession } from "@/api/auth";
 import { useState, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   Calendar as CalendarIcon,
-  Clock,
   ArrowRight,
   CheckCircle2,
   Smartphone,
@@ -61,8 +61,6 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
   component: FacilityCheckoutPage,
 });
 
-const SLOTS = Array.from({ length: 18 }, (_, i) => i + 6); // 06:00 to 23:00
-
 function FacilityCheckoutPage() {
   const { session } = Route.useRouteContext();
   const venue = Route.useLoaderData();
@@ -74,6 +72,33 @@ function FacilityCheckoutPage() {
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
   const isSharedAccess = facility?.type === "shared_access";
+  const isSharedSlot = facility?.type === "shared_slot";
+  const isActivity = facility?.category === "activity";
+  const durationMinutes = Number(facility?.duration_minutes) || 60;
+  const perSessionRate = Number(facility?.pricing?.per_session_rate) || 0;
+
+  const DYNAMIC_SLOTS = useMemo(() => {
+    const slots = [];
+    const startMins = 6 * 60; // 06:00
+    const endMins = 23 * 60; // 23:00
+    for (let m = startMins; m < endMins; m += durationMinutes) {
+      slots.push(m);
+    }
+    return slots;
+  }, [durationMinutes]);
+
+  const groupedSlots = useMemo(() => {
+    const morning = DYNAMIC_SLOTS.filter((s) => s < 12 * 60);
+    const afternoon = DYNAMIC_SLOTS.filter((s) => s >= 12 * 60 && s < 17 * 60);
+    const evening = DYNAMIC_SLOTS.filter((s) => s >= 17 * 60);
+    return { morning, afternoon, evening };
+  }, [DYNAMIC_SLOTS]);
+
+  const formatSlot = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  };
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -112,24 +137,98 @@ function FacilityCheckoutPage() {
   });
 
   const facilityBookings = useMemo(() => {
-    return bookings.filter((b: any) => b.facility_id === facilityId && b.status !== "Cancelled");
+    return bookings.filter((b: any) => {
+      if (b.status === "Cancelled") return false;
+      return b.facility_id === facilityId || (!b.facility_id && b.status === "Blocked");
+    });
   }, [bookings, facilityId]);
 
-  const isSlotBooked = (dateToCheck: Date, startHour: number) => {
-    return facilityBookings.some((b: any) => {
-      const bStart = new Date(b.start_time);
-      const bEnd = new Date(b.end_time);
+  const getSlotStatus = (dateToCheck: Date, slotStartMins: number) => {
+    if (isSharedSlot) {
       const slotStart = new Date(dateToCheck);
-      slotStart.setHours(startHour, 0, 0, 0);
-      const slotEnd = new Date(dateToCheck);
-      slotEnd.setHours(startHour + 1, 0, 0, 0);
+      slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
 
-      return bStart < slotEnd && slotStart < bEnd;
+      let hasBlock = false;
+
+      const totalBooked = facilityBookings
+        .filter((b: any) => {
+          const bStart = new Date(b.start_time).getTime();
+          const bEnd = new Date(b.end_time).getTime();
+          const slotEnd = new Date(dateToCheck);
+          const endMins = slotStartMins + durationMinutes;
+          slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+
+          if (bStart < slotEnd.getTime() && slotStart.getTime() < bEnd) {
+            if (b.status === "Blocked" || (!b.facility_id && b.status === "Blocked")) {
+              hasBlock = true;
+            }
+            return true;
+          }
+          return false;
+        })
+        .reduce((sum: number, b: any) => {
+          if (!b.facility_id && b.status === "Blocked") return Infinity;
+          return sum + (b.tickets_data?.["Facility Access"] || 1);
+        }, 0);
+
+      const maxCap = Number(facility?.max_capacity);
+      if (isNaN(maxCap) || maxCap === -1)
+        return {
+          isBooked: hasBlock,
+          bookedCount: totalBooked,
+          maxCapacity: Infinity,
+          isBlockedByAdmin: hasBlock,
+        };
+      return {
+        isBooked: hasBlock || totalBooked + quantity > maxCap,
+        bookedCount: totalBooked,
+        maxCapacity: maxCap,
+        isBlockedByAdmin: hasBlock,
+      };
+    }
+
+    const booking = facilityBookings.find((b: any) => {
+      const bStart = new Date(b.start_time).getTime();
+      const bEnd = new Date(b.end_time).getTime();
+
+      const slotStart = new Date(dateToCheck);
+      slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
+
+      const slotEnd = new Date(dateToCheck);
+      const endMins = slotStartMins + durationMinutes;
+      slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+
+      return bStart < slotEnd.getTime() && slotStart.getTime() < bEnd;
     });
+
+    if (booking) {
+      const isBlock =
+        booking.status === "Blocked" || (!booking.facility_id && booking.status === "Blocked");
+      return { isBooked: true, bookedCount: 1, maxCapacity: 1, isBlockedByAdmin: isBlock };
+    }
+    return { isBooked: false, bookedCount: 0, maxCapacity: 1, isBlockedByAdmin: false };
+  };
+
+  const getBookedPassesForDate = (dateToCheck: Date) => {
+    return facilityBookings
+      .filter((b: any) => {
+        const bDate = new Date(b.start_time);
+        return (
+          bDate.getDate() === dateToCheck.getDate() &&
+          bDate.getMonth() === dateToCheck.getMonth() &&
+          bDate.getFullYear() === dateToCheck.getFullYear()
+        );
+      })
+      .reduce((sum: number, b: any) => sum + (b.tickets_data?.["Facility Access"] || 1), 0);
   };
 
   const isDateFullyBooked = (dateToCheck: Date) => {
-    return SLOTS.every((hour) => isSlotBooked(dateToCheck, hour));
+    if (isSharedAccess) {
+      const maxCap = Number(facility?.max_capacity);
+      if (isNaN(maxCap) || maxCap === -1) return false;
+      return getBookedPassesForDate(dateToCheck) >= maxCap;
+    }
+    return DYNAMIC_SLOTS.every((slot) => getSlotStatus(dateToCheck, slot).isBooked);
   };
 
   const daysInRange = useMemo(() => {
@@ -147,9 +246,50 @@ function FacilityCheckoutPage() {
     return days;
   }, [date]);
 
-  const isSlotBookedAcrossRange = (hour: number) => {
-    return daysInRange.some((d) => isSlotBooked(d, hour));
+  const getSlotStatusAcrossRange = (slotMins: number) => {
+    let finalIsBooked = false;
+    let finalIsBlocked = false;
+    let maxBookedCount = 0;
+    let capacity = 1;
+
+    for (const d of daysInRange) {
+      const res = getSlotStatus(d, slotMins);
+      capacity = res.maxCapacity;
+      if (res.bookedCount > maxBookedCount) maxBookedCount = res.bookedCount;
+      if (res.isBlockedByAdmin) finalIsBlocked = true;
+      if (res.isBooked) finalIsBooked = true;
+    }
+    return {
+      isBooked: finalIsBooked,
+      bookedCount: maxBookedCount,
+      maxCapacity: capacity,
+      isBlockedByAdmin: finalIsBlocked,
+    };
   };
+
+  const availableCapacity = useMemo(() => {
+    if (!isSharedAccess && !isSharedSlot) return 1;
+    const maxCap = Number(facility?.max_capacity);
+    if (isNaN(maxCap) || maxCap === -1) return Infinity; // Unlimited
+
+    if (isSharedSlot) return maxCap; // For slots, capacity depends on the slot, so max stepper limit is maxCap
+
+    if (daysInRange.length === 0) return maxCap;
+
+    let maxBooked = 0;
+    for (const d of daysInRange) {
+      const booked = getBookedPassesForDate(d);
+      if (booked > maxBooked) maxBooked = booked;
+    }
+
+    return Math.max(0, maxCap - maxBooked);
+  }, [daysInRange, facilityBookings, facility?.max_capacity, isSharedAccess, isSharedSlot]);
+
+  useEffect(() => {
+    if ((isSharedAccess || isSharedSlot) && quantity > availableCapacity && availableCapacity > 0) {
+      setQuantity(availableCapacity);
+    }
+  }, [availableCapacity, isSharedAccess, isSharedSlot, quantity]);
 
   const totalAmount = useMemo(() => {
     if (daysInRange.length === 0) return 0;
@@ -157,8 +297,53 @@ function FacilityCheckoutPage() {
       return daysInRange.length * quantity * dailyRate;
     }
     if (selectedSlots.length === 0) return 0;
-    return daysInRange.length * selectedSlots.length * hourlyRate;
-  }, [daysInRange.length, selectedSlots.length, hourlyRate, isSharedAccess, quantity, dailyRate]);
+
+    if (isSharedSlot) {
+      return (
+        daysInRange.length *
+        selectedSlots.length *
+        quantity *
+        (perSessionRate > 0 ? perSessionRate : hourlyRate * (durationMinutes / 60))
+      );
+    }
+
+    if (isActivity && perSessionRate > 0) {
+      return daysInRange.length * selectedSlots.length * perSessionRate;
+    }
+
+    return daysInRange.length * selectedSlots.length * hourlyRate * (durationMinutes / 60);
+  }, [
+    daysInRange.length,
+    selectedSlots.length,
+    hourlyRate,
+    isSharedAccess,
+    isSharedSlot,
+    quantity,
+    dailyRate,
+    isActivity,
+    perSessionRate,
+    durationMinutes,
+  ]);
+
+  const sendSmsAlert = async (bRef: string) => {
+    try {
+      if (!phone) return;
+      const dateRangeStr = date?.from
+        ? date.to
+          ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+          : format(date.from, "LLL dd, y")
+        : "";
+      const timeRangeStr =
+        isSharedAccess || selectedSlots.length === 0
+          ? "Full Day"
+          : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+      const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${bRef}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
+      await sendSMSServer({ data: { to: phone, text: msg, organizerId: venue.workspace_id } });
+    } catch (e) {
+      console.error("Failed to send SMS:", e);
+    }
+  };
 
   const bookingMutation = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -193,13 +378,13 @@ function FacilityCheckoutPage() {
         customer_phone: phone,
         status: isPawaPay ? "Pending" : bookingStatus,
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
-        amount: isSharedAccess ? quantity * dailyRate : selectedSlots.length * hourlyRate,
-        total_amount: isSharedAccess ? quantity * dailyRate : selectedSlots.length * hourlyRate,
+        amount: totalAmount,
+        total_amount: totalAmount,
         venue_name: venue.name,
         venue_currency: currency,
         booking_type: "facility",
         tickets_data: {
-          "Facility Access": isSharedAccess ? quantity : 1,
+          "Facility Access": isSharedAccess || isSharedSlot ? quantity : 1,
           booking_ref: currentRef,
           payment_ref: paymentRef,
         },
@@ -207,9 +392,20 @@ function FacilityCheckoutPage() {
 
       const payloads = daysInRange.map((d) => {
         const startDateTime = new Date(d);
-        startDateTime.setHours(isSharedAccess ? 6 : minSlot, 0, 0, 0);
+        startDateTime.setHours(
+          isSharedAccess ? 6 : Math.floor(minSlot / 60),
+          isSharedAccess ? 0 : minSlot % 60,
+          0,
+          0,
+        );
         const endDateTime = new Date(d);
-        endDateTime.setHours(isSharedAccess ? 23 : maxSlot + 1, 0, 0, 0);
+        const endMins = maxSlot + durationMinutes;
+        endDateTime.setHours(
+          isSharedAccess ? 23 : Math.floor(endMins / 60),
+          isSharedAccess ? 0 : endMins % 60,
+          0,
+          0,
+        );
 
         return {
           ...basePayload,
@@ -252,16 +448,17 @@ function FacilityCheckoutPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
 
-      const sendEmail = async () => {
+      const sendEmail = async (bRef: string) => {
         try {
           const dateRangeStr = date?.from
             ? date.to
               ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
               : format(date.from, "LLL dd, y")
             : "";
-          const minSlot = Math.min(...selectedSlots);
-          const maxSlot = Math.max(...selectedSlots);
-          const timeRangeStr = `${minSlot}:00 - ${maxSlot + 1}:00`;
+          const timeRangeStr =
+            isSharedAccess || selectedSlots.length === 0
+              ? "Full Day"
+              : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
 
           await sendVenueBookingEmail({
             data: {
@@ -272,7 +469,7 @@ function FacilityCheckoutPage() {
               venueLocation: venue.address || venue.city || "Venue Location",
               dateRange: dateRangeStr,
               timeRange: timeRangeStr,
-              bookingRef: data.bookingRef,
+              bookingRef: bRef,
             },
           } as any);
         } catch (e) {
@@ -291,7 +488,8 @@ function FacilityCheckoutPage() {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
-        await sendEmail();
+        await sendSmsAlert(data.bookingRef || bookingRef);
+        await sendEmail(data.bookingRef || bookingRef);
       }
     },
     onError: (err: any) => {
@@ -319,9 +517,13 @@ function FacilityCheckoutPage() {
                 ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
                 : format(date.from, "LLL dd, y")
               : "";
-            const minSlot = Math.min(...selectedSlots);
-            const maxSlot = Math.max(...selectedSlots);
-            const timeRangeStr = `${minSlot}:00 - ${maxSlot + 1}:00`;
+            const timeRangeStr =
+              isSharedAccess || selectedSlots.length === 0
+                ? "Full Day"
+                : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+            await sendSmsAlert(bookingRef);
+
             await sendVenueBookingEmail({
               data: {
                 to: email,
@@ -435,6 +637,8 @@ function FacilityCheckoutPage() {
                 attachments,
               } as any,
             });
+            await sendSmsAlert(bookingRef);
+
             toast.success("Booking confirmed and tickets emailed!");
           } else {
             toast.success("Booking confirmed!");
@@ -452,22 +656,26 @@ function FacilityCheckoutPage() {
     }
   }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name]);
 
-  const handleSlotClick = (hour: number) => {
-    if (selectedSlots.includes(hour)) {
-      const newSlots = selectedSlots.filter((s) => s !== hour).sort((a, b) => a - b);
-      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + 1);
+  const handleSlotClick = (slotMins: number) => {
+    if (selectedSlots.includes(slotMins)) {
+      const newSlots = selectedSlots.filter((s) => s !== slotMins).sort((a, b) => a - b);
+      const isContiguous = newSlots.every(
+        (s, i) => i === 0 || s === newSlots[i - 1] + durationMinutes,
+      );
       if (isContiguous) {
         setSelectedSlots(newSlots);
       } else {
-        setSelectedSlots([hour]);
+        setSelectedSlots([slotMins]);
       }
     } else {
-      const newSlots = [...selectedSlots, hour].sort((a, b) => a - b);
-      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + 1);
+      const newSlots = [...selectedSlots, slotMins].sort((a, b) => a - b);
+      const isContiguous = newSlots.every(
+        (s, i) => i === 0 || s === newSlots[i - 1] + durationMinutes,
+      );
       if (isContiguous) {
         setSelectedSlots(newSlots);
       } else {
-        setSelectedSlots([hour]);
+        setSelectedSlots([slotMins]);
       }
     }
   };
@@ -572,10 +780,8 @@ function FacilityCheckoutPage() {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Time (Daily)</span>
             <span className="font-medium text-right">
-              {`${Math.min(...selectedSlots)
-                .toString()
-                .padStart(2, "0")}:00`}{" "}
-              - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
+              {formatSlot(Math.min(...selectedSlots))} -{" "}
+              {formatSlot(Math.max(...selectedSlots) + durationMinutes)}
             </span>
           </div>
         )}
@@ -670,11 +876,13 @@ function FacilityCheckoutPage() {
                     </Popover>
                   </div>
 
-                  {date?.from && isSharedAccess && (
+                  {date?.from && (isSharedAccess || isSharedSlot) && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                       <Label>Quantity (Passes)</Label>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Select the number of passes you need per day.
+                        {isSharedSlot
+                          ? "Select the number of passes you need per session."
+                          : "Select the number of passes you need per day."}
                       </p>
                       <div className="flex items-center gap-4 mt-2">
                         <Button
@@ -690,50 +898,150 @@ function FacilityCheckoutPage() {
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() =>
-                            setQuantity((q) => Math.min(facility.max_capacity || 100, q + 1))
-                          }
+                          disabled={quantity >= availableCapacity}
+                          onClick={() => setQuantity((q) => Math.min(availableCapacity, q + 1))}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
+                        {availableCapacity !== Infinity && availableCapacity > 0 && (
+                          <span className="text-sm font-medium text-orange-500">
+                            Only {availableCapacity} left for selected date(s)
+                          </span>
+                        )}
+                        {availableCapacity === 0 && (
+                          <span className="text-sm font-bold text-red-500">
+                            Sold Out for selected date(s)
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {date?.from && !isSharedAccess && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                      <Label>Available Time Slots (1 Hour)</Label>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Select one or more continuous hours. These hours will be booked for{" "}
-                        <strong>every day</strong> in your selected range.
-                      </p>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
-                        {SLOTS.map((hour) => {
-                          const booked = isSlotBookedAcrossRange(hour);
-                          const isSelected = selectedSlots.includes(hour);
-                          const timeString = `${hour.toString().padStart(2, "0")}:00`;
+                  {date?.from &&
+                    !isSharedAccess &&
+                    (() => {
+                      const isWholeDayAvailable =
+                        DYNAMIC_SLOTS.length > 0 &&
+                        DYNAMIC_SLOTS.every((slot) => !getSlotStatusAcrossRange(slot).isBooked);
 
-                          return (
+                      const renderSlotGrid = (label: string, slots: number[]) => {
+                        if (slots.length === 0) return null;
+                        return (
+                          <div className="flex items-start gap-4 py-4 border-b border-border/50 last:border-0">
+                            <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">
+                              {label}
+                            </div>
+                            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                              {slots.map((slotMins) => {
+                                const { isBooked, bookedCount, maxCapacity, isBlockedByAdmin } =
+                                  getSlotStatusAcrossRange(slotMins);
+                                const isSelected = selectedSlots.includes(slotMins);
+                                const timeString = formatSlot(slotMins);
+
+                                let dynamicClass = "";
+
+                                if (isBlockedByAdmin) {
+                                  dynamicClass =
+                                    "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
+                                } else if (bookedCount > 0) {
+                                  const fillPercentage =
+                                    maxCapacity === Infinity
+                                      ? 0
+                                      : Math.min(
+                                          100,
+                                          Math.round((bookedCount / maxCapacity) * 100),
+                                        );
+
+                                  if (fillPercentage >= 100 || isBooked) {
+                                    if (fillPercentage >= 100 || maxCapacity === 1) {
+                                      dynamicClass =
+                                        "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary";
+                                    } else {
+                                      if (fillPercentage < 25) {
+                                        dynamicClass =
+                                          "opacity-80 cursor-not-allowed bg-primary/20 text-primary border-primary/30";
+                                      } else if (fillPercentage < 50) {
+                                        dynamicClass =
+                                          "opacity-80 cursor-not-allowed bg-primary/40 text-primary-foreground border-primary/50";
+                                      } else if (fillPercentage < 75) {
+                                        dynamicClass =
+                                          "opacity-80 cursor-not-allowed bg-primary/60 text-primary-foreground border-primary/70";
+                                      } else {
+                                        dynamicClass =
+                                          "opacity-80 cursor-not-allowed bg-primary/80 text-primary-foreground border-primary/90";
+                                      }
+                                    }
+                                  } else if (fillPercentage > 0) {
+                                    if (fillPercentage < 25) {
+                                      dynamicClass =
+                                        "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
+                                    } else if (fillPercentage < 50) {
+                                      dynamicClass =
+                                        "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
+                                    } else if (fillPercentage < 75) {
+                                      dynamicClass =
+                                        "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
+                                    } else {
+                                      dynamicClass =
+                                        "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
+                                    }
+                                  }
+                                } else if (isBooked) {
+                                  dynamicClass = "opacity-40 cursor-not-allowed bg-secondary/30";
+                                }
+
+                                return (
+                                  <Button
+                                    key={slotMins}
+                                    type="button"
+                                    variant={isSelected ? "default" : "outline"}
+                                    className={cn(
+                                      "h-10 rounded-xl transition-all font-medium text-sm border-border/60",
+                                      dynamicClass,
+                                      isSelected &&
+                                        "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
+                                    )}
+                                    disabled={isBooked}
+                                    onClick={() => handleSlotClick(slotMins)}
+                                  >
+                                    {timeString}
+                                  </Button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      };
+
+                      return (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <Label>Available Time Slots</Label>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Select continuous slots. These will be booked for{" "}
+                                <strong>every day</strong> in your selected range.
+                              </p>
+                            </div>
                             <Button
-                              key={hour}
                               type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={cn(
-                                "h-10 rounded-xl transition-all",
-                                booked && "opacity-50 cursor-not-allowed line-through",
-                                isSelected &&
-                                  "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30",
-                              )}
-                              disabled={booked}
-                              onClick={() => handleSlotClick(hour)}
+                              variant="secondary"
+                              className="rounded-xl"
+                              disabled={!isWholeDayAvailable}
+                              onClick={() => setSelectedSlots(DYNAMIC_SLOTS)}
                             >
-                              {timeString}
+                              Book Whole Day
                             </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+                          </div>
+
+                          <div className="bg-background/50 rounded-2xl p-4 sm:p-6 border border-border/60 shadow-inner mt-4">
+                            {renderSlotGrid("Morning", groupedSlots.morning)}
+                            {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
+                            {renderSlotGrid("Evening", groupedSlots.evening)}
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
               </div>
 
@@ -787,7 +1095,8 @@ function FacilityCheckoutPage() {
                 bookingMutation.isPending ||
                 !date?.from ||
                 (!isSharedAccess && selectedSlots.length === 0) ||
-                (isSharedAccess && quantity < 1)
+                (isSharedAccess &&
+                  (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
               }
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "var(--gradient-primary)" }}
@@ -842,7 +1151,8 @@ function FacilityCheckoutPage() {
               bookingMutation.isPending ||
               !date?.from ||
               (!isSharedAccess && selectedSlots.length === 0) ||
-              (isSharedAccess && quantity < 1)
+              (isSharedAccess &&
+                (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
             }
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}

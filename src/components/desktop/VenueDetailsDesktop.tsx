@@ -106,7 +106,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
 
           {venue.facilities_data && venue.facilities_data.length > 0 && (
             <div>
-              <h2 className="text-xl font-semibold mb-4">Facilities & Spaces</h2>
+              <h2 className="text-xl font-semibold mb-4">Spaces & Activities</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {venue.facilities_data.map((facility: any, i: number) => (
                   <div
@@ -121,11 +121,28 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                       />
                     )}
                     <div className="p-4 flex flex-col flex-1">
-                      <h3 className="font-semibold text-lg">{facility.name}</h3>
-                      <p className="text-sm text-muted-foreground capitalize mt-1 mb-3">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h3 className="font-semibold text-lg">{facility.name}</h3>
+                        {facility.category && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-primary/10 text-primary">
+                            {facility.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground capitalize mb-3">
                         {facility.type.replace(/_/g, " ")}
                       </p>
                       <div className="text-sm font-medium space-y-1 mb-4">
+                        {facility.pricing?.per_session_rate && (
+                          <p>
+                            Session:{" "}
+                            {formatCurrency(
+                              facility.pricing.per_session_rate,
+                              venue.currency || "RWF",
+                            )}
+                            {facility.duration_minutes && ` (${facility.duration_minutes} mins)`}
+                          </p>
+                        )}
                         {facility.pricing?.hourly_rate && (
                           <p>
                             Hourly:{" "}
