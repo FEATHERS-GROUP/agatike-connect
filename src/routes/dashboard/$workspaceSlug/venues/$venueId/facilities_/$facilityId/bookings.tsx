@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { format, isBefore, startOfDay, addDays } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AdminBookingCheckoutModal } from "@/components/shared/AdminBookingCheckoutModal";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { formatCurrency } from "@/lib/currency";
@@ -41,6 +42,7 @@ function FacilityBookingsPage() {
   const [amountPaid, setAmountPaid] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("Paid");
   const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
 
   const { data: session } = useQuery({
     queryKey: ["session"],
@@ -294,6 +296,7 @@ function FacilityBookingsPage() {
       setCustomerEmail("");
       setAmountPaid("");
       setQuantity(1);
+      setIsCheckoutModalOpen(false);
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to create booking.");
@@ -301,18 +304,10 @@ function FacilityBookingsPage() {
   });
 
   const handleCreateBooking = () => {
-    if (!date?.from || selectedSlots.length === 0) {
-      toast.error("Please select a date and at least one time slot.");
-      return;
-    }
-    if (!customerName) {
-      toast.error("Customer name is required.");
-      return;
-    }
-    if ((isSharedSlot || isSharedAccess) && quantity > minAvailableCapacityAcrossSelected) {
-      toast.error(`Quantity exceeds available capacity (${minAvailableCapacityAcrossSelected} available).`);
-      return;
-    }
+    // Validation is already done before opening the modal, but just in case:
+    if (!date?.from || selectedSlots.length === 0) return;
+    if (!customerName) return;
+    if ((isSharedSlot || isSharedAccess) && quantity > minAvailableCapacityAcrossSelected) return;
 
     const minSlot = Math.min(...selectedSlots);
     const maxSlot = Math.max(...selectedSlots);
@@ -660,109 +655,30 @@ function FacilityBookingsPage() {
                 </div>
               )}
             </div>
-
-            <div className="bg-secondary/30 rounded-2xl border border-border/60 p-5 space-y-4">
-              <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Invoice</h4>
-              
-              <div className="space-y-2 min-h-[100px] max-h-[250px] overflow-y-auto pr-2">
-                {selectedSlots.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">No slots selected</p>
-                ) : (
-                  selectedSlots.map((slot) => (
-                    <div key={slot} className="flex justify-between text-sm items-center py-1">
-                      <span className="text-foreground font-medium">
-                        {facility.name} ({formatSlot(slot)} - {formatSlot(slot + durationMinutes)})
-                      </span>
-                      <span className="text-muted-foreground font-semibold">
-                        {formatCurrency(slotPrice, currency)}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="pt-4 border-t border-border/60 space-y-2">
-                {daysInRange.length > 1 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground font-medium">Days</span>
-                    <span className="font-semibold text-foreground">× {daysInRange.length}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground font-medium">Sub Total</span>
-                  <span className="font-semibold text-foreground">{formatCurrency(subTotal, currency)}</span>
-                </div>
-                <div className="flex justify-between items-center pt-2">
-                  <span className="font-bold text-lg">Total</span>
-                  <span className="font-black text-xl text-primary">{formatCurrency(totalAmount, currency)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Amount Paid</Label>
-              <Input
-                className="h-12 bg-secondary/30 rounded-xl font-bold"
-                placeholder={totalAmount.toString()}
-                value={amountPaid}
-                onChange={(e) => setAmountPaid(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Payment Status</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={paymentStatus === "Paid" ? "default" : "outline"}
-                    className={cn("flex-1 h-10 rounded-xl", paymentStatus === "Paid" && "bg-green-500 hover:bg-green-600 text-white")}
-                    onClick={() => setPaymentStatus("Paid")}
-                  >
-                    Paid
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={paymentStatus === "Unpaid" ? "default" : "outline"}
-                    className={cn("flex-1 h-10 rounded-xl", paymentStatus === "Unpaid" && "bg-orange-500 hover:bg-orange-600 text-white")}
-                    onClick={() => setPaymentStatus("Unpaid")}
-                  >
-                    Unpaid
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Payment Mode</Label>
-                <div className="flex gap-2">
-                  {["Cash", "MoMo", "Card"].map((mode) => (
-                    <Button
-                      key={mode}
-                      type="button"
-                      variant={paymentMethod === mode ? "default" : "outline"}
-                      className="flex-1 h-10 rounded-xl px-0 text-xs"
-                      onClick={() => setPaymentMethod(mode)}
-                    >
-                      {mode}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             <div className="flex flex-col gap-3 mt-4">
               <Button
+                type="button"
                 className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)]"
                 style={{ background: "var(--gradient-primary)" }}
-                onClick={handleCreateBooking}
-                disabled={createBookingMutation.isPending || selectedSlots.length === 0}
+                onClick={() => {
+                  if (!date?.from || selectedSlots.length === 0) {
+                    toast.error("Please select a date and at least one time slot.");
+                    return;
+                  }
+                  if (!customerName) {
+                    toast.error("Customer name is required.");
+                    return;
+                  }
+                  if ((isSharedSlot || isSharedAccess) && quantity > minAvailableCapacityAcrossSelected) {
+                    toast.error(`Quantity exceeds available capacity (${minAvailableCapacityAcrossSelected} available).`);
+                    return;
+                  }
+                  setIsCheckoutModalOpen(true);
+                }}
               >
-                {createBookingMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...
-                  </>
-                ) : (
-                  "Create Booking"
-                )}
+                Review Booking
               </Button>
               <Button
                 variant="outline"
@@ -773,9 +689,29 @@ function FacilityBookingsPage() {
                 Block Selected Slots
               </Button>
             </div>
+            
+            <AdminBookingCheckoutModal
+              isOpen={isCheckoutModalOpen}
+              onOpenChange={setIsCheckoutModalOpen}
+              facility={facility}
+              selectedSlots={selectedSlots}
+              durationMinutes={durationMinutes}
+              slotPrice={slotPrice}
+              currency={currency}
+              daysInRange={daysInRange}
+              subTotal={subTotal}
+              totalAmount={totalAmount}
+              amountPaid={amountPaid}
+              setAmountPaid={setAmountPaid}
+              paymentStatus={paymentStatus}
+              setPaymentStatus={setPaymentStatus}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              handleCreateBooking={handleCreateBooking}
+              isPending={createBookingMutation.isPending}
+            />
           </div>
         </div>
       </div>
-    </div>
   );
 }
