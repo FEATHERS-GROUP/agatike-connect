@@ -63,9 +63,11 @@ function VenueFacilitiesPage() {
   const openAddFacility = () => {
     const newFac = {
       id: `fac-${Date.now()}`,
-      name: "New Sub-Venue",
+      name: "New Space or Activity",
+      category: "space",
       type: "exclusive_slot",
-      pricing: { hourly_rate: "", daily_rate: "" },
+      pricing: { hourly_rate: "", daily_rate: "", per_session_rate: "" },
+      duration_minutes: "60",
       max_capacity: "",
       requires_approval: false,
       is_under_maintenance: false,
@@ -137,9 +139,9 @@ function VenueFacilitiesPage() {
     <div className="max-w-6xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-6 rounded-3xl border border-border/60 shadow-sm">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Facilities & Sub-Venues</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Spaces & Activities</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Manage your distinct bookable spaces (e.g. Pitches, VIP Rooms, Swimming Pools).
+            Manage your distinct bookable spaces (e.g. Pitches, VIP Rooms) and activities (e.g. Zipline, Paintball).
           </p>
         </div>
         <Button
@@ -147,7 +149,7 @@ function VenueFacilitiesPage() {
           className="rounded-full gap-2 shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}
         >
-          <Plus className="h-4 w-4" /> Add Sub-Venue
+          <Plus className="h-4 w-4" /> Add Space/Activity
         </Button>
       </div>
 
@@ -155,86 +157,100 @@ function VenueFacilitiesPage() {
         {facilities.map((facility, idx) => (
           <div
             key={facility.id || idx}
-            className="flex flex-col bg-card shadow-sm rounded-3xl border border-border/60 overflow-hidden hover:shadow-md transition-shadow relative"
+            className="flex flex-col bg-card shadow-sm rounded-3xl border border-border/60 overflow-hidden hover:shadow-xl transition-all duration-300 relative group"
           >
             {facility.is_under_maintenance && (
-              <div className="absolute top-2 left-2 z-10 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wider">
+              <div className="absolute top-3 left-3 z-20 bg-red-500/90 backdrop-blur-sm text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider shadow-lg">
                 Maintenance
               </div>
             )}
-            <div className="h-40 w-full bg-secondary/30 relative">
+            <div className="absolute top-3 right-3 z-20 flex gap-2">
+              <span className="bg-background/90 backdrop-blur-md text-foreground text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm border border-border/50">
+                {facility.category || "Space"}
+              </span>
+            </div>
+            
+            <div className="h-48 w-full bg-secondary/30 relative overflow-hidden">
               {facility.image_url ? (
                 <img
                   src={facility.image_url}
                   alt={facility.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  <span className="text-sm">No Image</span>
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-gradient-to-br from-secondary/50 to-secondary/10">
+                  <span className="text-sm font-medium">No Image</span>
                 </div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 z-10" />
             </div>
 
-            <div className="p-5 flex-1 flex flex-col">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg leading-tight truncate pr-2">
+            <div className="p-5 flex-1 flex flex-col relative z-20">
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute -top-11 right-5 h-12 w-12 rounded-full shadow-lg border border-border/50 bg-background hover:bg-secondary text-primary transition-transform hover:scale-110"
+                onClick={() => openEditFacility(idx)}
+              >
+                <Edit2 className="h-5 w-5" />
+              </Button>
+
+              <div className="mb-4 pr-12">
+                <h3 className="font-bold text-xl leading-tight text-foreground mb-1">
                   {facility.name || "Unnamed"}
                 </h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
-                  onClick={() => openEditFacility(idx)}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  {facility.type === "exclusive_slot" ? "Exclusive Slot" : "Shared Access"}
+                </p>
               </div>
 
-              <div className="text-sm text-muted-foreground mb-4 space-y-1">
-                <p>
-                  Type:{" "}
-                  <span className="font-medium text-foreground">
-                    {facility.type === "exclusive_slot" ? "Exclusive Slot" : "Shared Access"}
-                  </span>
-                </p>
+              <div className="grid grid-cols-2 gap-3 mb-6 bg-secondary/20 p-3 rounded-2xl border border-border/40">
+                {facility.pricing?.per_session_rate && (
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Session</span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {activeWorkspace?.currency || "RWF"} {facility.pricing.per_session_rate}
+                    </span>
+                  </div>
+                )}
                 {facility.pricing?.hourly_rate && (
-                  <p>
-                    Hourly:{" "}
-                    <span className="font-medium text-foreground">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Hourly</span>
+                    <span className="text-sm font-semibold text-foreground">
                       {activeWorkspace?.currency || "RWF"} {facility.pricing.hourly_rate}
                     </span>
-                  </p>
+                  </div>
                 )}
                 {facility.pricing?.daily_rate && (
-                  <p>
-                    Daily:{" "}
-                    <span className="font-medium text-foreground">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Daily</span>
+                    <span className="text-sm font-semibold text-foreground">
                       {activeWorkspace?.currency || "RWF"} {facility.pricing.daily_rate}
                     </span>
-                  </p>
+                  </div>
                 )}
                 {facility.type === "shared_access" && facility.max_capacity && (
-                  <p>
-                    Capacity:{" "}
-                    <span className="font-medium text-foreground">{facility.max_capacity}</span>
-                  </p>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Capacity</span>
+                    <span className="text-sm font-semibold text-foreground">{facility.max_capacity}</span>
+                  </div>
                 )}
               </div>
 
-              <div className="mt-auto flex gap-2 pt-4 border-t border-border/50">
+              <div className="mt-auto flex gap-3 pt-4 border-t border-border/40">
                 <Link
                   to="/dashboard/$workspaceSlug/venues/$venueId/facilities/$facilityId/bookings"
                   params={{ workspaceSlug, venueId, facilityId: facility.id }}
                   className="flex-1"
                 >
-                  <Button variant="outline" className="w-full gap-2 rounded-xl">
+                  <Button variant="default" className="w-full gap-2 rounded-xl shadow-md transition-transform hover:translate-y-[-2px]">
                     <CalendarDays className="h-4 w-4" /> Bookings
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
-                  className="rounded-xl px-3 text-red-500 hover:bg-red-500/10 hover:text-red-600 border-border/60"
+                  className="rounded-xl px-4 text-red-500 hover:bg-red-500 hover:text-white border-red-500/20 hover:border-red-500 transition-all shadow-sm"
                   onClick={() => removeFacility(idx)}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -246,9 +262,9 @@ function VenueFacilitiesPage() {
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={(open) => !open && handleSheetClose()}>
-        <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+        <SheetContent className="w-[400px] sm:w-[900px] sm:max-w-none overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editingIndex !== null ? "Edit Sub-Venue" : "Add Sub-Venue"}</SheetTitle>
+            <SheetTitle>{editingIndex !== null ? "Edit Space/Activity" : "Add Space/Activity"}</SheetTitle>
           </SheetHeader>
 
           {activeFacility && (
@@ -263,34 +279,60 @@ function VenueFacilitiesPage() {
                     placeholder="e.g. Football Pitch A"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-base">Booking Type</Label>
-                  <select
-                    className="w-full h-12 rounded-xl bg-secondary/30 border border-input px-4 text-base"
-                    value={activeFacility.type}
-                    onChange={(e) => updateActiveFacility("type", e.target.value)}
-                  >
-                    <option value="exclusive_slot">Exclusive Slot (Only 1 group per time)</option>
-                    <option value="shared_access">
-                      Shared Access (Passes per day up to capacity)
-                    </option>
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-base">Category</Label>
+                    <select
+                      className="w-full h-12 rounded-xl bg-secondary/30 border border-input px-4 text-base"
+                      value={activeFacility.category || "space"}
+                      onChange={(e) => updateActiveFacility("category", e.target.value)}
+                    >
+                      <option value="space">Space (e.g. Pitch, Room)</option>
+                      <option value="activity">Activity (e.g. Zipline, Game)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-base">Booking Type</Label>
+                    <select
+                      className="w-full h-12 rounded-xl bg-secondary/30 border border-input px-4 text-base"
+                      value={activeFacility.type}
+                      onChange={(e) => updateActiveFacility("type", e.target.value)}
+                    >
+                      <option value="exclusive_slot">Exclusive Slot (Only 1 group per time)</option>
+                      <option value="shared_access">
+                        Shared Access (Passes per day up to capacity)
+                      </option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-4 pt-4 border-t border-border/50">
                 <h4 className="font-semibold text-lg">Pricing & Capacity</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-base">Hourly Rate</Label>
-                    <Input
-                      type="number"
-                      className="h-12 bg-secondary/30 rounded-xl"
-                      value={activeFacility.pricing?.hourly_rate || ""}
-                      onChange={(e) => updateActiveFacilityPricing("hourly_rate", e.target.value)}
-                      placeholder="e.g. 15000"
-                    />
-                  </div>
+                  {activeFacility.category === "activity" ? (
+                    <div className="space-y-2">
+                      <Label className="text-base">Per Session Rate</Label>
+                      <Input
+                        type="number"
+                        className="h-12 bg-secondary/30 rounded-xl"
+                        value={activeFacility.pricing?.per_session_rate || ""}
+                        onChange={(e) => updateActiveFacilityPricing("per_session_rate", e.target.value)}
+                        placeholder="e.g. 5000"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label className="text-base">Hourly Rate</Label>
+                      <Input
+                        type="number"
+                        className="h-12 bg-secondary/30 rounded-xl"
+                        value={activeFacility.pricing?.hourly_rate || ""}
+                        onChange={(e) => updateActiveFacilityPricing("hourly_rate", e.target.value)}
+                        placeholder="e.g. 15000"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label className="text-base">Daily Rate</Label>
                     <Input
@@ -302,18 +344,37 @@ function VenueFacilitiesPage() {
                     />
                   </div>
                 </div>
-                {activeFacility.type === "shared_access" && (
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-base">Max Capacity</Label>
-                    <Input
-                      type="number"
-                      className="h-12 bg-secondary/30 rounded-xl"
-                      value={activeFacility.max_capacity}
-                      onChange={(e) => updateActiveFacility("max_capacity", e.target.value)}
-                      placeholder="e.g. 100 people"
-                    />
+                    <Label className="text-base">Session/Slot Duration</Label>
+                    <select
+                      className="w-full h-12 rounded-xl bg-secondary/30 border border-input px-4 text-base"
+                      value={activeFacility.duration_minutes || "60"}
+                      onChange={(e) => updateActiveFacility("duration_minutes", e.target.value)}
+                    >
+                      <option value="15">15 Minutes</option>
+                      <option value="30">30 Minutes</option>
+                      <option value="45">45 Minutes</option>
+                      <option value="60">1 Hour (60 Mins)</option>
+                      <option value="90">1.5 Hours (90 Mins)</option>
+                      <option value="120">2 Hours (120 Mins)</option>
+                      <option value="180">3 Hours (180 Mins)</option>
+                      <option value="240">4 Hours (240 Mins)</option>
+                    </select>
                   </div>
-                )}
+                  {activeFacility.type === "shared_access" && (
+                    <div className="space-y-2">
+                      <Label className="text-base">Max Capacity</Label>
+                      <Input
+                        type="number"
+                        className="h-12 bg-secondary/30 rounded-xl"
+                        value={activeFacility.max_capacity}
+                        onChange={(e) => updateActiveFacility("max_capacity", e.target.value)}
+                        placeholder="e.g. 100 people"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-4 pt-4 border-t border-border/50">

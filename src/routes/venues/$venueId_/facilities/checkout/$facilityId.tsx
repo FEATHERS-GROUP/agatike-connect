@@ -61,8 +61,6 @@ export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$fac
   component: FacilityCheckoutPage,
 });
 
-const SLOTS = Array.from({ length: 18 }, (_, i) => i + 6); // 06:00 to 23:00
-
 function FacilityCheckoutPage() {
   const { session } = Route.useRouteContext();
   const venue = Route.useLoaderData();
@@ -74,6 +72,25 @@ function FacilityCheckoutPage() {
 
   const facility = venue?.facilities_data?.find((f: any) => f.id === facilityId);
   const isSharedAccess = facility?.type === "shared_access";
+  const isActivity = facility?.category === "activity";
+  const durationMinutes = Number(facility?.duration_minutes) || 60;
+  const perSessionRate = Number(facility?.pricing?.per_session_rate) || 0;
+
+  const DYNAMIC_SLOTS = useMemo(() => {
+    const slots = [];
+    const startMins = 6 * 60; // 06:00
+    const endMins = 23 * 60; // 23:00
+    for (let m = startMins; m < endMins; m += durationMinutes) {
+      slots.push(m);
+    }
+    return slots;
+  }, [durationMinutes]);
+
+  const formatSlot = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  };
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -115,21 +132,38 @@ function FacilityCheckoutPage() {
     return bookings.filter((b: any) => b.facility_id === facilityId && b.status !== "Cancelled");
   }, [bookings, facilityId]);
 
-  const isSlotBooked = (dateToCheck: Date, startHour: number) => {
+  const isSlotBooked = (dateToCheck: Date, slotStartMins: number) => {
     return facilityBookings.some((b: any) => {
-      const bStart = new Date(b.start_time);
-      const bEnd = new Date(b.end_time);
+      const bStart = new Date(b.start_time).getTime();
+      const bEnd = new Date(b.end_time).getTime();
+      
       const slotStart = new Date(dateToCheck);
-      slotStart.setHours(startHour, 0, 0, 0);
+      slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
+      
       const slotEnd = new Date(dateToCheck);
-      slotEnd.setHours(startHour + 1, 0, 0, 0);
+      const endMins = slotStartMins + durationMinutes;
+      slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
 
-      return bStart < slotEnd && slotStart < bEnd;
+      return bStart < slotEnd.getTime() && slotStart.getTime() < bEnd;
     });
   };
 
+  const getBookedPassesForDate = (dateToCheck: Date) => {
+    return facilityBookings.filter((b: any) => {
+      const bDate = new Date(b.start_time);
+      return bDate.getDate() === dateToCheck.getDate() &&
+             bDate.getMonth() === dateToCheck.getMonth() &&
+             bDate.getFullYear() === dateToCheck.getFullYear();
+    }).reduce((sum: number, b: any) => sum + (b.tickets_data?.["Facility Access"] || 1), 0);
+  };
+
   const isDateFullyBooked = (dateToCheck: Date) => {
-    return SLOTS.every((hour) => isSlotBooked(dateToCheck, hour));
+    if (isSharedAccess) {
+      const maxCap = Number(facility?.max_capacity);
+      if (isNaN(maxCap) || maxCap === -1) return false;
+      return getBookedPassesForDate(dateToCheck) >= maxCap;
+    }
+    return DYNAMIC_SLOTS.every((slot) => isSlotBooked(dateToCheck, slot));
   };
 
   const daysInRange = useMemo(() => {
@@ -147,9 +181,31 @@ function FacilityCheckoutPage() {
     return days;
   }, [date]);
 
-  const isSlotBookedAcrossRange = (hour: number) => {
-    return daysInRange.some((d) => isSlotBooked(d, hour));
+  const isSlotBookedAcrossRange = (slotMins: number) => {
+    return daysInRange.some((d) => isSlotBooked(d, slotMins));
   };
+
+  const availableCapacity = useMemo(() => {
+    if (!isSharedAccess) return 1;
+    const maxCap = Number(facility?.max_capacity);
+    if (isNaN(maxCap) || maxCap === -1) return Infinity; // Unlimited
+    
+    if (daysInRange.length === 0) return maxCap;
+
+    let maxBooked = 0;
+    for (const d of daysInRange) {
+      const booked = getBookedPassesForDate(d);
+      if (booked > maxBooked) maxBooked = booked;
+    }
+    
+    return Math.max(0, maxCap - maxBooked);
+  }, [daysInRange, facilityBookings, facility?.max_capacity, isSharedAccess]);
+
+  useEffect(() => {
+    if (isSharedAccess && quantity > availableCapacity && availableCapacity > 0) {
+      setQuantity(availableCapacity);
+    }
+  }, [availableCapacity, isSharedAccess, quantity]);
 
   const totalAmount = useMemo(() => {
     if (daysInRange.length === 0) return 0;
@@ -157,8 +213,13 @@ function FacilityCheckoutPage() {
       return daysInRange.length * quantity * dailyRate;
     }
     if (selectedSlots.length === 0) return 0;
-    return daysInRange.length * selectedSlots.length * hourlyRate;
-  }, [daysInRange.length, selectedSlots.length, hourlyRate, isSharedAccess, quantity, dailyRate]);
+    
+    if (isActivity && perSessionRate > 0) {
+      return daysInRange.length * selectedSlots.length * perSessionRate;
+    }
+    
+    return daysInRange.length * selectedSlots.length * hourlyRate * (durationMinutes / 60);
+  }, [daysInRange.length, selectedSlots.length, hourlyRate, isSharedAccess, quantity, dailyRate, isActivity, perSessionRate, durationMinutes]);
 
   const bookingMutation = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -193,8 +254,8 @@ function FacilityCheckoutPage() {
         customer_phone: phone,
         status: isPawaPay ? "Pending" : bookingStatus,
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
-        amount: isSharedAccess ? quantity * dailyRate : selectedSlots.length * hourlyRate,
-        total_amount: isSharedAccess ? quantity * dailyRate : selectedSlots.length * hourlyRate,
+        amount: isSharedAccess ? quantity * dailyRate : (isActivity && perSessionRate > 0 ? selectedSlots.length * perSessionRate : selectedSlots.length * hourlyRate * (durationMinutes / 60)),
+        total_amount: isSharedAccess ? quantity * dailyRate : (isActivity && perSessionRate > 0 ? selectedSlots.length * perSessionRate : selectedSlots.length * hourlyRate * (durationMinutes / 60)),
         venue_name: venue.name,
         venue_currency: currency,
         booking_type: "facility",
@@ -207,9 +268,10 @@ function FacilityCheckoutPage() {
 
       const payloads = daysInRange.map((d) => {
         const startDateTime = new Date(d);
-        startDateTime.setHours(isSharedAccess ? 6 : minSlot, 0, 0, 0);
+        startDateTime.setHours(isSharedAccess ? 6 : Math.floor(minSlot / 60), isSharedAccess ? 0 : minSlot % 60, 0, 0);
         const endDateTime = new Date(d);
-        endDateTime.setHours(isSharedAccess ? 23 : maxSlot + 1, 0, 0, 0);
+        const endMins = maxSlot + durationMinutes;
+        endDateTime.setHours(isSharedAccess ? 23 : Math.floor(endMins / 60), isSharedAccess ? 0 : endMins % 60, 0, 0);
 
         return {
           ...basePayload,
@@ -261,7 +323,7 @@ function FacilityCheckoutPage() {
             : "";
           const minSlot = Math.min(...selectedSlots);
           const maxSlot = Math.max(...selectedSlots);
-          const timeRangeStr = `${minSlot}:00 - ${maxSlot + 1}:00`;
+          const timeRangeStr = `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
 
           await sendVenueBookingEmail({
             data: {
@@ -321,7 +383,7 @@ function FacilityCheckoutPage() {
               : "";
             const minSlot = Math.min(...selectedSlots);
             const maxSlot = Math.max(...selectedSlots);
-            const timeRangeStr = `${minSlot}:00 - ${maxSlot + 1}:00`;
+            const timeRangeStr = `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
             await sendVenueBookingEmail({
               data: {
                 to: email,
@@ -452,22 +514,22 @@ function FacilityCheckoutPage() {
     }
   }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name]);
 
-  const handleSlotClick = (hour: number) => {
-    if (selectedSlots.includes(hour)) {
-      const newSlots = selectedSlots.filter((s) => s !== hour).sort((a, b) => a - b);
-      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + 1);
+  const handleSlotClick = (slotMins: number) => {
+    if (selectedSlots.includes(slotMins)) {
+      const newSlots = selectedSlots.filter((s) => s !== slotMins).sort((a, b) => a - b);
+      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + durationMinutes);
       if (isContiguous) {
         setSelectedSlots(newSlots);
       } else {
-        setSelectedSlots([hour]);
+        setSelectedSlots([slotMins]);
       }
     } else {
-      const newSlots = [...selectedSlots, hour].sort((a, b) => a - b);
-      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + 1);
+      const newSlots = [...selectedSlots, slotMins].sort((a, b) => a - b);
+      const isContiguous = newSlots.every((s, i) => i === 0 || s === newSlots[i - 1] + durationMinutes);
       if (isContiguous) {
         setSelectedSlots(newSlots);
       } else {
-        setSelectedSlots([hour]);
+        setSelectedSlots([slotMins]);
       }
     }
   };
@@ -572,10 +634,7 @@ function FacilityCheckoutPage() {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Time (Daily)</span>
             <span className="font-medium text-right">
-              {`${Math.min(...selectedSlots)
-                .toString()
-                .padStart(2, "0")}:00`}{" "}
-              - {`${(Math.max(...selectedSlots) + 1).toString().padStart(2, "0")}:00`}
+              {formatSlot(Math.min(...selectedSlots))} - {formatSlot(Math.max(...selectedSlots) + durationMinutes)}
             </span>
           </div>
         )}
@@ -690,32 +749,41 @@ function FacilityCheckoutPage() {
                           type="button"
                           variant="outline"
                           size="icon"
-                          onClick={() =>
-                            setQuantity((q) => Math.min(facility.max_capacity || 100, q + 1))
-                          }
+                          disabled={quantity >= availableCapacity}
+                          onClick={() => setQuantity((q) => Math.min(availableCapacity, q + 1))}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
+                        {availableCapacity !== Infinity && availableCapacity > 0 && (
+                          <span className="text-sm font-medium text-orange-500">
+                            Only {availableCapacity} left for selected date(s)
+                          </span>
+                        )}
+                        {availableCapacity === 0 && (
+                          <span className="text-sm font-bold text-red-500">
+                            Sold Out for selected date(s)
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
 
                   {date?.from && !isSharedAccess && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                      <Label>Available Time Slots (1 Hour)</Label>
+                      <Label>Available Time Slots</Label>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Select one or more continuous hours. These hours will be booked for{" "}
+                        Select one or more continuous slots. These slots will be booked for{" "}
                         <strong>every day</strong> in your selected range.
                       </p>
                       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
-                        {SLOTS.map((hour) => {
-                          const booked = isSlotBookedAcrossRange(hour);
-                          const isSelected = selectedSlots.includes(hour);
-                          const timeString = `${hour.toString().padStart(2, "0")}:00`;
+                        {DYNAMIC_SLOTS.map((slotMins) => {
+                          const booked = isSlotBookedAcrossRange(slotMins);
+                          const isSelected = selectedSlots.includes(slotMins);
+                          const timeString = formatSlot(slotMins);
 
                           return (
                             <Button
-                              key={hour}
+                              key={slotMins}
                               type="button"
                               variant={isSelected ? "default" : "outline"}
                               className={cn(
@@ -725,7 +793,7 @@ function FacilityCheckoutPage() {
                                   "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30",
                               )}
                               disabled={booked}
-                              onClick={() => handleSlotClick(hour)}
+                              onClick={() => handleSlotClick(slotMins)}
                             >
                               {timeString}
                             </Button>
@@ -787,7 +855,7 @@ function FacilityCheckoutPage() {
                 bookingMutation.isPending ||
                 !date?.from ||
                 (!isSharedAccess && selectedSlots.length === 0) ||
-                (isSharedAccess && quantity < 1)
+                (isSharedAccess && (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
               }
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "var(--gradient-primary)" }}
@@ -842,7 +910,7 @@ function FacilityCheckoutPage() {
               bookingMutation.isPending ||
               !date?.from ||
               (!isSharedAccess && selectedSlots.length === 0) ||
-              (isSharedAccess && quantity < 1)
+              (isSharedAccess && (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
             }
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}

@@ -58,7 +58,7 @@ export function VenueSidebar() {
       icon: Users,
     },
     {
-      label: "Sub-Venues",
+      label: "Spaces & Activities",
       href: `/dashboard/${workspaceSlug}/venues/${venueId}/facilities`,
       icon: DoorOpen,
     },
