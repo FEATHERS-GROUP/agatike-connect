@@ -141,7 +141,8 @@ function VenueFacilitiesPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Spaces & Activities</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Manage your distinct bookable spaces (e.g. Pitches, VIP Rooms) and activities (e.g. Zipline, Paintball).
+            Manage your distinct bookable spaces (e.g. Pitches, VIP Rooms) and activities (e.g.
+            Zipline, Paintball).
           </p>
         </div>
         <Button
@@ -169,7 +170,7 @@ function VenueFacilitiesPage() {
                 {facility.category || "Space"}
               </span>
             </div>
-            
+
             <div className="h-48 w-full bg-secondary/30 relative overflow-hidden">
               {facility.image_url ? (
                 <img
@@ -201,14 +202,20 @@ function VenueFacilitiesPage() {
                 </h3>
                 <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  {facility.type === "exclusive_slot" ? "Exclusive Slot" : facility.type === "shared_slot" ? "Shared Session" : "Shared Access"}
+                  {facility.type === "exclusive_slot"
+                    ? "Exclusive Slot"
+                    : facility.type === "shared_slot"
+                      ? "Shared Session"
+                      : "Shared Access"}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-6 bg-secondary/20 p-3 rounded-2xl border border-border/40">
                 {facility.pricing?.per_session_rate && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Session</span>
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">
+                      Session
+                    </span>
                     <span className="text-sm font-semibold text-foreground">
                       {activeWorkspace?.currency || "RWF"} {facility.pricing.per_session_rate}
                     </span>
@@ -216,7 +223,9 @@ function VenueFacilitiesPage() {
                 )}
                 {facility.pricing?.hourly_rate && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Hourly</span>
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">
+                      Hourly
+                    </span>
                     <span className="text-sm font-semibold text-foreground">
                       {activeWorkspace?.currency || "RWF"} {facility.pricing.hourly_rate}
                     </span>
@@ -224,18 +233,25 @@ function VenueFacilitiesPage() {
                 )}
                 {facility.pricing?.daily_rate && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Daily</span>
+                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">
+                      Daily
+                    </span>
                     <span className="text-sm font-semibold text-foreground">
                       {activeWorkspace?.currency || "RWF"} {facility.pricing.daily_rate}
                     </span>
                   </div>
                 )}
-                {(facility.type === "shared_access" || facility.type === "shared_slot") && facility.max_capacity && (
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">Capacity</span>
-                    <span className="text-sm font-semibold text-foreground">{facility.max_capacity}</span>
-                  </div>
-                )}
+                {(facility.type === "shared_access" || facility.type === "shared_slot") &&
+                  facility.max_capacity && (
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-0.5">
+                        Capacity
+                      </span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {facility.max_capacity}
+                      </span>
+                    </div>
+                  )}
               </div>
 
               <div className="mt-auto flex gap-3 pt-4 border-t border-border/40">
@@ -244,7 +260,10 @@ function VenueFacilitiesPage() {
                   params={{ workspaceSlug, venueId, facilityId: facility.id }}
                   className="flex-1"
                 >
-                  <Button variant="default" className="w-full gap-2 rounded-xl shadow-md transition-transform hover:translate-y-[-2px]">
+                  <Button
+                    variant="default"
+                    className="w-full gap-2 rounded-xl shadow-md transition-transform hover:translate-y-[-2px]"
+                  >
                     <CalendarDays className="h-4 w-4" /> Bookings
                   </Button>
                 </Link>
@@ -264,7 +283,9 @@ function VenueFacilitiesPage() {
       <Sheet open={isSheetOpen} onOpenChange={(open) => !open && handleSheetClose()}>
         <SheetContent className="w-[400px] sm:w-[900px] sm:max-w-none overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>{editingIndex !== null ? "Edit Space/Activity" : "Add Space/Activity"}</SheetTitle>
+            <SheetTitle>
+              {editingIndex !== null ? "Edit Space/Activity" : "Add Space/Activity"}
+            </SheetTitle>
           </SheetHeader>
 
           {activeFacility && (
@@ -320,7 +341,9 @@ function VenueFacilitiesPage() {
                         type="number"
                         className="h-12 bg-secondary/30 rounded-xl"
                         value={activeFacility.pricing?.per_session_rate || ""}
-                        onChange={(e) => updateActiveFacilityPricing("per_session_rate", e.target.value)}
+                        onChange={(e) =>
+                          updateActiveFacilityPricing("per_session_rate", e.target.value)
+                        }
                         placeholder="e.g. 5000"
                       />
                     </div>
@@ -365,7 +388,8 @@ function VenueFacilitiesPage() {
                       <option value="240">4 Hours (240 Mins)</option>
                     </select>
                   </div>
-                  {(activeFacility.type === "shared_access" || activeFacility.type === "shared_slot") && (
+                  {(activeFacility.type === "shared_access" ||
+                    activeFacility.type === "shared_slot") && (
                     <div className="space-y-2">
                       <Label className="text-base">Max Capacity</Label>
                       <Input

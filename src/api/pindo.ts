@@ -1,5 +1,6 @@
 import { PindoSMS, SMSPayload } from "pindo-sms";
 import { COUNTRIES } from "@/lib/countries";
+import { createServerFn } from "@tanstack/react-start";
 
 const pindoToken = process.env.PINDO_API_TOKEN;
 
@@ -48,7 +49,7 @@ export const sendSMS = async (to: string, text: string, organizerId?: string) =>
   let phone = to;
   let countryName = "";
 
-  if (organizerId && (!phone || phone.trim() === "")) {
+  if (organizerId) {
     try {
       const { hasuraRequest } = await import("./graphql.server");
       const query = `
@@ -63,14 +64,14 @@ export const sendSMS = async (to: string, text: string, organizerId?: string) =>
         query,
         { id: organizerId },
       );
-      if (data?.organizers_by_pk?.phone) {
+      if ((!phone || phone.trim() === "") && data?.organizers_by_pk?.phone) {
         phone = data.organizers_by_pk.phone;
       }
       if (data?.organizers_by_pk?.country) {
         countryName = data.organizers_by_pk.country;
       }
     } catch (e) {
-      console.error("Failed to fetch organizer phone", e);
+      console.error("Failed to fetch organizer info", e);
     }
   }
 
@@ -93,3 +94,9 @@ export const sendSMS = async (to: string, text: string, organizerId?: string) =>
     return { error: error.message || "Unknown error" };
   }
 };
+
+export const sendSMSServer = createServerFn({ method: "POST" })
+  .validator((d: { to: string; text: string; organizerId?: string }) => d)
+  .handler(async (ctx) => {
+    return await sendSMS(ctx.data.to, ctx.data.text, ctx.data.organizerId);
+  });

@@ -136,7 +136,10 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
                         {facility.pricing?.per_session_rate && (
                           <p>
                             Session:{" "}
-                            {formatCurrency(facility.pricing.per_session_rate, venue.currency || "RWF")}
+                            {formatCurrency(
+                              facility.pricing.per_session_rate,
+                              venue.currency || "RWF",
+                            )}
                             {facility.duration_minutes && ` (${facility.duration_minutes} mins)`}
                           </p>
                         )}

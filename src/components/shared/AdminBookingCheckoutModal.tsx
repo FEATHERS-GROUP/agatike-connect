@@ -2,7 +2,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Loader2, ReceiptText, CreditCard } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
@@ -63,8 +69,10 @@ export function AdminBookingCheckoutModal({
 
         <div className="space-y-6 pt-2 max-h-[80vh] overflow-y-auto">
           <div className="bg-secondary/30 rounded-2xl border border-border/60 p-5 space-y-4">
-            <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Invoice</h4>
-            
+            <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+              Invoice
+            </h4>
+
             <div className="space-y-2 min-h-[100px] max-h-[250px] overflow-y-auto pr-2">
               {selectedSlots.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">No slots selected</p>
@@ -91,11 +99,15 @@ export function AdminBookingCheckoutModal({
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground font-medium">Sub Total</span>
-                <span className="font-semibold text-foreground">{formatCurrency(subTotal, currency)}</span>
+                <span className="font-semibold text-foreground">
+                  {formatCurrency(subTotal, currency)}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-2">
                 <span className="font-bold text-lg">Total</span>
-                <span className="font-black text-xl text-primary">{formatCurrency(totalAmount, currency)}</span>
+                <span className="font-black text-xl text-primary">
+                  {formatCurrency(totalAmount, currency)}
+                </span>
               </div>
             </div>
           </div>
@@ -105,7 +117,7 @@ export function AdminBookingCheckoutModal({
               <CreditCard className="w-4 h-4" />
               Payment Details
             </h4>
-            
+
             <div className="space-y-3">
               <Label>Amount Paid</Label>
               <Input
@@ -120,12 +132,26 @@ export function AdminBookingCheckoutModal({
               <div className="space-y-3">
                 <Label>Payment Status</Label>
                 <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-                  <SelectTrigger className={cn("h-12 bg-background rounded-xl font-semibold", paymentStatus === "Paid" ? "text-green-600 dark:text-green-400" : "text-destructive")}>
+                  <SelectTrigger
+                    className={cn(
+                      "h-12 bg-background rounded-xl font-semibold",
+                      paymentStatus === "Paid"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-destructive",
+                    )}
+                  >
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Paid" className="font-semibold text-green-600 dark:text-green-400">Paid</SelectItem>
-                    <SelectItem value="Unpaid" className="font-semibold text-destructive">Unpaid</SelectItem>
+                    <SelectItem
+                      value="Paid"
+                      className="font-semibold text-green-600 dark:text-green-400"
+                    >
+                      Paid
+                    </SelectItem>
+                    <SelectItem value="Unpaid" className="font-semibold text-destructive">
+                      Unpaid
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

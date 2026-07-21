@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { getVenueBookings, createVenueBooking } from "@/api/venue_bookings";
 import { sendVenueBookingEmail } from "@/api/email";
-import { sendSMS } from "@/api/pindo";
+import { sendSMSServer } from "@/api/pindo";
 import { ArrowLeft, Calendar as CalendarIcon, Loader2 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,7 @@ function FacilityBookingsPage() {
     from: startOfDay(new Date()),
     to: startOfDay(new Date()),
   });
-  
+
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerName, setCustomerName] = useState("");
@@ -97,37 +97,41 @@ function FacilityBookingsPage() {
     if (isSharedSlot) {
       const slotStart = new Date(dateToCheck);
       slotStart.setHours(Math.floor(slotStartMins / 60), slotStartMins % 60, 0, 0);
-      
+
       let hasCustomerBooking = false;
       let hasBlock = false;
 
-      const totalBooked = facilityBookings.filter((b: any) => {
-        const bStart = new Date(b.start_time).getTime();
-        const bEnd = new Date(b.end_time).getTime();
-        const slotEnd = new Date(dateToCheck);
-        const endMins = slotStartMins + durationMinutes;
-        slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
+      const totalBooked = facilityBookings
+        .filter((b: any) => {
+          const bStart = new Date(b.start_time).getTime();
+          const bEnd = new Date(b.end_time).getTime();
+          const slotEnd = new Date(dateToCheck);
+          const endMins = slotStartMins + durationMinutes;
+          slotEnd.setHours(Math.floor(endMins / 60), endMins % 60, 0, 0);
 
-        if (bStart < slotEnd.getTime() && slotStart.getTime() < bEnd) {
-          if (b.status === "Blocked" || (!b.facility_id && b.status === "Blocked")) {
-            hasBlock = true;
-          } else {
-            hasCustomerBooking = true;
+          if (bStart < slotEnd.getTime() && slotStart.getTime() < bEnd) {
+            if (b.status === "Blocked" || (!b.facility_id && b.status === "Blocked")) {
+              hasBlock = true;
+            } else {
+              hasCustomerBooking = true;
+            }
+            return true;
           }
-          return true;
-        }
-        return false;
-      }).reduce((sum: number, b: any) => {
-        if (!b.facility_id && b.status === "Blocked") return Infinity;
-        return sum + (b.tickets_data?.["Facility Access"] || 1);
-      }, 0);
+          return false;
+        })
+        .reduce((sum: number, b: any) => {
+          if (!b.facility_id && b.status === "Blocked") return Infinity;
+          return sum + (b.tickets_data?.["Facility Access"] || 1);
+        }, 0);
 
       const maxCap = Number(facility?.max_capacity);
-      if (isNaN(maxCap) || maxCap === -1) return { status: "available", bookedCount: totalBooked, maxCapacity: Infinity };
-      
+      if (isNaN(maxCap) || maxCap === -1)
+        return { status: "available", bookedCount: totalBooked, maxCapacity: Infinity };
+
       if (totalBooked + 1 > maxCap) {
-         if (hasCustomerBooking && !hasBlock) return { status: "booked", bookedCount: totalBooked, maxCapacity: maxCap };
-         return { status: "blocked", bookedCount: totalBooked, maxCapacity: maxCap };
+        if (hasCustomerBooking && !hasBlock)
+          return { status: "booked", bookedCount: totalBooked, maxCapacity: maxCap };
+        return { status: "blocked", bookedCount: totalBooked, maxCapacity: maxCap };
       }
       return { status: "available", bookedCount: totalBooked, maxCapacity: maxCap };
     }
@@ -144,7 +148,8 @@ function FacilityBookingsPage() {
     });
 
     if (!booking) return { status: "available", bookedCount: 0, maxCapacity: 1 };
-    if (booking.status === "Blocked" || (!booking.facility_id && booking.status === "Blocked")) return { status: "blocked", bookedCount: 1, maxCapacity: 1 };
+    if (booking.status === "Blocked" || (!booking.facility_id && booking.status === "Blocked"))
+      return { status: "blocked", bookedCount: 1, maxCapacity: 1 };
     return { status: "booked", bookedCount: 1, maxCapacity: 1 };
   };
 
@@ -164,12 +169,16 @@ function FacilityBookingsPage() {
   }, [date]);
 
   const getBookedPassesForDate = (dateToCheck: Date) => {
-    return facilityBookings.filter((b: any) => {
-      const bDate = new Date(b.start_time);
-      return bDate.getDate() === dateToCheck.getDate() &&
-        bDate.getMonth() === dateToCheck.getMonth() &&
-        bDate.getFullYear() === dateToCheck.getFullYear();
-    }).reduce((sum: number, b: any) => sum + (b.tickets_data?.["Facility Access"] || 1), 0);
+    return facilityBookings
+      .filter((b: any) => {
+        const bDate = new Date(b.start_time);
+        return (
+          bDate.getDate() === dateToCheck.getDate() &&
+          bDate.getMonth() === dateToCheck.getMonth() &&
+          bDate.getFullYear() === dateToCheck.getFullYear()
+        );
+      })
+      .reduce((sum: number, b: any) => sum + (b.tickets_data?.["Facility Access"] || 1), 0);
   };
 
   const getSlotStatusAcrossRange = (slotMins: number) => {
@@ -181,7 +190,8 @@ function FacilityBookingsPage() {
       const res = getSlotStatus(d, slotMins);
       capacity = res.maxCapacity;
       if (res.bookedCount > maxBookedCount) maxBookedCount = res.bookedCount;
-      if (res.status === "blocked") return { status: "blocked", bookedCount: maxBookedCount, maxCapacity: capacity };
+      if (res.status === "blocked")
+        return { status: "blocked", bookedCount: maxBookedCount, maxCapacity: capacity };
       if (res.status === "booked") finalStatus = "booked";
     }
     return { status: finalStatus, bookedCount: maxBookedCount, maxCapacity: capacity };
@@ -189,16 +199,22 @@ function FacilityBookingsPage() {
 
   const bookingsInDateRange = useMemo(() => {
     if (daysInRange.length === 0) return [];
-    
-    const rangeStart = new Date(daysInRange[0]);
-    rangeStart.setHours(0,0,0,0);
-    const rangeEnd = new Date(daysInRange[daysInRange.length - 1]);
-    rangeEnd.setHours(23,59,59,999);
 
-    return facilityBookings.filter((b: any) => {
-       const bStart = new Date(b.start_time).getTime();
-       return bStart >= rangeStart.getTime() && bStart <= rangeEnd.getTime() && b.status !== "Blocked";
-    }).sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+    const rangeStart = new Date(daysInRange[0]);
+    rangeStart.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(daysInRange[daysInRange.length - 1]);
+    rangeEnd.setHours(23, 59, 59, 999);
+
+    return facilityBookings
+      .filter((b: any) => {
+        const bStart = new Date(b.start_time).getTime();
+        return (
+          bStart >= rangeStart.getTime() && bStart <= rangeEnd.getTime() && b.status !== "Blocked"
+        );
+      })
+      .sort(
+        (a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
+      );
   }, [facilityBookings, daysInRange]);
 
   const handleSlotClick = (slotMins: number) => {
@@ -216,9 +232,10 @@ function FacilityBookingsPage() {
     return { morning, afternoon, evening };
   }, [DYNAMIC_SLOTS]);
 
-  const slotPrice = (isSharedAccess || isSharedSlot) || facility?.category === "activity"
-    ? perSessionRate
-    : hourlyRate * (durationMinutes / 60);
+  const slotPrice =
+    isSharedAccess || isSharedSlot || facility?.category === "activity"
+      ? perSessionRate
+      : hourlyRate * (durationMinutes / 60);
 
   const minAvailableCapacityAcrossSelected = useMemo(() => {
     const maxCap = Number(facility?.max_capacity);
@@ -245,6 +262,12 @@ function FacilityBookingsPage() {
     return Math.max(0, minAvailable);
   }, [selectedSlots, daysInRange, facilityBookings, facility?.max_capacity, isSharedAccess]);
 
+  useEffect(() => {
+    if (quantity > minAvailableCapacityAcrossSelected) {
+      setQuantity(Math.max(1, minAvailableCapacityAcrossSelected));
+    }
+  }, [minAvailableCapacityAcrossSelected, quantity]);
+
   const subTotal = selectedSlots.length * slotPrice * daysInRange.length * quantity;
   // Let's assume no GST or taxes for now, but we can display the total directly
   const totalAmount = subTotal;
@@ -254,26 +277,29 @@ function FacilityBookingsPage() {
     onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
       toast.success("Booking created successfully!");
-      
-      const bRef = data?.bookingRef;
+
+      const bRef = data?.id ? data.id.split("-")[0].toUpperCase() : "REF";
       if (bRef && (customerPhone || customerEmail)) {
         const dateRangeStr = date?.from
           ? date.to && date.from.getTime() !== date.to.getTime()
             ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
             : format(date.from, "LLL dd, y")
           : "";
-        
+
         const minSlot = Math.min(...selectedSlots);
         const maxSlot = Math.max(...selectedSlots);
-        const timeRangeStr = (isSharedAccess || selectedSlots.length === 0)
-          ? "Full Day"
-          : `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
-        
+        const timeRangeStr =
+          isSharedAccess || selectedSlots.length === 0
+            ? "Full Day"
+            : `${formatSlot(minSlot)} - ${formatSlot(maxSlot + durationMinutes)}`;
+
         if (customerPhone) {
           const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${bRef}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
-          await sendSMS(customerPhone, msg).catch(console.error);
+          await sendSMSServer({
+            data: { to: customerPhone, text: msg, organizerId: venue?.workspace_id },
+          }).catch(console.error);
         }
-        
+
         if (customerEmail) {
           await sendVenueBookingEmail({
             data: {
@@ -311,7 +337,7 @@ function FacilityBookingsPage() {
 
     const minSlot = Math.min(...selectedSlots);
     const maxSlot = Math.max(...selectedSlots);
-    
+
     const startTime = new Date(date.from);
     startTime.setHours(Math.floor(minSlot / 60), minSlot % 60, 0, 0);
 
@@ -337,7 +363,7 @@ function FacilityBookingsPage() {
         amount: totalAmount,
         total_amount: totalAmount,
         booking_type: "facility",
-        tickets_data: (isSharedSlot || isSharedAccess) ? { "Facility Access": quantity } : null,
+        tickets_data: isSharedSlot || isSharedAccess ? { "Facility Access": quantity } : null,
       } as any,
     });
   };
@@ -350,7 +376,7 @@ function FacilityBookingsPage() {
 
     const minSlot = Math.min(...selectedSlots);
     const maxSlot = Math.max(...selectedSlots);
-    
+
     const startTime = new Date(date.from);
     startTime.setHours(Math.floor(minSlot / 60), minSlot % 60, 0, 0);
 
@@ -402,25 +428,31 @@ function FacilityBookingsPage() {
             let dynamicClass = "";
 
             if (status === "blocked") {
-              dynamicClass = "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
+              dynamicClass =
+                "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
             } else if (isSharedSlot && maxCapacity > 0 && maxCapacity !== Infinity) {
               const fillPercentage = Math.min(100, Math.round((bookedCount / maxCapacity) * 100));
-              
+
               if (fillPercentage >= 100) {
-                 dynamicClass = "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary hover:bg-primary";
+                dynamicClass =
+                  "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary hover:bg-primary";
               } else if (fillPercentage > 0) {
-                 if (fillPercentage < 25) {
-                   dynamicClass = "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
-                 } else if (fillPercentage < 50) {
-                   dynamicClass = "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
-                 } else if (fillPercentage < 75) {
-                   dynamicClass = "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
-                 } else {
-                   dynamicClass = "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
-                 }
+                if (fillPercentage < 25) {
+                  dynamicClass = "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
+                } else if (fillPercentage < 50) {
+                  dynamicClass =
+                    "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
+                } else if (fillPercentage < 75) {
+                  dynamicClass =
+                    "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
+                } else {
+                  dynamicClass =
+                    "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
+                }
               }
             } else if (status === "booked") {
-              dynamicClass = "opacity-80 cursor-not-allowed bg-primary/10 text-primary border-primary/30 hover:bg-primary/10";
+              dynamicClass =
+                "opacity-80 cursor-not-allowed bg-primary/10 text-primary border-primary/30 hover:bg-primary/10";
             }
 
             return (
@@ -429,14 +461,27 @@ function FacilityBookingsPage() {
                 type="button"
                 variant={isSelected ? "default" : "outline"}
                 className={cn(
-                  "h-12 rounded-xl transition-all font-medium text-sm border-border/60",
+                  "h-14 rounded-xl transition-all font-medium text-sm border-border/60 flex flex-col justify-center items-center gap-0.5",
                   dynamicClass,
-                  isSelected && "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
+                  isSelected &&
+                    "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
                 )}
                 disabled={isBooked}
                 onClick={() => handleSlotClick(slotMins)}
               >
-                {timeString}
+                <span>{timeString}</span>
+                {(isSharedSlot || isSharedAccess) &&
+                  maxCapacity > 0 &&
+                  maxCapacity !== Infinity && (
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold uppercase tracking-wider",
+                        isSelected ? "text-primary-foreground/80" : "opacity-60",
+                      )}
+                    >
+                      {Math.max(0, maxCapacity - bookedCount)} left
+                    </span>
+                  )}
               </Button>
             );
           })}
@@ -445,8 +490,13 @@ function FacilityBookingsPage() {
     );
   };
 
-  if (venueLoading || bookingsLoading)
-    return <div className="p-8 text-center text-muted-foreground">Loading facility data...</div>;
+  if (venueLoading && !facility)
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4" />
+        Loading facility data...
+      </div>
+    );
 
   if (!facility)
     return <div className="p-8 text-center text-red-500 font-semibold">Facility not found.</div>;
@@ -477,25 +527,38 @@ function FacilityBookingsPage() {
           {/* Quick Date Filters */}
           <div className="flex flex-wrap items-center gap-2 mb-8">
             <Button
-              variant={date?.from && date?.from?.getTime() === startOfDay(new Date()).getTime() && date?.to?.getTime() === startOfDay(new Date()).getTime() ? "default" : "outline"}
+              variant={
+                date?.from &&
+                date?.from?.getTime() === startOfDay(new Date()).getTime() &&
+                date?.to?.getTime() === startOfDay(new Date()).getTime()
+                  ? "default"
+                  : "outline"
+              }
               className="rounded-xl px-6 h-10"
               onClick={() => handleQuickDateSelect(0)}
             >
               Today
             </Button>
             <Button
-              variant={date?.from && date?.from?.getTime() === addDays(startOfDay(new Date()), 1).getTime() && date?.to?.getTime() === addDays(startOfDay(new Date()), 1).getTime() ? "default" : "outline"}
+              variant={
+                date?.from &&
+                date?.from?.getTime() === addDays(startOfDay(new Date()), 1).getTime() &&
+                date?.to?.getTime() === addDays(startOfDay(new Date()), 1).getTime()
+                  ? "default"
+                  : "outline"
+              }
               className="rounded-xl px-6 h-10"
               onClick={() => handleQuickDateSelect(1)}
             >
               Tomorrow
             </Button>
-            
+
             <div className="h-6 w-px bg-border mx-2" />
-            
-            {[2, 3, 4, 5].map(offset => {
+
+            {[2, 3, 4, 5].map((offset) => {
               const d = addDays(startOfDay(new Date()), offset);
-              const isSelected = date?.from?.getTime() === d.getTime() && date?.to?.getTime() === d.getTime();
+              const isSelected =
+                date?.from?.getTime() === d.getTime() && date?.to?.getTime() === d.getTime();
               return (
                 <Button
                   key={offset}
@@ -516,7 +579,9 @@ function FacilityBookingsPage() {
                   variant="outline"
                   className={cn(
                     "rounded-xl h-10 px-6",
-                    date?.from && date.from.getTime() !== date.to?.getTime() && "border-primary text-primary bg-primary/5"
+                    date?.from &&
+                      date.from.getTime() !== date.to?.getTime() &&
+                      "border-primary text-primary bg-primary/5",
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -567,18 +632,23 @@ function FacilityBookingsPage() {
                 </h4>
                 <div className="space-y-3">
                   {bookingsInDateRange.map((booking: any) => (
-                    <div key={booking.id} className="bg-secondary/20 border border-border/40 p-4 rounded-xl flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                    <div
+                      key={booking.id}
+                      className="bg-secondary/20 border border-border/40 p-4 rounded-xl flex flex-col sm:flex-row justify-between sm:items-center gap-3"
+                    >
                       <div>
                         <p className="font-bold text-sm">{booking.customer_name}</p>
                         <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                          {booking.customer_phone} {booking.customer_email ? `• ${booking.customer_email}` : ''}
+                          {booking.customer_phone}{" "}
+                          {booking.customer_email ? `• ${booking.customer_email}` : ""}
                         </p>
                       </div>
                       <div className="text-left sm:text-right">
                         <p className="font-semibold text-sm text-primary">
-                          {format(new Date(booking.start_time), "MMM dd, yyyy")} 
+                          {format(new Date(booking.start_time), "MMM dd, yyyy")}
                           <span className="text-muted-foreground ml-1 font-normal">
-                            {format(new Date(booking.start_time), "HH:mm")} - {format(new Date(booking.end_time), "HH:mm")}
+                            {format(new Date(booking.start_time), "HH:mm")} -{" "}
+                            {format(new Date(booking.end_time), "HH:mm")}
                           </span>
                         </p>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 mt-1 bg-green-500/10 inline-block px-2 py-0.5 rounded-full">
@@ -627,7 +697,7 @@ function FacilityBookingsPage() {
                   onChange={(e) => setCustomerEmail(e.target.value)}
                 />
               </div>
-              
+
               {(isSharedSlot || isSharedAccess) && (
                 <div className="space-y-2 pt-2">
                   <Label>Quantity (Tickets / People)</Label>
@@ -646,7 +716,9 @@ function FacilityBookingsPage() {
                       type="button"
                       variant="outline"
                       className="h-12 w-12 rounded-xl"
-                      onClick={() => setQuantity(Math.min(minAvailableCapacityAcrossSelected, quantity + 1))}
+                      onClick={() =>
+                        setQuantity(Math.min(minAvailableCapacityAcrossSelected, quantity + 1))
+                      }
                       disabled={quantity >= minAvailableCapacityAcrossSelected}
                     >
                       +
@@ -655,63 +727,68 @@ function FacilityBookingsPage() {
                 </div>
               )}
             </div>
-            </div>
-
-            <div className="flex flex-col gap-3 mt-4">
-              <Button
-                type="button"
-                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
-                onClick={() => {
-                  if (!date?.from || selectedSlots.length === 0) {
-                    toast.error("Please select a date and at least one time slot.");
-                    return;
-                  }
-                  if (!customerName) {
-                    toast.error("Customer name is required.");
-                    return;
-                  }
-                  if ((isSharedSlot || isSharedAccess) && quantity > minAvailableCapacityAcrossSelected) {
-                    toast.error(`Quantity exceeds available capacity (${minAvailableCapacityAcrossSelected} available).`);
-                    return;
-                  }
-                  setIsCheckoutModalOpen(true);
-                }}
-              >
-                Review Booking
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-12 text-sm font-bold rounded-2xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600"
-                onClick={handleBlockSlots}
-                disabled={createBookingMutation.isPending || selectedSlots.length === 0}
-              >
-                Block Selected Slots
-              </Button>
-            </div>
-            
-            <AdminBookingCheckoutModal
-              isOpen={isCheckoutModalOpen}
-              onOpenChange={setIsCheckoutModalOpen}
-              facility={facility}
-              selectedSlots={selectedSlots}
-              durationMinutes={durationMinutes}
-              slotPrice={slotPrice}
-              currency={currency}
-              daysInRange={daysInRange}
-              subTotal={subTotal}
-              totalAmount={totalAmount}
-              amountPaid={amountPaid}
-              setAmountPaid={setAmountPaid}
-              paymentStatus={paymentStatus}
-              setPaymentStatus={setPaymentStatus}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              handleCreateBooking={handleCreateBooking}
-              isPending={createBookingMutation.isPending}
-            />
           </div>
+
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              type="button"
+              className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)]"
+              style={{ background: "var(--gradient-primary)" }}
+              onClick={() => {
+                if (!date?.from || selectedSlots.length === 0) {
+                  toast.error("Please select a date and at least one time slot.");
+                  return;
+                }
+                if (!customerName) {
+                  toast.error("Customer name is required.");
+                  return;
+                }
+                if (
+                  (isSharedSlot || isSharedAccess) &&
+                  quantity > minAvailableCapacityAcrossSelected
+                ) {
+                  toast.error(
+                    `Quantity exceeds available capacity (${minAvailableCapacityAcrossSelected} available).`,
+                  );
+                  return;
+                }
+                setIsCheckoutModalOpen(true);
+              }}
+            >
+              Review Booking
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-12 text-sm font-bold rounded-2xl border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600"
+              onClick={handleBlockSlots}
+              disabled={createBookingMutation.isPending || selectedSlots.length === 0}
+            >
+              Block Selected Slots
+            </Button>
+          </div>
+
+          <AdminBookingCheckoutModal
+            isOpen={isCheckoutModalOpen}
+            onOpenChange={setIsCheckoutModalOpen}
+            facility={facility}
+            selectedSlots={selectedSlots}
+            durationMinutes={durationMinutes}
+            slotPrice={slotPrice}
+            currency={currency}
+            daysInRange={daysInRange}
+            subTotal={subTotal}
+            totalAmount={totalAmount}
+            amountPaid={amountPaid}
+            setAmountPaid={setAmountPaid}
+            paymentStatus={paymentStatus}
+            setPaymentStatus={setPaymentStatus}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            handleCreateBooking={handleCreateBooking}
+            isPending={createBookingMutation.isPending}
+          />
         </div>
       </div>
+    </div>
   );
 }
