@@ -1,8 +1,38 @@
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 import { StatCard } from "@/components/admin/StatCard";
-import { Users, CreditCard, Activity, Package, Plus, RefreshCw, BarChart3, PieChart, Briefcase, Boxes, Wallet, Banknote, MapPin, Globe } from "lucide-react";
+import {
+  Users,
+  CreditCard,
+  Activity,
+  Package,
+  Plus,
+  RefreshCw,
+  BarChart3,
+  PieChart,
+  Briefcase,
+  Boxes,
+  Wallet,
+  Banknote,
+  MapPin,
+  Globe,
+} from "lucide-react";
 import { getAdminDashboardStats } from "@/api/admin_dashboard";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, Legend, ComposedChart } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+  ComposedChart,
+} from "recharts";
 import { format, parseISO, differenceInYears } from "date-fns";
 
 export const Route = createFileRoute("/internal/control/admin/dashboard")({
@@ -12,7 +42,7 @@ export const Route = createFileRoute("/internal/control/admin/dashboard")({
   component: AdminDashboard,
 });
 
-const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e'];
+const COLORS = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#f43f5e"];
 
 function AdminDashboard() {
   const stats = useLoaderData({ from: "/internal/control/admin/dashboard" });
@@ -28,7 +58,7 @@ function AdminDashboard() {
 
   const chartData = Object.keys(eventsByMonth)
     .slice(0, 12)
-    .map(key => ({ name: key, Events: eventsByMonth[key] }))
+    .map((key) => ({ name: key, Events: eventsByMonth[key] }))
     .reverse();
 
   // Process Subscriptions for Pie Chart
@@ -38,9 +68,9 @@ function AdminDashboard() {
     return acc;
   }, {});
 
-  const pieData = Object.keys(subsByPlan).map(key => ({
+  const pieData = Object.keys(subsByPlan).map((key) => ({
     name: key,
-    value: subsByPlan[key]
+    value: subsByPlan[key],
   }));
 
   // Process Earnings for Line Chart
@@ -48,29 +78,27 @@ function AdminDashboard() {
     if (!earning.created_at) return acc;
     const month = format(parseISO(earning.created_at), "MMM yyyy");
     if (!acc[month]) acc[month] = { name: month, Subscriptions: 0, Platform: 0 };
-    
+
     // Check if it's a subscription earning
     const typeStr = (earning.transaction_type || "").toLowerCase();
     const isSub = typeStr.includes("subscription") || typeStr.includes("plan");
-    
+
     if (isSub) {
-      acc[month].Subscriptions += (earning.platform_revenue || 0);
+      acc[month].Subscriptions += earning.platform_revenue || 0;
     } else {
-      acc[month].Platform += (earning.platform_revenue || 0);
+      acc[month].Platform += earning.platform_revenue || 0;
     }
     return acc;
   }, {});
 
-  const earningsChartData = Object.values(earningsByMonth)
-    .slice(0, 12)
-    .reverse();
+  const earningsChartData = Object.values(earningsByMonth).slice(0, 12).reverse();
 
   // Process Review Trends
   const reviewsByMonth = (stats.reviews || []).reduce((acc: any, rev: any) => {
     if (!rev.created_at) return acc;
     const month = format(parseISO(rev.created_at), "MMM yyyy");
     if (!acc[month]) acc[month] = { name: month, ratingSum: 0, count: 0 };
-    acc[month].ratingSum += (rev.rating || 0);
+    acc[month].ratingSum += rev.rating || 0;
     acc[month].count += 1;
     return acc;
   }, {});
@@ -79,14 +107,14 @@ function AdminDashboard() {
     .map((r: any) => ({
       name: r.name,
       AvgRating: Number((r.ratingSum / r.count).toFixed(1)),
-      Reviews: r.count
+      Reviews: r.count,
     }))
     .reverse();
 
   // Process Country/City Data
   const orgByCountry: Record<string, number> = {};
   const orgByCity: Record<string, number> = {};
-  
+
   (stats.workspacesDemographics || []).forEach((ws: any) => {
     if (ws.country) {
       orgByCountry[ws.country] = (orgByCountry[ws.country] || 0) + 1;
@@ -96,38 +124,41 @@ function AdminDashboard() {
     }
   });
 
-  const countryChartData = Object.keys(orgByCountry).map(k => ({ name: k, value: orgByCountry[k] }));
-  const cityChartData = Object.keys(orgByCity).map(k => ({ name: k, value: orgByCity[k] }));
+  const countryChartData = Object.keys(orgByCountry).map((k) => ({
+    name: k,
+    value: orgByCountry[k],
+  }));
+  const cityChartData = Object.keys(orgByCity).map((k) => ({ name: k, value: orgByCity[k] }));
 
   // Process Gender Data
   const genderData = [
-    { name: 'Male', Users: 0, Organizers: 0 },
-    { name: 'Female', Users: 0, Organizers: 0 },
-    { name: 'Other', Users: 0, Organizers: 0 },
+    { name: "Male", Users: 0, Organizers: 0 },
+    { name: "Female", Users: 0, Organizers: 0 },
+    { name: "Other", Users: 0, Organizers: 0 },
   ];
 
   (stats.usersDemographics || []).forEach((u: any) => {
     const g = (u.gender || "").toLowerCase();
-    if (g === 'male' || g === 'm') genderData[0].Users++;
-    else if (g === 'female' || g === 'f') genderData[1].Users++;
+    if (g === "male" || g === "m") genderData[0].Users++;
+    else if (g === "female" || g === "f") genderData[1].Users++;
     else genderData[2].Users++;
   });
 
   (stats.organizersDemographics || []).forEach((o: any) => {
     const g = (o.gender || "").toLowerCase();
-    if (g === 'male' || g === 'm') genderData[0].Organizers++;
-    else if (g === 'female' || g === 'f') genderData[1].Organizers++;
+    if (g === "male" || g === "m") genderData[0].Organizers++;
+    else if (g === "female" || g === "f") genderData[1].Organizers++;
     else genderData[2].Organizers++;
   });
 
   // Process Age Data
   const ageBuckets = [
-    { name: '<18', count: 0 },
-    { name: '18-24', count: 0 },
-    { name: '25-34', count: 0 },
-    { name: '35-44', count: 0 },
-    { name: '45-54', count: 0 },
-    { name: '55+', count: 0 },
+    { name: "<18", count: 0 },
+    { name: "18-24", count: 0 },
+    { name: "25-34", count: 0 },
+    { name: "35-44", count: 0 },
+    { name: "45-54", count: 0 },
+    { name: "55+", count: 0 },
   ];
 
   (stats.usersDemographics || []).forEach((u: any) => {
@@ -143,7 +174,7 @@ function AdminDashboard() {
   });
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'RWF' }).format(value);
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "RWF" }).format(value);
   };
 
   return (
@@ -156,7 +187,7 @@ function AdminDashboard() {
             <Plus className="h-4 w-4 text-[#f97316]" />
             New dashboard
           </button>
-          <button 
+          <button
             className="flex items-center gap-1.5 px-3 py-1 hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-[#cccccc] font-medium text-[13px] transition-colors"
             onClick={() => window.location.reload()}
           >
@@ -168,16 +199,53 @@ function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
         <StatCard title="Total Users" value={stats.users.toLocaleString()} icon={Users} />
-        <StatCard title="Total Organizers" value={stats.organizers.toLocaleString()} icon={Activity} />
-        <StatCard title="Total Workspaces" value={stats.workspaces.toLocaleString()} icon={Briefcase} />
+        <StatCard
+          title="Total Organizers"
+          value={stats.organizers.toLocaleString()}
+          icon={Activity}
+        />
+        <StatCard
+          title="Total Workspaces"
+          value={stats.workspaces.toLocaleString()}
+          icon={Briefcase}
+        />
         <StatCard title="Total Staff" value={stats.staff.toLocaleString()} icon={Users} />
-        <StatCard title="Platform Revenue" value={formatCurrency(stats.revenue)} icon={CreditCard} />
-        <StatCard title="Provider Costs" value={formatCurrency(stats.providerCost)} icon={Banknote} isPositive={false} trend="Provider cut" />
-        <StatCard title="Active Wallets" value={stats.totalWallets.toLocaleString()} icon={Wallet} />
-        <StatCard title="Payout Balance" value={formatCurrency(stats.totalWalletBalance)} icon={Wallet} trend="Pending Payouts" />
+        <StatCard
+          title="Platform Revenue"
+          value={formatCurrency(stats.revenue)}
+          icon={CreditCard}
+        />
+        <StatCard
+          title="Provider Costs"
+          value={formatCurrency(stats.providerCost)}
+          icon={Banknote}
+          isPositive={false}
+          trend="Provider cut"
+        />
+        <StatCard
+          title="Active Wallets"
+          value={stats.totalWallets.toLocaleString()}
+          icon={Wallet}
+        />
+        <StatCard
+          title="Payout Balance"
+          value={formatCurrency(stats.totalWalletBalance)}
+          icon={Wallet}
+          trend="Pending Payouts"
+        />
         <StatCard title="Platform Modules" value={stats.modules.toLocaleString()} icon={Boxes} />
-        <StatCard title="Design Projects" value={stats.designProjects.toLocaleString()} icon={Package} />
-        <StatCard title="System Load" value="24%" isPositive={false} icon={Activity} trend="-5% vs last week" />
+        <StatCard
+          title="Design Projects"
+          value={stats.designProjects.toLocaleString()}
+          icon={Package}
+        />
+        <StatCard
+          title="System Load"
+          value="24%"
+          isPositive={false}
+          icon={Activity}
+          trend="-5% vs last week"
+        />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
@@ -194,16 +262,36 @@ function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={80} />
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }}
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
                   />
                   <Bar dataKey="Events" fill="#f97316" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No events data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No events data available
+              </div>
             )}
           </div>
         </div>
@@ -231,8 +319,14 @@ function AdminDashboard() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }}
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
                   />
                 </RechartsPieChart>
               </ResponsiveContainer>
@@ -256,20 +350,60 @@ function AdminDashboard() {
             {earningsChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={earningsChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" opacity={0.3} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} tickFormatter={(val) => `RWF ${val}`} />
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }}
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#333"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => `RWF ${val}`}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
                     formatter={(value) => formatCurrency(Number(value))}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  <Line type="monotone" dataKey="Subscriptions" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="Platform" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Subscriptions"
+                    stroke="#8b5cf6"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="Platform"
+                    stroke="#10b981"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No earnings data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No earnings data available
+              </div>
             )}
           </div>
         </div>
@@ -286,18 +420,68 @@ function AdminDashboard() {
             {reviewChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={reviewChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" opacity={0.3} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" domain={[0, 5]} tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  <Bar yAxisId="left" dataKey="Reviews" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
-                  <Line yAxisId="right" type="monotone" dataKey="AvgRating" stroke="#f97316" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Avg Rating (Out of 5)" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#333"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    domain={[0, 5]}
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }}
+                  />
+                  <Bar
+                    yAxisId="left"
+                    dataKey="Reviews"
+                    fill="#3b82f6"
+                    radius={[4, 4, 0, 0]}
+                    barSize={20}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="AvgRating"
+                    stroke="#f97316"
+                    strokeWidth={3}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                    name="Avg Rating (Out of 5)"
+                  />
                 </ComposedChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No review data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No review data available
+              </div>
             )}
           </div>
         </div>
@@ -315,14 +499,36 @@ function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={countryChartData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={80} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
                   <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No country data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No country data available
+              </div>
             )}
           </div>
         </div>
@@ -338,14 +544,36 @@ function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={cityChartData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={80} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
                   <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No city data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No city data available
+              </div>
             )}
           </div>
         </div>
@@ -362,10 +590,30 @@ function AdminDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={genderData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={60} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={60}
+                />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: "#111",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    color: "#fff",
+                  }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
                 <Bar dataKey="Users" fill="#f43f5e" radius={[0, 4, 4, 0]} />
                 <Bar dataKey="Organizers" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -383,9 +631,29 @@ function AdminDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={ageBuckets} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={60} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={60}
+                />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: "#111",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    color: "#fff",
+                  }}
+                />
                 <Bar dataKey="count" fill="#f97316" radius={[0, 4, 4, 0]} name="Users" />
               </BarChart>
             </ResponsiveContainer>

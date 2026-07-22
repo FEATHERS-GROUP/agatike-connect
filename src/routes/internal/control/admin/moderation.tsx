@@ -3,9 +3,20 @@ import { getTelemetryStats } from "@/api/telemetry";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Clock, Users, Timer, Globe, PieChart as PieChartIcon, Map } from "lucide-react";
 import { StatCard } from "@/components/admin/StatCard";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
-const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e'];
+const COLORS = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#f43f5e"];
 
 export const Route = createFileRoute("/internal/control/admin/moderation")({
   component: TelemetryDashboard,
@@ -60,11 +71,7 @@ function TelemetryDashboard() {
               trend="Live heartbeat"
               isPositive={true}
             />
-            <StatCard
-              title="Total Sessions Today"
-              value={stats?.totalToday || 0}
-              icon={Users}
-            />
+            <StatCard title="Total Sessions Today" value={stats?.totalToday || 0} icon={Users} />
             <StatCard
               title="Avg Session Duration"
               value={formatDuration(stats?.avgDurationSeconds || 0)}
@@ -84,11 +91,21 @@ function TelemetryDashboard() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                    <XAxis dataKey="time" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                    <XAxis
+                      dataKey="time"
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                     <Tooltip
                       cursor={{ fill: "rgba(255,255,255,0.05)" }}
-                      contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #333", borderRadius: "8px" }}
+                      contentStyle={{
+                        backgroundColor: "#1e1e1e",
+                        border: "1px solid #333",
+                        borderRadius: "8px",
+                      }}
                     />
                     <Bar dataKey="users" fill="#f97316" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -105,7 +122,13 @@ function TelemetryDashboard() {
               <div className="h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Tooltip contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #333", borderRadius: "8px" }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1e1e1e",
+                        border: "1px solid #333",
+                        borderRadius: "8px",
+                      }}
+                    />
                     <Pie
                       data={userTypes}
                       cx="50%"
@@ -138,7 +161,7 @@ function TelemetryDashboard() {
                   topPaths.map((item: any, index: number) => {
                     const maxVisits = Math.max(...topPaths.map((p: any) => p.visits));
                     const percentage = Math.round((item.visits / maxVisits) * 100);
-                    
+
                     return (
                       <div key={index} className="flex flex-col gap-1.5">
                         <div className="flex justify-between items-center text-xs">
@@ -170,19 +193,26 @@ function TelemetryDashboard() {
               </h3>
               <div className="overflow-y-auto flex-1 pr-2 space-y-3 custom-scrollbar">
                 {recentSessions.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-8">No recent sessions found.</p>
+                  <p className="text-sm text-gray-500 text-center py-8">
+                    No recent sessions found.
+                  </p>
                 ) : (
                   recentSessions.map((session: any) => (
-                    <div key={session.sessionId} className="p-3 bg-gray-50 dark:bg-[#252526] rounded-md border border-gray-100 dark:border-transparent flex flex-col gap-2">
+                    <div
+                      key={session.sessionId}
+                      className="p-3 bg-gray-50 dark:bg-[#252526] rounded-md border border-gray-100 dark:border-transparent flex flex-col gap-2"
+                    >
                       <div className="flex justify-between items-start">
                         <span className="text-xs font-mono text-gray-500 truncate max-w-[120px]">
                           {session.sessionId}
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          (Date.now() - new Date(session.lastActive).getTime()) < 5 * 60 * 1000
-                            ? "bg-green-500/20 text-green-500"
-                            : "bg-gray-500/20 text-gray-500"
-                        }`}>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full ${
+                            Date.now() - new Date(session.lastActive).getTime() < 5 * 60 * 1000
+                              ? "bg-green-500/20 text-green-500"
+                              : "bg-gray-500/20 text-gray-500"
+                          }`}
+                        >
                           {formatDuration(session.durationSeconds || 0)}
                         </span>
                       </div>
@@ -190,7 +220,9 @@ function TelemetryDashboard() {
                         Path: {session.path?.replace(/^https?:\/\/[^\/]+/, "") || "/"}
                       </div>
                       <div className="text-[10px] text-gray-500">
-                        {session.userType === "anonymous" ? "Anonymous User" : `User ID: ${session.userId.substring(0, 8)}...`}
+                        {session.userType === "anonymous"
+                          ? "Anonymous User"
+                          : `User ID: ${session.userId.substring(0, 8)}...`}
                       </div>
                     </div>
                   ))

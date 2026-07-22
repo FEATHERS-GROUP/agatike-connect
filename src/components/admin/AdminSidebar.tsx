@@ -11,7 +11,11 @@ export function AdminSidebar() {
       href: "/internal/control/admin/dashboard",
       icon: LucideIcons.LayoutDashboard,
     },
-    { label: "Master Schedule", href: "/internal/control/admin/master-schedule", icon: LucideIcons.List },
+    {
+      label: "Master Schedule",
+      href: "/internal/control/admin/master-schedule",
+      icon: LucideIcons.List,
+    },
     { label: "Moderation", href: "/internal/control/admin/moderation", icon: LucideIcons.Activity },
     { type: "divider" },
     {

@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { useLocation } from '@tanstack/react-router';
-import { recordHeartbeat } from '@/api/telemetry';
+import { useEffect, useRef } from "react";
+import { useLocation } from "@tanstack/react-router";
+import { recordHeartbeat } from "@/api/telemetry";
 
 export function useTelemetry() {
   const sessionIdRef = useRef<string | null>(null);
@@ -10,12 +10,13 @@ export function useTelemetry() {
   useEffect(() => {
     // Generate a unique session ID for this browser tab instance
     if (!sessionIdRef.current) {
-      sessionIdRef.current = 'sess_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      sessionIdRef.current =
+        "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
     }
 
     const sendHeartbeat = () => {
       // Exclude admin panel from telemetry tracking
-      if (location.href.includes('/internal/control/admin')) return;
+      if (location.href.includes("/internal/control/admin")) return;
 
       if (sessionIdRef.current) {
         recordHeartbeat({
@@ -24,7 +25,7 @@ export function useTelemetry() {
             path: location.href,
             userAgent: navigator.userAgent,
             visibilityState: document.visibilityState,
-          }
+          },
         }).catch(console.error);
       }
     };

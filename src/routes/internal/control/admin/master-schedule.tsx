@@ -1,7 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { getScheduledServices, getServiceAttendees } from "@/api/admin_services";
-import { Calendar, MapPin, Users, Ticket, Clapperboard, CalendarDays, Zap, Search, Filter, Clock, RefreshCw, X, CheckCircle2, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Ticket,
+  Clapperboard,
+  CalendarDays,
+  Zap,
+  Search,
+  Filter,
+  Clock,
+  RefreshCw,
+  X,
+  CheckCircle2,
+  ChevronRight,
+} from "lucide-react";
 import { format, parseISO, addDays, endOfWeek, endOfMonth, startOfDay } from "date-fns";
 import { StatCard } from "@/components/admin/StatCard";
 
@@ -10,14 +25,20 @@ export const Route = createFileRoute("/internal/control/admin/master-schedule")(
 });
 
 function AdminServicesPage() {
-  const [timeframe, setTimeframe] = useState<"today" | "tomorrow" | "next4" | "week" | "month">("week");
+  const [timeframe, setTimeframe] = useState<"today" | "tomorrow" | "next4" | "week" | "month">(
+    "week",
+  );
   const [filterType, setFilterType] = useState<"All" | "Event" | "Cinema" | "Experience">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Attendees Modal State
-  const [selectedService, setSelectedService] = useState<{ id: string; type: string; title: string } | null>(null);
+  const [selectedService, setSelectedService] = useState<{
+    id: string;
+    type: string;
+    title: string;
+  } | null>(null);
   const [attendees, setAttendees] = useState<any[]>([]);
   const [isLoadingAttendees, setIsLoadingAttendees] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +46,7 @@ function AdminServicesPage() {
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      
+
       const now = new Date();
       let startDate = startOfDay(now);
       let endDate = new Date();
@@ -50,11 +71,11 @@ function AdminServicesPage() {
       }
 
       try {
-        const res = await getScheduledServices({ 
+        const res = await getScheduledServices({
           data: {
-            startDate: startDate.toISOString(), 
-            endDate: endDate.toISOString() 
-          }
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+          },
         });
         setServices(res.items || []);
       } catch (err) {
@@ -69,13 +90,15 @@ function AdminServicesPage() {
   const filteredServices = services.filter((s) => {
     // 1. Filter by Type
     if (filterType !== "All" && s.type !== filterType) return false;
-    
+
     // 2. Filter by Search Query
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      if (!s.title?.toLowerCase().includes(q) && 
-          !s.organizer?.toLowerCase().includes(q) && 
-          !s.location?.toLowerCase().includes(q)) {
+      if (
+        !s.title?.toLowerCase().includes(q) &&
+        !s.organizer?.toLowerCase().includes(q) &&
+        !s.location?.toLowerCase().includes(q)
+      ) {
         return false;
       }
     }
@@ -84,19 +107,27 @@ function AdminServicesPage() {
 
   const getIconForType = (type: string) => {
     switch (type) {
-      case "Event": return <CalendarDays className="h-5 w-5 text-blue-500" />;
-      case "Cinema": return <Clapperboard className="h-5 w-5 text-purple-500" />;
-      case "Experience": return <Zap className="h-5 w-5 text-orange-500" />;
-      default: return <Calendar className="h-5 w-5 text-gray-500" />;
+      case "Event":
+        return <CalendarDays className="h-5 w-5 text-blue-500" />;
+      case "Cinema":
+        return <Clapperboard className="h-5 w-5 text-purple-500" />;
+      case "Experience":
+        return <Zap className="h-5 w-5 text-orange-500" />;
+      default:
+        return <Calendar className="h-5 w-5 text-gray-500" />;
     }
   };
 
   const getColorForType = (type: string) => {
     switch (type) {
-      case "Event": return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800";
-      case "Cinema": return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800";
-      case "Experience": return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800";
-      default: return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700";
+      case "Event":
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800";
+      case "Cinema":
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800";
+      case "Experience":
+        return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800";
+      default:
+        return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700";
     }
   };
 
@@ -116,9 +147,9 @@ function AdminServicesPage() {
   };
 
   // Calculate Stats
-  const totalEvents = filteredServices.filter(s => s.type === "Event").length;
-  const totalCinemas = filteredServices.filter(s => s.type === "Cinema").length;
-  const totalExperiences = filteredServices.filter(s => s.type === "Experience").length;
+  const totalEvents = filteredServices.filter((s) => s.type === "Event").length;
+  const totalCinemas = filteredServices.filter((s) => s.type === "Cinema").length;
+  const totalExperiences = filteredServices.filter((s) => s.type === "Experience").length;
 
   return (
     <div className="space-y-6 font-sans pb-12">
@@ -160,7 +191,11 @@ function AdminServicesPage() {
 
       {/* Summary Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Services" value={filteredServices.length.toString()} icon={Calendar} />
+        <StatCard
+          title="Total Services"
+          value={filteredServices.length.toString()}
+          icon={Calendar}
+        />
         <StatCard title="Scheduled Events" value={totalEvents.toString()} icon={CalendarDays} />
         <StatCard title="Cinema Screenings" value={totalCinemas.toString()} icon={Clapperboard} />
         <StatCard title="Active Experiences" value={totalExperiences.toString()} icon={Zap} />
@@ -211,20 +246,26 @@ function AdminServicesPage() {
           <div className="text-center py-20 bg-gray-50 dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg">
             <Calendar className="h-10 w-10 text-gray-400 mx-auto mb-3 opacity-50" />
             <h3 className="text-gray-900 dark:text-white font-medium">No Scheduled Services</h3>
-            <p className="text-gray-500 text-sm mt-1">There are no services matching your filters for this timeframe.</p>
+            <p className="text-gray-500 text-sm mt-1">
+              There are no services matching your filters for this timeframe.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {filteredServices.map((service) => (
-              <div 
-                key={service.id} 
+              <div
+                key={service.id}
                 className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow"
               >
                 {/* Left: Image & Date */}
                 <div className="flex flex-col items-center sm:w-1/3">
                   <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-100 dark:bg-[#111111] border border-gray-200 dark:border-[#333333] mb-3">
                     {service.coverUrl ? (
-                      <img src={service.coverUrl} alt={service.title} className="w-full h-full object-cover" />
+                      <img
+                        src={service.coverUrl}
+                        alt={service.title}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         {getIconForType(service.type)}
@@ -232,7 +273,9 @@ function AdminServicesPage() {
                     )}
                   </div>
                   <div className="text-center">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase border mb-2 ${getColorForType(service.type)}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase border mb-2 ${getColorForType(service.type)}`}
+                    >
                       {service.type}
                     </span>
                     <div className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -250,7 +293,7 @@ function AdminServicesPage() {
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
                     {service.title}
                   </h2>
-                  
+
                   <div className="space-y-2 flex-1">
                     <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" />
@@ -258,7 +301,10 @@ function AdminServicesPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <Users className="h-4 w-4 shrink-0 text-gray-400" />
-                      <span className="font-medium text-gray-700 dark:text-gray-300">Organizer:</span> {service.organizer}
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        Organizer:
+                      </span>{" "}
+                      {service.organizer}
                     </div>
                   </div>
 
@@ -271,8 +317,12 @@ function AdminServicesPage() {
                       <div className="flex flex-wrap gap-1.5">
                         {service.ticketTiers && service.ticketTiers.length > 0 ? (
                           service.ticketTiers.slice(0, 3).map((tier: any, i: number) => (
-                            <span key={i} className="inline-flex bg-gray-100 dark:bg-[#252526] px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-[#444]">
-                              {tier.name} <span className="text-gray-400 mx-1">•</span> RWF {tier.price || tier.price_adjustment || 0}
+                            <span
+                              key={i}
+                              className="inline-flex bg-gray-100 dark:bg-[#252526] px-2 py-1 rounded text-xs text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-[#444]"
+                            >
+                              {tier.name} <span className="text-gray-400 mx-1">•</span> RWF{" "}
+                              {tier.price || tier.price_adjustment || 0}
                             </span>
                           ))
                         ) : (
@@ -293,11 +343,11 @@ function AdminServicesPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Action Button */}
                   {(service.type === "Event" || service.type === "Cinema") && (
                     <div className="mt-3">
-                      <button 
+                      <button
                         onClick={() => handleViewAttendees(service)}
                         className="w-full py-2 bg-gray-50 hover:bg-gray-100 dark:bg-[#252526] dark:hover:bg-[#2d2d2d] text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg border border-gray-200 dark:border-[#444] transition-colors flex items-center justify-center gap-1"
                       >
@@ -323,15 +373,16 @@ function AdminServicesPage() {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   Attendees for {selectedService.title}
                 </h2>
-                <p className="text-xs text-gray-500">
-                  {selectedService.type}
-                </p>
+                <p className="text-xs text-gray-500">{selectedService.type}</p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-[#252526] rounded-md text-gray-500">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-[#252526] rounded-md text-gray-500"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-auto p-4">
               {isLoadingAttendees ? (
                 <div className="flex flex-col items-center justify-center py-20 space-y-3 text-gray-500">
@@ -342,17 +393,27 @@ function AdminServicesPage() {
                 <div className="text-center py-20">
                   <Users className="h-10 w-10 text-gray-400 mx-auto mb-3 opacity-50" />
                   <h3 className="text-gray-900 dark:text-white font-medium">No Attendees Yet</h3>
-                  <p className="text-gray-500 text-sm mt-1">There are no bookings for this service.</p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    There are no bookings for this service.
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto border border-gray-200 dark:border-[#333333] rounded-lg">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-[#333333]">
                     <thead className="bg-gray-50 dark:bg-[#252526]">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket Tier</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scan Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ticket Tier
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Scan Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-[#1a1a1a] divide-y divide-gray-200 dark:divide-[#333333]">

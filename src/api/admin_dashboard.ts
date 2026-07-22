@@ -108,7 +108,7 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       workspaces: data.workspaces_aggregate?.aggregate?.count || 0,
       staff: data.workspace_users_aggregate?.aggregate?.count || 0,
       modules: data.platformModules_aggregate?.aggregate?.count || 0,
-      designProjects: 
+      designProjects:
         (data.workspace_pages_aggregate?.aggregate?.count || 0) +
         (data.ticket_projects_aggregate?.aggregate?.count || 0) +
         (data.badge_projects_aggregate?.aggregate?.count || 0) +
@@ -154,7 +154,7 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       supportTickets: [],
       withdrawals: [],
       reviews: [],
-      error: error.message
+      error: error.message,
     };
   }
 });

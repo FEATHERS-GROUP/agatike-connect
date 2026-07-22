@@ -84,8 +84,8 @@ export const getScheduledServices = createServerFn({ method: "POST" })
 
     // cinema_schedules uses `date` type in Hasura, while events use `timestamptz`.
     // We pass both formats.
-    const dateStart = startDate.split('T')[0];
-    const dateEnd = endDate.split('T')[0];
+    const dateStart = startDate.split("T")[0];
+    const dateEnd = endDate.split("T")[0];
 
     try {
       const data = await hasuraRequest<{
@@ -97,7 +97,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
       // Transform into a unified timeline
       const unifiedTimeline: any[] = [];
 
-      (data.events || []).forEach(e => {
+      (data.events || []).forEach((e) => {
         unifiedTimeline.push({
           id: e.id,
           type: "Event",
@@ -107,11 +107,11 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           organizer: e.workspaces?.organizer?.name || "Unknown",
           coverUrl: e.cover,
           ticketTiers: e.event_tickets?.map((t: any) => ({ name: t.name, price: t.cost })) || [],
-          bookings: e.event_attendees_aggregate?.aggregate?.count || 0
+          bookings: e.event_attendees_aggregate?.aggregate?.count || 0,
         });
       });
 
-      (data.cinema_schedules || []).forEach(c => {
+      (data.cinema_schedules || []).forEach((c) => {
         // Combine show_date and start_time to make a valid date string
         const datetimeStr = `${c.show_date}T${c.start_time}`;
         unifiedTimeline.push({
@@ -119,24 +119,28 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           type: "Cinema",
           title: c.movie?.title || "Movie Screening",
           date: datetimeStr,
-          location: c.cinema?.name ? `${c.cinema.name} (${c.cinema.city || ''})` : "TBA",
+          location: c.cinema?.name ? `${c.cinema.name} (${c.cinema.city || ""})` : "TBA",
           organizer: c.cinema?.workspaces?.organizer?.name || "Unknown",
           coverUrl: c.movie?.cover_url,
-          ticketTiers: c.ticket_tiers?.map((t: any) => ({ 
-            name: t.ticket_tier?.name || "General", 
-            price: t.price_override || c.base_price 
+          ticketTiers: c.ticket_tiers?.map((t: any) => ({
+            name: t.ticket_tier?.name || "General",
+            price: t.price_override || c.base_price,
           })) || [{ name: "General", price: c.base_price }],
-          bookings: 0
+          bookings: 0,
         });
       });
-      
-      (data.event_posts || []).forEach(p => {
+
+      (data.event_posts || []).forEach((p) => {
         // media_urls might be a JSON array or a string depending on Hasura
         let cover = null;
         if (p.media_urls && Array.isArray(p.media_urls)) {
           cover = p.media_urls[0];
-        } else if (typeof p.media_urls === 'string') {
-          try { cover = JSON.parse(p.media_urls)[0]; } catch(e) { cover = p.media_urls; }
+        } else if (typeof p.media_urls === "string") {
+          try {
+            cover = JSON.parse(p.media_urls)[0];
+          } catch (e) {
+            cover = p.media_urls;
+          }
         }
 
         unifiedTimeline.push({
@@ -148,7 +152,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           organizer: p.workspace?.organizer?.name || "Unknown",
           coverUrl: cover,
           ticketTiers: [],
-          bookings: 0
+          bookings: 0,
         });
       });
 
@@ -181,12 +185,12 @@ export const getServiceAttendees = createServerFn({ method: "POST" })
           }
         `;
         const data = await hasuraRequest<{ event_attendees: any[] }>(query, { event_id: id });
-        return data.event_attendees.map(a => ({
+        return data.event_attendees.map((a) => ({
           id: a.id,
           name: a.names || "Unknown",
           email: a.email || "No email",
           ticketTier: a.ticket_type || "General",
-          status: a.status || "Confirmed"
+          status: a.status || "Confirmed",
         }));
       } else if (type === "Cinema") {
         // For cinema schedules, bookings are in cinema_bookings
@@ -202,12 +206,12 @@ export const getServiceAttendees = createServerFn({ method: "POST" })
           }
         `;
         const data = await hasuraRequest<{ cinema_bookings: any[] }>(query, { schedule_id: id });
-        return data.cinema_bookings.map(b => ({
+        return data.cinema_bookings.map((b) => ({
           id: b.id,
           name: b.user_name || "Unknown",
           email: b.user_email || "No email",
           ticketTier: b.ticket_type || "General",
-          status: b.status || "Confirmed"
+          status: b.status || "Confirmed",
         }));
       }
       return [];
