@@ -54,6 +54,7 @@ export default function ExperienceMap({
       zoom={11}
       scrollWheelZoom={false}
       className="h-full w-full"
+      attributionControl={false}
     >
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"

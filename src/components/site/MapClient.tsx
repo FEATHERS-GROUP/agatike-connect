@@ -290,6 +290,7 @@ export default function MapClient() {
           zoom={13}
           className="h-full w-full"
           zoomControl={false}
+          attributionControl={false}
         >
           <TileLayer
             attribution="&copy; OpenStreetMap"

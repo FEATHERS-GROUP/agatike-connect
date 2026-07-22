@@ -241,22 +241,65 @@ export function HomeMobile() {
 
   const createCustomIcon = (marker: any) => {
     const isSelected = selectedMarker?.id === marker.id;
-    const scaleClass = isSelected ? "scale-110 z-50 ring-4 ring-primary" : "hover:scale-110";
-    
-    // Create a circular pin with an image inside, similar to MapDesktop but optimized for mobile
+
+    // Determine colors based on type
+    let gradientClass = "from-primary to-accent";
+    let triangleClass = "border-t-primary";
+    let labelBgClass = "bg-primary";
+    let labelTextClass = "text-primary-foreground";
+    let ringClass = "ring-primary";
+
+    switch (marker.type) {
+      case "event":
+        gradientClass = "from-orange-500 to-red-500";
+        triangleClass = "border-t-orange-500";
+        labelBgClass = "bg-orange-500";
+        labelTextClass = "text-white";
+        ringClass = "ring-orange-500";
+        break;
+      case "venue":
+        gradientClass = "from-blue-500 to-cyan-500";
+        triangleClass = "border-t-blue-500";
+        labelBgClass = "bg-blue-500";
+        labelTextClass = "text-white";
+        ringClass = "ring-blue-500";
+        break;
+      case "space":
+        gradientClass = "from-green-500 to-emerald-500";
+        triangleClass = "border-t-green-500";
+        labelBgClass = "bg-green-500";
+        labelTextClass = "text-white";
+        ringClass = "ring-green-500";
+        break;
+      case "cinema":
+        gradientClass = "from-purple-500 to-fuchsia-500";
+        triangleClass = "border-t-purple-500";
+        labelBgClass = "bg-purple-500";
+        labelTextClass = "text-white";
+        ringClass = "ring-purple-500";
+        break;
+    }
+
+    const scaleClass = isSelected ? `scale-110 z-50 ring-4 ${ringClass}` : "hover:scale-110 z-10";
+
     return L.divIcon({
       className: "bg-transparent border-none",
       html: `
-        <div class="relative group cursor-pointer transition-transform duration-300 ${scaleClass}">
-          <div class="h-12 w-12 rounded-full p-1 bg-gradient-to-tr from-primary to-accent shadow-lg relative overflow-hidden">
-             <img src="${marker.image}" class="h-full w-full rounded-full object-cover border-2 border-background" />
+        <div class="relative flex flex-col items-center cursor-pointer transition-transform duration-300 ${scaleClass}">
+          <div class="rounded-full p-[2px] bg-gradient-to-tr ${gradientClass} shadow-md relative">
+             <img src="${marker.image}" class="h-10 w-10 rounded-full object-cover block border-2 border-background" />
           </div>
           <!-- Little pointer triangle at the bottom -->
-          <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-primary"></div>
+          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${triangleClass} -mt-1 drop-shadow-sm"></div>
+          
+          <!-- Name Label -->
+          <div class="mt-1 px-2 py-0.5 ${labelBgClass} rounded-full shadow-sm text-[10px] font-bold whitespace-nowrap ${labelTextClass} max-w-[90px] truncate text-center">
+            ${marker.title}
+          </div>
         </div>
       `,
-      iconSize: [48, 56],
-      iconAnchor: [24, 56],
+      iconSize: [120, 80],
+      iconAnchor: [60, 52],
     });
   };
 
@@ -277,6 +320,7 @@ export function HomeMobile() {
           zoom={13}
           className="h-full w-full z-0"
           zoomControl={false}
+          attributionControl={false}
           ref={setMapRef}
         >
           <TileLayer
@@ -304,8 +348,8 @@ export function HomeMobile() {
       {/* Top Overlay Layer: Header + Stories */}
       <div className="absolute top-0 left-0 right-0 z-[100] flex flex-col pointer-events-none">
         {/* Header (Interactive) */}
-        <div className="pointer-events-auto bg-background/80 backdrop-blur-md pt-safe-top">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
+        <div className="pointer-events-auto bg-gradient-to-b from-background/90 via-background/50 to-transparent pt-safe-top pb-2">
+          <div className="flex items-center justify-between px-4 py-2">
             <Link
               to="/$userId/message"
               params={{ userId: user?.id || "me" }}
@@ -334,8 +378,8 @@ export function HomeMobile() {
         </div>
 
         {/* Stories (Interactive) */}
-        <div className="pointer-events-auto w-full px-4 mt-2">
-          <div className="p-3 bg-background/40 backdrop-blur-md border border-border/40 rounded-3xl shadow-lg">
+        <div className="pointer-events-auto w-full px-4 mb-2">
+          <div className="p-2.5 bg-background/40 backdrop-blur-md border border-border/40 rounded-full shadow-lg">
             <Stories />
           </div>
         </div>
@@ -348,7 +392,22 @@ export function HomeMobile() {
           className="rounded-full shadow-lg h-10 w-10 p-0 bg-background/90 backdrop-blur-md border-border/40 pointer-events-auto active:scale-95"
           onClick={() => {
             if (mapRef) {
-              mapRef.flyTo(defaultCenter, 13);
+              if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                  (position) => {
+                    mapRef.flyTo([position.coords.latitude, position.coords.longitude], 15, {
+                      duration: 1,
+                    });
+                  },
+                  (error) => {
+                    console.error("Geolocation error:", error);
+                    mapRef.flyTo(defaultCenter, 13);
+                  },
+                  { timeout: 5000 }
+                );
+              } else {
+                mapRef.flyTo(defaultCenter, 13);
+              }
             }
           }}
         >

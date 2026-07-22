@@ -404,6 +404,7 @@ export function MapDesktop() {
             zoom={13}
             className="h-full w-full z-0"
             zoomControl={false}
+            attributionControl={false}
             ref={setMapRef}
           >
             <TileLayer
