@@ -28,7 +28,7 @@ function AdminServicesPage() {
   const [timeframe, setTimeframe] = useState<"today" | "tomorrow" | "next4" | "week" | "month">(
     "week",
   );
-  const [filterType, setFilterType] = useState<"All" | "Event" | "Cinema" | "Experience">("All");
+  const [filterType, setFilterType] = useState<"All" | "Event" | "Cinema" | "Experience" | "Venue Booking">("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,6 +113,8 @@ function AdminServicesPage() {
         return <Clapperboard className="h-5 w-5 text-purple-500" />;
       case "Experience":
         return <Zap className="h-5 w-5 text-orange-500" />;
+      case "Venue Booking":
+        return <MapPin className="h-5 w-5 text-green-500" />;
       default:
         return <Calendar className="h-5 w-5 text-gray-500" />;
     }
@@ -126,6 +128,8 @@ function AdminServicesPage() {
         return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800";
       case "Experience":
         return "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800";
+      case "Venue Booking":
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800";
       default:
         return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700";
     }
@@ -146,10 +150,11 @@ function AdminServicesPage() {
     }
   };
 
-  // Calculate Stats
   const totalEvents = filteredServices.filter((s) => s.type === "Event").length;
   const totalCinemas = filteredServices.filter((s) => s.type === "Cinema").length;
   const totalExperiences = filteredServices.filter((s) => s.type === "Experience").length;
+  const totalVenueBookings = filteredServices.filter((s) => s.type === "Venue Booking").length;
+  const totalBookings = filteredServices.reduce((acc, curr) => acc + (curr.bookings || 0), 0);
 
   return (
     <div className="space-y-6 font-sans pb-12">
@@ -190,15 +195,12 @@ function AdminServicesPage() {
       </div>
 
       {/* Summary Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Services"
-          value={filteredServices.length.toString()}
-          icon={Calendar}
-        />
-        <StatCard title="Scheduled Events" value={totalEvents.toString()} icon={CalendarDays} />
-        <StatCard title="Cinema Screenings" value={totalCinemas.toString()} icon={Clapperboard} />
-        <StatCard title="Active Experiences" value={totalExperiences.toString()} icon={Zap} />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <StatCard title="Total Events" value={totalEvents.toString()} icon={CalendarDays} />
+        <StatCard title="Cinema Showings" value={totalCinemas.toString()} icon={Clapperboard} />
+        <StatCard title="Experiences" value={totalExperiences.toString()} icon={Zap} />
+        <StatCard title="Venue Bookings" value={totalVenueBookings.toString()} icon={MapPin} />
+        <StatCard title="Total RSVPs/Tickets" value={totalBookings.toString()} icon={Ticket} />
       </div>
 
       {/* Secondary Filters */}
@@ -219,7 +221,7 @@ function AdminServicesPage() {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Filter className="h-4 w-4 text-gray-500" />
           <div className="flex gap-2">
-            {["All", "Event", "Cinema", "Experience"].map((type) => (
+            {["All", "Event", "Cinema", "Experience", "Venue Booking"].map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type as any)}

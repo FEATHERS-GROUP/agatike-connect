@@ -79,6 +79,26 @@ export const getScheduledServices = createServerFn({ method: "POST" })
             }
           }
         }
+        
+        venue_bookings(
+          where: { start_time: { _gte: $startDate, _lte: $endDate } },
+          order_by: { start_time: asc }
+        ) {
+          id
+          start_time
+          end_time
+          venue_name
+          amount
+          status
+          customer_name
+          number_of_attendees
+          booking_type
+          workspace {
+            organizer {
+              name
+            }
+          }
+        }
       }
     `;
 
@@ -92,6 +112,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
         events: any[];
         cinema_schedules: any[];
         event_posts: any[];
+        venue_bookings: any[];
       }>(query, { startDate, endDate, dateStart, dateEnd });
 
       // Transform into a unified timeline
@@ -148,11 +169,25 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           type: "Experience",
           title: p.content ? `Experience: ${p.content.substring(0, 30)}...` : "Platform Experience",
           date: p.created_at,
-          location: "Digital / App",
+          location: "Virtual / Platform",
           organizer: p.workspace?.organizer?.name || "Unknown",
           coverUrl: cover,
           ticketTiers: [],
           bookings: 0,
+        });
+      });
+
+      (data.venue_bookings || []).forEach((b) => {
+        unifiedTimeline.push({
+          id: b.id,
+          type: "Venue Booking",
+          title: `${b.booking_type || "Booking"} for ${b.customer_name}`,
+          date: b.start_time,
+          location: b.venue_name || "Unknown Venue",
+          organizer: b.workspace?.organizer?.name || "Unknown",
+          coverUrl: null,
+          ticketTiers: [{ name: "Total Amount", price: b.amount || 0 }],
+          bookings: b.number_of_attendees || 1,
         });
       });
 
