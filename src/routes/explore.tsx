@@ -118,26 +118,6 @@ function ExplorePage() {
       </div>
 
       <div className="px-4 py-6 space-y-8">
-        {/* Map Entry Point */}
-        <Link
-          to="/map"
-          className="relative h-40 w-full rounded-3xl overflow-hidden group cursor-pointer shadow-[var(--shadow-card)] block"
-        >
-          <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-colors z-10" />
-          <img
-            src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop"
-            alt="Map View"
-            className="w-full h-full object-cover opacity-60 dark:opacity-40"
-          />
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-            <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 mb-2 group-hover:scale-110 transition-transform">
-              <MapIcon className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground bg-background/80 px-3 py-1 rounded-full backdrop-blur text-sm">
-              Explore Map View
-            </span>
-          </div>
-        </Link>
 
         {/* Trending Section (Pinterest style masonry-ish) */}
         <section>

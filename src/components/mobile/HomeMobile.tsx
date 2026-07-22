@@ -347,42 +347,46 @@ export function HomeMobile() {
 
       {/* Top Overlay Layer: Header + Stories */}
       <div className="absolute top-0 left-0 right-0 z-[100] flex flex-col pointer-events-none">
-        {/* Header (Interactive) */}
-        <div className="pointer-events-auto bg-gradient-to-b from-background/90 via-background/50 to-transparent pt-safe-top pb-2">
-          <div className="flex items-center justify-between px-4 py-2">
+        {/* Header */}
+        <div className="pointer-events-none pt-safe-top">
+          <div className="flex items-center justify-between px-4 py-3">
             {isLoggedIn ? (
               <Link
                 to="/$userId/message"
                 params={{ userId: user?.id || "me" }}
-                className="text-foreground relative p-1 transition-transform active:scale-95"
+                className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted"
               >
                 <MessageCircle className="h-6 w-6" />
                 {unreadChatsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">
+                  <span className="absolute -top-1 -right-1 h-5 min-w-[20px] rounded-full bg-primary text-[11px] font-bold text-primary-foreground flex items-center justify-center px-1.5 shadow-[var(--shadow-glow)] shadow-primary/20">
                     {unreadChatsCount > 99 ? "99+" : unreadChatsCount}
                   </span>
                 )}
               </Link>
             ) : (
-              <Link to="/login" className="text-foreground relative p-1 transition-transform active:scale-95">
+              <Link to="/signin" className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted">
                 <MessageCircle className="h-6 w-6" />
               </Link>
             )}
-            <img src="/icon.svg" alt="Agatike" className="h-7 w-auto object-contain drop-shadow-md" />
+            
+            <div className="pointer-events-auto flex h-12 px-5 items-center justify-center rounded-full bg-background border border-border/50 shadow-md">
+              <img src="/icon.svg" alt="Agatike" className="h-7 w-auto object-contain" />
+            </div>
+
             {isLoggedIn ? (
               <Link
                 to="/activity"
-                className="text-foreground relative p-1 transition-transform active:scale-95"
+                className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted"
               >
                 <Activity className="h-6 w-6" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
+                  <span className="absolute -top-1 -right-1 h-5 min-w-[20px] rounded-full bg-red-500 text-[11px] font-bold text-white flex items-center justify-center px-1.5">
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </Link>
             ) : (
-              <Link to="/login" className="text-foreground relative p-1 transition-transform active:scale-95">
+              <Link to="/signin" className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted">
                 <Activity className="h-6 w-6" />
               </Link>
             )}
