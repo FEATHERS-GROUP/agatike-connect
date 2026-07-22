@@ -23,7 +23,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventById, updateEvent } from "@/api/events";
 import { getEventAttendees } from "@/api/attendees";
 import { getEventFeedback } from "@/api/feedback";
-import { getEventStories, getEventPosts } from "@/api/experience";
+import { getEventStories } from "@/api/experience";
 import {
   BarChart,
   Bar,
@@ -164,11 +164,7 @@ function DashboardEventDetails() {
     enabled: !!eventId,
   });
 
-  const { data: posts = [] } = useQuery({
-    queryKey: ["event-posts", eventId],
-    queryFn: () => getEventPosts({ data: { event_id: eventId } } as any),
-    enabled: !!eventId,
-  });
+
 
   const toggleSuspend = useMutation({
     mutationFn: (data: { id: string; suspended: boolean }) => updateEvent({ data } as any),
@@ -328,15 +324,7 @@ function DashboardEventDetails() {
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "—";
   const totalReviews = feedbackData?.aggregate?.count || 0;
-  const totalLikes = (posts as any[]).reduce(
-    (a: number, p: any) => a + Number(p.likes_count || 0),
-    0,
-  );
-  const totalComments = (posts as any[]).reduce(
-    (a: number, p: any) => a + Number(p.comments_count || 0),
-    0,
-  );
-  const pinnedPosts = (posts as any[]).filter((p: any) => p.is_pinned).length;
+
 
   // ── Simulated week-on-week progression ────────────────────────────────────
   const attendanceProgressData = [
@@ -503,9 +491,9 @@ function DashboardEventDetails() {
             <span className="text-xs font-medium uppercase tracking-wider">Content</span>
             <Camera className="h-4 w-4 text-purple-500" />
           </div>
-          <p className="text-2xl font-bold text-purple-500">{posts.length + stories.length}</p>
+          <p className="text-2xl font-bold text-purple-500">{stories.length}</p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            {stories.length} stories · {posts.length} posts
+            {stories.length} {stories.length === 1 ? "story" : "stories"}
           </p>
         </div>
       </div>

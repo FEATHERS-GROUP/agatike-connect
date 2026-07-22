@@ -12,7 +12,7 @@ import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
-import { getGlobalFeedPosts, getCommunityMoments } from "@/api/experience";
+import { getCommunityMoments } from "@/api/experience";
 import { getPublicEvents } from "@/api/events";
 import { getPublicMovieSchedules } from "@/api/cinemas";
 import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
@@ -103,7 +103,6 @@ const movieStories: any[] = [
   },
 ];
 
-const feedPosts: any[] = [];
 const organizers: any[] = [];
 
 export function HomeDesktop() {
@@ -115,10 +114,7 @@ export function HomeDesktop() {
     queryFn: () => getOrganizers(),
   });
 
-  const { data: dbPosts = [] } = useQuery({
-    queryKey: ["global-feed-posts"],
-    queryFn: () => getGlobalFeedPosts(),
-  });
+
 
   const { data: communityMoments = [] } = useQuery({
     queryKey: ["community-moments"],

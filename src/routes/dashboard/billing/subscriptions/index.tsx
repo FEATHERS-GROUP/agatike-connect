@@ -102,8 +102,7 @@ const PER_EVENT_LIMITS: Record<string, { label: string; icon: React.FC<any> }> =
   max_event_sections: { label: "Event Sections", icon: MapPin },
   max_event_vendors: { label: "Event Vendors", icon: ShoppingBag },
   max_event_vouchers: { label: "Event Vouchers", icon: Ticket },
-  max_event_stories: { label: "Event Stories", icon: Layout },
-  max_event_posts: { label: "Event Posts", icon: FileText },
+  max_event_stories: { label: "Event Stories", icon: Sparkles },
 };
 
 const PERMISSION_KEYS: Record<string, string> = {

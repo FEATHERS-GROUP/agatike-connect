@@ -64,21 +64,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           }
         }
         
-        event_posts(
-          where: { created_at: { _gte: $startDate, _lte: $endDate } },
-          order_by: { created_at: asc }
-        ) {
-          id
-          content
-          created_at
-          media_urls
-          event_id
-          workspace {
-            organizer {
-              name
-            }
-          }
-        }
+
         
         venue_bookings(
           where: { start_time: { _gte: $startDate, _lte: $endDate } },
@@ -114,7 +100,6 @@ export const getScheduledServices = createServerFn({ method: "POST" })
       const data = await hasuraRequest<{
         events: any[];
         cinema_schedules: any[];
-        event_posts: any[];
         venue_bookings: any[];
       }>(query, { startDate, endDate, dateStart, dateEnd });
 
@@ -154,31 +139,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
         });
       });
 
-      (data.event_posts || []).forEach((p) => {
-        // media_urls might be a JSON array or a string depending on Hasura
-        let cover = null;
-        if (p.media_urls && Array.isArray(p.media_urls)) {
-          cover = p.media_urls[0];
-        } else if (typeof p.media_urls === "string") {
-          try {
-            cover = JSON.parse(p.media_urls)[0];
-          } catch (e) {
-            cover = p.media_urls;
-          }
-        }
 
-        unifiedTimeline.push({
-          id: p.id,
-          type: "Experience",
-          title: p.content ? `Experience: ${p.content.substring(0, 30)}...` : "Platform Experience",
-          date: p.created_at,
-          location: "Virtual / Platform",
-          organizer: p.workspace?.organizer?.name || "Unknown",
-          coverUrl: cover,
-          ticketTiers: [],
-          bookings: 0,
-        });
-      });
 
       (data.venue_bookings || []).forEach((b) => {
         unifiedTimeline.push({

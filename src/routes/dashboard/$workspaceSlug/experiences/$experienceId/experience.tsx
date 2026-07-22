@@ -6,10 +6,6 @@ import {
   getEventStories,
   createEventStory,
   deleteEventStory,
-  createEventPost,
-  getEventPosts,
-  togglePinPost,
-  deleteEventPost,
   getEventHighlights,
   upsertEventHighlight,
   deleteEventHighlight,
@@ -84,7 +80,7 @@ function ExperienceDashboard() {
   const { experienceId: eventId, workspaceSlug } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
-  const { canCreateEventStory, canCreateEventPost } = useSubscriptionLimits(
+  const { canCreateEventStory } = useSubscriptionLimits(
     activeWorkspace?.orgnizer_id,
     activeWorkspace?.id,
   );
@@ -194,92 +190,7 @@ function ExperienceDashboard() {
     }
   };
 
-  // ── Posts ─────────────────────────────────────────────────────────────────
-  const { data: posts = [], isLoading: isLoadingPosts } = useQuery({
-    queryKey: ["event-posts", eventId],
-    queryFn: () => getEventPosts({ data: { event_id: eventId } } as any),
-    enabled: !!eventId,
-  });
 
-  const [postContent, setPostContent] = useState("");
-  const [postMedia, setPostMedia] = useState<string[]>([]);
-  const [isUploadingPostMedia, setIsUploadingPostMedia] = useState(false);
-
-  const createPostMutation = useMutation({
-    mutationFn: () => {
-      if (!canCreateEventPost(posts.length)) {
-        return Promise.reject(
-          new Error(
-            "Post Limit Reached: You have reached the maximum number of posts allowed by your plan.",
-          ),
-        );
-      }
-      return createEventPost({
-        data: {
-          event_id: eventId,
-          workspace_id: activeWorkspace?.id,
-          content: postContent,
-          media_urls: postMedia,
-        },
-      } as any);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["event-posts", eventId] });
-      setPostContent("");
-      setPostMedia([]);
-      toast.success("Post published!");
-    },
-    onError: (err: any) => toast.error(err.message || "Failed to publish post."),
-  });
-
-  const pinMutation = useMutation({
-    mutationFn: (vars: { id: string; is_pinned: boolean }) => togglePinPost({ data: vars } as any),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["event-posts", eventId] }),
-  });
-
-  const deletePostMutation = useMutation({
-    mutationFn: (id: string) => deleteEventPost({ data: { id } } as any),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["event-posts", eventId] });
-      toast.success("Post deleted.");
-    },
-  });
-
-  const MAX_POST_MEDIA_SIZE_MB = 5;
-  const MAX_POST_IMAGES = 4;
-
-  const handlePostMediaUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const remaining = MAX_POST_IMAGES - postMedia.length;
-    if (remaining <= 0) {
-      toast.error(`Maximum ${MAX_POST_IMAGES} photos per post.`);
-      return;
-    }
-    const toUpload = Array.from(files).slice(0, remaining);
-    const oversized = toUpload.filter((f) => f.size > MAX_POST_MEDIA_SIZE_MB * 1024 * 1024);
-    if (oversized.length > 0) {
-      toast.error(`${oversized.length} image(s) too large`, {
-        description: `Max size is ${MAX_POST_MEDIA_SIZE_MB}MB per image.`,
-      });
-      return;
-    }
-    setIsUploadingPostMedia(true);
-    try {
-      const urls = await Promise.all(
-        toUpload.map((file) => uploadFileToStorage(file, `posts/${eventId}`)),
-      );
-      setPostMedia((prev) => [...prev, ...urls]);
-      if (toUpload.length < files.length) {
-        toast.info(
-          `Only ${toUpload.length} of ${files.length} photos added (max ${MAX_POST_IMAGES}).`,
-        );
-      }
-    } catch {
-      toast.error("Failed to upload image(s).");
-    } finally {
-      setIsUploadingPostMedia(false);
-    }
-  };
 
   // ── Highlights ────────────────────────────────────────────────────────────
   const { data: highlights = [] } = useQuery({
@@ -315,9 +226,6 @@ function ExperienceDashboard() {
           </TabsTrigger>
           <TabsTrigger value="stories" className="rounded-lg gap-2">
             <Sparkles className="h-4 w-4" /> Stories
-          </TabsTrigger>
-          <TabsTrigger value="posts" className="rounded-lg gap-2">
-            <MessageSquare className="h-4 w-4" /> Posts
           </TabsTrigger>
         </TabsList>
 
@@ -673,210 +581,7 @@ function ExperienceDashboard() {
           )}
         </TabsContent>
 
-        {/* ══════════════ POSTS TAB ══════════════ */}
-        <TabsContent value="posts" className="space-y-6">
-          {/* Composer */}
-          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Send className="h-4 w-4 text-primary" /> Create a Post
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Posts are permanent and visible to followers in their feed.
-            </p>
-            <textarea
-              placeholder="Share an update, highlight, or announcement about this event..."
-              value={postContent}
-              onChange={(e) => setPostContent(e.target.value)}
-              rows={4}
-              className="w-full bg-background border border-border/60 rounded-xl p-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-            />
-            {postMedia.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {postMedia.map((url, i) => (
-                  <div
-                    key={i}
-                    className="relative group w-24 h-24 rounded-xl overflow-hidden border border-border"
-                  >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => setPostMedia((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                {postMedia.length < MAX_POST_IMAGES && (
-                  <div className="relative w-24 h-24 rounded-xl border-2 border-dashed border-border/60 flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      multiple
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      disabled={isUploadingPostMedia}
-                      onChange={(e) => handlePostMediaUpload(e.target.files)}
-                    />
-                    {isUploadingPostMedia ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        <Camera className="h-5 w-5 mb-1" />
-                        <span className="text-[10px] font-medium">
-                          {postMedia.length}/{MAX_POST_IMAGES}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="flex items-center gap-3">
-              {postMedia.length === 0 && (
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    multiple
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    disabled={isUploadingPostMedia}
-                    onChange={(e) => handlePostMediaUpload(e.target.files)}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2 pointer-events-none text-muted-foreground"
-                  >
-                    {isUploadingPostMedia ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Camera className="h-4 w-4" />
-                    )}
-                    Add Photos
-                  </Button>
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Up to {MAX_POST_IMAGES} photos · Max {MAX_POST_MEDIA_SIZE_MB}MB each
-              </p>
-              <div className="flex-1" />
-              <Button
-                onClick={() => createPostMutation.mutate()}
-                disabled={!postContent.trim() || createPostMutation.isPending}
-                className="gap-2"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                {createPostMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                Publish
-              </Button>
-            </div>
-          </div>
 
-          {/* Posts Feed */}
-          {isLoadingPosts ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/60 p-12 text-center text-muted-foreground">
-              <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">No posts yet.</p>
-              <p className="text-sm mt-1">
-                Write an update or highlight to share with your followers.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {posts.map((post: any) => (
-                <div
-                  key={post.id}
-                  className={`rounded-2xl border bg-card p-5 shadow-sm space-y-3 ${
-                    post.is_pinned ? "border-primary/30 bg-primary/5" : "border-border/60"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      {post.is_pinned && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
-                          <Pin className="h-3 w-3" /> Pinned
-                        </span>
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        title={post.is_pinned ? "Unpin" : "Pin to top"}
-                        onClick={() =>
-                          pinMutation.mutate({ id: post.id, is_pinned: !post.is_pinned })
-                        }
-                      >
-                        <Pin
-                          className={`h-4 w-4 ${post.is_pinned ? "text-primary fill-primary" : "text-muted-foreground"}`}
-                        />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-                        onClick={() => deletePostMutation.mutate(post.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <p className="text-sm leading-relaxed">{post.content}</p>
-
-                  {(() => {
-                    let urls: string[] = [];
-                    if (Array.isArray(post.media_urls)) {
-                      urls = post.media_urls;
-                    } else if (typeof post.media_urls === "string") {
-                      try {
-                        urls = JSON.parse(post.media_urls);
-                        if (!Array.isArray(urls)) urls = [];
-                      } catch (e) {
-                        urls = [];
-                      }
-                    }
-                    if (urls.length === 0) return null;
-                    return (
-                      <div
-                        className={`grid gap-2 ${urls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
-                      >
-                        {urls.map((url: string, i: number) => (
-                          <img
-                            key={i}
-                            src={url}
-                            alt=""
-                            className="rounded-xl w-full h-48 object-cover border border-border"
-                          />
-                        ))}
-                      </div>
-                    );
-                  })()}
-
-                  <div className="flex items-center gap-4 pt-2 border-t border-border/40">
-                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Heart className="h-3.5 w-3.5" /> {post.likes_count} likes
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <MessageSquare className="h-3.5 w-3.5" /> {post.comments_count} comments
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
       </Tabs>
     </div>
   );

@@ -75,7 +75,6 @@ const defaultFormState = {
     max_event_vendors: 0,
     max_event_vouchers: 0,
     max_event_stories: 0,
-    max_event_posts: 0,
     max_ticket_tiers_per_event: 2,
     max_workspace_users: 2,
     max_contributors: 0,
@@ -876,11 +875,7 @@ function AdminPricingPage() {
               label: "Max Event Stories",
               desc: "Total stories that can be posted to an event's experience highlights.",
             },
-            {
-              key: "max_event_posts",
-              label: "Max Event Posts",
-              desc: "Total text/image posts that can be added to an event's experience feed.",
-            },
+
             {
               key: "max_planning_items",
               label: "Max Planning Items",

@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { FeedCard } from "@/components/site/FeedCard";
 import { Stories } from "@/components/site/Stories";
 import { MessageCircle, Activity, Loader2, Users, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,6 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
 import { getOrganizersRatings } from "@/api/feedback";
-import { getGlobalFeedPosts } from "@/api/experience";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
 import { useEffect, useState, useMemo, Fragment } from "react";
@@ -271,13 +269,6 @@ export function HomeMobile() {
     staleTime: 1000 * 60 * 2,
   });
 
-  const { data: dbPosts = [] } = useQuery({
-    queryKey: ["global-feed-posts"],
-    queryFn: () => getGlobalFeedPosts(),
-    retry: false,
-    staleTime: 1000 * 60 * 2,
-  });
-
   const { data: ratingsMap = {} } = useQuery({
     queryKey: ["organizers-ratings"],
     queryFn: () => getOrganizersRatings(),
@@ -415,29 +406,7 @@ export function HomeMobile() {
     };
   }, [user?.id]);
 
-  const carouselPositions = useMemo(() => {
-    const max = 25;
-    let pos: number[] = [];
-    while (pos.length < 3) {
-      const r = Math.floor(Math.random() * max) + 1;
-      if (pos.indexOf(r) === -1) pos.push(r);
-    }
-    return pos.sort((a, b) => a - b);
-  }, []);
 
-  const sortedPosts = useMemo(() => {
-    const filteredPosts = isLoggedIn
-      ? dbPosts.filter((post: any) => isFollowing(post.organizerId))
-      : dbPosts;
-
-    const postsWithRand = filteredPosts.map((p: any) => ({ ...p, _rand: Math.random() * 50 }));
-
-    return postsWithRand.sort((a: any, b: any) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return bTime - aTime;
-    });
-  }, [dbPosts, followedIds, isLoggedIn]);
 
   // Show loading spinner while checking session
   if (isLoading) {
@@ -489,82 +458,18 @@ export function HomeMobile() {
         <Stories />
       </div>
 
-      {/* The carousels are now interleaved in the feed below */}
-
-      {/* Feed List with Interleaved Carousels */}
-      <div className="w-full pt-2 pb-24">
-        {(() => {
-          if (sortedPosts.length === 0) {
-            return (
-              <div className="flex flex-col w-full">
-                <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
-                  <div className="h-14 w-14 bg-secondary text-muted-foreground rounded-full flex items-center justify-center mb-3">
-                    <Users className="h-6 w-6" />
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Your feed is quiet</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Follow organizers to see their updates here.
-                  </p>
-                </div>
-                <UpcomingEvents events={weekendEvents} />
-                <PopularOrganizers
-                  organizersLoading={organizersLoading}
-                  allFollowed={allFollowed}
-                  unfollowedOrganizers={unfollowedOrganizers}
-                  isFollowing={isFollowing}
-                  toggleFollow={toggleFollow}
-                  ratingsMap={ratingsMap}
-                />
-                <NowShowing movies={movies} />
-              </div>
-            );
-          }
-
-          return (
-            <>
-              {sortedPosts.map((item: any, index: number) => {
-                const isFirstCarousel = index === carouselPositions[0];
-                const isSecondCarousel = index === carouselPositions[1];
-                const isThirdCarousel = index === carouselPositions[2];
-
-                return (
-                  <Fragment key={`${item.id}-${index}`}>
-                    <FeedCard post={item} />
-
-                    {isFirstCarousel && <UpcomingEvents events={weekendEvents} />}
-                    {isSecondCarousel && (
-                      <PopularOrganizers
-                        organizersLoading={organizersLoading}
-                        allFollowed={allFollowed}
-                        unfollowedOrganizers={unfollowedOrganizers}
-                        isFollowing={isFollowing}
-                        toggleFollow={toggleFollow}
-                        ratingsMap={ratingsMap}
-                      />
-                    )}
-                    {isThirdCarousel && <NowShowing movies={movies} />}
-                  </Fragment>
-                );
-              })}
-
-              {/* Catch-all to ensure carousels always render if the feed is too short */}
-              {sortedPosts.length <= carouselPositions[0] && (
-                <UpcomingEvents events={weekendEvents} />
-              )}
-              {sortedPosts.length <= carouselPositions[1] && (
-                <PopularOrganizers
-                  organizersLoading={organizersLoading}
-                  allFollowed={allFollowed}
-                  unfollowedOrganizers={unfollowedOrganizers}
-                  isFollowing={isFollowing}
-                  toggleFollow={toggleFollow}
-                  ratingsMap={ratingsMap}
-                />
-              )}
-              {sortedPosts.length <= carouselPositions[2] && <NowShowing movies={movies} />}
-            </>
-          );
-        })()}
+      {/* Main Content Area */}
+      <div className="w-full pt-2 pb-24 space-y-4">
+        <UpcomingEvents events={weekendEvents} />
+        <PopularOrganizers
+          organizersLoading={organizersLoading}
+          allFollowed={allFollowed}
+          unfollowedOrganizers={unfollowedOrganizers}
+          isFollowing={isFollowing}
+          toggleFollow={toggleFollow}
+          ratingsMap={ratingsMap}
+        />
+        <NowShowing movies={movies} />
       </div>
 
       {/* CSS to hide scrollbars */}
