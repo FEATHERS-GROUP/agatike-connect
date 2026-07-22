@@ -61,7 +61,8 @@ function MapController({
       const lat = parseFloat(selectedMarker.lat as any);
       const lng = parseFloat(selectedMarker.lng as any);
       if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
-        map.flyTo([lat, lng], 15, { duration: 0.5 });
+        // Offset the center slightly so the marker isn't hidden under the bottom card
+        map.flyTo([lat - 0.005, lng], 15, { duration: 0.5 });
       }
     } else if (selectedCity && selectedCity.bounds.length > 0) {
       if (selectedCity.bounds.length === 1) {

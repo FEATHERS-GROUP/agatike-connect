@@ -1,361 +1,98 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Stories } from "@/components/site/Stories";
-import { MessageCircle, Activity, Loader2, Users, Star } from "lucide-react";
+import { MessageCircle, Activity, Loader2, MapPin, ChevronRight, X, Compass, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganizers } from "@/api/organizers";
-import { getOrganizersRatings } from "@/api/feedback";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
-import { useEffect, useState, useMemo, Fragment } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getPublicEvents } from "@/api/events";
-import { getPublicMovieSchedules } from "@/api/cinemas";
-import { MOCK_MOVIES } from "@/lib/mock-movies";
-import { mapDbEventToEvent, isWeekendEvent } from "@/lib/utils";
+import { getPublicCinemas } from "@/api/cinemas";
+import { getPublicVenues } from "@/api/venues";
+import { getPublicSpaces } from "@/api/spaces";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useTheme } from "@/contexts/ThemeContext";
 
-const movieStories: any[] = [
-  {
-    id: "cs1",
-    name: "Century Cinemax",
-    avatar: "https://ui-avatars.com/api/?name=Century+Cinemax&background=000&color=fff",
-    items: [
-      {
-        id: "cs1i1",
-        image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
-      },
-      {
-        id: "cs1i2",
-        image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
-      },
-    ],
-  },
-  {
-    id: "cs2",
-    name: "Silverbird Cinemas",
-    avatar: "https://ui-avatars.com/api/?name=Silverbird+Cinemas&background=1D4ED8&color=fff",
-    items: [
-      {
-        id: "cs2i1",
-        image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
-      },
-      {
-        id: "cs2i2",
-        image:
-          "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
-      },
-    ],
-  },
-  {
-    id: "cs3",
-    name: "Ster-Kinekor",
-    avatar: "https://ui-avatars.com/api/?name=Ster-Kinekor&background=E11D48&color=fff",
-    items: [
-      {
-        id: "cs3i1",
-        image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop",
-      },
-      {
-        id: "cs3i2",
-        image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
-      },
-    ],
-  },
-  {
-    id: "cs4",
-    name: "Canal Olympia",
-    avatar: "https://ui-avatars.com/api/?name=Canal+Olympia&background=047857&color=fff",
-    items: [
-      {
-        id: "cs4i1",
-        image:
-          "https://upload.wikimedia.org/wikipedia/en/8/8b/Bad_Boys_Ride_or_Die_%282024%29_poster.jpg",
-      },
-      {
-        id: "cs4i2",
-        image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=800&fit=crop",
-      },
-    ],
-  },
-  {
-    id: "cs5",
-    name: "Nu Metro",
-    avatar: "https://ui-avatars.com/api/?name=Nu+Metro&background=7C3AED&color=fff",
-    items: [
-      {
-        id: "cs5i1",
-        image: "https://upload.wikimedia.org/wikipedia/en/4/4c/Deadpool_%26_Wolverine_poster.jpg",
-      },
-      {
-        id: "cs5i2",
-        image: "https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg",
-      },
-    ],
-  },
-];
+const normalizeCityName = (city?: string) => {
+  if (!city) return "Unknown";
+  const clean = city.trim().toLowerCase();
+  if (clean === "kgali" || clean === "kiigali" || clean === "kigali") return "Kigali";
+  return clean
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+};
 
-function PopularOrganizers({
-  organizersLoading,
-  allFollowed,
-  unfollowedOrganizers,
-  isFollowing,
-  toggleFollow,
-  ratingsMap,
-}: any) {
-  const { isLoggedIn } = useUserAuth();
-  return (
-    <div className="pt-5 pb-3 border-b border-border/40">
-      <div className="flex items-center justify-between px-4 mb-3">
-        <h2 className="text-lg font-bold tracking-tight text-foreground">Popular Organizers</h2>
-        <Link to="/organizers" className="text-sm font-bold text-primary">
-          See all
-        </Link>
-      </div>
-      <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
-        {organizersLoading ? (
-          <div className="flex items-center justify-center w-full py-6">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : allFollowed ? (
-          <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
-            <Users className="h-8 w-8" />
-            <p className="text-sm text-center">You're following all organizers!</p>
-            <Link to="/organizers" className="text-xs font-bold text-primary">
-              View on organizers page →
-            </Link>
-          </div>
-        ) : unfollowedOrganizers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center w-full py-6 gap-2 text-muted-foreground">
-            <Users className="h-8 w-8" />
-            <p className="text-sm">No organizers found</p>
-          </div>
-        ) : (
-          unfollowedOrganizers.map((org: any) => {
-            return (
-              <Link
-                key={org.id}
-                to="/organizers"
-                className="w-36 shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center text-center transition-transform active:scale-95 block"
-              >
-                <img
-                  src={org.avatar || org.image || `https://i.pravatar.cc/150?u=${org.id}`}
-                  alt={org.name}
-                  className="w-16 h-16 rounded-full object-cover mb-3"
-                />
-                <p className="font-semibold text-sm leading-tight line-clamp-1">{org.name}</p>
-                <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">@{org.handle}</p>
-                {ratingsMap[org.id] && (
-                  <div className="flex items-center gap-0.5 mt-1 text-[10px] text-primary font-semibold">
-                    <Star className="h-2.5 w-2.5 fill-primary" />
-                    <span>{ratingsMap[org.id].avg.toFixed(1)}</span>
-                  </div>
-                )}
-                {isLoggedIn && (
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="mt-3 w-full rounded-full h-7 text-[10px] font-bold uppercase tracking-wider shadow-[var(--shadow-glow)]"
-                    style={{ background: "var(--gradient-primary)" }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleFollow(org.id);
-                    }}
-                  >
-                    Follow
-                  </Button>
-                )}
-              </Link>
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
-}
-
-function UpcomingEvents({ events }: any) {
-  return (
-    <div className="pt-5 pb-3">
-      <div className="flex items-center justify-between px-4 mb-3">
-        <h2 className="text-lg font-bold tracking-tight text-foreground">Upcoming Events</h2>
-        <Link to="/events" className="text-sm font-bold text-primary">
-          See all
-        </Link>
-      </div>
-      {!events || events.length === 0 ? (
-        <div className="mx-4 p-6 border border-border/40 bg-card rounded-2xl text-center shadow-sm">
-          <p className="text-xs font-semibold text-foreground">No events found in your country</p>
-        </div>
-      ) : (
-        <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
-          {events.map((event: any) => (
-            <Link
-              key={event.id}
-              to="/events/$eventId"
-              params={{ eventId: event.id }}
-              className="w-60 shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block transition-transform active:scale-95"
-            >
-              <div className="aspect-[4/3] relative">
-                <img src={event.cover} alt={event.title} className="w-full h-full object-cover" />
-                <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                  {event.currency || "$"}
-                  {event.price}
-                </div>
-              </div>
-              <div className="p-3">
-                <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="truncate">{event.date}</span>
-                  <span>•</span>
-                  <span className="truncate">{event.city}</span>
-                </div>
-                <div className="mt-1 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                  <Users className="h-3 w-3" /> People going ·{" "}
-                  {(event.attendees || 0).toLocaleString()}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NowShowing({ movies }: any) {
-  if (!movies || movies.length === 0) return null;
-  return (
-    <div className="pt-2 pb-3">
-      <div className="flex items-center justify-between px-4 mb-3">
-        <h2 className="text-lg font-bold tracking-tight text-foreground">Now Showing</h2>
-        <Link to="/movies" className="text-sm font-bold text-primary">
-          See all
-        </Link>
-      </div>
-      <div className="flex gap-4 px-4 overflow-x-auto hide-scrollbar pb-2">
-        {movies.map((m: any) => (
-          <Link
-            key={m.id}
-            to="/movies"
-            className="w-32 shrink-0 block transition-transform active:scale-95"
-          >
-            <div className="aspect-[2/3] relative rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm mb-2">
-              <img src={m.cover} alt={m.title} className="w-full h-full object-cover" />
-              <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm">
-                {m.rating}
-              </div>
-            </div>
-            <h3 className="font-bold text-sm leading-tight line-clamp-1">{m.title}</h3>
-            <p className="text-muted-foreground text-[10px] mt-0.5">{m.genre}</p>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+function MapController({ selectedMarker }: { selectedMarker: any | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (selectedMarker) {
+      const lat = parseFloat(selectedMarker.lat as any);
+      const lng = parseFloat(selectedMarker.lng as any);
+      if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
+        // Offset the center slightly so the marker isn't hidden under the bottom card
+        map.flyTo([lat - 0.005, lng], 14, { duration: 0.5 });
+      }
+    }
+  }, [selectedMarker, map]);
+  return null;
 }
 
 export function HomeMobile() {
   const { user, isLoading, isLoggedIn } = useUserAuth();
-  const navigate = useNavigate();
-  const { toggleFollow, isFollowing, followedIds } = useFollowedOrganizers();
+  const navigate = useNavigate({ from: "/$userId" } as any);
+  const { followedIds } = useFollowedOrganizers();
+  const { theme } = useTheme();
 
-  const { data: dbOrganizers = [], isLoading: organizersLoading } = useQuery({
-    queryKey: ["organizers"],
-    queryFn: () => getOrganizers(),
-    retry: false,
-    staleTime: 1000 * 60 * 2,
-  });
+  const [selectedMarker, setSelectedMarker] = useState<any | null>(null);
+  const [mapRef, setMapRef] = useState<L.Map | null>(null);
+  const [isDark, setIsDark] = useState(false);
 
-  const { data: ratingsMap = {} } = useQuery({
-    queryKey: ["organizers-ratings"],
-    queryFn: () => getOrganizersRatings(),
-  });
+  useEffect(() => {
+    if (theme === "dark") {
+      setIsDark(true);
+    } else if (theme === "light") {
+      setIsDark(false);
+    } else {
+      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+  }, [theme]);
 
+  const defaultCenter: [number, number] = [-1.9441, 30.0619];
+
+  // --- QUERIES ---
   const { data: dbEvents = [] } = useQuery({
     queryKey: ["public-events"],
     queryFn: () => getPublicEvents(),
-    retry: false,
-    staleTime: 1000 * 60 * 2,
   });
 
-  const { data: schedules = [] } = useQuery({
-    queryKey: ["public-movie-schedules-mobile"],
-    queryFn: () => getPublicMovieSchedules(),
+  const { data: dbVenues = [] } = useQuery({
+    queryKey: ["public-venues"],
+    queryFn: () => getPublicVenues(),
   });
 
-  const dynamicMovieStories = useMemo(() => {
-    if (!schedules || schedules.length === 0) return movieStories;
-    const cinemasMap = new Map<string, any>();
-    schedules.forEach((s: any) => {
-      const c = s.cinema;
-      const m = s.movie;
-      if (!c || !m) return;
-      if (!cinemasMap.has(c.id)) {
-        cinemasMap.set(c.id, {
-          id: c.id,
-          name: c.name,
-          avatar:
-            c.logo_url ||
-            c.cover_url ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`,
-          items: [],
-          _movieIds: new Set(),
-        });
-      }
-      const cinemaEntry = cinemasMap.get(c.id);
-      if (!cinemaEntry._movieIds.has(m.id)) {
-        cinemaEntry._movieIds.add(m.id);
-        cinemaEntry.items.push({
-          id: `${c.id}-${m.id}`,
-          image:
-            m.cover_url || "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800",
-        });
-      }
-    });
+  const { data: dbSpaces = [] } = useQuery({
+    queryKey: ["public-spaces"],
+    queryFn: () => getPublicSpaces(),
+  });
 
-    const dynamicStories = Array.from(cinemasMap.values()).filter((c) => c.items.length > 0);
-    return dynamicStories.length > 0 ? [...dynamicStories, ...movieStories] : movieStories;
-  }, [schedules]);
+  const { data: dbCinemas = [] } = useQuery({
+    queryKey: ["public-cinemas"],
+    queryFn: () => getPublicCinemas(),
+  });
 
-  const movies = useMemo(() => {
-    const moviesMap = new Map();
-    schedules.forEach((s: any) => {
-      if (s.movie) {
-        moviesMap.set(s.movie.id, {
-          ...s.movie,
-          cover:
-            s.movie.cover_url ||
-            "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=600",
-        });
-      }
-    });
-    const realMovies = Array.from(moviesMap.values());
-    const mockToAdd = MOCK_MOVIES.filter((mock) => !realMovies.some((r) => r.title === mock.title));
-    return [...realMovies, ...mockToAdd];
-  }, [schedules]);
+  const { data: dbOrganizers = [] } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
 
-  const mappedEvents = useMemo(() => {
-    const publicEvents = dbEvents.filter(
-      (e: any) => e.allowed_public === true && e.deleted !== true,
-    );
-    return publicEvents.map(mapDbEventToEvent).filter(Boolean);
-  }, [dbEvents]);
-
-  const weekendEvents = useMemo(() => {
-    let filtered = mappedEvents.filter((e: any) => isWeekendEvent(e.date));
-    if (filtered.length === 0) {
-      filtered = mappedEvents;
-    }
-    return filtered;
-  }, [mappedEvents]);
-
-  // On home page, hide organizers the user already follows
-  const unfollowedOrganizers = dbOrganizers.filter((org: any) => !isFollowing(org.id));
-  const allFollowed = dbOrganizers.length > 0 && unfollowedOrganizers.length === 0;
-
+  // Notifications / Chats
   const { channels } = useFirestoreUserMessages(user?.id || "", followedIds);
   const unreadChatsCount = channels.filter((c) => {
     const isUnread =
@@ -368,12 +105,10 @@ export function HomeMobile() {
 
   useEffect(() => {
     if (!user?.id) return;
-
     const q = query(
       collection(db, "agatike_notifications"),
       where("targetUsers", "array-contains", user.id),
     );
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const lastReadTimestamp = parseInt(
         localStorage.getItem("lastActivityReadTimestamp") || "0",
@@ -384,104 +119,296 @@ export function HomeMobile() {
         const data = doc.data();
         if (data.actorId !== user.id) {
           const notifTime = data.createdAt ? new Date(data.createdAt).getTime() : 0;
-          if (notifTime > lastReadTimestamp) {
-            count++;
-          }
+          if (notifTime > lastReadTimestamp) count++;
         }
       });
       setUnreadCount(count);
     });
-
     return () => unsubscribe();
   }, [user?.id]);
 
   useEffect(() => {
-    const handleReadEvent = () => {
-      setUnreadCount(0);
-    };
-
+    const handleReadEvent = () => setUnreadCount(0);
     window.addEventListener("activityRead", handleReadEvent);
-    return () => {
-      window.removeEventListener("activityRead", handleReadEvent);
-    };
+    return () => window.removeEventListener("activityRead", handleReadEvent);
   }, [user?.id]);
 
+  // --- MAP DATA PROCESSING ---
+  const mapMarkers = useMemo(() => {
+    const markers: any[] = [];
 
+    // Process Events
+    dbEvents.forEach((e: any) => {
+      const firstStopWithCoords = e.tour_stops?.find((s: any) => s.latitude && s.longitude);
+      if (e.allowed_public && !e.deleted && firstStopWithCoords) {
+        markers.push({
+          id: `event-${e.id}`,
+          title: e.title,
+          date: new Date(e.created_at).toLocaleDateString(),
+          lat: parseFloat(firstStopWithCoords.latitude),
+          lng: parseFloat(firstStopWithCoords.longitude),
+          image:
+            e.cover ||
+            "https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=100",
+          type: "event",
+          city: normalizeCityName(firstStopWithCoords.city),
+          raw: e,
+        });
+      }
+    });
 
-  // Show loading spinner while checking session
+    // Process Venues
+    dbVenues.forEach((v: any) => {
+      if (v.latitude && v.longitude) {
+        markers.push({
+          id: `venue-${v.id}`,
+          title: v.name,
+          date: v.city,
+          lat: parseFloat(v.latitude),
+          lng: parseFloat(v.longitude),
+          image:
+            v.cover_url ||
+            "https://images.unsplash.com/photo-1540306316208-161d02c7fbdf?auto=format&fit=crop&w=100",
+          type: "venue",
+          city: normalizeCityName(v.city),
+          raw: v,
+        });
+      }
+    });
+
+    // Process Organizers (Users)
+    dbOrganizers.forEach((org: any) => {
+      if (org.lat && org.lng) {
+        markers.push({
+          id: `org-${org.id}`,
+          title: org.name,
+          lat: parseFloat(org.lat),
+          lng: parseFloat(org.lng),
+          image:
+            org.avatar ||
+            org.image ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(org.name)}&background=random`,
+          type: "user",
+          city: normalizeCityName("Unknown"),
+          raw: org,
+        });
+      }
+    });
+
+    // Process Spaces
+    dbSpaces.forEach((s: any) => {
+      const firstLoc = s.locations?.[0];
+      if (firstLoc && firstLoc.lat && firstLoc.lng) {
+        markers.push({
+          id: `space-${s.id}`,
+          title: s.name,
+          date: firstLoc.city,
+          lat: parseFloat(firstLoc.lat),
+          lng: parseFloat(firstLoc.lng),
+          image:
+            s.cover_url ||
+            "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=100",
+          type: "space",
+          city: normalizeCityName(firstLoc.city),
+          raw: s,
+        });
+      }
+    });
+
+    // Process Cinemas
+    dbCinemas.forEach((c: any) => {
+      if (c.latitude && c.longitude) {
+        markers.push({
+          id: `cinema-${c.id}`,
+          title: c.name,
+          date: c.city,
+          lat: parseFloat(c.latitude),
+          lng: parseFloat(c.longitude),
+          image:
+            c.cover_url ||
+            "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=100",
+          type: "cinema",
+          city: normalizeCityName(c.city),
+          raw: c,
+        });
+      }
+    });
+
+    return markers.filter(
+      (m) => !isNaN(m.lat) && !isNaN(m.lng) && isFinite(m.lat) && isFinite(m.lng),
+    );
+  }, [dbEvents, dbVenues, dbOrganizers, dbSpaces, dbCinemas]);
+
+  const createCustomIcon = (marker: any) => {
+    const isSelected = selectedMarker?.id === marker.id;
+    const scaleClass = isSelected ? "scale-110 z-50 ring-4 ring-primary" : "hover:scale-110";
+    
+    // Create a circular pin with an image inside, similar to MapDesktop but optimized for mobile
+    return L.divIcon({
+      className: "bg-transparent border-none",
+      html: `
+        <div class="relative group cursor-pointer transition-transform duration-300 ${scaleClass}">
+          <div class="h-12 w-12 rounded-full p-1 bg-gradient-to-tr from-primary to-accent shadow-lg relative overflow-hidden">
+             <img src="${marker.image}" class="h-full w-full rounded-full object-cover border-2 border-background" />
+          </div>
+          <!-- Little pointer triangle at the bottom -->
+          <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-primary"></div>
+        </div>
+      `,
+      iconSize: [48, 56],
+      iconAnchor: [24, 56],
+    });
+  };
+
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex h-[100dvh] items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full bg-background text-foreground pb-20">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-30 border-b border-border/40 pt-safe-top">
-        <Link
-          to="/$userId/message"
-          params={{ userId: user?.id || "me" }}
-          className="text-foreground relative"
+    <div className="relative h-[100dvh] w-full bg-background overflow-hidden pb-16">
+      {/* Map Layer */}
+      <div className="absolute inset-0 z-0">
+        <MapContainer
+          center={defaultCenter}
+          zoom={13}
+          className="h-full w-full z-0"
+          zoomControl={false}
+          ref={setMapRef}
         >
-          <MessageCircle className="h-6 w-6" />
-          {unreadChatsCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">
-              {unreadChatsCount > 99 ? "99+" : unreadChatsCount}
-            </span>
-          )}
-        </Link>
-        <img src="/icon.svg" alt="Agatike" className="h-8 w-auto object-contain" />
-        <Link to="/activity" className="text-foreground relative">
-          <Activity className="h-6 w-6" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
-        </Link>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url={
+              isDark
+                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            }
+          />
+          <MapController selectedMarker={selectedMarker} />
+          {mapMarkers.map((marker) => (
+            <Marker
+              key={marker.id}
+              position={[marker.lat, marker.lng]}
+              icon={createCustomIcon(marker)}
+              eventHandlers={{
+                click: () => setSelectedMarker(marker),
+              }}
+            />
+          ))}
+        </MapContainer>
       </div>
 
-      {/* Welcome Banner */}
-      {user && (
-        <div className="px-4 pt-4 pb-2">
-          <p className="text-sm text-muted-foreground">
-            Welcome back, <span className="font-semibold text-foreground">{user.username}</span> 👋
-          </p>
+      {/* Top Overlay Layer: Header + Stories */}
+      <div className="absolute top-0 left-0 right-0 z-[100] flex flex-col pointer-events-none">
+        {/* Header (Interactive) */}
+        <div className="pointer-events-auto bg-background/80 backdrop-blur-md pt-safe-top">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
+            <Link
+              to="/$userId/message"
+              params={{ userId: user?.id || "me" }}
+              className="text-foreground relative p-1 transition-transform active:scale-95"
+            >
+              <MessageCircle className="h-6 w-6" />
+              {unreadChatsCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">
+                  {unreadChatsCount > 99 ? "99+" : unreadChatsCount}
+                </span>
+              )}
+            </Link>
+            <img src="/icon.svg" alt="Agatike" className="h-7 w-auto object-contain drop-shadow-md" />
+            <Link
+              to="/activity"
+              className="text-foreground relative p-1 transition-transform active:scale-95"
+            >
+              <Activity className="h-6 w-6" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+
+        {/* Stories (Interactive) */}
+        <div className="pointer-events-auto w-full px-4 mt-2">
+          <div className="p-3 bg-background/40 backdrop-blur-md border border-border/40 rounded-3xl shadow-lg">
+            <Stories />
+          </div>
+        </div>
+      </div>
+
+      {/* Map Controls (Right Side) */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-[100] flex flex-col gap-3 pointer-events-none">
+        <Button
+          variant="secondary"
+          className="rounded-full shadow-lg h-10 w-10 p-0 bg-background/90 backdrop-blur-md border-border/40 pointer-events-auto active:scale-95"
+          onClick={() => {
+            if (mapRef) {
+              mapRef.flyTo(defaultCenter, 13);
+            }
+          }}
+        >
+          <Compass className="h-5 w-5 text-foreground" />
+        </Button>
+      </div>
+
+      {/* Selected Marker Details Card (Bottom Sheet style) */}
+      {selectedMarker && (
+        <div className="absolute bottom-20 left-4 right-4 z-[200] animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <div className="bg-card text-card-foreground rounded-[32px] p-4 shadow-xl border border-border/40 backdrop-blur-xl bg-opacity-95">
+            <div className="flex items-start gap-4 mb-4">
+              <img
+                src={selectedMarker.image}
+                alt={selectedMarker.title}
+                className="w-16 h-16 rounded-2xl object-cover shrink-0 shadow-md bg-muted"
+              />
+              <div className="flex-1 min-w-0 flex flex-col pt-1">
+                <div className="flex items-center justify-between mb-1 gap-2">
+                  <h3 className="font-bold text-base leading-tight truncate">{selectedMarker.title}</h3>
+                  <button
+                    onClick={() => setSelectedMarker(null)}
+                    className="shrink-0 h-6 w-6 bg-secondary/50 rounded-full flex items-center justify-center text-muted-foreground transition-colors active:bg-secondary"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{selectedMarker.city}</span>
+                </div>
+                <div className="inline-flex items-center mt-2 w-max px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                  {selectedMarker.type}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              className="w-full rounded-full shadow-[var(--shadow-glow)] h-12 text-sm font-bold transition-transform active:scale-95"
+              style={{ background: "var(--gradient-primary)" }}
+              onClick={() => {
+                const rawId = selectedMarker.id.split("-").slice(1).join("-");
+                if (selectedMarker.type === "event") {
+                  navigate({ to: "/events/$eventId", params: { eventId: rawId } });
+                } else if (selectedMarker.type === "venue") {
+                  navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
+                } else if (selectedMarker.type === "space") {
+                  navigate({ to: "/spaces/$spaceId", params: { spaceId: rawId } });
+                } else if (selectedMarker.type === "cinema") {
+                  navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
+                } else {
+                  navigate({ to: "/organizers" });
+                }
+              }}
+            >
+              View Details <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
-
-      {/* Top Stories Row */}
-      <div className="px-4 py-3 border-b border-border/40">
-        <Stories />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="w-full pt-2 pb-24 space-y-4">
-        <UpcomingEvents events={weekendEvents} />
-        <PopularOrganizers
-          organizersLoading={organizersLoading}
-          allFollowed={allFollowed}
-          unfollowedOrganizers={unfollowedOrganizers}
-          isFollowing={isFollowing}
-          toggleFollow={toggleFollow}
-          ratingsMap={ratingsMap}
-        />
-        <NowShowing movies={movies} />
-      </div>
-
-      {/* CSS to hide scrollbars */}
-      <style>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }

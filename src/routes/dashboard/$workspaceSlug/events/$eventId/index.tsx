@@ -914,7 +914,7 @@ function DashboardEventDetails() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">Experience</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Reviews, stories & posts</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Reviews & stories</p>
               </div>
               <Link
                 to="/dashboard/$workspaceSlug/events/$eventId/experience"
@@ -956,37 +956,6 @@ function DashboardEventDetails() {
                 </div>
               </div>
 
-              {/* Posts */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/15">
-                <div className="w-9 h-9 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-                  <IconBubble className="w-5 h-5 text-blue-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Posts Published</p>
-                  <p className="font-bold">
-                    {posts.length}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {pinnedPosts} pinned
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Engagements */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
-                <div className="w-9 h-9 rounded-lg bg-rose-500/15 flex items-center justify-center shrink-0">
-                  <IconHeart className="w-5 h-5 text-rose-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Engagements</p>
-                  <p className="font-bold">
-                    {(totalLikes + totalComments).toLocaleString()}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {totalLikes} likes · {totalComments} comments
-                    </span>
-                  </p>
-                </div>
-              </div>
 
               {/* Location / Stops */}
               <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/15">

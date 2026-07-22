@@ -125,7 +125,6 @@ export function Stories({
           ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
               <div key={i} className="flex shrink-0 flex-col items-center gap-2">
                 <Skeleton className="h-[72px] w-[72px] rounded-full" />
-                <Skeleton className="h-3 w-12" />
               </div>
             ))
           : items.map((s, i) => (
@@ -149,7 +148,6 @@ export function Stories({
                     />
                   </div>
                 </div>
-                <span className="text-xs text-muted-foreground">{s.name}</span>
               </div>
             ))}
       </div>

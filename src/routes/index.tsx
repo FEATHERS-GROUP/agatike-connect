@@ -1,8 +1,9 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { HomeMobile } from "@/components/mobile/HomeMobile";
-import { HomeDesktop } from "@/components/desktop/HomeDesktop";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
-import { useEffect, useState } from "react";
+
+const HomeMobile = lazy(() => import("@/components/mobile/HomeMobile").then((m) => ({ default: m.HomeMobile })));
+const HomeDesktop = lazy(() => import("@/components/desktop/HomeDesktop").then((m) => ({ default: m.HomeDesktop })));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,14 +40,34 @@ function Home() {
     return null; // Return null while redirecting to avoid flashing mobile home
   }
 
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="h-[100dvh] w-full bg-background flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <>
+    <Suspense
+      fallback={
+        <div className="h-[100dvh] w-full bg-background flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+        </div>
+      }
+    >
       <div className="md:hidden">
         <HomeMobile />
       </div>
       <div className="hidden md:block">
         <HomeDesktop />
       </div>
-    </>
+    </Suspense>
   );
 }
