@@ -99,6 +99,6 @@ export const getAdminSession = createServerFn({ method: "POST" }).handler(async 
 });
 
 export const logoutAdmin = createServerFn({ method: "POST" }).handler(async () => {
-  deleteCookie("agatike_admin_auth", { path: "/" });
+  deleteCookie("agatike_admin_auth", { path: "/internal/control/admin" });
   return { success: true };
 });
