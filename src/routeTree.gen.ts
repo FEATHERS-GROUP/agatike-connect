@@ -100,6 +100,7 @@ import { Route as InternalControlAdminLoginRouteImport } from './routes/internal
 import { Route as InternalControlAdminLeadsRouteImport } from './routes/internal/control/admin/leads'
 import { Route as InternalControlAdminHealthRouteImport } from './routes/internal/control/admin/health'
 import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal/control/admin/earnings'
+import { Route as InternalControlAdminDashboardRouteImport } from './routes/internal/control/admin/dashboard'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
@@ -698,6 +699,12 @@ const InternalControlAdminEarningsRoute =
   InternalControlAdminEarningsRouteImport.update({
     id: '/earnings',
     path: '/earnings',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminDashboardRoute =
+  InternalControlAdminDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardWorkspaceUserEmailActivateRoute =
@@ -1478,6 +1485,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
@@ -1680,6 +1688,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
@@ -1885,6 +1894,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
@@ -2092,6 +2102,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/leads'
@@ -2294,6 +2305,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/leads'
@@ -2498,6 +2510,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/leads'
@@ -3296,6 +3309,13 @@ declare module '@tanstack/react-router' {
       path: '/earnings'
       fullPath: '/internal/control/admin/earnings'
       preLoaderRoute: typeof InternalControlAdminEarningsRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/dashboard': {
+      id: '/internal/control/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/internal/control/admin/dashboard'
+      preLoaderRoute: typeof InternalControlAdminDashboardRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/workspace-user/$email/activate': {
@@ -4521,6 +4541,7 @@ const InternalControlAdminOrganizersOrganizerIdRouteWithChildren =
   )
 
 interface InternalControlAdminRouteChildren {
+  InternalControlAdminDashboardRoute: typeof InternalControlAdminDashboardRoute
   InternalControlAdminEarningsRoute: typeof InternalControlAdminEarningsRoute
   InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
   InternalControlAdminLeadsRoute: typeof InternalControlAdminLeadsRoute
@@ -4541,6 +4562,7 @@ interface InternalControlAdminRouteChildren {
 }
 
 const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
+  InternalControlAdminDashboardRoute: InternalControlAdminDashboardRoute,
   InternalControlAdminEarningsRoute: InternalControlAdminEarningsRoute,
   InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
   InternalControlAdminLeadsRoute: InternalControlAdminLeadsRoute,
