@@ -25,6 +25,12 @@ import { GlobalNotificationListener } from "@/components/providers/GlobalNotific
 import { GlobalUserNotificationListener } from "@/components/providers/GlobalUserNotificationListener";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Rss } from "lucide-react";
+import { useTelemetry } from "@/hooks/useTelemetry";
+
+function TelemetryTracker() {
+  useTelemetry();
+  return null;
+}
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -224,9 +230,9 @@ function RootComponent() {
         <AppProvider>
           <QueryClientProvider client={queryClient}>
             <UserAuthProvider>
-              <AuthRedirect />
               <WorkspaceProvider>
                 <LoaderProvider>
+                  <TelemetryTracker />
                   <GlobalNotificationListener />
                   <GlobalUserNotificationListener />
                   {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
