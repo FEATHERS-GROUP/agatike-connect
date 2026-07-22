@@ -10,8 +10,7 @@ export function AdminHeader() {
 
   const handleLogout = async () => {
     await logoutAdmin();
-    router.invalidate();
-    router.navigate({ to: "/internal/control/admin/login" });
+    window.location.href = "/internal/control/admin/login";
   };
 
   return (
