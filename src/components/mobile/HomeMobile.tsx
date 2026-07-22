@@ -350,39 +350,53 @@ export function HomeMobile() {
         {/* Header (Interactive) */}
         <div className="pointer-events-auto bg-gradient-to-b from-background/90 via-background/50 to-transparent pt-safe-top pb-2">
           <div className="flex items-center justify-between px-4 py-2">
-            <Link
-              to="/$userId/message"
-              params={{ userId: user?.id || "me" }}
-              className="text-foreground relative p-1 transition-transform active:scale-95"
-            >
-              <MessageCircle className="h-6 w-6" />
-              {unreadChatsCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">
-                  {unreadChatsCount > 99 ? "99+" : unreadChatsCount}
-                </span>
-              )}
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                to="/$userId/message"
+                params={{ userId: user?.id || "me" }}
+                className="text-foreground relative p-1 transition-transform active:scale-95"
+              >
+                <MessageCircle className="h-6 w-6" />
+                {unreadChatsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-[var(--shadow-glow)] shadow-primary/20">
+                    {unreadChatsCount > 99 ? "99+" : unreadChatsCount}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <Link to="/login" className="text-foreground relative p-1 transition-transform active:scale-95">
+                <MessageCircle className="h-6 w-6" />
+              </Link>
+            )}
             <img src="/icon.svg" alt="Agatike" className="h-7 w-auto object-contain drop-shadow-md" />
-            <Link
-              to="/activity"
-              className="text-foreground relative p-1 transition-transform active:scale-95"
-            >
-              <Activity className="h-6 w-6" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                to="/activity"
+                className="text-foreground relative p-1 transition-transform active:scale-95"
+              >
+                <Activity className="h-6 w-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-[16px] rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center px-1">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <Link to="/login" className="text-foreground relative p-1 transition-transform active:scale-95">
+                <Activity className="h-6 w-6" />
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Stories (Interactive) */}
-        <div className="pointer-events-auto w-full px-4 mb-2">
-          <div className="p-2.5 bg-background/40 backdrop-blur-md border border-border/40 rounded-full shadow-lg">
-            <Stories />
+        {isLoggedIn && (
+          <div className="pointer-events-auto w-full px-4 mb-2">
+            <div className="p-2.5 bg-background/40 backdrop-blur-md border border-border/40 rounded-full shadow-lg">
+              <Stories />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Map Controls (Right Side) */}

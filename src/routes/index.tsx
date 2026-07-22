@@ -27,18 +27,6 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { isLoggedIn } = useUserAuth();
   const router = useRouter();
-  const [isMobileRedirecting, setIsMobileRedirecting] = useState(false);
-
-  useEffect(() => {
-    if (!isLoggedIn && window.innerWidth < 768) {
-      setIsMobileRedirecting(true);
-      router.navigate({ to: "/events" });
-    }
-  }, [isLoggedIn, router]);
-
-  if (isMobileRedirecting) {
-    return null; // Return null while redirecting to avoid flashing mobile home
-  }
 
   const [isClient, setIsClient] = useState(false);
 
