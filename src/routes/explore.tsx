@@ -83,32 +83,32 @@ function ExplorePage() {
   return (
     <div className="min-h-screen bg-background pb-20 md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] md:pb-8 shadow-xl">
       {/* Sticky Header with Search */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-safe-top">
-        <div className="px-4 py-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1" onClick={() => setIsSearchOpen(true)}>
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+      <div className="sticky top-0 z-30 pt-safe-top">
+        <div className="px-4 py-2">
+          <div className="flex gap-3 items-center">
+            <div className="relative flex-1 group" onClick={() => setIsSearchOpen(true)}>
+              <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors z-10" />
               <Input
                 readOnly
-                placeholder="Search events, venues, buses, memberships..."
-                className="h-12 bg-secondary/50 border-transparent pl-10 rounded-2xl text-base shadow-sm focus-visible:ring-primary/50 cursor-pointer"
+                placeholder="Search events, venues, buses..."
+                className="h-11 bg-background hover:bg-secondary/60 border border-border/30 hover:border-border/60 pl-11 rounded-2xl text-[15px] shadow-md transition-all cursor-pointer placeholder:text-muted-foreground/80 focus-visible:ring-primary/20 relative z-0"
               />
             </div>
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 rounded-2xl shrink-0 border-border/50"
+              className="h-11 w-11 rounded-2xl shrink-0 border-border/30 bg-background hover:bg-secondary/60 shadow-md transition-all"
             >
-              <SlidersHorizontal className="h-5 w-5" />
+              <SlidersHorizontal className="h-5 w-5 text-foreground/80" />
             </Button>
           </div>
 
           {/* Categories Pill Scroll */}
-          <div className="flex gap-2 overflow-x-auto mt-4 pb-2 hide-scrollbar">
+          <div className="flex gap-2 overflow-x-auto mt-4 pb-1 hide-scrollbar -mx-4 px-4">
             {categories.map((c, i) => (
               <button
                 key={c}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${i === 0 ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-secondary-foreground border border-border/40 hover:bg-secondary"}`}
+                className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-all active:scale-95 ${i === 0 ? "bg-primary text-primary-foreground shadow-md shadow-primary/25" : "bg-muted/50 text-foreground hover:bg-muted border border-transparent hover:border-border/50"}`}
               >
                 {c}
               </button>
@@ -127,12 +127,12 @@ function ExplorePage() {
               See all
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="columns-2 gap-3 space-y-3">
             {isLoadingEvents
               ? [1, 2, 3, 4].map((i) => (
                   <Skeleton
                     key={i}
-                    className={`rounded-3xl ${i === 1 || i === 4 ? "aspect-[3/4]" : "aspect-square"}`}
+                    className={`rounded-3xl w-full break-inside-avoid ${i % 2 !== 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
                   />
                 ))
               : trendingEvents.map((e, i) => {
@@ -142,7 +142,7 @@ function ExplorePage() {
                       key={e.id}
                       to="/events/$eventId"
                       params={{ eventId: e.id }}
-                      className={`group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${i === 0 || i === 3 ? "aspect-[3/4]" : "aspect-square"}`}
+                      className={`group relative rounded-3xl overflow-hidden bg-card shadow-sm border border-border/40 block w-full break-inside-avoid ${i % 2 === 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
                     >
                       <img
                         src={e.cover}
