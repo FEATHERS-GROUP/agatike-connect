@@ -69,7 +69,7 @@ function AdminDashboard() {
   const orgByCountry: Record<string, number> = {};
   const orgByCity: Record<string, number> = {};
   
-  (stats.workspaces || []).forEach((ws: any) => {
+  (stats.workspacesDemographics || []).forEach((ws: any) => {
     if (ws.country) {
       orgByCountry[ws.country] = (orgByCountry[ws.country] || 0) + 1;
     }

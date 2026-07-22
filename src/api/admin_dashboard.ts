@@ -94,7 +94,7 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       earnings: data.earnings || [],
       subscriptions: data.subscriptions || [],
       events: data.events || [],
-      workspaces: data.demographic_workspaces || [],
+      workspacesDemographics: data.demographic_workspaces || [],
       usersDemographics: data.demographic_users || [],
       organizersDemographics: data.demographic_organizers || [],
     };
@@ -115,7 +115,7 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       earnings: [],
       subscriptions: [],
       events: [],
-      workspaces: [],
+      workspacesDemographics: [],
       usersDemographics: [],
       organizersDemographics: [],
       error: error.message
