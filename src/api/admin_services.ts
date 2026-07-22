@@ -87,7 +87,10 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           id
           start_time
           end_time
-          venue_name
+          rentable_venue {
+            name
+            city
+          }
           amount
           status
           customer_name
@@ -183,7 +186,9 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           type: "Venue Booking",
           title: `${b.booking_type || "Booking"} for ${b.customer_name}`,
           date: b.start_time,
-          location: b.venue_name || "Unknown Venue",
+          location: b.rentable_venue?.name 
+            ? `${b.rentable_venue.name} ${b.rentable_venue.city ? `(${b.rentable_venue.city})` : ''}`
+            : "Unknown Venue",
           organizer: b.workspace?.organizer?.name || "Unknown",
           coverUrl: null,
           ticketTiers: [{ name: "Total Amount", price: b.amount || 0 }],
