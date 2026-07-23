@@ -27,12 +27,12 @@ export const Route = createFileRoute("/feed")({
       { title: "Feed — Agatike" },
       {
         name: "description",
-        content: "Live moments, reels and reviews from events across Africa.",
+        content: "Live moments, reels and reviews from events across different Locations.",
       },
       { property: "og:title", content: "Agatike Feed" },
       {
         property: "og:description",
-        content: "The social heartbeat of African nightlife and culture.",
+        content: "The social heartbeat of nightlife and culture.",
       },
     ],
   }),
@@ -396,7 +396,7 @@ function Feed() {
                           const isUnread =
                             chat.lastMessageSenderId !== user?.id &&
                             chat.rawTimeMillis >
-                              parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                            parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
                           const displayUnread =
                             chat.lastMessageSenderId !== user?.id && chat.unread > 0
                               ? chat.unread
@@ -431,11 +431,10 @@ function Feed() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                   <p
-                                    className={`text-xs truncate pr-2 ${
-                                      displayUnread > 0
-                                        ? "text-foreground font-medium"
-                                        : "text-muted-foreground"
-                                    }`}
+                                    className={`text-xs truncate pr-2 ${displayUnread > 0
+                                      ? "text-foreground font-medium"
+                                      : "text-muted-foreground"
+                                      }`}
                                   >
                                     {chat.lastMessage || "Tap to chat"}
                                   </p>

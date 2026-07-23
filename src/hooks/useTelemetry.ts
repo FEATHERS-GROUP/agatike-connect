@@ -10,8 +10,14 @@ export function useTelemetry() {
   useEffect(() => {
     // Generate a unique session ID for this browser tab instance
     if (!sessionIdRef.current) {
-      sessionIdRef.current =
-        "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      const stored = sessionStorage.getItem("agatike_telemetry_session");
+      if (stored) {
+        sessionIdRef.current = stored;
+      } else {
+        const newId = "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        sessionStorage.setItem("agatike_telemetry_session", newId);
+        sessionIdRef.current = newId;
+      }
     }
 
     const sendHeartbeat = () => {
