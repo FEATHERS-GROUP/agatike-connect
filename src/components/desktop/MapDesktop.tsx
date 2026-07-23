@@ -415,6 +415,9 @@ export function MapDesktop() {
                 ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             }
+            keepBuffer={8}
+            updateWhenZooming={false}
+            updateWhenIdle={true}
           />
 
           <MapController selectedEvent={selectedMarker} />
