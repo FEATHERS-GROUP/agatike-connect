@@ -5,10 +5,8 @@ import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FeedCard } from "@/components/site/FeedCard";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getOrganizers } from "@/api/organizers";
-import { getGlobalFeedPosts } from "@/api/experience";
 import { useQuery } from "@tanstack/react-query";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
@@ -136,17 +134,7 @@ function Feed() {
     return c.lastMessageSenderId !== user?.id && (c.unread > 0 || isUnread);
   }).length;
 
-  // Conditionally fetch posts only if logged in
-  const { data: dbPosts = [], isLoading: isPostsLoading } = useQuery({
-    queryKey: ["global-feed-posts"],
-    queryFn: () => getGlobalFeedPosts(),
-    enabled: isLoggedIn,
-  });
-
-  const isLoading = isLoggedIn ? isPostsLoading : true; // Show loading skeletons if not logged in
-
-  // Filter feed posts to only show those from followed organizers
-  const filteredPosts = dbPosts.filter((post) => isFollowing(post.organizerId));
+  const isLoading = false; // Show loading skeletons if not logged in
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-24 md:pb-0">
@@ -177,8 +165,6 @@ function Feed() {
                   </div>
                 ))}
               </div>
-            ) : filteredPosts.length > 0 ? (
-              filteredPosts.map((p, i) => <FeedCard key={`${p.id}-${i}`} post={p} />)
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">
                 <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
