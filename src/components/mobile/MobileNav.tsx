@@ -34,7 +34,7 @@ export function MobileNav() {
     : [
         { name: "Home", href: "/", icon: Home },
         { name: "Events", href: "/events", icon: CalendarDays },
-        { name: "Explore", href: "/explore", icon: Compass },
+        { name: "Spaces", href: "/venues", icon: Building2 },
         { name: "Movies", href: "/movies", icon: Film },
       ];
 

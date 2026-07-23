@@ -11,7 +11,11 @@ import {
   Calendar,
   X,
   Search,
+  MessageCircle,
+  Activity,
 } from "lucide-react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,6 +40,8 @@ export function MobileMoviesView({
   setActive?: (id: string) => void;
 }) {
   const router = useRouter();
+  const { user } = useUserAuth();
+  const isLoggedIn = !!user;
   const [selectedMovie, setSelectedMovie] = useState<(typeof movies)[0] | null>(null);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -75,14 +81,39 @@ export function MobileMoviesView({
   return (
     <div className="pb-safe">
       {/* Mobile Top Bar */}
-      <div className="sticky top-0 z-40 px-4 py-3 pt-safe-top flex items-center justify-between bg-background/80 backdrop-blur-xl border-b border-border/40">
-        <button
-          onClick={() => router.history.back()}
-          className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <h1 className="font-bold text-lg tracking-tight">Movies & Cinemas</h1>
+      <div className="sticky top-0 z-40 px-4 py-3 pt-safe-top flex items-center justify-between w-full relative bg-background/80 backdrop-blur-xl border-b border-border/40">
+        {isLoggedIn ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.history.back()}
+              className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <h1 className="font-bold text-lg tracking-tight">Movies & Cinemas</h1>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-1">
+              <Link 
+                to="/signin"
+                className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                aria-label="Messages"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </Link>
+            </div>
+            
+            <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
+              <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
+            </Link>
+          </>
+        )}
+        <div className="flex items-center gap-1">
+          <Link to="/activity" className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground" aria-label="Activity">
+            <Activity className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
       {/* Mobile Search Bar */}

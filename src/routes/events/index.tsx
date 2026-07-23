@@ -12,12 +12,15 @@ import {
   User,
   X,
   Ticket,
+  MessageCircle,
+  Activity,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Input } from "@/components/ui/input";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
 
@@ -246,7 +249,7 @@ function EventsBrowse() {
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full relative">
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
                 <button
@@ -258,14 +261,29 @@ function EventsBrowse() {
                 <h1 className="font-bold text-lg tracking-tight">All Events</h1>
               </div>
             ) : (
-              <Link to="/" className="flex items-center gap-2">
-                <img src="/agatike-logo.png" alt="Agatike" className="h-7 w-auto object-contain" />
-              </Link>
+              <>
+                <div className="flex items-center gap-1">
+                  <Link 
+                    to="/signin"
+                    className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                    aria-label="Messages"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                  </Link>
+                </div>
+                
+                <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
+                  <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
+                </Link>
+              </>
             )}
             <div className="flex items-center gap-1">
+              <Link to="/activity" className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground" aria-label="Activity">
+                <Activity className="h-5 w-5" />
+              </Link>
               <button
                 onClick={() => setIsMobileSearchOpen(true)}
-                className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />

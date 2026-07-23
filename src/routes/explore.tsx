@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
-import { Search, Map as MapIcon, SlidersHorizontal, MapPin, Users } from "lucide-react";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
+import { Search, Map as MapIcon, SlidersHorizontal, MapPin, Users, MessageCircle, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +12,7 @@ import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
 import { useState, useMemo, useEffect } from "react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { isWeekendEvent } from "@/lib/utils";
 const mockSubscriptionPlans: any[] = [];
 const mockBusTickets: any[] = [];
@@ -25,6 +27,7 @@ export const Route = createFileRoute("/explore")({
 
 function ExplorePage() {
   const search: any = Route.useSearch();
+  const { user } = useUserAuth();
   const { toggleFollow, isFollowing } = useFollowedOrganizers();
   const [isSearchOpen, setIsSearchOpen] = useState(!!search?.q);
   const [searchQuery, setSearchQuery] = useState(search?.q || "");
@@ -82,37 +85,37 @@ function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] md:pb-8 shadow-xl">
-      {/* Sticky Header with Search */}
+      {/* Sticky Header */}
       <div className="sticky top-0 z-30 pt-safe-top">
         <div className="px-4 py-2">
-          <div className="flex gap-3 items-center">
-            <div className="relative flex-1 group" onClick={() => setIsSearchOpen(true)}>
-              <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground group-hover:text-primary transition-colors z-10" />
-              <Input
-                readOnly
-                placeholder="Search events, venues, buses..."
-                className="h-11 bg-background hover:bg-secondary/60 border border-border/30 hover:border-border/60 pl-11 rounded-2xl text-[15px] shadow-md transition-all cursor-pointer placeholder:text-muted-foreground/80 focus-visible:ring-primary/20 relative z-0"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 rounded-2xl shrink-0 border-border/30 bg-background hover:bg-secondary/60 shadow-md transition-all"
-            >
-              <SlidersHorizontal className="h-5 w-5 text-foreground/80" />
-            </Button>
-          </div>
-
-          {/* Categories Pill Scroll */}
-          <div className="flex gap-2 overflow-x-auto mt-4 pb-1 hide-scrollbar -mx-4 px-4">
-            {categories.map((c, i) => (
-              <button
-                key={c}
-                className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition-all active:scale-95 ${i === 0 ? "bg-primary text-primary-foreground shadow-md shadow-primary/25" : "bg-muted/50 text-foreground hover:bg-muted border border-transparent hover:border-border/50"}`}
+          <div className="flex items-center justify-between w-full relative">
+            <div className="flex items-center gap-1">
+              <Link 
+                to={user?.id ? "/$userId/message" : "/signin"}
+                params={user?.id ? { userId: user.id } : {}}
+                className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                aria-label="Messages"
               >
-                {c}
+                <MessageCircle className="h-5 w-5" />
+              </Link>
+            </div>
+            
+            <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
+              <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
+            </Link>
+
+            <div className="flex items-center gap-1">
+              <Link to="/activity" className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground" aria-label="Activity">
+                <Activity className="h-5 w-5" />
+              </Link>
+              <button 
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
               </button>
-            ))}
+            </div>
           </div>
         </div>
       </div>
