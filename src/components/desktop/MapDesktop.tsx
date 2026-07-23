@@ -335,23 +335,41 @@ export function MapDesktop() {
   };
 
   const createCustomIcon = (marker: any) => {
-    if (marker.type === "event" || marker.type === "venue") {
+    if (marker.type !== "user") {
+      let borderColor = "border-primary";
+      let bgColor = "bg-background";
+      let triangleColor = "border-t-primary";
+      
+      if (marker.type === "venue") {
+        borderColor = "border-blue-500";
+        triangleColor = "border-t-blue-500";
+      } else if (marker.type === "space") {
+        borderColor = "border-purple-500";
+        triangleColor = "border-t-purple-500";
+      } else if (marker.type === "cinema") {
+        borderColor = "border-orange-500";
+        triangleColor = "border-t-orange-500";
+      }
+
       return L.divIcon({
         className: "bg-transparent border-none",
         html: `
           <div class="relative flex flex-col items-center group cursor-pointer">
-            <div class="bg-background rounded-2xl p-2 shadow-lg border border-border/40 flex items-center gap-3 w-48 transition-transform group-hover:-translate-y-1">
+            <div class="${bgColor} rounded-2xl p-2 shadow-lg border-2 ${borderColor} flex items-center gap-3 w-48 transition-transform group-hover:-translate-y-1">
               <img src="${marker.image}" class="h-10 w-10 rounded-xl object-cover shrink-0" />
               <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1 mb-0.5">
+                  <span class="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${borderColor.replace('border-', 'bg-').replace('500', '500/20')} ${borderColor.replace('border-', 'text-')}">${marker.type}</span>
+                </div>
                 <p class="text-xs font-bold truncate">${marker.title}</p>
                 <p class="text-[10px] text-muted-foreground truncate">${marker.date}</p>
               </div>
             </div>
-            <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-background drop-shadow-md"></div>
+            <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] ${triangleColor} drop-shadow-md"></div>
           </div>
         `,
-        iconSize: [200, 70],
-        iconAnchor: [100, 70],
+        iconSize: [200, 80],
+        iconAnchor: [100, 80],
       });
     }
 

@@ -280,15 +280,33 @@ export default function MapClient() {
 
   const createCustomIcon = (marker: any, isSelected: boolean) => {
     const selectedClass = isSelected ? "scale-125 z-50" : "z-10 hover:scale-110";
+    
+    let borderColor = "border-border/20 bg-background";
+    let triangleColor = "border-t-background";
+    
+    if (marker.type === "event") {
+      borderColor = "border-primary bg-primary/10";
+      triangleColor = "border-t-primary";
+    } else if (marker.type === "venue") {
+      borderColor = "border-blue-500 bg-blue-500/10";
+      triangleColor = "border-t-blue-500";
+    } else if (marker.type === "space") {
+      borderColor = "border-purple-500 bg-purple-500/10";
+      triangleColor = "border-t-purple-500";
+    } else if (marker.type === "cinema") {
+      borderColor = "border-orange-500 bg-orange-500/10";
+      triangleColor = "border-t-orange-500";
+    }
+
     return L.divIcon({
       className: "bg-transparent border-none",
       html: `
         <div class="relative flex flex-col items-center transition-transform duration-300 ${selectedClass}">
-          <div class="rounded-full bg-background p-[3px] shadow-md border border-border/20 relative">
+          <div class="rounded-full p-[3px] shadow-md border-2 ${borderColor} relative">
              ${isSelected ? `<div class="absolute -top-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-background"></div>` : ""}
-             <img src="${marker.image}" class="h-10 w-10 rounded-full object-cover block" />
+             <img src="${marker.image}" class="h-10 w-10 rounded-full object-cover block bg-background" />
           </div>
-          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-background -mt-1 shadow-sm drop-shadow-sm z-0"></div>
+          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${triangleColor} -mt-1 shadow-sm drop-shadow-sm z-0"></div>
         </div>
       `,
       iconSize: [46, 56],
