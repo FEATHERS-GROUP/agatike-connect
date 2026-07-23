@@ -62,13 +62,34 @@ function MapController({
       const lng = parseFloat(selectedMarker.lng as any);
       if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
         // Offset the center slightly so the marker isn't hidden under the bottom card
-        map.flyTo([lat - 0.005, lng], 15, { duration: 0.5 });
+        const size = map.getSize();
+        if (size.x < 10 || size.y < 10) {
+          map.setView([lat - 0.005, lng], 15);
+        } else {
+          map.flyTo([lat - 0.005, lng], 15, { duration: 0.5 });
+        }
       }
-    } else if (selectedCity && selectedCity.bounds.length > 0) {
-      if (selectedCity.bounds.length === 1) {
-        map.flyTo(selectedCity.bounds[0], 13, { duration: 0.5 });
+    } else if (selectedCity && selectedCity.bounds && selectedCity.bounds.length > 0) {
+      const bounds = L.latLngBounds(selectedCity.bounds);
+      if (!bounds.isValid()) return;
+      
+      const size = map.getSize();
+      // If the map hasn't fully laid out, animation will crash with NaN. Set view instantly.
+      if (size.x < 10 || size.y < 10) {
+        map.setView(bounds.getCenter(), 13);
+        return;
+      }
+
+      if (selectedCity.bounds.length === 1 || bounds.getNorthEast().equals(bounds.getSouthWest())) {
+        map.flyTo(bounds.getCenter(), 13, { duration: 0.5 });
       } else {
-        map.flyToBounds(selectedCity.bounds, { padding: [50, 50], duration: 0.5 });
+        if (size.x > 100 && size.y > 100) {
+          const paddingX = Math.min(50, size.x * 0.1);
+          const paddingY = Math.min(50, size.y * 0.1);
+          map.flyToBounds(bounds, { padding: [paddingX, paddingY], duration: 0.5, maxZoom: 15 });
+        } else {
+          map.flyTo(bounds.getCenter(), 13, { duration: 0.5 });
+        }
       }
     }
   }, [selectedMarker, selectedCity, map]);
@@ -249,7 +270,7 @@ export default function MapClient() {
           (error) => {
             console.error("Geolocation error:", error);
           },
-          { timeout: 5000, maximumAge: 60000 },
+          { timeout: 15000, maximumAge: 300000 },
         );
       }
     }

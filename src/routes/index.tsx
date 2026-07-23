@@ -66,7 +66,7 @@ function Home() {
 
       {/* Map Bubble - Visible to everyone */}
       <Link
-        to="/explore"
+        to="/map"
         className="fixed bottom-[160px] right-4 md:bottom-[96px] md:right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-glow)] transition-transform hover:scale-105 active:scale-95 border border-border"
         style={{ background: "var(--gradient-primary)" }}
         aria-label="Open Map"
