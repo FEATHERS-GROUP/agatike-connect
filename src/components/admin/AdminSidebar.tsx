@@ -16,7 +16,6 @@ export function AdminSidebar() {
       href: "/internal/control/admin/master-schedule",
       icon: LucideIcons.List,
     },
-    { label: "Moderation", href: "/internal/control/admin/moderation", icon: LucideIcons.Activity },
     { type: "divider" },
     {
       label: "Agatike Users",

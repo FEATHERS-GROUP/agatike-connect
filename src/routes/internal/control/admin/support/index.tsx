@@ -543,11 +543,19 @@ function AdminSupportPage() {
                         onClick={() => setActiveDocTopic(sec.id)}
                         className={`w-full text-left px-4 py-3 text-[13px] transition-colors border-l-[3px] ${
                           (displaySection?.id === sec.id)
-                            ? "border-[#f97316] bg-[#f97316]/10 text-[#f97316] font-medium"
+                            ? "border-[#f97316] bg-[#f97316]/10 text-[#f97316]"
                             : "border-transparent text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#1a1a1a]"
                         }`}
                       >
-                        {sec.title}
+                        <div className={`font-medium ${displaySection?.id === sec.id ? "text-[#f97316]" : "text-gray-800 dark:text-[#ddd]"}`}>
+                          {sec.title}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
+                            <Tag className="h-2.5 w-2.5" />
+                            Admin Docs
+                          </span>
+                        </div>
                       </button>
                     ))}
                     {filteredSections.length === 0 && (
@@ -561,10 +569,18 @@ function AdminSupportPage() {
                 <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
                   {displaySection ? (
                     <div className="max-w-3xl mx-auto">
-                      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
-                        <BookOpen className="h-6 w-6 text-[#f97316]" />
-                        {displaySection.title}
-                      </h2>
+                      <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
+                            <Tag className="h-3 w-3" />
+                            Admin Docs
+                          </span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <BookOpen className="h-6 w-6 text-[#f97316]" />
+                          {displaySection.title}
+                        </h2>
+                      </div>
                       <div className="text-[13px]">
                         <SimpleMarkdownRenderer text={displaySection.content || ""} />
                       </div>
