@@ -339,16 +339,24 @@ export function MapDesktop() {
       let borderColor = "border-primary";
       let bgColor = "bg-background";
       let triangleColor = "border-t-primary";
+      let badgeBg = "bg-primary/20";
+      let badgeText = "text-primary";
       
       if (marker.type === "venue") {
         borderColor = "border-blue-500";
         triangleColor = "border-t-blue-500";
+        badgeBg = "bg-blue-500/20";
+        badgeText = "text-blue-500";
       } else if (marker.type === "space") {
         borderColor = "border-purple-500";
         triangleColor = "border-t-purple-500";
+        badgeBg = "bg-purple-500/20";
+        badgeText = "text-purple-500";
       } else if (marker.type === "cinema") {
         borderColor = "border-orange-500";
         triangleColor = "border-t-orange-500";
+        badgeBg = "bg-orange-500/20";
+        badgeText = "text-orange-500";
       }
 
       return L.divIcon({
@@ -359,7 +367,7 @@ export function MapDesktop() {
               <img src="${marker.image}" class="h-10 w-10 rounded-xl object-cover shrink-0" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1 mb-0.5">
-                  <span class="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${borderColor.replace('border-', 'bg-').replace('500', '500/20')} ${borderColor.replace('border-', 'text-')}">${marker.type}</span>
+                  <span class="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${badgeBg} ${badgeText}">${marker.type}</span>
                 </div>
                 <p class="text-xs font-bold truncate">${marker.title}</p>
                 <p class="text-[10px] text-muted-foreground truncate">${marker.date}</p>
