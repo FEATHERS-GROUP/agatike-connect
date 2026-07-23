@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Send, Bookmark, Ticket, Users } from "lucide-reac
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
+import { ShortsFeed } from "@/components/site/ShortsFeed";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
@@ -141,50 +142,58 @@ function Feed() {
       <Navbar />
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[1fr_320px]">
         <main>
-          <Stories isLoading={isLoading} />
-          <div className="mt-8 space-y-8">
-            {isLoading ? (
-              <div className="space-y-8">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
+          {/* Desktop Shorts Feed */}
+          <div className="hidden md:block w-full">
+            <ShortsFeed />
+          </div>
+
+          {/* Mobile Standard Feed */}
+          <div className="block md:hidden">
+            <Stories isLoading={isLoading} />
+            <div className="mt-8 space-y-8">
+              {isLoading ? (
+                <div className="space-y-8">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-[200px]" />
+                          <Skeleton className="h-3 w-[100px]" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-[300px] w-full rounded-xl" />
                       <div className="space-y-2">
-                        <Skeleton className="h-4 w-[200px]" />
-                        <Skeleton className="h-3 w-[100px]" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
                       </div>
                     </div>
-                    <Skeleton className="h-[300px] w-full rounded-xl" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">
-                <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
-                  <Users className="h-8 w-8" />
+                  ))}
                 </div>
-                <h3 className="text-lg font-bold text-foreground">Your feed is quiet</h3>
-                <p className="text-muted-foreground mt-2 text-sm max-w-sm">
-                  Follow organizers to see their latest updates, ticket drops, and event recaps
-                  right here.
-                </p>
-                <Link to="/organizers">
-                  <Button
-                    className="mt-6 rounded-full shadow-[var(--shadow-glow)]"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    Discover Organizers
-                  </Button>
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">
+                  <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+                    <Users className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">Your feed is quiet</h3>
+                  <p className="text-muted-foreground mt-2 text-sm max-w-sm">
+                    Follow organizers to see their latest updates, ticket drops, and event recaps
+                    right here.
+                  </p>
+                  <Link to="/organizers">
+                    <Button
+                      className="mt-6 rounded-full shadow-[var(--shadow-glow)]"
+                      style={{ background: "var(--gradient-primary)" }}
+                    >
+                      Discover Organizers
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </main>
 

@@ -3,7 +3,7 @@ import { StoryViewer } from "@/components/site/StoryViewer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Stubbed mock data
-const defaultStories: any[] = [
+export const defaultStories: any[] = [
   {
     id: "s1",
     name: "Sydney Fest",
