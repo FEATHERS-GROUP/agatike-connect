@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, MessageCircle, Send, Bookmark, Ticket, Users } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Ticket, Users, MapPin } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
@@ -352,6 +352,16 @@ function Feed() {
       {!isLoggedIn && (
         <div className="fixed inset-0 top-[72px] bg-background/20 backdrop-blur-[2px] z-40 pointer-events-none" />
       )}
+
+      {/* Map Bubble - Visible to everyone */}
+      <Link
+        to="/explore"
+        className="fixed bottom-[160px] right-4 md:bottom-[96px] md:right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-glow)] transition-transform hover:scale-105 active:scale-95 border border-border"
+        style={{ background: "var(--gradient-primary)" }}
+        aria-label="Open Map"
+      >
+        <MapPin className="h-6 w-6 text-white" />
+      </Link>
 
       {isLoggedIn && (
         <>
