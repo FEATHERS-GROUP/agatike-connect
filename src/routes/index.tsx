@@ -2,8 +2,12 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, lazy, Suspense } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 
-const HomeMobile = lazy(() => import("@/components/mobile/HomeMobile").then((m) => ({ default: m.HomeMobile })));
-const HomeDesktop = lazy(() => import("@/components/desktop/HomeDesktop").then((m) => ({ default: m.HomeDesktop })));
+const HomeMobile = lazy(() =>
+  import("@/components/mobile/HomeMobile").then((m) => ({ default: m.HomeMobile })),
+);
+const HomeDesktop = lazy(() =>
+  import("@/components/desktop/HomeDesktop").then((m) => ({ default: m.HomeDesktop })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({

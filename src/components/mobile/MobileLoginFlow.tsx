@@ -102,7 +102,7 @@ export function MobileLoginFlow({
 
   if (screen === "onboarding") {
     return (
-      <div 
+      <div
         ref={containerRef}
         className="flex min-h-[100dvh] flex-col bg-white"
         style={pullStyles}
@@ -162,7 +162,7 @@ export function MobileLoginFlow({
 
   // Login Screen
   return (
-    <div 
+    <div
       ref={containerRef}
       className="flex min-h-[100dvh] flex-col bg-slate-50/50 px-6 py-6 animate-in slide-in-from-right fade-in duration-300"
       style={pullStyles}
@@ -172,7 +172,7 @@ export function MobileLoginFlow({
     >
       {/* Pull indicator */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-slate-300 rounded-full" />
-      
+
       {/* Header */}
       <div className="pt-8 pb-6">
         <button

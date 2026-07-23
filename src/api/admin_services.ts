@@ -139,16 +139,14 @@ export const getScheduledServices = createServerFn({ method: "POST" })
         });
       });
 
-
-
       (data.venue_bookings || []).forEach((b) => {
         unifiedTimeline.push({
           id: b.id,
           type: "Venue Booking",
           title: `${b.booking_type || "Booking"} for ${b.customer_name}`,
           date: b.start_time,
-          location: b.rentable_venue?.name 
-            ? `${b.rentable_venue.name} ${b.rentable_venue.city ? `(${b.rentable_venue.city})` : ''}`
+          location: b.rentable_venue?.name
+            ? `${b.rentable_venue.name} ${b.rentable_venue.city ? `(${b.rentable_venue.city})` : ""}`
             : "Unknown Venue",
           organizer: b.workspace?.organizer?.name || "Unknown",
           coverUrl: null,

@@ -114,8 +114,6 @@ export function HomeDesktop() {
     queryFn: () => getOrganizers(),
   });
 
-
-
   const { data: communityMoments = [] } = useQuery({
     queryKey: ["community-moments"],
     queryFn: () => getCommunityMoments(),

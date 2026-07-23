@@ -1,6 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Stories } from "@/components/site/Stories";
-import { MessageCircle, Activity, Loader2, MapPin, ChevronRight, X, Compass, Maximize2 } from "lucide-react";
+import {
+  MessageCircle,
+  Activity,
+  Loader2,
+  MapPin,
+  ChevronRight,
+  X,
+  Compass,
+  Maximize2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -364,11 +373,14 @@ export function HomeMobile() {
                 )}
               </Link>
             ) : (
-              <Link to="/signin" className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted">
+              <Link
+                to="/signin"
+                className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted"
+              >
                 <MessageCircle className="h-6 w-6" />
               </Link>
             )}
-            
+
             <div className="pointer-events-auto flex h-12 px-5 items-center justify-center rounded-full bg-background border border-border/50 shadow-md">
               <img src="/icon.svg" alt="Agatike" className="h-7 w-auto object-contain" />
             </div>
@@ -386,7 +398,10 @@ export function HomeMobile() {
                 )}
               </Link>
             ) : (
-              <Link to="/signin" className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted">
+              <Link
+                to="/signin"
+                className="pointer-events-auto relative flex h-12 w-12 items-center justify-center rounded-full bg-background border border-border/50 shadow-md text-foreground transition-transform active:scale-95 hover:bg-muted"
+              >
                 <Activity className="h-6 w-6" />
               </Link>
             )}
@@ -421,7 +436,7 @@ export function HomeMobile() {
                     console.error("Geolocation error:", error);
                     mapRef.flyTo(defaultCenter, 13);
                   },
-                  { timeout: 5000 }
+                  { timeout: 5000 },
                 );
               } else {
                 mapRef.flyTo(defaultCenter, 13);
@@ -445,7 +460,9 @@ export function HomeMobile() {
               />
               <div className="flex-1 min-w-0 flex flex-col pt-1">
                 <div className="flex items-center justify-between mb-1 gap-2">
-                  <h3 className="font-bold text-base leading-tight truncate">{selectedMarker.title}</h3>
+                  <h3 className="font-bold text-base leading-tight truncate">
+                    {selectedMarker.title}
+                  </h3>
                   <button
                     onClick={() => setSelectedMarker(null)}
                     className="shrink-0 h-6 w-6 bg-secondary/50 rounded-full flex items-center justify-center text-muted-foreground transition-colors active:bg-secondary"

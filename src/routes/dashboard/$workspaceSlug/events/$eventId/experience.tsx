@@ -197,8 +197,6 @@ function ExperienceDashboard() {
     }
   };
 
-
-
   // ── Highlights ────────────────────────────────────────────────────────────
   const { data: highlights = [] } = useQuery({
     queryKey: ["event-highlights", eventId],
@@ -587,8 +585,6 @@ function ExperienceDashboard() {
             </div>
           )}
         </TabsContent>
-
-
       </Tabs>
     </div>
   );

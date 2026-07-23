@@ -11,7 +11,7 @@ async function run() {
   // 1. Untrack tables in Hasura (order matters for untracking if there are relationships, though cascade might handle it, better to just untrack safely)
   console.log("Untracking tables...");
   const tables = ["event_post_likes", "event_post_comments", "event_posts"];
-  
+
   for (const table of tables) {
     console.log(`Untracking ${table}...`);
     const untrackTableRes = await fetch(
@@ -27,7 +27,7 @@ async function run() {
               schema: "public",
               name: table,
             },
-            cascade: true
+            cascade: true,
           },
         }),
       },

@@ -41,22 +41,26 @@ export function VenuesMobile() {
           ) : (
             <>
               <div className="flex items-center gap-1">
-                <Link 
+                <Link
                   to="/signin"
-                  className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                  className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
                   aria-label="Messages"
                 >
                   <MessageCircle className="h-5 w-5" />
                 </Link>
               </div>
-              
+
               <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
                 <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
               </Link>
             </>
           )}
           <div className="flex items-center gap-1">
-            <Link to="/activity" className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground" aria-label="Activity">
+            <Link
+              to="/activity"
+              className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+              aria-label="Activity"
+            >
               <Activity className="h-5 w-5" />
             </Link>
           </div>

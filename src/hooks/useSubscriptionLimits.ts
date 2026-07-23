@@ -215,8 +215,6 @@ export function useSubscriptionLimits(
     return (workspaceStats?.screens || 0) < limits.max_cinema_screens;
   };
 
-
-
   const canAddIntegration = (currentIntegrationsCount: number) => {
     if (isLoading) return true;
     if (limits.max_integrations === -1 || limits.max_integrations === undefined) return true;
@@ -314,8 +312,6 @@ export function useSubscriptionLimits(
     return currentStoriesCount + quantityToAdd <= limit;
   };
 
-
-
   const canAddPlanningItem = (currentItemsCount: number) => {
     if (isLoading) return true;
     const limit = limits.max_planning_items;
@@ -396,6 +392,5 @@ export function useSubscriptionLimits(
     canCreateVoucher,
     canCreateEventStory,
     canAddPlanningItem,
-
   };
 }

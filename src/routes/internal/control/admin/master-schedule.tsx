@@ -28,7 +28,9 @@ function AdminServicesPage() {
   const [timeframe, setTimeframe] = useState<"today" | "tomorrow" | "next4" | "week" | "month">(
     "week",
   );
-  const [filterType, setFilterType] = useState<"All" | "Event" | "Cinema" | "Experience" | "Venue Booking">("All");
+  const [filterType, setFilterType] = useState<
+    "All" | "Event" | "Cinema" | "Experience" | "Venue Booking"
+  >("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

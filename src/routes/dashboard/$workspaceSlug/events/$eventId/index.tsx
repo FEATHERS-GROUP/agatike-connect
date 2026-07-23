@@ -164,8 +164,6 @@ function DashboardEventDetails() {
     enabled: !!eventId,
   });
 
-
-
   const toggleSuspend = useMutation({
     mutationFn: (data: { id: string; suspended: boolean }) => updateEvent({ data } as any),
     onSuccess: () => {
@@ -324,7 +322,6 @@ function DashboardEventDetails() {
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "—";
   const totalReviews = feedbackData?.aggregate?.count || 0;
-
 
   // ── Simulated week-on-week progression ────────────────────────────────────
   const attendanceProgressData = [
@@ -955,7 +952,6 @@ function DashboardEventDetails() {
                   </p>
                 </div>
               </div>
-
 
               {/* Location / Stops */}
               <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/15">

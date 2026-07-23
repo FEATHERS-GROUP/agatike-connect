@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
 import agatikeIcon from "@/assets/logo/Agatike Icon.png";
-import { Search, Map as MapIcon, SlidersHorizontal, MapPin, Users, MessageCircle, Activity } from "lucide-react";
+import {
+  Search,
+  Map as MapIcon,
+  SlidersHorizontal,
+  MapPin,
+  Users,
+  MessageCircle,
+  Activity,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -90,27 +98,31 @@ function ExplorePage() {
         <div className="px-4 py-2">
           <div className="flex items-center justify-between w-full relative">
             <div className="flex items-center gap-1">
-              <Link 
+              <Link
                 to={user?.id ? "/$userId/message" : "/signin"}
                 params={user?.id ? { userId: user.id } : {}}
-                className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
                 aria-label="Messages"
               >
                 <MessageCircle className="h-5 w-5" />
               </Link>
             </div>
-            
+
             <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
               <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
             </Link>
 
             <div className="flex items-center gap-1">
-              <Link to="/activity" className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground" aria-label="Activity">
+              <Link
+                to="/activity"
+                className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                aria-label="Activity"
+              >
                 <Activity className="h-5 w-5" />
               </Link>
-              <button 
+              <button
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground" 
+                className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
@@ -121,7 +133,6 @@ function ExplorePage() {
       </div>
 
       <div className="px-4 py-6 space-y-8">
-
         {/* Trending Section (Pinterest style masonry-ish) */}
         <section>
           <div className="flex items-center justify-between mb-4">
