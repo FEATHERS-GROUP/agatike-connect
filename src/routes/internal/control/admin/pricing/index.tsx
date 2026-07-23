@@ -1303,7 +1303,10 @@ function AdminPricingPage() {
               >
                 {providers.map((p: any) => (
                   <option key={p.id} value={p.id}>
-                    {p.network} ({p.country_code})
+                    {p.network} ({p.country_code}) -{" "}
+                    {activeTab === "sim-collections"
+                      ? `${p.collection_percentage}% collection fee`
+                      : `${p.disbursement_percentage}% disbursement fee`}
                   </option>
                 ))}
               </select>
