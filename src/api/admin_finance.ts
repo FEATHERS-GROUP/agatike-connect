@@ -179,7 +179,8 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
         "organizer_platform_contribution", "platform_margin_buffer",
         "customer_collection_fee_percentage", "customer_collection_fee_fixed",
         "organizer_collection_fee_percentage", "organizer_collection_fee_fixed",
-        "withdrawal_fee_percentage", "max_collection_subsidy_percentage"
+        "withdrawal_fee_percentage", "max_collection_subsidy_percentage",
+        "withdrawal_fee_fixed"
       ];
       
       if (numericColumns.includes(k)) return "numeric";
@@ -253,6 +254,7 @@ export const createPricingPlanAdmin = createServerFn({ method: "POST" })
       "organizer_collection_fee_percentage",
       "organizer_collection_fee_fixed",
       "withdrawal_fee_percentage",
+      "withdrawal_fee_fixed",
       "max_collection_subsidy_percentage",
     ];
     for (const field of numericFields) {
@@ -263,11 +265,6 @@ export const createPricingPlanAdmin = createServerFn({ method: "POST" })
       ) {
         formattedData[field] = Number(formattedData[field]);
       }
-    }
-    
-    // Explicitly make sure withdrawal_fee_fixed is string
-    if (formattedData.withdrawal_fee_fixed !== undefined && formattedData.withdrawal_fee_fixed !== null) {
-      formattedData.withdrawal_fee_fixed = String(formattedData.withdrawal_fee_fixed);
     }
 
     // Booleans
