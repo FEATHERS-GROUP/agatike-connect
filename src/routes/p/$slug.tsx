@@ -10,6 +10,11 @@ import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
 import { SpreadsheetEntryForm } from "@/components/page-builder/SpreadsheetEntryForm";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { useMutation } from "@tanstack/react-query";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import { toast } from "sonner";
+import { Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/p/$slug")({
   component: PublicCompanyPage,
@@ -34,6 +39,12 @@ function PublicCompanyPage() {
     return null;
   });
 
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedPaymentBlock, setSelectedPaymentBlock] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState("momo");
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+
   const { data: dbPage, isLoading: isLoadingPage } = useQuery({
     queryKey: ["workspace-page-public", slug],
     queryFn: () => getWorkspacePageBySlug({ data: { slug } } as any),
@@ -48,6 +59,110 @@ function PublicCompanyPage() {
     queryFn: () => getWorkspaceForms({ data: { workspace_id } } as any),
     enabled: !!workspace_id,
   });
+
+  const { mutate: doPayment, isPending: isProcessingPayment } = useMutation({
+    mutationFn: async (paymentDetails?: {
+      phone?: string;
+      network?: string;
+      currency?: string;
+      convertedAmount?: number;
+      shortfall?: number;
+    }) => {
+      const isPawaPay =
+        paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+
+      if (!isPawaPay || !selectedPaymentBlock) throw new Error("Invalid payment details");
+      const baseAmount = Number(selectedPaymentBlock.amount || 0);
+
+      const pawaRes = await initiatePawaPayDeposit({
+        data: {
+          amount: paymentDetails?.convertedAmount || baseAmount,
+          baseAmount: baseAmount,
+          baseCurrency: "RWF",
+          phone: paymentDetails!.phone,
+          network: paymentDetails!.network,
+          currency: paymentDetails?.currency || "RWF",
+          type: "page_builder_payment",
+          referenceId: crypto.randomUUID(),
+          workspaceId: workspace_id,
+          reason: selectedPaymentBlock.label || "Page Payment",
+          shortfall: paymentDetails?.shortfall || 0,
+        },
+      } as any);
+
+      return { isPawaPay: true, depositId: pawaRes.depositId };
+    },
+    onSuccess: (data: any) => {
+      if (data.isPawaPay) {
+        setPawapayDepositId(data.depositId);
+        setIsPollingPawaPay(true);
+        setPaymentModalOpen(false);
+      }
+    },
+    onError: (e: any) => {
+      toast.error(e.message || "Payment failed");
+    },
+  });
+
+  useEffect(() => {
+    if (!isPollingPawaPay || !pawapayDepositId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
+          setIsPollingPawaPay(false);
+          toast.success("Payment successful!");
+        } else if (res?.status?.toLowerCase() === "failed") {
+          setIsPollingPawaPay(false);
+          toast.error("Mobile Money payment failed or was cancelled.");
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [isPollingPawaPay, pawapayDepositId]);
+
+  if (isPollingPawaPay) {
+    return (
+      <div className="min-h-screen bg-background text-foreground relative flex flex-col">
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
+            payment.
+          </p>
+          <div className="flex gap-2 mb-8 justify-center">
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+          </div>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              setIsPollingPawaPay(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
+                }
+              }
+            }}
+            className="rounded-2xl h-12 px-8"
+          >
+            Cancel Payment
+          </Button>
+        </main>
+      </div>
+    );
+  }
 
   if (isLoadingPage && !isPreview) {
     return (
@@ -220,6 +335,23 @@ function PublicCompanyPage() {
               </div>
             </div>
           </nav>
+        )}
+
+        {selectedPaymentBlock && (
+          <PaymentModal
+            isOpen={paymentModalOpen}
+            onOpenChange={setPaymentModalOpen}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            isProcessing={isProcessingPayment}
+            isGenerating={false}
+            workspaceId={workspace_id}
+            baseAmount={Number(selectedPaymentBlock.amount || 0)}
+            itemLabel={selectedPaymentBlock.label || "Payment"}
+            onProceed={(details) => {
+              doPayment(details);
+            }}
+          />
         )}
 
         {/* Header Overlay Section */}
@@ -735,7 +867,7 @@ function PublicCompanyPage() {
 
                 if (comp.type === "payment_button") {
                   return (
-                    <div className="flex flex-col items-center justify-center w-full px-4 py-8">
+                    <div key={comp.id} className="flex flex-col items-center justify-center w-full px-4 py-8">
                       {comp.paymentLink ? (
                         <a
                           href={comp.paymentLink}
@@ -755,7 +887,8 @@ function PublicCompanyPage() {
                           className="rounded-full px-12 py-8 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center gap-1 h-auto"
                           style={{ background: theme_color }}
                           onClick={() => {
-                            alert("Internal checkout modal will open here!");
+                            setSelectedPaymentBlock(comp);
+                            setPaymentModalOpen(true);
                           }}
                         >
                           <span>{comp.label || "Pay Now"}</span>
