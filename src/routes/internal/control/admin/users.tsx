@@ -32,7 +32,8 @@ export const Route = createFileRoute("/internal/control/admin/users")({
 
 const AVAILABLE_PAGES = [
   { path: "/internal/control/admin/dashboard", label: "Dashboard" },
-  { path: "/internal/control/admin/services", label: "All Services" },
+  { path: "/internal/control/admin/master-schedule", label: "Master Schedule" },
+  { path: "/internal/control/admin/moderation", label: "Engagement Analytics" },
   { path: "/internal/control/admin/agatike-users", label: "Agatike Users" },
   { path: "/internal/control/admin/users", label: "Users & Roles" },
   { path: "/internal/control/admin/organizers", label: "Organizers" },

@@ -51,7 +51,6 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
     let projectsCount = 0;
     let spacesCount = 0;
     let attendeesCount = 0;
-    let postsCount = 0;
     let storiesCount = 0;
     let allEvents = [];
     let walletTx = [];
@@ -96,7 +95,6 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
           ticket_projects_aggregate(where: { workspaceId: { _in: $wsIds } }) { aggregate { count } }
           spaces_aggregate(where: { workspace_id: { _in: $wsIds } }) { aggregate { count } }
           event_attendees_aggregate(where: { event_id: { _in: $eventIds } }) { aggregate { count } }
-          event_posts_aggregate(where: { event_id: { _in: $eventIds } }) { aggregate { count } }
           event_stories_aggregate(where: { event_id: { _in: $eventIds } }) { aggregate { count } }
           wallet_transactions(where: { workspace_id: { _in: $wsIds }, status: { _eq: "completed" } }) {
             type
@@ -114,7 +112,6 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
         projectsCount = countsData.ticket_projects_aggregate?.aggregate?.count || 0;
         spacesCount = countsData.spaces_aggregate?.aggregate?.count || 0;
         attendeesCount = countsData.event_attendees_aggregate?.aggregate?.count || 0;
-        postsCount = countsData.event_posts_aggregate?.aggregate?.count || 0;
         storiesCount = countsData.event_stories_aggregate?.aggregate?.count || 0;
         walletTx = countsData.wallet_transactions || [];
       } catch (err) {
@@ -131,7 +128,6 @@ export const getAdminOrganizerOverview = createServerFn({ method: "POST" })
       projectsCount,
       spacesCount,
       attendeesCount,
-      postsCount,
       storiesCount,
       allEvents,
       walletTx,

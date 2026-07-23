@@ -3,7 +3,7 @@ import { StoryViewer } from "@/components/site/StoryViewer";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Stubbed mock data
-const defaultStories: any[] = [
+export const defaultStories: any[] = [
   {
     id: "s1",
     name: "Sydney Fest",
@@ -120,18 +120,17 @@ export function Stories({
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+      <div className="flex gap-3 overflow-x-auto scrollbar-none">
         {isLoading
           ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-              <div key={i} className="flex shrink-0 flex-col items-center gap-2">
-                <Skeleton className="h-[72px] w-[72px] rounded-full" />
-                <Skeleton className="h-3 w-12" />
+              <div key={i} className="flex shrink-0 flex-col items-center">
+                <Skeleton className="h-14 w-14 rounded-full" />
               </div>
             ))
           : items.map((s, i) => (
               <div
                 key={s.id}
-                className="flex shrink-0 flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                className="flex shrink-0 flex-col items-center cursor-pointer transition-transform hover:scale-105 active:scale-95"
                 onClick={() => setActiveStoryIndex(i)}
               >
                 <div
@@ -144,12 +143,11 @@ export function Stories({
                     <img
                       src={s.avatar}
                       alt={s.name}
-                      className="h-16 w-16 rounded-full object-cover"
+                      className="h-14 w-14 rounded-full object-cover"
                       loading="lazy"
                     />
                   </div>
                 </div>
-                <span className="text-xs text-muted-foreground">{s.name}</span>
               </div>
             ))}
       </div>

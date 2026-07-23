@@ -23,7 +23,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventById, updateEvent } from "@/api/events";
 import { getEventAttendees } from "@/api/attendees";
 import { getEventFeedback } from "@/api/feedback";
-import { getEventStories, getEventPosts } from "@/api/experience";
+import { getEventStories } from "@/api/experience";
 import {
   BarChart,
   Bar,
@@ -161,12 +161,6 @@ function DashboardEventDetails() {
   const { data: stories = [] } = useQuery({
     queryKey: ["event-stories", eventId],
     queryFn: () => getEventStories({ data: { event_id: eventId } } as any),
-    enabled: !!eventId,
-  });
-
-  const { data: posts = [] } = useQuery({
-    queryKey: ["event-posts", eventId],
-    queryFn: () => getEventPosts({ data: { event_id: eventId } } as any),
     enabled: !!eventId,
   });
 
@@ -328,15 +322,6 @@ function DashboardEventDetails() {
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "—";
   const totalReviews = feedbackData?.aggregate?.count || 0;
-  const totalLikes = (posts as any[]).reduce(
-    (a: number, p: any) => a + Number(p.likes_count || 0),
-    0,
-  );
-  const totalComments = (posts as any[]).reduce(
-    (a: number, p: any) => a + Number(p.comments_count || 0),
-    0,
-  );
-  const pinnedPosts = (posts as any[]).filter((p: any) => p.is_pinned).length;
 
   // ── Simulated week-on-week progression ────────────────────────────────────
   const attendanceProgressData = [
@@ -503,9 +488,9 @@ function DashboardEventDetails() {
             <span className="text-xs font-medium uppercase tracking-wider">Content</span>
             <Camera className="h-4 w-4 text-purple-500" />
           </div>
-          <p className="text-2xl font-bold text-purple-500">{posts.length + stories.length}</p>
+          <p className="text-2xl font-bold text-purple-500">{stories.length}</p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            {stories.length} stories · {posts.length} posts
+            {stories.length} {stories.length === 1 ? "story" : "stories"}
           </p>
         </div>
       </div>
@@ -926,7 +911,7 @@ function DashboardEventDetails() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">Experience</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Reviews, stories & posts</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Reviews & stories</p>
               </div>
               <Link
                 to="/dashboard/$workspaceSlug/events/$eventId/experience"
@@ -964,38 +949,6 @@ function DashboardEventDetails() {
                   <p className="font-bold">
                     {stories.length}{" "}
                     <span className="text-xs font-normal text-muted-foreground">active</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Posts */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/15">
-                <div className="w-9 h-9 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-                  <IconBubble className="w-5 h-5 text-blue-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Posts Published</p>
-                  <p className="font-bold">
-                    {posts.length}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {pinnedPosts} pinned
-                    </span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Engagements */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-rose-500/5 border border-rose-500/15">
-                <div className="w-9 h-9 rounded-lg bg-rose-500/15 flex items-center justify-center shrink-0">
-                  <IconHeart className="w-5 h-5 text-rose-500" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-muted-foreground">Engagements</p>
-                  <p className="font-bold">
-                    {(totalLikes + totalComments).toLocaleString()}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {totalLikes} likes · {totalComments} comments
-                    </span>
                   </p>
                 </div>
               </div>

@@ -1,144 +1,180 @@
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 import { StatCard } from "@/components/admin/StatCard";
-import { Users, CreditCard, Activity, Package, Plus, RefreshCw, BarChart3, PieChart, Briefcase, Boxes, Wallet, Banknote, MapPin, Globe } from "lucide-react";
+import {
+  Activity,
+  Cpu,
+  HardDrive,
+  Network,
+  Zap,
+  ShieldAlert,
+  Plus,
+  RefreshCw,
+  BarChart3,
+  Globe,
+  Briefcase,
+  Users,
+  Ticket,
+  Wallet,
+  HelpCircle,
+  XCircle,
+  PieChart,
+} from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  Legend,
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  LineChart,
+  Line,
+  RadialBarChart,
+  RadialBar,
+  ComposedChart,
+} from "recharts";
 import { getAdminDashboardStats } from "@/api/admin_dashboard";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
-import { format, parseISO, differenceInYears } from "date-fns";
+import { format, parseISO, startOfWeek } from "date-fns";
 
 export const Route = createFileRoute("/internal/control/admin/")({
   loader: async () => {
     return await getAdminDashboardStats();
   },
-  component: AdminDashboard,
+  component: SystemDashboard,
 });
 
-const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#f43f5e'];
+const COLORS = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#f43f5e", "#64748b", "#eab308"];
 
-function AdminDashboard() {
+function SystemDashboard() {
   const stats = useLoaderData({ from: "/internal/control/admin/" });
 
-  // Process Events for Bar Chart
-  const eventsByMonth = stats.events.reduce((acc: any, event: any) => {
-    const startDate = event.schedules?.[0]?.start_date || event.created_at;
-    if (!startDate) return acc;
-    const month = format(parseISO(startDate), "MMM yyyy");
-    acc[month] = (acc[month] || 0) + 1;
-    return acc;
-  }, {});
+  // 1. Process Support Tickets Data
+  let openTickets = 0;
+  let unassignedTickets = 0;
+  let closedTickets = 0;
 
-  const chartData = Object.keys(eventsByMonth)
-    .slice(0, 12)
-    .map(key => ({ name: key, Events: eventsByMonth[key] }))
-    .reverse();
+  const ticketsByCategory: Record<string, number> = {};
+  const ticketsByStatus: Record<string, number> = {};
 
-  // Process Subscriptions for Pie Chart
-  const subsByPlan = stats.subscriptions.reduce((acc: any, sub: any) => {
-    const planName = sub.pricing_plan?.name || "Unknown";
-    acc[planName] = (acc[planName] || 0) + 1;
-    return acc;
-  }, {});
+  (stats.supportTickets || []).forEach((t: any) => {
+    // Basic counts
+    if (t.status === "open" || t.status === "in_progress") openTickets++;
+    if (t.status === "closed" || t.status === "resolved") closedTickets++;
+    if (!t.assigned_to) unassignedTickets++;
 
-  const pieData = Object.keys(subsByPlan).map(key => ({
-    name: key,
-    value: subsByPlan[key]
+    // Group by category
+    const cat = t.category || "other";
+    ticketsByCategory[cat] = (ticketsByCategory[cat] || 0) + 1;
+
+    // Group by status
+    const status = t.status || "unknown";
+    ticketsByStatus[status] = (ticketsByStatus[status] || 0) + 1;
+  });
+
+  const categoryChartData = Object.keys(ticketsByCategory).map((k) => ({
+    name: k,
+    value: ticketsByCategory[k],
+  }));
+  const statusChartData = Object.keys(ticketsByStatus).map((k) => ({
+    name: k,
+    count: ticketsByStatus[k],
   }));
 
-  // Process Earnings for Line Chart
-  const earningsByMonth = (stats.earnings || []).reduce((acc: any, earning: any) => {
-    if (!earning.created_at) return acc;
-    const month = format(parseISO(earning.created_at), "MMM yyyy");
-    if (!acc[month]) acc[month] = { name: month, Subscriptions: 0, Platform: 0 };
-    
-    // Check if it's a subscription earning
-    const typeStr = (earning.transaction_type || "").toLowerCase();
-    const isSub = typeStr.includes("subscription") || typeStr.includes("plan");
-    
-    if (isSub) {
-      acc[month].Subscriptions += (earning.platform_revenue || 0);
+  // 2. Process Withdrawals Data
+  let pendingWithdrawals = 0;
+  let approvedWithdrawals = 0;
+  let rejectedWithdrawals = 0;
+
+  (stats.withdrawals || []).forEach((w: any) => {
+    if (w.status === "pending") pendingWithdrawals++;
+    else if (w.status === "approved" || w.status === "completed") approvedWithdrawals++;
+    else if (w.status === "rejected" || w.status === "failed") rejectedWithdrawals++;
+  });
+
+  const withdrawalPieData = [
+    { name: "Pending", value: pendingWithdrawals },
+    { name: "Approved", value: approvedWithdrawals },
+    { name: "Rejected", value: rejectedWithdrawals },
+  ].filter((d) => d.value > 0);
+
+  // 3. Process Trends Data
+  const ticketsByMonth: Record<string, any> = {};
+  const categoriesSet = new Set<string>();
+
+  (stats.supportTickets || []).forEach((t: any) => {
+    if (!t.created_at) return;
+    const month = format(parseISO(t.created_at), "MMM yyyy");
+    if (!ticketsByMonth[month]) {
+      ticketsByMonth[month] = { name: month };
+    }
+    const cat = t.category || "other";
+    categoriesSet.add(cat);
+    ticketsByMonth[month][cat] = (ticketsByMonth[month][cat] || 0) + 1;
+  });
+
+  const ticketsTrendData = Object.values(ticketsByMonth).reverse();
+  const categoriesList = Array.from(categoriesSet);
+
+  const withdrawalsByWeek: Record<string, any> = {};
+  (stats.withdrawals || []).forEach((w: any) => {
+    if (!w.created_at) return;
+    const weekStart = format(startOfWeek(parseISO(w.created_at)), "MMM dd, yyyy");
+    if (!withdrawalsByWeek[weekStart])
+      withdrawalsByWeek[weekStart] = { name: weekStart, approved: 0, pending: 0, rejected: 0 };
+
+    if (w.status === "approved" || w.status === "completed") {
+      withdrawalsByWeek[weekStart].approved += w.amount || 0;
+    } else if (w.status === "pending") {
+      withdrawalsByWeek[weekStart].pending += w.amount || 0;
     } else {
-      acc[month].Platform += (earning.platform_revenue || 0);
-    }
-    return acc;
-  }, {});
-
-  const earningsChartData = Object.values(earningsByMonth)
-    .slice(0, 12)
-    .reverse();
-
-  // Process Country/City Data
-  const orgByCountry: Record<string, number> = {};
-  const orgByCity: Record<string, number> = {};
-  
-  (stats.workspacesDemographics || []).forEach((ws: any) => {
-    if (ws.country) {
-      orgByCountry[ws.country] = (orgByCountry[ws.country] || 0) + 1;
-    }
-    if (ws.city) {
-      orgByCity[ws.city] = (orgByCity[ws.city] || 0) + 1;
+      withdrawalsByWeek[weekStart].rejected += w.amount || 0;
     }
   });
 
-  const countryChartData = Object.keys(orgByCountry).map(k => ({ name: k, value: orgByCountry[k] }));
-  const cityChartData = Object.keys(orgByCity).map(k => ({ name: k, value: orgByCity[k] }));
+  const withdrawalsTrendData = Object.values(withdrawalsByWeek).reverse();
 
-  // Process Gender Data
-  const genderData = [
-    { name: 'Male', Users: 0, Organizers: 0 },
-    { name: 'Female', Users: 0, Organizers: 0 },
-    { name: 'Other', Users: 0, Organizers: 0 },
-  ];
+  // 4. Admin Ticket Trends
+  const adminTicketsByMonth: Record<string, any> = {};
+  const adminsSet = new Set<string>();
 
-  (stats.usersDemographics || []).forEach((u: any) => {
-    const g = (u.gender || "").toLowerCase();
-    if (g === 'male' || g === 'm') genderData[0].Users++;
-    else if (g === 'female' || g === 'f') genderData[1].Users++;
-    else genderData[2].Users++;
-  });
-
-  (stats.organizersDemographics || []).forEach((o: any) => {
-    const g = (o.gender || "").toLowerCase();
-    if (g === 'male' || g === 'm') genderData[0].Organizers++;
-    else if (g === 'female' || g === 'f') genderData[1].Organizers++;
-    else genderData[2].Organizers++;
-  });
-
-  // Process Age Data
-  const ageBuckets = [
-    { name: '<18', count: 0 },
-    { name: '18-24', count: 0 },
-    { name: '25-34', count: 0 },
-    { name: '35-44', count: 0 },
-    { name: '45-54', count: 0 },
-    { name: '55+', count: 0 },
-  ];
-
-  (stats.usersDemographics || []).forEach((u: any) => {
-    if (u.dateOfBirth) {
-      const age = differenceInYears(new Date(), parseISO(u.dateOfBirth));
-      if (age < 18) ageBuckets[0].count++;
-      else if (age <= 24) ageBuckets[1].count++;
-      else if (age <= 34) ageBuckets[2].count++;
-      else if (age <= 44) ageBuckets[3].count++;
-      else if (age <= 54) ageBuckets[4].count++;
-      else ageBuckets[5].count++;
+  (stats.supportTickets || []).forEach((t: any) => {
+    if (!t.created_at) return;
+    const month = format(parseISO(t.created_at), "MMM yyyy");
+    if (!adminTicketsByMonth[month]) {
+      adminTicketsByMonth[month] = { name: month };
     }
+    const adminId = t.assigned_to ? `Admin: ${t.assigned_to.substring(0, 5)}` : "Unassigned";
+    adminsSet.add(adminId);
+    adminTicketsByMonth[month][adminId] = (adminTicketsByMonth[month][adminId] || 0) + 1;
   });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'RWF' }).format(value);
-  };
+  const adminTicketsTrendData = Object.values(adminTicketsByMonth).reverse();
+  const adminList = Array.from(adminsSet);
 
   return (
     <div className="space-y-4 font-sans text-sm pb-10">
       <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-[#333333]">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Dashboard Overview</h1>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          Operations & Health Dashboard
+        </h1>
 
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-1 hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-[#cccccc] font-medium text-[13px] transition-colors">
-            <Plus className="h-4 w-4 text-[#f97316]" />
-            New dashboard
-          </button>
-          <button 
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-700 dark:text-green-400 font-medium text-[13px] transition-colors rounded-sm border border-green-500/20">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            All Systems Operational
+          </div>
+          <button
             className="flex items-center gap-1.5 px-3 py-1 hover:bg-gray-200 dark:hover:bg-[#333333] text-gray-700 dark:text-[#cccccc] font-medium text-[13px] transition-colors"
             onClick={() => window.location.reload()}
           >
@@ -149,200 +185,380 @@ function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-        <StatCard title="Total Users" value={stats.users.toLocaleString()} icon={Users} />
-        <StatCard title="Total Organizers" value={stats.organizers.toLocaleString()} icon={Activity} />
-        <StatCard title="Total Workspaces" value={stats.workspaces.toLocaleString()} icon={Briefcase} />
-        <StatCard title="Total Staff" value={stats.staff.toLocaleString()} icon={Users} />
-        <StatCard title="Platform Revenue" value={formatCurrency(stats.revenue)} icon={CreditCard} />
-        <StatCard title="Provider Costs" value={formatCurrency(stats.providerCost)} icon={Banknote} isPositive={false} trend="Provider cut" />
-        <StatCard title="Active Wallets" value={stats.totalWallets.toLocaleString()} icon={Wallet} />
-        <StatCard title="Payout Balance" value={formatCurrency(stats.totalWalletBalance)} icon={Wallet} trend="Pending Payouts" />
-        <StatCard title="Platform Modules" value={stats.modules.toLocaleString()} icon={Boxes} />
-        <StatCard title="Design Projects" value={stats.designProjects.toLocaleString()} icon={Package} />
-        <StatCard title="System Load" value="24%" isPositive={false} icon={Activity} trend="-5% vs last week" />
+        <StatCard
+          title="Inactive Workspaces"
+          value={stats.inactiveWorkspaces.toString()}
+          icon={Briefcase}
+          trend="Deleted or deactivated"
+          isPositive={false}
+        />
+        <StatCard
+          title="Inactive Organizers"
+          value={stats.inactiveOrganizers.toString()}
+          icon={Users}
+          trend="Disabled or pending"
+          isPositive={false}
+        />
+        <StatCard
+          title="Open Tickets"
+          value={openTickets.toString()}
+          icon={HelpCircle}
+          trend={`${unassignedTickets} unassigned`}
+          isPositive={false}
+        />
+        <StatCard
+          title="Pending Withdrawals"
+          value={pendingWithdrawals.toString()}
+          icon={Wallet}
+          trend="Awaiting admin approval"
+          isPositive={true}
+        />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-        {/* Main Chart Area */}
-        <div className="col-span-1 xl:col-span-2 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-[#333333]">
-            <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Events Monthly Trend
-            </h3>
-          </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+        {/* Tickets by Status */}
+        <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
+          <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Tickets by Status
+          </h3>
           <div className="h-[250px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
-            {chartData.length > 0 ? (
+            {statusChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }}
+                <BarChart
+                  data={statusChartData}
+                  layout="vertical"
+                  margin={{ top: 0, right: 0, left: 10, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    horizontal={false}
+                    stroke="#333"
+                    opacity={0.3}
                   />
-                  <Bar dataKey="Events" fill="#f97316" radius={[4, 4, 0, 0]} />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
+                  <Bar
+                    dataKey="count"
+                    fill="#3b82f6"
+                    radius={[0, 4, 4, 0]}
+                    name="Tickets"
+                    barSize={20}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No events data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No tickets available
+              </div>
             )}
           </div>
         </div>
 
-        {/* Subscription Breakdown */}
+        {/* Tickets by Category */}
         <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
           <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
             <PieChart className="h-4 w-4" />
-            Active Subscriptions
+            Tickets by Category
           </h3>
           <div className="h-[250px] w-full flex items-center justify-center bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-md">
-            {pieData.length > 0 ? (
+            {categoryChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsPieChart>
                   <Pie
-                    data={pieData}
+                    data={categoryChartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    paddingAngle={4}
                     dataKey="value"
                   >
-                    {pieData.map((entry, index) => (
+                    {categoryChartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }}
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
                   />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "11px" }} />
                 </RechartsPieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-gray-500 text-xs">No subscriptions data available</div>
+              <div className="text-gray-500 text-xs">No tickets data available</div>
             )}
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-3">
-        {/* Earnings Chart Area */}
+        {/* Withdrawals Overview */}
         <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200 dark:border-[#333333]">
-            <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Earnings Breakdown
-            </h3>
-          </div>
-          <div className="h-[300px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
-            {earningsChartData.length > 0 ? (
+          <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Withdrawal Requests
+          </h3>
+          <div className="h-[250px] w-full flex items-center justify-center bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-md">
+            {withdrawalPieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={earningsChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} tickFormatter={(val) => `RWF ${val}`} />
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }}
-                    formatter={(value) => formatCurrency(Number(value))}
+                <RadialBarChart
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="40%"
+                  outerRadius="90%"
+                  barSize={15}
+                  data={withdrawalPieData.map((d, i) => ({
+                    ...d,
+                    fill:
+                      d.name === "Pending"
+                        ? "#f97316"
+                        : d.name === "Approved"
+                          ? "#10b981"
+                          : "#f43f5e",
+                  }))}
+                >
+                  <RadialBar background={{ fill: "#333" }} dataKey="value" cornerRadius={10} />
+                  <Legend
+                    iconSize={10}
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                  <Line type="monotone" dataKey="Subscriptions" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="Platform" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-gray-500 text-xs">No withdrawals data available</div>
+            )}
+          </div>
+        </div>
+        {/* Ticket Trends */}
+        <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
+          <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Monthly Ticket Trends (By Category)
+          </h3>
+          <div className="h-[300px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
+            {ticketsTrendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={ticketsTrendData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#333"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis tick={{ fontSize: 11, fill: "#888" }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
+                  {categoriesList.map((cat, index) => (
+                    <Line
+                      key={cat}
+                      type="monotone"
+                      dataKey={cat}
+                      stroke={COLORS[index % COLORS.length]}
+                      strokeWidth={3}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  ))}
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No earnings data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No trend data available
+              </div>
             )}
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-        {/* Organizers by Country */}
+        {/* Withdrawal Trends */}
         <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
           <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            Organizers by Country
+            <Wallet className="h-4 w-4" />
+            Weekly Withdrawal Volume
           </h3>
-          <div className="h-[250px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
-            {countryChartData.length > 0 ? (
+          <div className="h-[300px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
+            {withdrawalsTrendData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={countryChartData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={80} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                </BarChart>
+                <AreaChart
+                  data={withdrawalsTrendData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#333"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(val) => `${val >= 1000 ? (val / 1000).toFixed(0) + "k" : val}`}
+                  />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                    formatter={(value: number) =>
+                      new Intl.NumberFormat("en-US", { style: "currency", currency: "RWF" }).format(
+                        value,
+                      )
+                    }
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
+                  <Area
+                    type="monotone"
+                    stackId="1"
+                    dataKey="approved"
+                    stroke="#10b981"
+                    fill="#10b981"
+                    fillOpacity={0.5}
+                    name="Approved"
+                  />
+                  <Area
+                    type="monotone"
+                    stackId="1"
+                    dataKey="pending"
+                    stroke="#f97316"
+                    fill="#f97316"
+                    fillOpacity={0.5}
+                    name="Pending"
+                  />
+                  <Area
+                    type="monotone"
+                    stackId="1"
+                    dataKey="rejected"
+                    stroke="#f43f5e"
+                    fill="#f43f5e"
+                    fillOpacity={0.5}
+                    name="Rejected"
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No country data available</div>
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No withdrawal volume available
+              </div>
             )}
           </div>
         </div>
 
-        {/* Organizers by City */}
-        <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
-          <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Organizers by City
-          </h3>
-          <div className="h-[250px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
-            {cityChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={cityChartData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#333" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} width={80} />
-                  <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
-                  <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-500 text-xs">No city data available</div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-        {/* Gender Distribution */}
+        {/* Admin Assignment Trends */}
         <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
           <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Gender Distribution
+            Admin Ticket Assignments
           </h3>
-          <div className="h-[250px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={genderData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                <Bar dataKey="Users" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Organizers" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* User Age Range */}
-        <div className="col-span-1 bg-gray-50 dark:bg-[#252526] p-4 border border-gray-200 dark:border-transparent rounded-lg">
-          <h3 className="text-[13px] font-semibold text-gray-700 dark:text-[#cccccc] mb-4 pb-2 border-b border-gray-200 dark:border-[#333333] flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            User Age Demographics
-          </h3>
-          <div className="h-[250px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={ageBuckets}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#888' }} axisLine={false} tickLine={false} />
-                <RechartsTooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '4px', fontSize: '12px', color: '#fff' }} />
-                <Bar dataKey="count" fill="#f97316" radius={[4, 4, 0, 0]} name="Users" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] w-full bg-white dark:bg-[#111111] p-4 border border-gray-200 dark:border-[#333333] rounded-md">
+            {adminTicketsTrendData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={adminTicketsTrendData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#333"
+                    opacity={0.3}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#888" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis tick={{ fontSize: 11, fill: "#888" }} axisLine={false} tickLine={false} />
+                  <RechartsTooltip
+                    contentStyle={{
+                      backgroundColor: "#111",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      color: "#fff",
+                    }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
+                  {adminList.map((admin, index) => (
+                    <Line
+                      key={admin}
+                      type="monotone"
+                      dataKey={admin}
+                      stroke={COLORS[(index + 3) % COLORS.length]}
+                      strokeWidth={3}
+                      dot={{ r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                No admin data available
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -32,7 +32,80 @@ import {
   Trash2,
   List,
   LayoutGrid,
+  BookOpen,
+  Search,
 } from "lucide-react";
+import readmeRaw from "../../../../../../README.md?raw";
+
+const readmeSections = (() => {
+  try {
+    const raw = readmeRaw as string;
+    const parts = raw.split(/^## /m);
+    return parts.map((part) => {
+      const lines = part.split("\n");
+      return {
+        title: lines[0].replace(/#/g, "").trim() || "Introduction",
+        content: lines.slice(1).join("\n").trim(),
+      };
+    }).filter((p) => p.content.length > 0).map((p, i) => ({ ...p, id: i }));
+  } catch (e) {
+    return [];
+  }
+})();
+
+function formatInline(text: string) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`(.*?)`/g, '<code class="bg-gray-100 dark:bg-[#222] px-1 py-0.5 rounded text-[11px] text-[#f97316]">$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-500 hover:underline">$1</a>');
+}
+
+function SimpleMarkdownRenderer({ text }: { text: string }) {
+  if (!text) return null;
+  const blocks = text.split(/(```[\s\S]*?```)/g);
+  
+  return (
+    <>
+      {blocks.map((block, i) => {
+        if (block.startsWith("```") && block.endsWith("```")) {
+          const content = block.slice(3, -3);
+          const lines = content.split("\n");
+          const lang = lines[0].trim();
+          const code = lines.slice(1).join("\n");
+          return (
+            <pre key={i} className="bg-gray-100 dark:bg-[#111] p-4 rounded-md overflow-x-auto text-[11px] font-mono border border-gray-200 dark:border-[#333] my-4 custom-scrollbar">
+              <code className="text-gray-800 dark:text-[#ccc]">{code || lang}</code>
+            </pre>
+          );
+        }
+        
+        const paragraphs = block.split(/\n\n+/);
+        return paragraphs.map((p, j) => {
+          if (!p.trim()) return null;
+          
+          if (p.trim().startsWith("- ")) {
+            const items = p.split("\n").filter(l => l.trim().startsWith("- ")).map(l => l.replace(/^- /, ""));
+            return (
+              <ul key={`${i}-${j}`} className="list-disc pl-5 space-y-1 my-3 text-gray-700 dark:text-[#ccc] leading-relaxed">
+                {items.map((item, k) => (
+                  <li key={k} dangerouslySetInnerHTML={{ __html: formatInline(item) }} />
+                ))}
+              </ul>
+            );
+          }
+          
+          if (p.trim().startsWith("### ")) {
+             return <h3 key={`${i}-${j}`} className="text-lg font-bold text-gray-900 dark:text-white mt-6 mb-2">{p.trim().replace(/^### /, "")}</h3>;
+          }
+          
+          return (
+            <p key={`${i}-${j}`} className="my-3 text-gray-700 dark:text-[#ccc] leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(p) }} />
+          );
+        });
+      })}
+    </>
+  );
+}
 
 export const Route = createFileRoute("/internal/control/admin/support/")({
   component: AdminSupportPage,
@@ -125,7 +198,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string; b
   },
 };
 
-type Tab = "unassigned" | "in_progress" | "all" | "resolved";
+type Tab = "unassigned" | "in_progress" | "all" | "resolved" | "documentation";
 
 function formatRelative(dateStr: string) {
   const date = new Date(dateStr);
@@ -280,6 +353,8 @@ function BulkDeleteModal({
 
 function AdminSupportPage() {
   const [activeTab, setActiveTab] = useState<Tab>("unassigned");
+  const [activeDocTopic, setActiveDocTopic] = useState<number>(0);
+  const [docSearchQuery, setDocSearchQuery] = useState("");
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "table">("list");
   const router = useRouter();
@@ -305,18 +380,20 @@ function AdminSupportPage() {
     queryKey: ["admin-support-tickets", activeTab],
     queryFn: () => getAdminSupportTickets({ data: { status: tabToStatus(activeTab) } }),
     refetchInterval: 30000,
+    enabled: activeTab !== "documentation",
   });
 
   const handleRefresh = () => {
-    refetch();
+    if (activeTab !== "documentation") refetch();
     refetchStats();
   };
 
-  const TABS: { id: Tab; label: string; count?: number }[] = [
+  const TABS: { id: Tab; label: string; count?: number; icon?: any }[] = [
     { id: "unassigned", label: "Unassigned", count: stats?.unassigned },
     { id: "in_progress", label: "In Progress", count: stats?.in_progress },
     { id: "all", label: "All Tickets", count: stats?.total },
     { id: "resolved", label: "Solved / Closed", count: stats?.closed },
+    { id: "documentation", label: "Documentation", icon: BookOpen },
   ];
 
   return (
@@ -370,64 +447,153 @@ function AdminSupportPage() {
         {/* Tabs and Controls */}
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-[#333] mb-0 shrink-0">
           <div className="flex">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                }}
-                className={`px-4 py-2 text-[12px] font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
-                  activeTab === tab.id
-                    ? "border-[#f97316] text-gray-900 dark:text-white"
-                    : "border-transparent text-gray-500 dark:text-[#888] hover:text-gray-700 dark:text-[#ccc]"
-                }`}
-              >
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                      activeTab === tab.id
-                        ? "bg-[#f97316]/20 text-[#f97316]"
-                        : "bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888]"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            ))}
+            {TABS.map((tab) => {
+              const TabIcon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                  }}
+                  className={`px-4 py-2 text-[12px] font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
+                    activeTab === tab.id
+                      ? "border-[#f97316] text-gray-900 dark:text-white"
+                      : "border-transparent text-gray-500 dark:text-[#888] hover:text-gray-700 dark:text-[#ccc]"
+                  }`}
+                >
+                  {TabIcon && <TabIcon className="h-3.5 w-3.5" />}
+                  {tab.label}
+                  {tab.count !== undefined && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                        activeTab === tab.id
+                          ? "bg-[#f97316]/20 text-[#f97316]"
+                          : "bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888]"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 pr-2 pb-1">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded transition-colors ${
-                viewMode === "list"
-                  ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white"
-                  : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
-              }`}
-              title="List View"
-            >
-              <List className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={`p-1.5 rounded transition-colors ${
-                viewMode === "table"
-                  ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white"
-                  : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
-              }`}
-              title="Table View"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-          </div>
+          {activeTab !== "documentation" && (
+            <div className="flex items-center gap-1 pr-2 pb-1">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded transition-colors ${
+                  viewMode === "list"
+                    ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white"
+                    : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
+                }`}
+                title="List View"
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-1.5 rounded transition-colors ${
+                  viewMode === "table"
+                    ? "bg-gray-200 dark:bg-[#333] text-gray-900 dark:text-white"
+                    : "text-gray-500 dark:text-[#666] hover:text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:bg-[#222]"
+                }`}
+                title="Table View"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Ticket list */}
-        <div className="flex-1 overflow-y-auto">
-          {isLoading ? (
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          {activeTab === "documentation" ? (() => {
+            const filteredSections = readmeSections.filter(
+              (sec) =>
+                sec.title.toLowerCase().includes(docSearchQuery.toLowerCase()) ||
+                sec.content.toLowerCase().includes(docSearchQuery.toLowerCase())
+            );
+
+            // Get the actual section to display
+            const displaySection = readmeSections.find((s) => s.id === activeDocTopic) || filteredSections[0] || null;
+
+            return (
+              <div className="flex h-full">
+                {/* Sidebar topics */}
+                <div className="w-64 border-r border-gray-200 dark:border-[#333] flex flex-col shrink-0">
+                  <div className="p-3 border-b border-gray-200 dark:border-[#333]">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search documentation..."
+                        value={docSearchQuery}
+                        onChange={(e) => setDocSearchQuery(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 bg-gray-100 dark:bg-[#1a1a1a] border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-[#f97316] dark:focus:border-[#f97316] rounded-md text-[12px] text-gray-900 dark:text-white outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    {filteredSections.map((sec) => (
+                      <button
+                        key={sec.id}
+                        onClick={() => setActiveDocTopic(sec.id)}
+                        className={`w-full text-left px-4 py-3 text-[13px] transition-colors border-l-[3px] ${
+                          (displaySection?.id === sec.id)
+                            ? "border-[#f97316] bg-[#f97316]/10 text-[#f97316]"
+                            : "border-transparent text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#1a1a1a]"
+                        }`}
+                      >
+                        <div className={`font-medium ${displaySection?.id === sec.id ? "text-[#f97316]" : "text-gray-800 dark:text-[#ddd]"}`}>
+                          {sec.title}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
+                            <Tag className="h-2.5 w-2.5" />
+                            Admin Docs
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                    {filteredSections.length === 0 && (
+                      <div className="p-4 text-center text-[12px] text-gray-500">
+                        No articles found.
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Content area */}
+                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                  {displaySection ? (
+                    <div className="max-w-3xl mx-auto">
+                      <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
+                            <Tag className="h-3 w-3" />
+                            Admin Docs
+                          </span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <BookOpen className="h-6 w-6 text-[#f97316]" />
+                          {displaySection.title}
+                        </h2>
+                      </div>
+                      <div className="text-[13px]">
+                        <SimpleMarkdownRenderer text={displaySection.content || ""} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No documentation available.
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })() : isLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
             </div>

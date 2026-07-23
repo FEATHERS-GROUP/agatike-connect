@@ -51,7 +51,6 @@ import { Route as DashboardPricingRouteImport } from './routes/dashboard/pricing
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
-import { Route as CommunityPostIdRouteImport } from './routes/community/$postId'
 import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
 import { Route as BusesMobileRouteImport } from './routes/buses/mobile'
 import { Route as BusesTripIdRouteImport } from './routes/buses/$tripId'
@@ -96,10 +95,13 @@ import { Route as InternalControlAdminUsersRouteImport } from './routes/internal
 import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal/control/admin/transactions'
 import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal/control/admin/providers'
 import { Route as InternalControlAdminModulesRouteImport } from './routes/internal/control/admin/modules'
+import { Route as InternalControlAdminModerationRouteImport } from './routes/internal/control/admin/moderation'
+import { Route as InternalControlAdminMasterScheduleRouteImport } from './routes/internal/control/admin/master-schedule'
 import { Route as InternalControlAdminLoginRouteImport } from './routes/internal/control/admin/login'
 import { Route as InternalControlAdminLeadsRouteImport } from './routes/internal/control/admin/leads'
 import { Route as InternalControlAdminHealthRouteImport } from './routes/internal/control/admin/health'
 import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal/control/admin/earnings'
+import { Route as InternalControlAdminDashboardRouteImport } from './routes/internal/control/admin/dashboard'
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
@@ -424,11 +426,6 @@ const DashboardCreateOrganizerRoute =
     path: '/create-organizer',
     getParentRoute: () => DashboardRoute,
   } as any)
-const CommunityPostIdRoute = CommunityPostIdRouteImport.update({
-  id: '/community/$postId',
-  path: '/community/$postId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CinemasCinemaIdRoute = CinemasCinemaIdRouteImport.update({
   id: '/cinemas/$cinemaId',
   path: '/cinemas/$cinemaId',
@@ -676,6 +673,18 @@ const InternalControlAdminModulesRoute =
     path: '/modules',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
+const InternalControlAdminModerationRoute =
+  InternalControlAdminModerationRouteImport.update({
+    id: '/moderation',
+    path: '/moderation',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminMasterScheduleRoute =
+  InternalControlAdminMasterScheduleRouteImport.update({
+    id: '/master-schedule',
+    path: '/master-schedule',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminLoginRoute =
   InternalControlAdminLoginRouteImport.update({
     id: '/login',
@@ -698,6 +707,12 @@ const InternalControlAdminEarningsRoute =
   InternalControlAdminEarningsRouteImport.update({
     id: '/earnings',
     path: '/earnings',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminDashboardRoute =
+  InternalControlAdminDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const DashboardWorkspaceUserEmailActivateRoute =
@@ -1411,7 +1426,6 @@ export interface FileRoutesByFullPath {
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
-  '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -1478,10 +1492,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
+  '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
+  '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
@@ -1616,7 +1633,6 @@ export interface FileRoutesByTo {
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
-  '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -1680,10 +1696,13 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
+  '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
+  '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
@@ -1818,7 +1837,6 @@ export interface FileRoutesById {
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
-  '/community/$postId': typeof CommunityPostIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -1885,10 +1903,13 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
+  '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
   '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
+  '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
+  '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
@@ -2025,7 +2046,6 @@ export interface FileRouteTypes {
     | '/buses/$tripId'
     | '/buses/mobile'
     | '/cinemas/$cinemaId'
-    | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -2092,10 +2112,13 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
+    | '/internal/control/admin/master-schedule'
+    | '/internal/control/admin/moderation'
     | '/internal/control/admin/modules'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
@@ -2230,7 +2253,6 @@ export interface FileRouteTypes {
     | '/buses/$tripId'
     | '/buses/mobile'
     | '/cinemas/$cinemaId'
-    | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -2294,10 +2316,13 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
+    | '/internal/control/admin/master-schedule'
+    | '/internal/control/admin/moderation'
     | '/internal/control/admin/modules'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
@@ -2431,7 +2456,6 @@ export interface FileRouteTypes {
     | '/buses/$tripId'
     | '/buses/mobile'
     | '/cinemas/$cinemaId'
-    | '/community/$postId'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -2498,10 +2522,13 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
+    | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
     | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
+    | '/internal/control/admin/master-schedule'
+    | '/internal/control/admin/moderation'
     | '/internal/control/admin/modules'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
@@ -2637,7 +2664,6 @@ export interface RootRouteChildren {
   BusesTripIdRoute: typeof BusesTripIdRoute
   BusesMobileRoute: typeof BusesMobileRoute
   CinemasCinemaIdRoute: typeof CinemasCinemaIdRoute
-  CommunityPostIdRoute: typeof CommunityPostIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
   PSlugRoute: typeof PSlugRoute
@@ -2955,13 +2981,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCreateOrganizerRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/community/$postId': {
-      id: '/community/$postId'
-      path: '/community/$postId'
-      fullPath: '/community/$postId'
-      preLoaderRoute: typeof CommunityPostIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/cinemas/$cinemaId': {
       id: '/cinemas/$cinemaId'
       path: '/cinemas/$cinemaId'
@@ -3270,6 +3289,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminModulesRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
+    '/internal/control/admin/moderation': {
+      id: '/internal/control/admin/moderation'
+      path: '/moderation'
+      fullPath: '/internal/control/admin/moderation'
+      preLoaderRoute: typeof InternalControlAdminModerationRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/master-schedule': {
+      id: '/internal/control/admin/master-schedule'
+      path: '/master-schedule'
+      fullPath: '/internal/control/admin/master-schedule'
+      preLoaderRoute: typeof InternalControlAdminMasterScheduleRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/login': {
       id: '/internal/control/admin/login'
       path: '/login'
@@ -3296,6 +3329,13 @@ declare module '@tanstack/react-router' {
       path: '/earnings'
       fullPath: '/internal/control/admin/earnings'
       preLoaderRoute: typeof InternalControlAdminEarningsRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/dashboard': {
+      id: '/internal/control/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/internal/control/admin/dashboard'
+      preLoaderRoute: typeof InternalControlAdminDashboardRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/dashboard/workspace-user/$email/activate': {
@@ -4521,10 +4561,13 @@ const InternalControlAdminOrganizersOrganizerIdRouteWithChildren =
   )
 
 interface InternalControlAdminRouteChildren {
+  InternalControlAdminDashboardRoute: typeof InternalControlAdminDashboardRoute
   InternalControlAdminEarningsRoute: typeof InternalControlAdminEarningsRoute
   InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
   InternalControlAdminLeadsRoute: typeof InternalControlAdminLeadsRoute
   InternalControlAdminLoginRoute: typeof InternalControlAdminLoginRoute
+  InternalControlAdminMasterScheduleRoute: typeof InternalControlAdminMasterScheduleRoute
+  InternalControlAdminModerationRoute: typeof InternalControlAdminModerationRoute
   InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
   InternalControlAdminProvidersRoute: typeof InternalControlAdminProvidersRoute
   InternalControlAdminTransactionsRoute: typeof InternalControlAdminTransactionsRoute
@@ -4541,10 +4584,14 @@ interface InternalControlAdminRouteChildren {
 }
 
 const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
+  InternalControlAdminDashboardRoute: InternalControlAdminDashboardRoute,
   InternalControlAdminEarningsRoute: InternalControlAdminEarningsRoute,
   InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
   InternalControlAdminLeadsRoute: InternalControlAdminLeadsRoute,
   InternalControlAdminLoginRoute: InternalControlAdminLoginRoute,
+  InternalControlAdminMasterScheduleRoute:
+    InternalControlAdminMasterScheduleRoute,
+  InternalControlAdminModerationRoute: InternalControlAdminModerationRoute,
   InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
   InternalControlAdminProvidersRoute: InternalControlAdminProvidersRoute,
   InternalControlAdminTransactionsRoute: InternalControlAdminTransactionsRoute,
@@ -4603,7 +4650,6 @@ const rootRouteChildren: RootRouteChildren = {
   BusesTripIdRoute: BusesTripIdRoute,
   BusesMobileRoute: BusesMobileRoute,
   CinemasCinemaIdRoute: CinemasCinemaIdRoute,
-  CommunityPostIdRoute: CommunityPostIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
   PSlugRoute: PSlugRoute,

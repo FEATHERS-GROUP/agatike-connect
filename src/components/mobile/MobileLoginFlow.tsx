@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,11 @@ export function MobileLoginFlow({
 }: MobileLoginFlowProps) {
   const [screen, setScreen] = useState<"splash" | "onboarding" | "login">("splash");
 
+  const navigate = useNavigate();
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Auto transition from splash to onboarding after 2 seconds
   useEffect(() => {
     if (screen === "splash") {
@@ -42,6 +47,40 @@ export function MobileLoginFlow({
       return () => clearTimeout(timer);
     }
   }, [screen]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY <= 10) {
+      setTouchStartY(e.touches[0].clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY > 0) {
+      const currentY = e.touches[0].clientY;
+      const deltaY = currentY - touchStartY;
+      if (deltaY > 0) {
+        setTranslateY(deltaY);
+        // Only prevent default if we are actively pulling down
+        if (deltaY > 10 && e.cancelable) {
+          e.preventDefault();
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (translateY > 120) {
+      navigate({ to: "/" });
+    } else {
+      setTranslateY(0);
+    }
+    setTouchStartY(0);
+  };
+
+  const pullStyles = {
+    transform: `translateY(${translateY > 0 ? translateY * 0.4 : 0}px)`,
+    transition: touchStartY === 0 ? "transform 0.3s ease-out" : "none",
+  };
 
   if (screen === "splash") {
     return (
@@ -63,7 +102,14 @@ export function MobileLoginFlow({
 
   if (screen === "onboarding") {
     return (
-      <div className="flex min-h-[100dvh] flex-col bg-white">
+      <div
+        ref={containerRef}
+        className="flex min-h-[100dvh] flex-col bg-white"
+        style={pullStyles}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Top half: Orange with Hero Image */}
         <div className="relative h-[55dvh] w-full bg-[#F2571D] rounded-b-[40px] overflow-hidden flex items-center justify-center p-6 shadow-sm">
           <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -116,7 +162,17 @@ export function MobileLoginFlow({
 
   // Login Screen
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-slate-50/50 px-6 py-6 animate-in slide-in-from-right fade-in duration-300">
+    <div
+      ref={containerRef}
+      className="flex min-h-[100dvh] flex-col bg-slate-50/50 px-6 py-6 animate-in slide-in-from-right fade-in duration-300"
+      style={pullStyles}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull indicator */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-slate-300 rounded-full" />
+
       {/* Header */}
       <div className="pt-8 pb-6">
         <button

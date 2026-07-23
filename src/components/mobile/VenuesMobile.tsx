@@ -1,12 +1,17 @@
-import { Search, MapPin, Ticket, Star, ChevronLeft } from "lucide-react";
-import { Link, useLoaderData } from "@tanstack/react-router";
+import { Search, MapPin, Ticket, Star, ArrowLeft, MessageCircle, Activity } from "lucide-react";
+import { Link, useLoaderData, useRouter } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/currency";
 import { useState } from "react";
 import { MobileNav } from "@/components/mobile/MobileNav";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 
 export function VenuesMobile() {
   const venues = useLoaderData({ from: "/venues/" }) as any[];
+  const router = useRouter();
+  const { user } = useUserAuth();
+  const isLoggedIn = !!user;
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
@@ -22,15 +27,43 @@ export function VenuesMobile() {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/40 px-4 py-3 pt-safe-top">
-        <div className="flex items-center justify-between mb-4 mt-2">
-          <Link
-            to="/"
-            className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Link>
-          <h1 className="text-xl font-bold tracking-tight">Venue Tickets</h1>
-          <div className="w-10" /> {/* Spacer */}
+        <div className="flex items-center justify-between mb-4 mt-2 w-full relative">
+          {isLoggedIn ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => router.history.back()}
+                className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+              <h1 className="text-xl font-bold tracking-tight">Venue Tickets</h1>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-1">
+                <Link
+                  to="/signin"
+                  className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                  aria-label="Messages"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </Link>
+              </div>
+
+              <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
+                <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
+              </Link>
+            </>
+          )}
+          <div className="flex items-center gap-1">
+            <Link
+              to="/activity"
+              className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+              aria-label="Activity"
+            >
+              <Activity className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
 
         {/* Search Bar */}

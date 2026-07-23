@@ -171,7 +171,13 @@ export default function VenueMap({
 
   return (
     <>
-      <MapContainer center={mapCenter} zoom={15} className="h-full w-full z-0" zoomControl={false}>
+      <MapContainer
+        center={mapCenter}
+        zoom={15}
+        className="h-full w-full z-0"
+        zoomControl={false}
+        attributionControl={false}
+      >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
         <MapUpdater center={[activeLat, activeLng]} bounds={mapBounds} />
         {points.map((pt, idx) => {

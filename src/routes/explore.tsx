@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { formatCurrency } from "@/lib/currency";
-import { Search, Map as MapIcon, SlidersHorizontal, MapPin, Users } from "lucide-react";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
+import {
+  Search,
+  Map as MapIcon,
+  SlidersHorizontal,
+  MapPin,
+  Users,
+  MessageCircle,
+  Activity,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +20,7 @@ import { getPublicVenues } from "@/api/venues";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { ExploreSearchOverlay } from "@/components/mobile/ExploreSearchOverlay";
 import { useState, useMemo, useEffect } from "react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { isWeekendEvent } from "@/lib/utils";
 const mockSubscriptionPlans: any[] = [];
 const mockBusTickets: any[] = [];
@@ -25,6 +35,7 @@ export const Route = createFileRoute("/explore")({
 
 function ExplorePage() {
   const search: any = Route.useSearch();
+  const { user } = useUserAuth();
   const { toggleFollow, isFollowing } = useFollowedOrganizers();
   const [isSearchOpen, setIsSearchOpen] = useState(!!search?.q);
   const [searchQuery, setSearchQuery] = useState(search?.q || "");
@@ -82,63 +93,46 @@ function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:max-w-md md:mx-auto md:border-x md:border-border/40 md:min-h-[100dvh] md:pb-8 shadow-xl">
-      {/* Sticky Header with Search */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/40 pt-safe-top">
-        <div className="px-4 py-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1" onClick={() => setIsSearchOpen(true)}>
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                readOnly
-                placeholder="Search events, venues, buses, memberships..."
-                className="h-12 bg-secondary/50 border-transparent pl-10 rounded-2xl text-base shadow-sm focus-visible:ring-primary/50 cursor-pointer"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-2xl shrink-0 border-border/50"
-            >
-              <SlidersHorizontal className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Categories Pill Scroll */}
-          <div className="flex gap-2 overflow-x-auto mt-4 pb-2 hide-scrollbar">
-            {categories.map((c, i) => (
-              <button
-                key={c}
-                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${i === 0 ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-secondary-foreground border border-border/40 hover:bg-secondary"}`}
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 pt-safe-top">
+        <div className="px-4 py-2">
+          <div className="flex items-center justify-between w-full relative">
+            <div className="flex items-center gap-1">
+              <Link
+                to={user?.id ? "/$userId/message" : "/signin"}
+                params={user?.id ? { userId: user.id } : {}}
+                className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                aria-label="Messages"
               >
-                {c}
+                <MessageCircle className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center">
+              <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
+            </Link>
+
+            <div className="flex items-center gap-1">
+              <Link
+                to="/activity"
+                className="p-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                aria-label="Activity"
+              >
+                <Activity className="h-5 w-5" />
+              </Link>
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 -mr-2 rounded-full hover:bg-secondary transition-colors text-foreground"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
               </button>
-            ))}
+            </div>
           </div>
         </div>
       </div>
 
       <div className="px-4 py-6 space-y-8">
-        {/* Map Entry Point */}
-        <Link
-          to="/map"
-          className="relative h-40 w-full rounded-3xl overflow-hidden group cursor-pointer shadow-[var(--shadow-card)] block"
-        >
-          <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/20 transition-colors z-10" />
-          <img
-            src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop"
-            alt="Map View"
-            className="w-full h-full object-cover opacity-60 dark:opacity-40"
-          />
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-            <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40 mb-2 group-hover:scale-110 transition-transform">
-              <MapIcon className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-foreground bg-background/80 px-3 py-1 rounded-full backdrop-blur text-sm">
-              Explore Map View
-            </span>
-          </div>
-        </Link>
-
         {/* Trending Section (Pinterest style masonry-ish) */}
         <section>
           <div className="flex items-center justify-between mb-4">
@@ -147,12 +141,12 @@ function ExplorePage() {
               See all
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="columns-2 gap-3 space-y-3">
             {isLoadingEvents
               ? [1, 2, 3, 4].map((i) => (
                   <Skeleton
                     key={i}
-                    className={`rounded-3xl ${i === 1 || i === 4 ? "aspect-[3/4]" : "aspect-square"}`}
+                    className={`rounded-3xl w-full break-inside-avoid ${i % 2 !== 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
                   />
                 ))
               : trendingEvents.map((e, i) => {
@@ -162,7 +156,7 @@ function ExplorePage() {
                       key={e.id}
                       to="/events/$eventId"
                       params={{ eventId: e.id }}
-                      className={`group relative rounded-3xl overflow-hidden bg-card shadow-[var(--shadow-card)] ${i === 0 || i === 3 ? "aspect-[3/4]" : "aspect-square"}`}
+                      className={`group relative rounded-3xl overflow-hidden bg-card shadow-sm border border-border/40 block w-full break-inside-avoid ${i % 2 === 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
                     >
                       <img
                         src={e.cover}

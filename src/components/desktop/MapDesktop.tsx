@@ -25,6 +25,7 @@ import { getUserAllTickets } from "@/api/user_tickets";
 import { getPublicCinemas, getPublicMovieSchedules } from "@/api/cinemas";
 import { useTheme } from "@/contexts/ThemeContext";
 import { isWeekendEvent } from "@/lib/utils";
+import AgatikeLogo from "@/assets/logo/Agatike Icon.png";
 
 const normalizeCityName = (city?: string) => {
   if (!city) return "Unknown";
@@ -44,7 +45,12 @@ function MapController({ selectedEvent }: { selectedEvent: any | null }) {
     const lat = parseFloat(selectedEvent.lat as any);
     const lng = parseFloat(selectedEvent.lng as any);
     if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
-      map.flyTo([lat, lng], 15, { duration: 0.5 });
+      const size = map.getSize();
+      if (size.x < 10 || size.y < 10) {
+        map.setView([lat, lng], 15);
+      } else {
+        map.flyTo([lat, lng], 15, { duration: 0.5 });
+      }
     }
   }
   return null;
@@ -310,32 +316,60 @@ export function MapDesktop() {
 
   const handleCityClick = (city: any) => {
     if (mapRef && city.bounds.length > 0) {
-      if (city.bounds.length === 1) {
-        mapRef.flyTo(city.bounds[0], 13);
+      const bounds = L.latLngBounds(city.bounds);
+      if (!bounds.isValid()) return;
+
+      if (city.bounds.length === 1 || bounds.getNorthEast().equals(bounds.getSouthWest())) {
+        mapRef.flyTo(bounds.getCenter(), 13);
       } else {
-        mapRef.flyToBounds(city.bounds, { padding: [50, 50] });
+        const size = mapRef.getSize();
+        if (size.x > 100 && size.y > 100) {
+          const paddingX = Math.min(50, size.x * 0.1);
+          const paddingY = Math.min(50, size.y * 0.1);
+          mapRef.flyToBounds(bounds, { padding: [paddingX, paddingY], maxZoom: 15 });
+        } else {
+          mapRef.flyTo(bounds.getCenter(), 13);
+        }
       }
     }
   };
 
   const createCustomIcon = (marker: any) => {
-    if (marker.type === "event" || marker.type === "venue") {
+    if (marker.type !== "user") {
+      let borderColor = "border-primary";
+      let bgColor = "bg-background";
+      let triangleColor = "border-t-primary";
+      
+      if (marker.type === "venue") {
+        borderColor = "border-blue-500";
+        triangleColor = "border-t-blue-500";
+      } else if (marker.type === "space") {
+        borderColor = "border-purple-500";
+        triangleColor = "border-t-purple-500";
+      } else if (marker.type === "cinema") {
+        borderColor = "border-orange-500";
+        triangleColor = "border-t-orange-500";
+      }
+
       return L.divIcon({
         className: "bg-transparent border-none",
         html: `
           <div class="relative flex flex-col items-center group cursor-pointer">
-            <div class="bg-background rounded-2xl p-2 shadow-lg border border-border/40 flex items-center gap-3 w-48 transition-transform group-hover:-translate-y-1">
+            <div class="${bgColor} rounded-2xl p-2 shadow-lg border-2 ${borderColor} flex items-center gap-3 w-48 transition-transform group-hover:-translate-y-1">
               <img src="${marker.image}" class="h-10 w-10 rounded-xl object-cover shrink-0" />
               <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1 mb-0.5">
+                  <span class="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${borderColor.replace('border-', 'bg-').replace('500', '500/20')} ${borderColor.replace('border-', 'text-')}">${marker.type}</span>
+                </div>
                 <p class="text-xs font-bold truncate">${marker.title}</p>
                 <p class="text-[10px] text-muted-foreground truncate">${marker.date}</p>
               </div>
             </div>
-            <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-background drop-shadow-md"></div>
+            <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] ${triangleColor} drop-shadow-md"></div>
           </div>
         `,
-        iconSize: [200, 70],
-        iconAnchor: [100, 70],
+        iconSize: [200, 80],
+        iconAnchor: [100, 80],
       });
     }
 
@@ -355,15 +389,70 @@ export function MapDesktop() {
   };
 
   return (
-    <div className="flex h-[100dvh] w-full overflow-hidden bg-background">
-      {/* LEFT COLUMN: Categories */}
-      <div className="w-[300px] border-r border-border/40 bg-secondary/20 p-4 flex flex-col h-full overflow-y-auto hide-scrollbar">
-        <button
-          onClick={() => router.history.back()}
-          className="mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border/40 shadow-sm transition-transform hover:scale-105 shrink-0"
+    <div className="relative flex h-[100dvh] w-full overflow-hidden bg-background">
+      {/* Map Background Layer */}
+      <div className="absolute inset-0 z-0">
+        <MapContainer
+          center={defaultCenter}
+          zoom={13}
+          className="h-full w-full z-0"
+          zoomControl={false}
+          attributionControl={false}
+          ref={setMapRef}
         >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url={
+              isDark
+                ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            }
+          />
+
+          <MapController selectedEvent={selectedMarker} />
+
+          {mapMarkers.map((marker) => (
+            <Marker
+              key={marker.id}
+              position={[marker.lat, marker.lng]}
+              icon={createCustomIcon(marker)}
+              eventHandlers={{
+                click: () => setSelectedMarker(marker),
+              }}
+            />
+          ))}
+
+          <ZoomControls />
+        </MapContainer>
+      </div>
+
+      {/* Map Header Overlay Controls */}
+      <div className="absolute top-6 left-[350px] z-[40] flex gap-2">
+        <Button
+          variant="secondary"
+          className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40 transition-transform hover:scale-105"
+        >
+          <Compass className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="secondary"
+          className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40 transition-transform hover:scale-105"
+        >
+          <Maximize2 className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* FLOATING LEFT COLUMN: Categories */}
+      <div className="absolute left-4 top-4 bottom-4 w-[320px] z-10 bg-background/85 backdrop-blur-2xl rounded-3xl border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-4 flex flex-col overflow-y-auto hide-scrollbar">
+        <div className="flex items-center gap-3 mb-6 shrink-0 px-1">
+          <button
+            onClick={() => router.history.back()}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border/40 shadow-sm transition-transform hover:scale-105 shrink-0"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <img src={AgatikeLogo} alt="Agatike" className="h-9 w-9 rounded-xl shadow-sm object-cover" />
+        </div>
 
         <h2 className="mb-4 text-xl font-bold tracking-tight px-1 shrink-0">Locations</h2>
 
@@ -396,62 +485,11 @@ export function MapDesktop() {
         </div>
       </div>
 
-      {/* CENTER COLUMN: Map */}
-      <div className="relative flex-1 bg-muted">
-        <div className="absolute inset-0 z-0">
-          <MapContainer
-            center={defaultCenter}
-            zoom={13}
-            className="h-full w-full z-0"
-            zoomControl={false}
-            ref={setMapRef}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url={
-                isDark
-                  ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              }
-            />
+      {/* FLOATING RIGHT COLUMN: Events & Past Events */}
+      <div className="absolute right-4 top-4 bottom-4 w-[380px] z-10 bg-background/85 backdrop-blur-2xl rounded-3xl border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col overflow-hidden">
 
-            <MapController selectedEvent={selectedMarker} />
-
-            {mapMarkers.map((marker) => (
-              <Marker
-                key={marker.id}
-                position={[marker.lat, marker.lng]}
-                icon={createCustomIcon(marker)}
-                eventHandlers={{
-                  click: () => setSelectedMarker(marker),
-                }}
-              />
-            ))}
-
-            <ZoomControls />
-          </MapContainer>
-        </div>
-
-        {/* Map Header Overlay */}
-        <div className="absolute top-6 right-6 z-[400] flex gap-2">
-          <Button
-            variant="secondary"
-            className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40"
-          >
-            <Compass className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="secondary"
-            className="rounded-full shadow-lg h-12 w-12 p-0 bg-background/90 backdrop-blur-md border-border/40"
-          >
-            <Maximize2 className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-
-      {/* RIGHT COLUMN: Events & Past Events */}
       {selectedMarker ? (
-        <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden relative">
+        <div className="flex flex-col h-full overflow-hidden relative">
           <div className="relative h-64 w-full shrink-0">
             <img src={selectedMarker.image} className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
@@ -683,7 +721,7 @@ export function MapDesktop() {
           </div>
         </div>
       ) : (
-        <div className="w-[350px] border-l border-border/40 bg-background flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Events Section */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
@@ -787,6 +825,7 @@ export function MapDesktop() {
           </div>
         </div>
       )}
+      </div>
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;

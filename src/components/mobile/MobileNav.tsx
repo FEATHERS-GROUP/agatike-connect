@@ -27,15 +27,15 @@ export function MobileNav() {
   const tabs = isLoggedIn
     ? [
         { name: "Home", href: "/", icon: Home },
-        { name: "Explore", href: "/explore", icon: Compass },
         { name: "Events", href: "/events", icon: CalendarDays },
+        { name: "Explore", href: "/explore", icon: Compass },
         { name: "Spaces", href: "/venues", icon: Building2 },
       ]
     : [
-        { name: "Home", href: "/events", icon: Home },
-        { name: "Movies", href: "/movies", icon: Film },
-        { name: "Trips", href: "/buses/mobile", icon: Bus },
+        { name: "Home", href: "/", icon: Home },
+        { name: "Events", href: "/events", icon: CalendarDays },
         { name: "Spaces", href: "/venues", icon: Building2 },
+        { name: "Movies", href: "/movies", icon: Film },
       ];
 
   const moreMenuLinks = isLoggedIn

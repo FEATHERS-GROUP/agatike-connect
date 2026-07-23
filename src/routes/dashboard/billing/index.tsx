@@ -273,7 +273,6 @@ function BillingOverview() {
               { label: "Event Vendors", key: "max_event_vendors" },
               { label: "Event Vouchers", key: "max_event_vouchers" },
               { label: "Event Stories", key: "max_event_stories" },
-              { label: "Event Posts", key: "max_event_posts" },
             ].map(({ label, key }) => {
               const limitVal = limits[key];
               if (limitVal === undefined) return null;

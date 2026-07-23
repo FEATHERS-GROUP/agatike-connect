@@ -11,7 +11,11 @@ export function AdminSidebar() {
       href: "/internal/control/admin/dashboard",
       icon: LucideIcons.LayoutDashboard,
     },
-    { label: "All services", href: "/internal/control/admin/services", icon: LucideIcons.List },
+    {
+      label: "Master Schedule",
+      href: "/internal/control/admin/master-schedule",
+      icon: LucideIcons.List,
+    },
     { type: "divider" },
     {
       label: "Agatike Users",

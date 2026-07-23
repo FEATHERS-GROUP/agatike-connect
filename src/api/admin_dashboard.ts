@@ -18,6 +18,32 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       badge_projects_aggregate { aggregate { count } }
       venue_projects_aggregate { aggregate { count } }
       
+      inactive_organizers_aggregate: organizers_aggregate(where: { active: { _eq: false } }) { aggregate { count } }
+      inactive_workspaces_aggregate: workspaces_aggregate(where: { deleted: { _eq: true } }) { aggregate { count } }
+
+      support_tickets(limit: 1000) {
+        id
+        status
+        category
+        assigned_to
+        created_at
+      }
+
+      withdrawal_requests(limit: 1000) {
+        id
+        status
+        amount
+        currency
+        created_at
+        payout_method
+      }
+      
+      event_feedback(limit: 1000) {
+        id
+        rating
+        created_at
+      }
+      
       earnings_aggregate(where: { status: { _in: ["success", "completed"] } }) {
         aggregate {
           sum {
@@ -82,7 +108,7 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       workspaces: data.workspaces_aggregate?.aggregate?.count || 0,
       staff: data.workspace_users_aggregate?.aggregate?.count || 0,
       modules: data.platformModules_aggregate?.aggregate?.count || 0,
-      designProjects: 
+      designProjects:
         (data.workspace_pages_aggregate?.aggregate?.count || 0) +
         (data.ticket_projects_aggregate?.aggregate?.count || 0) +
         (data.badge_projects_aggregate?.aggregate?.count || 0) +
@@ -97,6 +123,11 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       workspacesDemographics: data.demographic_workspaces || [],
       usersDemographics: data.demographic_users || [],
       organizersDemographics: data.demographic_organizers || [],
+      inactiveOrganizers: data.inactive_organizers_aggregate?.aggregate?.count || 0,
+      inactiveWorkspaces: data.inactive_workspaces_aggregate?.aggregate?.count || 0,
+      supportTickets: data.support_tickets || [],
+      withdrawals: data.withdrawal_requests || [],
+      reviews: data.event_feedback || [],
     };
   } catch (error: any) {
     console.error("Dashboard Stats Error:", error);
@@ -118,7 +149,12 @@ export const getAdminDashboardStats = createServerFn({ method: "POST" }).handler
       workspacesDemographics: [],
       usersDemographics: [],
       organizersDemographics: [],
-      error: error.message
+      inactiveOrganizers: 0,
+      inactiveWorkspaces: 0,
+      supportTickets: [],
+      withdrawals: [],
+      reviews: [],
+      error: error.message,
     };
   }
 });

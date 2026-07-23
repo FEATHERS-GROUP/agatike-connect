@@ -1,14 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, MessageCircle, Send, Bookmark, Ticket, Users } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Ticket, Users, MapPin } from "lucide-react";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Stories } from "@/components/site/Stories";
+import { ShortsFeed } from "@/components/site/ShortsFeed";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FeedCard } from "@/components/site/FeedCard";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { getOrganizers } from "@/api/organizers";
-import { getGlobalFeedPosts } from "@/api/experience";
 import { useQuery } from "@tanstack/react-query";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useFirestoreUserMessages } from "@/hooks/useFirestoreUserMessages";
@@ -29,12 +28,12 @@ export const Route = createFileRoute("/feed")({
       { title: "Feed — Agatike" },
       {
         name: "description",
-        content: "Live moments, reels and reviews from events across Africa.",
+        content: "Live moments, reels and reviews from events across different Locations.",
       },
       { property: "og:title", content: "Agatike Feed" },
       {
         property: "og:description",
-        content: "The social heartbeat of African nightlife and culture.",
+        content: "The social heartbeat of nightlife and culture.",
       },
     ],
   }),
@@ -136,69 +135,65 @@ function Feed() {
     return c.lastMessageSenderId !== user?.id && (c.unread > 0 || isUnread);
   }).length;
 
-  // Conditionally fetch posts only if logged in
-  const { data: dbPosts = [], isLoading: isPostsLoading } = useQuery({
-    queryKey: ["global-feed-posts"],
-    queryFn: () => getGlobalFeedPosts(),
-    enabled: isLoggedIn,
-  });
-
-  const isLoading = isLoggedIn ? isPostsLoading : true; // Show loading skeletons if not logged in
-
-  // Filter feed posts to only show those from followed organizers
-  const filteredPosts = dbPosts.filter((post) => isFollowing(post.organizerId));
+  const isLoading = false; // Show loading skeletons if not logged in
 
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-24 md:pb-0">
       <Navbar />
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[1fr_320px]">
         <main>
-          <Stories isLoading={isLoading} />
-          <div className="mt-8 space-y-8">
-            {isLoading ? (
-              <div className="space-y-8">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
+          {/* Desktop Shorts Feed */}
+          <div className="hidden md:block w-full">
+            <ShortsFeed />
+          </div>
+
+          {/* Mobile Standard Feed */}
+          <div className="block md:hidden">
+            <Stories isLoading={isLoading} />
+            <div className="mt-8 space-y-8">
+              {isLoading ? (
+                <div className="space-y-8">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col space-y-3 p-4 bg-card rounded-2xl border border-border/40"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-[200px]" />
+                          <Skeleton className="h-3 w-[100px]" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-[300px] w-full rounded-xl" />
                       <div className="space-y-2">
-                        <Skeleton className="h-4 w-[200px]" />
-                        <Skeleton className="h-3 w-[100px]" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
                       </div>
                     </div>
-                    <Skeleton className="h-[300px] w-full rounded-xl" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-5/6" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredPosts.length > 0 ? (
-              filteredPosts.map((p, i) => <FeedCard key={`${p.id}-${i}`} post={p} />)
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">
-                <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
-                  <Users className="h-8 w-8" />
+                  ))}
                 </div>
-                <h3 className="text-lg font-bold text-foreground">Your feed is quiet</h3>
-                <p className="text-muted-foreground mt-2 text-sm max-w-sm">
-                  Follow organizers to see their latest updates, ticket drops, and event recaps
-                  right here.
-                </p>
-                <Link to="/organizers">
-                  <Button
-                    className="mt-6 rounded-full shadow-[var(--shadow-glow)]"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    Discover Organizers
-                  </Button>
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center px-4 bg-card rounded-2xl border border-border/40">
+                  <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+                    <Users className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">Your feed is quiet</h3>
+                  <p className="text-muted-foreground mt-2 text-sm max-w-sm">
+                    Follow organizers to see their latest updates, ticket drops, and event recaps
+                    right here.
+                  </p>
+                  <Link to="/organizers">
+                    <Button
+                      className="mt-6 rounded-full shadow-[var(--shadow-glow)]"
+                      style={{ background: "var(--gradient-primary)" }}
+                    >
+                      Discover Organizers
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </main>
 
@@ -358,6 +353,16 @@ function Feed() {
         <div className="fixed inset-0 top-[72px] bg-background/20 backdrop-blur-[2px] z-40 pointer-events-none" />
       )}
 
+      {/* Map Bubble - Visible to everyone */}
+      <Link
+        to="/map"
+        className="fixed bottom-[160px] right-4 md:bottom-[96px] md:right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-glow)] transition-transform hover:scale-105 active:scale-95 border border-border"
+        style={{ background: "var(--gradient-primary)" }}
+        aria-label="Open Map"
+      >
+        <MapPin className="h-6 w-6 text-white" />
+      </Link>
+
       {isLoggedIn && (
         <>
           <button
@@ -410,7 +415,7 @@ function Feed() {
                           const isUnread =
                             chat.lastMessageSenderId !== user?.id &&
                             chat.rawTimeMillis >
-                              parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
+                            parseInt(localStorage.getItem(`chat_read_${chat.id}`) || "0", 10);
                           const displayUnread =
                             chat.lastMessageSenderId !== user?.id && chat.unread > 0
                               ? chat.unread
@@ -445,11 +450,10 @@ function Feed() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                   <p
-                                    className={`text-xs truncate pr-2 ${
-                                      displayUnread > 0
-                                        ? "text-foreground font-medium"
-                                        : "text-muted-foreground"
-                                    }`}
+                                    className={`text-xs truncate pr-2 ${displayUnread > 0
+                                      ? "text-foreground font-medium"
+                                      : "text-muted-foreground"
+                                      }`}
                                   >
                                     {chat.lastMessage || "Tap to chat"}
                                   </p>

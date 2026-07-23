@@ -215,12 +215,6 @@ export function useSubscriptionLimits(
     return (workspaceStats?.screens || 0) < limits.max_cinema_screens;
   };
 
-  const canCreatePostComment = () => {
-    if (isLoading) return true;
-    if (limits.max_comments === -1 || limits.max_comments === undefined) return true;
-    return (workspaceStats?.comments || 0) < limits.max_comments;
-  };
-
   const canAddIntegration = (currentIntegrationsCount: number) => {
     if (isLoading) return true;
     if (limits.max_integrations === -1 || limits.max_integrations === undefined) return true;
@@ -318,13 +312,6 @@ export function useSubscriptionLimits(
     return currentStoriesCount + quantityToAdd <= limit;
   };
 
-  const canCreateEventPost = (currentPostsCount: number, quantityToAdd = 1) => {
-    if (isLoading) return true;
-    const limit = limits.max_event_posts;
-    if (limit === -1 || limit === undefined || limit === null) return true;
-    return currentPostsCount + quantityToAdd <= limit;
-  };
-
   const canAddPlanningItem = (currentItemsCount: number) => {
     if (isLoading) return true;
     const limit = limits.max_planning_items;
@@ -381,8 +368,8 @@ export function useSubscriptionLimits(
     canCreateGiftCard,
     canCreatePunchCard,
     canCreateMovie,
+
     canCreateCinemaScreen,
-    canCreatePostComment,
     canAddIntegration,
     canCreateProcurement,
     canCreateCustomerBook,
@@ -404,7 +391,6 @@ export function useSubscriptionLimits(
     canCreateVendor,
     canCreateVoucher,
     canCreateEventStory,
-    canCreateEventPost,
     canAddPlanningItem,
   };
 }

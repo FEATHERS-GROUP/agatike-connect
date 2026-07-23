@@ -61,13 +61,35 @@ function MapController({
       const lat = parseFloat(selectedMarker.lat as any);
       const lng = parseFloat(selectedMarker.lng as any);
       if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
-        map.flyTo([lat, lng], 15, { duration: 0.5 });
+        // Offset the center slightly so the marker isn't hidden under the bottom card
+        const size = map.getSize();
+        if (size.x < 10 || size.y < 10) {
+          map.setView([lat - 0.005, lng], 15);
+        } else {
+          map.flyTo([lat - 0.005, lng], 15, { duration: 0.5 });
+        }
       }
-    } else if (selectedCity && selectedCity.bounds.length > 0) {
-      if (selectedCity.bounds.length === 1) {
-        map.flyTo(selectedCity.bounds[0], 13, { duration: 0.5 });
+    } else if (selectedCity && selectedCity.bounds && selectedCity.bounds.length > 0) {
+      const bounds = L.latLngBounds(selectedCity.bounds);
+      if (!bounds.isValid()) return;
+      
+      const size = map.getSize();
+      // If the map hasn't fully laid out, animation will crash with NaN. Set view instantly.
+      if (size.x < 10 || size.y < 10) {
+        map.setView(bounds.getCenter(), 13);
+        return;
+      }
+
+      if (selectedCity.bounds.length === 1 || bounds.getNorthEast().equals(bounds.getSouthWest())) {
+        map.flyTo(bounds.getCenter(), 13, { duration: 0.5 });
       } else {
-        map.flyToBounds(selectedCity.bounds, { padding: [50, 50], duration: 0.5 });
+        if (size.x > 100 && size.y > 100) {
+          const paddingX = Math.min(50, size.x * 0.1);
+          const paddingY = Math.min(50, size.y * 0.1);
+          map.flyToBounds(bounds, { padding: [paddingX, paddingY], duration: 0.5, maxZoom: 15 });
+        } else {
+          map.flyTo(bounds.getCenter(), 13, { duration: 0.5 });
+        }
       }
     }
   }, [selectedMarker, selectedCity, map]);
@@ -248,7 +270,7 @@ export default function MapClient() {
           (error) => {
             console.error("Geolocation error:", error);
           },
-          { timeout: 5000, maximumAge: 60000 },
+          { timeout: 15000, maximumAge: 300000 },
         );
       }
     }
@@ -258,15 +280,33 @@ export default function MapClient() {
 
   const createCustomIcon = (marker: any, isSelected: boolean) => {
     const selectedClass = isSelected ? "scale-125 z-50" : "z-10 hover:scale-110";
+    
+    let borderColor = "border-border/20 bg-background";
+    let triangleColor = "border-t-background";
+    
+    if (marker.type === "event") {
+      borderColor = "border-primary bg-primary/10";
+      triangleColor = "border-t-primary";
+    } else if (marker.type === "venue") {
+      borderColor = "border-blue-500 bg-blue-500/10";
+      triangleColor = "border-t-blue-500";
+    } else if (marker.type === "space") {
+      borderColor = "border-purple-500 bg-purple-500/10";
+      triangleColor = "border-t-purple-500";
+    } else if (marker.type === "cinema") {
+      borderColor = "border-orange-500 bg-orange-500/10";
+      triangleColor = "border-t-orange-500";
+    }
+
     return L.divIcon({
       className: "bg-transparent border-none",
       html: `
         <div class="relative flex flex-col items-center transition-transform duration-300 ${selectedClass}">
-          <div class="rounded-full bg-background p-[3px] shadow-md border border-border/20 relative">
+          <div class="rounded-full p-[3px] shadow-md border-2 ${borderColor} relative">
              ${isSelected ? `<div class="absolute -top-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-background"></div>` : ""}
-             <img src="${marker.image}" class="h-10 w-10 rounded-full object-cover block" />
+             <img src="${marker.image}" class="h-10 w-10 rounded-full object-cover block bg-background" />
           </div>
-          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-background -mt-1 shadow-sm drop-shadow-sm z-0"></div>
+          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${triangleColor} -mt-1 shadow-sm drop-shadow-sm z-0"></div>
         </div>
       `,
       iconSize: [46, 56],
@@ -289,6 +329,7 @@ export default function MapClient() {
           zoom={13}
           className="h-full w-full"
           zoomControl={false}
+          attributionControl={false}
         >
           <TileLayer
             attribution="&copy; OpenStreetMap"

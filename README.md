@@ -2572,4 +2572,16 @@ Shows all `product_orders` for this product, with search:
 
 ---
 
+## 27. Platform Telemetry & Analytics
+
+**Logic:**
+
+- **Heartbeat Mechanism:** The platform utilizes a frontend telemetry hook (`useTelemetry.ts`) that generates a unique session ID for the user's browser tab, persisted in `sessionStorage` to prevent duplication on reloads/HMR. It periodically sends "heartbeats" to the backend (`recordHeartbeat` in `telemetry.ts`), capturing the active path, user agent, visibility state, and session duration.
+- **Admin Exclusions:** The telemetry hook automatically excludes paths under `/internal/control/admin` to prevent staff/admin internal navigation from polluting the analytics data.
+- **Real-Time Data Collection:** The telemetry payload is securely saved/updated within Firestore (`platform_telemetry` collection) during each heartbeat, accurately tracking active session durations and path traversals in real-time.
+- **Probabilistic Garbage Collection:** To prevent Firestore database bloat, the heartbeat API implements an opportunistic background cleanup mechanism (1% execution chance per heartbeat) that automatically purges telemetry records older than 7 days in batches.
+- **Analytics Dashboard:** Admins can view this telemetry data on the Moderation Dashboard (`/internal/control/admin/moderation`). It parses active heartbeats, categorizes unique anonymous vs. registered users (deduplicated by `userId` or `sessionId`), highlights top user paths, and visualizes hourly usage trends.
+
+---
+
 _Last updated: July 2026 — Agatike Connect_

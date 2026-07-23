@@ -318,11 +318,11 @@ export const getEarningsAnalyticsAdmin = createServerFn({ method: "POST" })
 
     const { startDate, endDate } = ctx.data;
 
-    let dateFilter = "";
+    let dateFilter = `status: { _in: ["success", "completed"] }`;
     if (startDate && endDate) {
-      dateFilter = `created_at: { _gte: "${startDate}", _lte: "${endDate}" }`;
+      dateFilter += `, created_at: { _gte: "${startDate}", _lte: "${endDate}" }`;
     } else if (startDate) {
-      dateFilter = `created_at: { _gte: "${startDate}" }`;
+      dateFilter += `, created_at: { _gte: "${startDate}" }`;
     }
 
     const GET_EARNINGS = `
@@ -379,11 +379,11 @@ export const getEarningsLedgerAdmin = createServerFn({ method: "POST" })
 
     const { startDate, endDate, limit, offset } = ctx.data;
 
-    let dateFilter = "";
+    let dateFilter = `status: { _in: ["success", "completed"] }`;
     if (startDate && endDate) {
-      dateFilter = `created_at: { _gte: "${startDate}", _lte: "${endDate}" }`;
+      dateFilter += `, created_at: { _gte: "${startDate}", _lte: "${endDate}" }`;
     } else if (startDate) {
-      dateFilter = `created_at: { _gte: "${startDate}" }`;
+      dateFilter += `, created_at: { _gte: "${startDate}" }`;
     }
 
     const query = `

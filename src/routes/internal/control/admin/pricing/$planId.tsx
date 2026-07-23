@@ -128,7 +128,6 @@ function AdminPricingDetailsPage() {
         max_event_vendors: 0,
         max_event_vouchers: 0,
         max_event_stories: 0,
-        max_event_posts: 0,
         max_ticket_tiers_per_event: 2,
         max_contributors: 0,
         max_planning_items: 20,
@@ -858,12 +857,7 @@ function AdminPricingDetailsPage() {
                 {
                   key: "max_event_stories",
                   label: "Max Event Stories",
-                  desc: "Max stories uploaded per event.",
-                },
-                {
-                  key: "max_event_posts",
-                  label: "Max Event Posts",
-                  desc: "Max community posts per event.",
+                  desc: "Total stories that can be posted to an event's experience highlights.",
                 },
                 {
                   key: "max_workspace_users",
@@ -1322,7 +1316,6 @@ function AdminPricingDetailsPage() {
               { key: "max_event_vendors", label: "Event Vendors" },
               { key: "max_event_vouchers", label: "Event Vouchers" },
               { key: "max_event_stories", label: "Event Stories" },
-              { key: "max_event_posts", label: "Event Posts" },
               { key: "max_contributors", label: "Contributors" },
             ];
             return (
