@@ -179,8 +179,8 @@ export function EditorTopbar({
             <Copy className="h-3.5 w-3.5" /> Copy Link
           </Button>
         )}
-        {editorState.is_published && editorState.slug && (
-          <Button variant="outline" size="sm" asChild className="h-8 shadow-sm">
+        {editorState.slug && editorState.id && (
+          <Button variant="ghost" size="sm" asChild className="gap-2">
             <a href={getWorkspacePageUrl(editorState.slug)} target="_blank" rel="noreferrer">
               <ExternalLink className="h-3.5 w-3.5" /> View Live
             </a>
