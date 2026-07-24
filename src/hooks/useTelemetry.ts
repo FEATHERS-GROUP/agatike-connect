@@ -14,7 +14,8 @@ export function useTelemetry() {
       if (stored) {
         sessionIdRef.current = stored;
       } else {
-        const newId = "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        const newId =
+          "sess_" + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
         sessionStorage.setItem("agatike_telemetry_session", newId);
         sessionIdRef.current = newId;
       }

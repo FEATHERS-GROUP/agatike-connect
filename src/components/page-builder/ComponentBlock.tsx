@@ -421,7 +421,8 @@ export function ComponentBlock({
                   className="bg-background"
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">
-                  Leave this blank to automatically trigger the built-in checkout modal. Payments will be processed via your workspace's configured Mobile Money network.
+                  Leave this blank to automatically trigger the built-in checkout modal. Payments
+                  will be processed via your workspace's configured Mobile Money network.
                 </p>
               </div>
               <div className="space-y-1">

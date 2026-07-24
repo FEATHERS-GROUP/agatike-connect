@@ -5,7 +5,14 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { checkWorkspacePageSlugAvailability } from "@/api/workspace-pages";
 
 interface SlugPromptModalProps {
@@ -15,7 +22,12 @@ interface SlugPromptModalProps {
   selectedTemplate: string | null;
 }
 
-export function SlugPromptModal({ open, setOpen, workspaceSlug, selectedTemplate }: SlugPromptModalProps) {
+export function SlugPromptModal({
+  open,
+  setOpen,
+  workspaceSlug,
+  selectedTemplate,
+}: SlugPromptModalProps) {
   const navigate = useNavigate();
   const [newSlug, setNewSlug] = useState("");
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
@@ -38,36 +50,71 @@ export function SlugPromptModal({ open, setOpen, workspaceSlug, selectedTemplate
 
     setIsCheckingSlug(true);
     try {
-      const isAvailable = await checkWorkspacePageSlugAvailability({ data: { slug: newSlug } } as any);
-      
+      const isAvailable = await checkWorkspacePageSlugAvailability({
+        data: { slug: newSlug },
+      } as any);
+
       if (!isAvailable) {
         toast.error("That URL is already taken.");
-        
+
         // Generate advanced template-based suggestions
-        const getRandomItems = (arr: string[], count: number) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
-        
-        const numbers = ["1", "24", new Date().getFullYear().toString(), Math.floor(Math.random() * 1000).toString()];
+        const getRandomItems = (arr: string[], count: number) =>
+          [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
+
+        const numbers = [
+          "1",
+          "24",
+          new Date().getFullYear().toString(),
+          Math.floor(Math.random() * 1000).toString(),
+        ];
         const prefixes = ["my-", "get-", "go-", "try-", "join-", "the-"];
-        const brandSuffixes = ["hq", "pro", "plus", "now", "live", "hub", "labs", "studio", "works", "co", "group", "official"];
-        const categorySuffixes = ["-app", "-site", "-web", "-online", "-blog", "-shop", "-store", "-events", "-products", "-services", "-support", "-docs", "-api"];
+        const brandSuffixes = [
+          "hq",
+          "pro",
+          "plus",
+          "now",
+          "live",
+          "hub",
+          "labs",
+          "studio",
+          "works",
+          "co",
+          "group",
+          "official",
+        ];
+        const categorySuffixes = [
+          "-app",
+          "-site",
+          "-web",
+          "-online",
+          "-blog",
+          "-shop",
+          "-store",
+          "-events",
+          "-products",
+          "-services",
+          "-support",
+          "-docs",
+          "-api",
+        ];
 
         const potentialSuggestions = [
-          ...getRandomItems(numbers, 2).map(n => `${newSlug}${n}`),
-          ...getRandomItems(prefixes, 2).map(p => `${p}${newSlug}`),
-          ...getRandomItems(brandSuffixes, 3).map(s => `${newSlug}${s}`),
-          ...getRandomItems(categorySuffixes, 2).map(c => `${newSlug}${c}`)
+          ...getRandomItems(numbers, 2).map((n) => `${newSlug}${n}`),
+          ...getRandomItems(prefixes, 2).map((p) => `${p}${newSlug}`),
+          ...getRandomItems(brandSuffixes, 3).map((s) => `${newSlug}${s}`),
+          ...getRandomItems(categorySuffixes, 2).map((c) => `${newSlug}${c}`),
         ];
-        
+
         const availabilityChecks = await Promise.all(
           potentialSuggestions.map(async (s) => {
             const avail = await checkWorkspacePageSlugAvailability({ data: { slug: s } } as any);
             return { slug: s, isAvailable: avail };
-          })
+          }),
         );
-        
+
         const availableSuggestions = availabilityChecks
-          .filter(c => c.isAvailable)
-          .map(c => c.slug)
+          .filter((c) => c.isAvailable)
+          .map((c) => c.slug)
           .slice(0, 8); // Display up to 8 suggestions
 
         setSlugError("This URL is already taken.");
@@ -79,7 +126,9 @@ export function SlugPromptModal({ open, setOpen, workspaceSlug, selectedTemplate
       setOpen(false);
       navigate({
         to: `/dashboard/${workspaceSlug}/page-builder/editor`,
-        search: selectedTemplate ? { templateId: selectedTemplate, slug: newSlug } : { slug: newSlug },
+        search: selectedTemplate
+          ? { templateId: selectedTemplate, slug: newSlug }
+          : { slug: newSlug },
       });
     } catch (error) {
       toast.error("Failed to verify URL availability. Please try again.");
@@ -117,19 +166,24 @@ export function SlugPromptModal({ open, setOpen, workspaceSlug, selectedTemplate
               <Input
                 id="slug"
                 value={newSlug}
-                onChange={(e) => setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                onChange={(e) =>
+                  setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
+                }
                 placeholder="e.g. my-awesome-project"
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Your page will be available at: <strong>{newSlug ? `${newSlug}.${baseDomain}` : `[slug].${baseDomain}`}</strong>
+              Your page will be available at:{" "}
+              <strong>{newSlug ? `${newSlug}.${baseDomain}` : `[slug].${baseDomain}`}</strong>
             </p>
             {slugError && (
               <div className="mt-4 p-4 bg-destructive/5 rounded-xl border border-destructive/10">
                 <p className="text-sm text-destructive font-medium mb-3">{slugError}</p>
                 {slugSuggestions.length > 0 && (
                   <div className="space-y-3">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Available alternatives</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Available alternatives
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {slugSuggestions.map((suggestion) => (
                         <button
@@ -153,7 +207,9 @@ export function SlugPromptModal({ open, setOpen, workspaceSlug, selectedTemplate
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isCheckingSlug}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={isCheckingSlug}>
+            Cancel
+          </Button>
           <Button onClick={submitSlugAndContinue} disabled={isCheckingSlug}>
             {isCheckingSlug ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
             Continue

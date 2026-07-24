@@ -63,10 +63,11 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
   return data.workspace_pages[0] || null;
 });
 
-export const checkWorkspacePageSlugAvailability = createServerFn({ method: "GET" }).handler(async (ctx) => {
-  const { slug } = ctx.data as unknown as { slug: string };
+export const checkWorkspacePageSlugAvailability = createServerFn({ method: "GET" }).handler(
+  async (ctx) => {
+    const { slug } = ctx.data as unknown as { slug: string };
 
-  const query = `
+    const query = `
     query CheckSlugAvailability($slug: String!) {
       workspace_pages(where: { slug: { _eq: $slug } }) {
         id
@@ -74,10 +75,11 @@ export const checkWorkspacePageSlugAvailability = createServerFn({ method: "GET"
     }
   `;
 
-  const data = await hasuraRequest<{ workspace_pages: any[] }>(query, { slug });
-  // If the array is empty, the slug is available
-  return data.workspace_pages.length === 0;
-});
+    const data = await hasuraRequest<{ workspace_pages: any[] }>(query, { slug });
+    // If the array is empty, the slug is available
+    return data.workspace_pages.length === 0;
+  },
+);
 
 export const getAllWorkspacePages = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const session = await getSession();

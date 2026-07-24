@@ -173,30 +173,49 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
 
     const getType = (k: string, val: any) => {
       if (["features", "modules_included", "usage_limits"].includes(k)) return "jsonb";
-      
+
       const numericColumns = [
-        "price", "yearly_price", "customer_service_fee_percentage",
-        "organizer_platform_contribution", "platform_margin_buffer",
-        "customer_collection_fee_percentage", "customer_collection_fee_fixed",
-        "organizer_collection_fee_percentage", "organizer_collection_fee_fixed",
-        "withdrawal_fee_percentage", "max_collection_subsidy_percentage",
-        "withdrawal_fee_fixed"
+        "price",
+        "yearly_price",
+        "customer_service_fee_percentage",
+        "organizer_platform_contribution",
+        "platform_margin_buffer",
+        "customer_collection_fee_percentage",
+        "customer_collection_fee_fixed",
+        "organizer_collection_fee_percentage",
+        "organizer_collection_fee_fixed",
+        "withdrawal_fee_percentage",
+        "max_collection_subsidy_percentage",
+        "withdrawal_fee_fixed",
       ];
-      
+
       if (numericColumns.includes(k)) return "numeric";
-      
-      const booleanColumns = ["active", "is_popular", "enable_subsidized_collection", "withdrawal_dependency_required"];
+
+      const booleanColumns = [
+        "active",
+        "is_popular",
+        "enable_subsidized_collection",
+        "withdrawal_dependency_required",
+      ];
       if (booleanColumns.includes(k) || typeof val === "boolean") return "Boolean";
-      
+
       return "String";
     };
 
     // Ensure values match their expected GraphQL scalar types
     updateKeys.forEach((k) => {
       const type = getType(k, formattedUpdates[k]);
-      if (type === "String" && formattedUpdates[k] !== null && typeof formattedUpdates[k] !== "string") {
+      if (
+        type === "String" &&
+        formattedUpdates[k] !== null &&
+        typeof formattedUpdates[k] !== "string"
+      ) {
         formattedUpdates[k] = String(formattedUpdates[k]);
-      } else if (type === "numeric" && formattedUpdates[k] !== null && typeof formattedUpdates[k] !== "number") {
+      } else if (
+        type === "numeric" &&
+        formattedUpdates[k] !== null &&
+        typeof formattedUpdates[k] !== "number"
+      ) {
         formattedUpdates[k] = Number(formattedUpdates[k]);
       }
     });

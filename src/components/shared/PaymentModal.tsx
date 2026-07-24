@@ -520,7 +520,11 @@ export function PaymentModal({
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-                style={themeColor ? { backgroundColor: themeColor, color: "#fff" } : { background: "var(--gradient-primary)" }}
+                style={
+                  themeColor
+                    ? { backgroundColor: themeColor, color: "#fff" }
+                    : { background: "var(--gradient-primary)" }
+                }
               >
                 {isGenerating
                   ? "Generating..."

@@ -41,11 +41,11 @@ function Home() {
     setIsClient(true);
     // Detect Subdomain
     const hostname = window.location.hostname;
-    const parts = hostname.split('.');
-    
-    if (parts.length > 2 || (hostname.includes('localhost') && parts.length > 1)) {
+    const parts = hostname.split(".");
+
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
       const potentialSlug = parts[0];
-      if (potentialSlug !== 'www') {
+      if (potentialSlug !== "www") {
         setSubdomainSlug(potentialSlug);
       }
     }

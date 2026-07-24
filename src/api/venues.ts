@@ -158,7 +158,7 @@ export const getWorkspaceVenueProjects = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
     if (!workspace_id) return [];
-    
+
     const res = await hasuraRequest<{ venue_projects: any[] }>(GET_WORKSPACE_VENUE_PROJECTS, {
       workspace_id,
     });

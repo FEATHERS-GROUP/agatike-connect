@@ -59,7 +59,7 @@ export function InventorySelector({ type, workspace_id, comp, updateComponent, i
       updateComponent(
         idx,
         "selectedItemIds",
-        selectedItemIds.filter((itemId: string) => itemId !== id)
+        selectedItemIds.filter((itemId: string) => itemId !== id),
       );
     } else {
       updateComponent(idx, "selectedItemIds", [...selectedItemIds, id]);
@@ -73,7 +73,7 @@ export function InventorySelector({ type, workspace_id, comp, updateComponent, i
         <p className="text-[10px] text-muted-foreground leading-tight">
           If none are selected, all available items will be shown automatically.
         </p>
-        
+
         {items.length === 0 ? (
           <div className="p-3 bg-secondary/20 rounded-md border border-border/40 text-xs text-muted-foreground italic">
             No items found in this workspace.
@@ -81,17 +81,17 @@ export function InventorySelector({ type, workspace_id, comp, updateComponent, i
         ) : (
           <div className="border border-border/40 rounded-md overflow-hidden max-h-48 overflow-y-auto bg-background/50">
             {items.map((item: any) => (
-              <div 
-                key={item.id} 
+              <div
+                key={item.id}
                 className="flex items-center gap-2 p-2.5 border-b border-border/40 last:border-0 hover:bg-secondary/40 transition-colors"
               >
-                <Checkbox 
-                  id={`item-${item.id}`} 
+                <Checkbox
+                  id={`item-${item.id}`}
                   checked={selectedItemIds.includes(item.id)}
                   onCheckedChange={() => toggleItem(item.id)}
                 />
-                <label 
-                  htmlFor={`item-${item.id}`} 
+                <label
+                  htmlFor={`item-${item.id}`}
                   className="text-xs font-medium cursor-pointer flex-1 truncate"
                 >
                   {item.name || item.title}
@@ -109,7 +109,9 @@ export function InventorySelector({ type, workspace_id, comp, updateComponent, i
           min="1"
           placeholder="e.g. 5"
           value={comp.limit || ""}
-          onChange={(e) => updateComponent(idx, "limit", e.target.value ? parseInt(e.target.value) : undefined)}
+          onChange={(e) =>
+            updateComponent(idx, "limit", e.target.value ? parseInt(e.target.value) : undefined)
+          }
           className="bg-background h-8 text-xs"
         />
         <p className="text-[10px] text-muted-foreground">

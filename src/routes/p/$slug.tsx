@@ -7,7 +7,7 @@ export const Route = createFileRoute("/p/$slug")({
 
 function PublicCompanyPage() {
   const { slug } = Route.useParams();
-  
+
   // Extract ?preview=true from URL
   const search = useSearch({ strict: false });
   const isPreview = (search as any).preview === "true" || (search as any).preview === true;

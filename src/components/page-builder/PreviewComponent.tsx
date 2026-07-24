@@ -256,7 +256,9 @@ export function PreviewComponent({
     );
   }
 
-  if (["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(comp.type)) {
+  if (
+    ["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(comp.type)
+  ) {
     const isGrid = comp.layout !== "list";
     const typeLabels: Record<string, string> = {
       product_list: "Product",
@@ -272,25 +274,38 @@ export function PreviewComponent({
       venue_list: "Book Venue",
       movie_list: "Book Tickets",
     };
-    
+
     return (
       <div className="space-y-6 pointer-events-none opacity-80">
         {comp.title && <h3 className="text-xl font-bold text-center">{comp.title}</h3>}
-        <div className={`grid gap-4 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1"}`}>
+        <div
+          className={`grid gap-4 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1"}`}
+        >
           {[1, 2, 3].map((i) => (
-            <div key={i} className={`bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm flex ${isGrid ? "flex-col" : "flex-row"}`}>
-              <div className={`bg-secondary ${isGrid ? "w-full aspect-[4/3]" : "w-32 h-full min-h-[120px]"} flex items-center justify-center`}>
-                <span className="text-muted-foreground text-sm font-medium">{typeLabels[comp.type]} {i}</span>
+            <div
+              key={i}
+              className={`bg-card border border-border/40 rounded-xl overflow-hidden shadow-sm flex ${isGrid ? "flex-col" : "flex-row"}`}
+            >
+              <div
+                className={`bg-secondary ${isGrid ? "w-full aspect-[4/3]" : "w-32 h-full min-h-[120px]"} flex items-center justify-center`}
+              >
+                <span className="text-muted-foreground text-sm font-medium">
+                  {typeLabels[comp.type]} {i}
+                </span>
               </div>
               <div className="p-4 flex-1 flex flex-col">
                 <h4 className="font-semibold mb-1">Sample {typeLabels[comp.type]}</h4>
                 <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
-                  This is a placeholder for your workspace {typeLabels[comp.type].toLowerCase()}. It will be populated with real data on the live page.
+                  This is a placeholder for your workspace {typeLabels[comp.type].toLowerCase()}. It
+                  will be populated with real data on the live page.
                 </p>
                 <div className="mt-auto flex items-center justify-between pt-2">
                   <span className="text-sm font-medium">$0.00</span>
                   {comp.allowSelling !== false && (
-                    <div className="px-3 py-1.5 rounded-md text-xs font-bold text-white shadow-sm" style={{ background: themeColor }}>
+                    <div
+                      className="px-3 py-1.5 rounded-md text-xs font-bold text-white shadow-sm"
+                      style={{ background: themeColor }}
+                    >
                       {buttonLabels[comp.type]}
                     </div>
                   )}

@@ -18,7 +18,11 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { useMutation } from "@tanstack/react-query";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { ProductCheckoutSheet } from "@/components/page-builder/ProductCheckoutSheet";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import { toast } from "sonner";
 import { Smartphone } from "lucide-react";
 
@@ -60,7 +64,7 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
   });
 
   const components = page?.components || [];
-  
+
   const hasProducts = components.some((c: any) => c.type === "product_list");
   const hasEvents = components.some((c: any) => c.type === "event_list");
   const hasSpaces = components.some((c: any) => c.type === "space_list");
@@ -906,7 +910,10 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
 
                 if (comp.type === "payment_button") {
                   return (
-                    <div key={comp.id} className="flex flex-col items-center justify-center w-full px-4 py-8">
+                    <div
+                      key={comp.id}
+                      className="flex flex-col items-center justify-center w-full px-4 py-8"
+                    >
                       {comp.paymentLink ? (
                         <a
                           href={comp.paymentLink}
@@ -1072,7 +1079,11 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                   }
                 }
 
-                if (["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(comp.type)) {
+                if (
+                  ["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(
+                    comp.type,
+                  )
+                ) {
                   const isGrid = comp.layout !== "list";
                   let items: any[] = [];
                   let itemType = "";
@@ -1106,7 +1117,7 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                   }
 
                   if (comp.selectedItemIds && comp.selectedItemIds.length > 0) {
-                    items = items.filter(item => comp.selectedItemIds.includes(item.id));
+                    items = items.filter((item) => comp.selectedItemIds.includes(item.id));
                   } else if (comp.limit && comp.limit > 0) {
                     items = items.slice(0, comp.limit);
                   }
@@ -1115,13 +1126,36 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
 
                   return (
                     <div key={comp.id} className="py-8 w-full max-w-6xl mx-auto px-4">
-                      {comp.title && <h3 className="text-2xl font-bold text-center mb-8">{comp.title}</h3>}
-                      <div className={`grid gap-6 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 max-w-4xl mx-auto"}`}>
+                      {comp.title && (
+                        <h3 className="text-2xl font-bold text-center mb-8">{comp.title}</h3>
+                      )}
+                      <div
+                        className={`grid gap-6 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 max-w-4xl mx-auto"}`}
+                      >
                         {items.map((item: any) => (
-                          <div key={item.id} className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-row"} group`}>
-                            <div className={`${isGrid ? "w-full aspect-[4/3]" : "w-40 md:w-48 h-full min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}>
-                              {(item.image_url || item.cover || item.cover_image || item.poster_url || item.images?.[0]) ? (
-                                <img src={item.image_url || item.cover || item.cover_image || item.poster_url || item.images?.[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div
+                            key={item.id}
+                            className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-row"} group`}
+                          >
+                            <div
+                              className={`${isGrid ? "w-full aspect-[4/3]" : "w-40 md:w-48 h-full min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
+                            >
+                              {item.image_url ||
+                              item.cover ||
+                              item.cover_image ||
+                              item.poster_url ||
+                              item.images?.[0] ? (
+                                <img
+                                  src={
+                                    item.image_url ||
+                                    item.cover ||
+                                    item.cover_image ||
+                                    item.poster_url ||
+                                    item.images?.[0]
+                                  }
+                                  alt=""
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center opacity-50">
                                   <Package className="w-8 h-8 text-muted-foreground" />
@@ -1129,27 +1163,46 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                               )}
                             </div>
                             <div className="p-5 flex-1 flex flex-col min-w-0">
-                              <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">{item.name || item.title}</h4>
-                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{item.description || item.synopsis || "No details provided."}</p>
+                              <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
+                                {item.name || item.title}
+                              </h4>
+                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                                {item.description || item.synopsis || "No details provided."}
+                              </p>
                               <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
                                 <span className="font-semibold truncate mr-2">
-                                  {item.price ? `${item.price} RWF` : itemType === "Product" ? "" : "Check Availability"}
+                                  {item.price
+                                    ? `${item.price} RWF`
+                                    : itemType === "Product"
+                                      ? ""
+                                      : "Check Availability"}
                                 </span>
-                                {comp.allowSelling !== false && (
-                                  comp.type === "product_list" ? (
-                                    <Button size="sm" className="rounded-full shrink-0" style={{ background: theme_color }} onClick={() => {
-                                      setSelectedProductForCheckout(item);
-                                      setSelectedPaymentBlock(comp);
-                                      setProductCheckoutSheetOpen(true);
-                                    }}>
+                                {comp.allowSelling !== false &&
+                                  (comp.type === "product_list" ? (
+                                    <Button
+                                      size="sm"
+                                      className="rounded-full shrink-0"
+                                      style={{ background: theme_color }}
+                                      onClick={() => {
+                                        setSelectedProductForCheckout(item);
+                                        setSelectedPaymentBlock(comp);
+                                        setProductCheckoutSheetOpen(true);
+                                      }}
+                                    >
                                       {btnLabel}
                                     </Button>
                                   ) : (
-                                    <Button size="sm" className="rounded-full shrink-0" style={{ background: theme_color }} onClick={() => setEmbedUrl(`${linkPrefix}${item.id}?embed=true`)}>
+                                    <Button
+                                      size="sm"
+                                      className="rounded-full shrink-0"
+                                      style={{ background: theme_color }}
+                                      onClick={() =>
+                                        setEmbedUrl(`${linkPrefix}${item.id}?embed=true`)
+                                      }
+                                    >
                                       {btnLabel}
                                     </Button>
-                                  )
-                                )}
+                                  ))}
                               </div>
                             </div>
                           </div>
@@ -1201,7 +1254,12 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
             <DialogTitle className="sr-only">Checkout</DialogTitle>
             <div className="h-12 border-b border-border/60 bg-secondary/50 flex items-center justify-between px-4 shrink-0">
               <span className="font-semibold text-sm">Checkout Flow</span>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setEmbedUrl(null)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                onClick={() => setEmbedUrl(null)}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>

@@ -266,3 +266,21 @@ export const getBookingProductOrders = createServerFn({ method: "POST" })
     });
     return data.product_orders || [];
   });
+
+export const checkProductOrderStatus = createServerFn({ method: "POST" })
+  .validator((d: { data: { bookingRef: string } }) => d)
+  .handler(async (ctx) => {
+    const payload = (ctx.data as any).data || ctx.data;
+    const { bookingRef } = payload as { bookingRef: string };
+    if (!bookingRef) return null;
+    const { hasuraRequest } = await import("./graphql.server");
+    const query = `
+      query CheckProductOrderStatus($ref: String!) {
+        product_orders(where: { decrptions: { _eq: $ref } }, limit: 1) {
+          status
+        }
+      }
+    `;
+    const data = await hasuraRequest<{ product_orders: any[] }>(query, { ref: bookingRef });
+    return data.product_orders?.[0]?.status || null;
+  });

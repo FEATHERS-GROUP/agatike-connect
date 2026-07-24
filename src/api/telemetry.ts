@@ -75,7 +75,7 @@ export const recordHeartbeat = createServerFn({ method: "POST" })
               .where("lastActive", "<", sevenDaysAgo)
               .limit(500)
               .get();
-              
+
             if (!oldSnapshot.empty) {
               const batch = db.batch();
               oldSnapshot.docs.forEach((doc: any) => batch.delete(doc.ref));
@@ -135,7 +135,7 @@ export const getTelemetryStats = createServerFn({ method: "POST" }).handler(asyn
     sessions.forEach((s: any) => {
       const hour = new Date(s.lastActive).getHours();
       const label = `${hour}:00`;
-      
+
       if (!hourlyUsers[label]) hourlyUsers[label] = new Set();
       hourlyUsers[label].add(s.userId === "anonymous" ? s.sessionId : s.userId);
 

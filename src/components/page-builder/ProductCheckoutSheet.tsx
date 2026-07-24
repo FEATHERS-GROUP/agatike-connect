@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus } from "lucide-react";
@@ -12,7 +18,12 @@ interface ProductCheckoutSheetProps {
   themeColor?: string;
 }
 
-export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: ProductCheckoutSheetProps) {
+export function ProductCheckoutSheet({
+  product,
+  isOpen,
+  onClose,
+  themeColor,
+}: ProductCheckoutSheetProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
@@ -54,20 +65,18 @@ export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: P
         {/* Header Image */}
         {product.image_url && (
           <div className="w-full h-56 bg-secondary relative">
-            <img 
-              src={product.image_url} 
-              alt={product.name} 
+            <img
+              src={product.image_url}
+              alt={product.name}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
           </div>
         )}
-        
-        <div className={`p-6 ${product.image_url ? '-mt-16 relative z-10' : ''}`}>
+
+        <div className={`p-6 ${product.image_url ? "-mt-16 relative z-10" : ""}`}>
           <SheetHeader className="mb-6 text-left">
-            <SheetTitle className="text-2xl font-bold leading-tight">
-              {product.name}
-            </SheetTitle>
+            <SheetTitle className="text-2xl font-bold leading-tight">{product.name}</SheetTitle>
             <SheetDescription className="text-primary font-semibold text-lg mt-1">
               RWF {product.price?.toLocaleString()}
             </SheetDescription>
@@ -79,14 +88,18 @@ export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: P
                 <Label className="text-sm font-semibold">Size</Label>
                 <div className="flex flex-wrap gap-2">
                   {product.available_sizes.map((sizeObj: any, idx: number) => {
-                    const sizeName = typeof sizeObj === 'string' ? sizeObj : sizeObj.name;
+                    const sizeName = typeof sizeObj === "string" ? sizeObj : sizeObj.name;
                     return (
                       <Button
                         key={sizeName || idx}
                         type="button"
                         variant={selectedSize === sizeName ? "default" : "outline"}
                         className="h-10 px-5 rounded-full font-medium"
-                        style={selectedSize === sizeName && themeColor ? { backgroundColor: themeColor } : {}}
+                        style={
+                          selectedSize === sizeName && themeColor
+                            ? { backgroundColor: themeColor }
+                            : {}
+                        }
                         onClick={() => setSelectedSize(sizeName)}
                       >
                         {sizeName}
@@ -102,15 +115,23 @@ export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: P
                 <Label className="text-sm font-semibold">Color</Label>
                 <div className="flex flex-wrap gap-3">
                   {product.available_colors.map((colorObj: any, idx: number) => {
-                    const colorValue = typeof colorObj === 'string' ? colorObj : colorObj.hex || colorObj.color || colorObj.name;
-                    const colorKey = typeof colorObj === 'string' ? colorObj : colorObj.name || colorValue || idx.toString();
+                    const colorValue =
+                      typeof colorObj === "string"
+                        ? colorObj
+                        : colorObj.hex || colorObj.color || colorObj.name;
+                    const colorKey =
+                      typeof colorObj === "string"
+                        ? colorObj
+                        : colorObj.name || colorValue || idx.toString();
                     return (
                       <button
                         key={colorKey}
                         type="button"
                         onClick={() => setSelectedColor(colorValue)}
                         className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all ${
-                          selectedColor === colorValue ? "border-primary scale-110 shadow-md" : "border-transparent shadow hover:scale-105"
+                          selectedColor === colorValue
+                            ? "border-primary scale-110 shadow-md"
+                            : "border-transparent shadow hover:scale-105"
                         }`}
                         style={{ backgroundColor: colorValue }}
                       >
@@ -128,7 +149,7 @@ export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: P
               <Label className="text-sm font-semibold">Quantity</Label>
               <div className="flex items-center gap-4">
                 <div className="flex items-center border border-border/60 rounded-full bg-background/50 h-12 px-1">
-                  <button 
+                  <button
                     className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
@@ -136,7 +157,7 @@ export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: P
                     <Minus className="w-5 h-5" />
                   </button>
                   <span className="w-10 text-center font-bold text-base">{quantity}</span>
-                  <button 
+                  <button
                     className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                     onClick={() => setQuantity(quantity + 1)}
                     disabled={product.stock_limit && quantity >= product.stock_limit}

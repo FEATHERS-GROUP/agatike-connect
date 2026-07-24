@@ -183,8 +183,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content:
-          "## Featured Products\\nCheck out our latest products below.",
+        content: "## Featured Products\\nCheck out our latest products below.",
       },
       {
         id: "2",
@@ -211,8 +210,7 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         id: "1",
         type: "text",
-        content:
-          "## Order Form\\nPlease fill out the form to order products.",
+        content: "## Order Form\\nPlease fill out the form to order products.",
       },
       {
         id: "2",

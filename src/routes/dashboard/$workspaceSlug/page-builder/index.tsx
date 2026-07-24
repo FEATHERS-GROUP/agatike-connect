@@ -387,7 +387,7 @@ function PageBuilderGallery() {
           </Tabs>
         </div>
       </div>
-      
+
       <SlugPromptModal
         open={slugPromptOpen}
         setOpen={setSlugPromptOpen}

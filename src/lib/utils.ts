@@ -154,7 +154,7 @@ export function getWorkspacePageUrl(slug: string): string {
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
-    
+
     // For localhost testing
     if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
       const port = window.location.port ? `:${window.location.port}` : "";
@@ -162,7 +162,7 @@ export function getWorkspacePageUrl(slug: string): string {
       const baseHost = hostname.includes("localhost") ? "localhost" : "127.0.0.1";
       return `${protocol}//${slug}.${baseHost}${port}`;
     }
-    
+
     // For production
     // You could dynamically extract the root domain here, e.g., agatike.com
     return `${protocol}//${slug}.agatike.com`;
