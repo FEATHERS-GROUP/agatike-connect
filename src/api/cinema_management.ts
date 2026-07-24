@@ -254,8 +254,10 @@ export const deleteScreen = createServerFn({ method: "POST" })
 export const getMovies = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
+    const { workspace_id } = ctx.data;
+    if (!workspace_id) return [];
     const res = await hasuraRequest<{ cinema_movies: any[] }>(GET_MOVIES, {
-      workspace_id: ctx.data.workspace_id,
+      workspace_id,
     });
     return res.cinema_movies;
   });

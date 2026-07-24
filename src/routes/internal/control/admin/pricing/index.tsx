@@ -211,8 +211,9 @@ function AdminPricingPage() {
     if (!selectedPlan || !selectedProvider) return null;
     const amount = simAmount;
 
-    const agatikeMargin =
-      amount * (Number(selectedPlan.organizer_platform_contribution || 0) / 100);
+    const withdrawalPct = Number(selectedPlan.withdrawal_fee_percentage || 0);
+    const withdrawalFixed = Number(selectedPlan.withdrawal_fee_fixed || 0);
+    const agatikeMargin = amount * (withdrawalPct / 100) + withdrawalFixed;
 
     const provPct = Number(selectedProvider.disbursement_percentage || 0);
     const provFixed = Number(selectedProvider.disbursement_fixed_fee || 0);
@@ -1281,7 +1282,11 @@ function AdminPricingPage() {
               >
                 {plans.map((p: any) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} ({p.organizer_platform_contribution}% org fee)
+                    {p.name} (
+                    {activeTab === "sim-collections"
+                      ? `${p.organizer_platform_contribution}% org fee`
+                      : `${p.withdrawal_fee_percentage}% withdrawal fee`}
+                    )
                   </option>
                 ))}
               </select>
@@ -1298,7 +1303,10 @@ function AdminPricingPage() {
               >
                 {providers.map((p: any) => (
                   <option key={p.id} value={p.id}>
-                    {p.network} ({p.country_code})
+                    {p.network} ({p.country_code}) -{" "}
+                    {activeTab === "sim-collections"
+                      ? `${p.collection_percentage}% collection fee`
+                      : `${p.disbursement_percentage}% disbursement fee`}
                   </option>
                 ))}
               </select>

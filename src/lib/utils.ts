@@ -149,3 +149,23 @@ export function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: numb
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 }
+
+export function getWorkspacePageUrl(slug: string): string {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    // For localhost testing
+    if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
+      const port = window.location.port ? `:${window.location.port}` : "";
+      // Strip any existing subdomain from localhost if present, just to be safe
+      const baseHost = hostname.includes("localhost") ? "localhost" : "127.0.0.1";
+      return `${protocol}//${slug}.${baseHost}${port}`;
+    }
+
+    // For production
+    // You could dynamically extract the root domain here, e.g., agatike.com
+    return `${protocol}//${slug}.agatike.com`;
+  }
+  return `https://${slug}.agatike.com`;
+}

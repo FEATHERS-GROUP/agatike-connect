@@ -31,6 +31,7 @@ import {
   FileText,
   Plus,
 } from "lucide-react";
+import { getWorkspacePageUrl } from "@/lib/utils";
 
 export function EditorTopbar({
   activeWorkspace,
@@ -180,7 +181,7 @@ export function EditorTopbar({
         )}
         {editorState.slug && editorState.id && (
           <Button variant="ghost" size="sm" asChild className="gap-2">
-            <a href={`/p/${editorState.slug}`} target="_blank" rel="noreferrer">
+            <a href={getWorkspacePageUrl(editorState.slug)} target="_blank" rel="noreferrer">
               <ExternalLink className="h-3.5 w-3.5" /> View Live
             </a>
           </Button>

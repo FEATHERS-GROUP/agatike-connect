@@ -36,6 +36,7 @@ interface PaymentModalProps {
   itemLabel?: string;
   baseCurrency?: string;
   userPhone?: string;
+  themeColor?: string;
 }
 
 const ALL_NETWORKS = [
@@ -95,6 +96,7 @@ export function PaymentModal({
   itemLabel,
   baseCurrency: propsBaseCurrency,
   userPhone,
+  themeColor,
 }: PaymentModalProps) {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
@@ -518,7 +520,11 @@ export function PaymentModal({
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-                style={{ background: "var(--gradient-primary)" }}
+                style={
+                  themeColor
+                    ? { backgroundColor: themeColor, color: "#fff" }
+                    : { background: "var(--gradient-primary)" }
+                }
               >
                 {isGenerating
                   ? "Generating..."

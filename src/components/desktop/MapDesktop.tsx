@@ -339,16 +339,24 @@ export function MapDesktop() {
       let borderColor = "border-primary";
       let bgColor = "bg-background";
       let triangleColor = "border-t-primary";
-      
+      let badgeBg = "bg-primary/20";
+      let badgeText = "text-primary";
+
       if (marker.type === "venue") {
         borderColor = "border-blue-500";
         triangleColor = "border-t-blue-500";
+        badgeBg = "bg-blue-500/20";
+        badgeText = "text-blue-500";
       } else if (marker.type === "space") {
         borderColor = "border-purple-500";
         triangleColor = "border-t-purple-500";
+        badgeBg = "bg-purple-500/20";
+        badgeText = "text-purple-500";
       } else if (marker.type === "cinema") {
         borderColor = "border-orange-500";
         triangleColor = "border-t-orange-500";
+        badgeBg = "bg-orange-500/20";
+        badgeText = "text-orange-500";
       }
 
       return L.divIcon({
@@ -359,7 +367,7 @@ export function MapDesktop() {
               <img src="${marker.image}" class="h-10 w-10 rounded-xl object-cover shrink-0" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1 mb-0.5">
-                  <span class="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${borderColor.replace('border-', 'bg-').replace('500', '500/20')} ${borderColor.replace('border-', 'text-')}">${marker.type}</span>
+                  <span class="text-[8px] uppercase font-bold px-1.5 py-0.5 rounded-sm ${badgeBg} ${badgeText}">${marker.type}</span>
                 </div>
                 <p class="text-xs font-bold truncate">${marker.title}</p>
                 <p class="text-[10px] text-muted-foreground truncate">${marker.date}</p>
@@ -407,6 +415,9 @@ export function MapDesktop() {
                 ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             }
+            keepBuffer={8}
+            updateWhenZooming={false}
+            updateWhenIdle={true}
           />
 
           <MapController selectedEvent={selectedMarker} />
@@ -451,7 +462,11 @@ export function MapDesktop() {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <img src={AgatikeLogo} alt="Agatike" className="h-9 w-9 rounded-xl shadow-sm object-cover" />
+          <img
+            src={AgatikeLogo}
+            alt="Agatike"
+            className="h-9 w-9 rounded-xl shadow-sm object-cover"
+          />
         </div>
 
         <h2 className="mb-4 text-xl font-bold tracking-tight px-1 shrink-0">Locations</h2>
@@ -487,344 +502,349 @@ export function MapDesktop() {
 
       {/* FLOATING RIGHT COLUMN: Events & Past Events */}
       <div className="absolute right-4 top-4 bottom-4 w-[380px] z-10 bg-background/85 backdrop-blur-2xl rounded-3xl border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col overflow-hidden">
-
-      {selectedMarker ? (
-        <div className="flex flex-col h-full overflow-hidden relative">
-          <div className="relative h-64 w-full shrink-0">
-            <img src={selectedMarker.image} className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md"
-              onClick={() => setSelectedMarker(null)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="flex flex-col p-6 space-y-6 flex-1 overflow-y-auto">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-tight text-primary border-primary/20 bg-primary/10">
-                  {selectedMarker.type}
-                </div>
-                {selectedMarker.type === "event" &&
-                  selectedMarker.raw?.event_tickets?.some((t: any) => t.cost === 0) && (
-                    <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">
-                      FREE TIER AVAILABLE
-                    </span>
-                  )}
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight">{selectedMarker.title}</h2>
-
-              {/* Location / Date string */}
-              <div className="flex items-start gap-2 mt-3 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{selectedMarker.date}</span>
-              </div>
-
-              {/* Organizer / Additional Info */}
-              {selectedMarker.type === "event" && selectedMarker.raw?.workspaces?.organizer && (
-                <div className="flex items-center gap-3 mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
-                  <img
-                    src={selectedMarker.raw.workspaces.organizer.image}
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
-                      Organized by
-                    </p>
-                    <p className="text-sm font-semibold">
-                      {selectedMarker.raw.workspaces.organizer.name}
-                    </p>
+        {selectedMarker ? (
+          <div className="flex flex-col h-full overflow-hidden relative">
+            <div className="relative h-64 w-full shrink-0">
+              <img src={selectedMarker.image} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md"
+                onClick={() => setSelectedMarker(null)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex flex-col p-6 space-y-6 flex-1 overflow-y-auto">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-tight text-primary border-primary/20 bg-primary/10">
+                    {selectedMarker.type}
                   </div>
-                </div>
-              )}
-
-              {selectedMarker.type === "event" && selectedMarker.raw?.event_tickets?.length > 0 && (
-                <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40 flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
-                      Starting from
-                    </p>
-                    <p className="text-lg font-bold text-primary">
-                      {Math.min(...selectedMarker.raw.event_tickets.map((t: any) => t.cost))}{" "}
-                      {selectedMarker.raw.workspaces?.currency || "RWF"}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
-                      Tickets
-                    </p>
-                    <p className="text-sm font-bold">
-                      {selectedMarker.raw.event_tickets.length} Types
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Description */}
-              {selectedMarker.raw?.description && (
-                <div className="mt-5">
-                  <h3 className="text-sm font-bold tracking-tight mb-2">
-                    About this {selectedMarker.type}
-                  </h3>
-                  <div
-                    className="text-sm text-muted-foreground line-clamp-4 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: selectedMarker.raw.description }}
-                  />
-                </div>
-              )}
-
-              {/* Lineup */}
-              {selectedMarker.type === "event" && selectedMarker.raw?.lineup?.length > 0 && (
-                <div className="mt-5">
-                  <h3 className="text-sm font-bold tracking-tight mb-3">Lineup</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedMarker.raw.lineup.map((item: any, idx: number) => (
-                      <span
-                        key={idx}
-                        className="bg-secondary/40 border border-border/40 text-xs px-3 py-1.5 rounded-full font-medium"
-                      >
-                        {item.name || item}
+                  {selectedMarker.type === "event" &&
+                    selectedMarker.raw?.event_tickets?.some((t: any) => t.cost === 0) && (
+                      <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">
+                        FREE TIER AVAILABLE
                       </span>
-                    ))}
+                    )}
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight">{selectedMarker.title}</h2>
+
+                {/* Location / Date string */}
+                <div className="flex items-start gap-2 mt-3 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{selectedMarker.date}</span>
+                </div>
+
+                {/* Organizer / Additional Info */}
+                {selectedMarker.type === "event" && selectedMarker.raw?.workspaces?.organizer && (
+                  <div className="flex items-center gap-3 mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                    <img
+                      src={selectedMarker.raw.workspaces.organizer.image}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                        Organized by
+                      </p>
+                      <p className="text-sm font-semibold">
+                        {selectedMarker.raw.workspaces.organizer.name}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {selectedMarker.type === "venue" && selectedMarker.raw?.pricing_tiers?.length > 0 && (
-                <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
-                    Starting from
-                  </p>
-                  <p className="text-lg font-bold text-primary">
-                    {selectedMarker.raw.pricing_tiers[0]?.price}{" "}
-                    {selectedMarker.raw.currency || "RWF"}
-                  </p>
-                </div>
-              )}
+                {selectedMarker.type === "event" &&
+                  selectedMarker.raw?.event_tickets?.length > 0 && (
+                    <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                          Starting from
+                        </p>
+                        <p className="text-lg font-bold text-primary">
+                          {Math.min(...selectedMarker.raw.event_tickets.map((t: any) => t.cost))}{" "}
+                          {selectedMarker.raw.workspaces?.currency || "RWF"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                          Tickets
+                        </p>
+                        <p className="text-sm font-bold">
+                          {selectedMarker.raw.event_tickets.length} Types
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
-              {selectedMarker.type === "venue" &&
-                selectedMarker.raw?.facilities_data?.length > 0 && (
-                  <div className="mt-5 space-y-3">
-                    <h3 className="text-sm font-bold tracking-tight mb-2">Facilities</h3>
-                    <div className="flex flex-col gap-3">
-                      {selectedMarker.raw.facilities_data.map((facility: any) => (
-                        <div
-                          key={facility.id}
-                          className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40"
+                {/* Description */}
+                {selectedMarker.raw?.description && (
+                  <div className="mt-5">
+                    <h3 className="text-sm font-bold tracking-tight mb-2">
+                      About this {selectedMarker.type}
+                    </h3>
+                    <div
+                      className="text-sm text-muted-foreground line-clamp-4 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: selectedMarker.raw.description }}
+                    />
+                  </div>
+                )}
+
+                {/* Lineup */}
+                {selectedMarker.type === "event" && selectedMarker.raw?.lineup?.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="text-sm font-bold tracking-tight mb-3">Lineup</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedMarker.raw.lineup.map((item: any, idx: number) => (
+                        <span
+                          key={idx}
+                          className="bg-secondary/40 border border-border/40 text-xs px-3 py-1.5 rounded-full font-medium"
                         >
-                          {facility.image_url && (
-                            <img
-                              src={facility.image_url}
-                              alt={facility.name}
-                              className="w-16 h-16 object-cover rounded-md shrink-0"
-                            />
-                          )}
-                          <div className="flex-1 min-w-0 flex flex-col justify-center">
-                            <p className="font-bold text-sm truncate">{facility.name}</p>
-                            <p className="text-[10px] text-muted-foreground capitalize mt-0.5">
-                              {facility.type?.replace(/_/g, " ")}
-                            </p>
-                            <Link
-                              to="/venues/$venueId/facilities/checkout/$facilityId"
-                              params={{ venueId: selectedMarker.raw.id, facilityId: facility.id }}
-                              className="inline-block mt-2 w-full"
-                            >
-                              <Button
-                                size="sm"
-                                className="w-full h-8 text-xs rounded-full shadow-[var(--shadow-glow)] transition-all"
-                                style={{ background: "var(--gradient-primary)" }}
-                              >
-                                {facility.requires_approval ? "Request Booking" : "Book Now"}
-                              </Button>
-                            </Link>
-                          </div>
-                        </div>
+                          {item.name || item}
+                        </span>
                       ))}
                     </div>
                   </div>
                 )}
 
-              {selectedMarker.type === "space" && selectedMarker.raw?.plans?.length > 0 && (
-                <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
-                    Starting from
-                  </p>
-                  <p className="text-lg font-bold text-primary">
-                    {selectedMarker.raw.plans[0]?.price} {selectedMarker.raw.currency || "RWF"}
-                  </p>
-                </div>
-              )}
-
-              {selectedMarker.type === "cinema" && (
-                <div className="mt-5 space-y-3">
-                  <h3 className="text-sm font-bold tracking-tight mb-2">Playing Today</h3>
-                  {dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).length >
-                  0 ? (
-                    dbSchedules
-                      .filter((s: any) => s.cinema?.id === selectedMarker.raw.id)
-                      .map((schedule: any) => (
-                        <div
-                          key={schedule.id}
-                          className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40"
-                        >
-                          {schedule.movie?.cover_url && (
-                            <img
-                              src={schedule.movie.cover_url}
-                              alt={schedule.movie.title}
-                              className="w-12 h-16 object-cover rounded-md"
-                            />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm truncate">{schedule.movie?.title}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              {schedule.movie?.genre} • {schedule.movie?.duration_minutes}m
-                            </p>
-                            <p className="text-xs font-semibold text-primary mt-1">
-                              {schedule.start_time.substring(0, 5)}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                  ) : (
-                    <p className="text-xs text-muted-foreground">No movies scheduled for today.</p>
+                {selectedMarker.type === "venue" &&
+                  selectedMarker.raw?.pricing_tiers?.length > 0 && (
+                    <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                        Starting from
+                      </p>
+                      <p className="text-lg font-bold text-primary">
+                        {selectedMarker.raw.pricing_tiers[0]?.price}{" "}
+                        {selectedMarker.raw.currency || "RWF"}
+                      </p>
+                    </div>
                   )}
-                </div>
-              )}
-            </div>
 
-            {/* Action Button */}
-            <div className="mt-auto pt-6">
-              <Button
-                className="w-full rounded-full shadow-[var(--shadow-glow)] h-12"
-                style={{ background: "var(--gradient-primary)" }}
-                onClick={() => {
-                  const rawId = selectedMarker.id.split("-").slice(1).join("-");
-                  if (selectedMarker.type === "event") {
-                    router.navigate({ to: "/events/$eventId", params: { eventId: rawId } });
-                  } else if (selectedMarker.type === "venue") {
-                    router.navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
-                  } else if (selectedMarker.type === "space") {
-                    router.navigate({ to: "/spaces/$spaceId", params: { spaceId: rawId } });
-                  } else if (selectedMarker.type === "cinema") {
-                    router.navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
-                  } else {
-                    router.navigate({ to: "/organizers" });
-                  }
-                }}
-              >
-                View Details <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col h-full overflow-hidden">
-          {/* Events Section */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
-              <h2 className="text-xl font-bold tracking-tight">Events</h2>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <MapPin className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
-              {isLoadingEvents ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex gap-4 p-2">
-                    <Skeleton className="h-16 w-16 rounded-xl shrink-0" />
-                    <div className="flex flex-col justify-center flex-1 space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-3 w-2/3" />
-                    </div>
-                  </div>
-                ))
-              ) : upcomingEvents.length === 0 ? (
-                <div className="text-center py-6 text-sm text-muted-foreground">
-                  No upcoming events found.
-                </div>
-              ) : (
-                upcomingEvents.map((event: any) => (
-                  <Link
-                    key={event.id}
-                    to="/events/$eventId"
-                    params={{ eventId: event.id }}
-                    className="group flex gap-4 rounded-2xl bg-secondary/30 p-2 cursor-pointer transition-colors hover:bg-secondary/60 block"
-                  >
-                    <img
-                      src={event.image}
-                      alt={event.title}
-                      className="h-16 w-16 shrink-0 rounded-xl object-cover shadow-sm"
-                    />
-                    <div className="flex flex-col justify-center min-w-0">
-                      <h3 className="font-semibold text-sm truncate">{event.title}</h3>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{event.venue}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">{event.date}</p>
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Past Events Section */}
-          <div className="h-[45%] flex flex-col border-t border-border/40 bg-secondary/10">
-            <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
-              <h2 className="text-xl font-bold tracking-tight">Previous Events</h2>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <MessageSquare className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
-              {isLoadingTickets ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex gap-3 p-3 border border-border/40 rounded-2xl">
-                    <Skeleton className="h-10 w-10 rounded-full shrink-0" />
-                    <div className="flex flex-col justify-center flex-1 space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-3 w-2/3" />
-                    </div>
-                  </div>
-                ))
-              ) : pastEvents.length === 0 ? (
-                <div className="text-center py-6 text-sm text-muted-foreground">
-                  You haven't attended any events yet.
-                </div>
-              ) : (
-                pastEvents.map((event: any) => (
-                  <div
-                    key={event.id}
-                    className="group relative overflow-hidden rounded-2xl bg-card p-3 shadow-sm border border-border/40 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative shrink-0">
-                        <img
-                          src={event.organizer.avatar}
-                          alt={event.organizer.name}
-                          className="h-10 w-10 rounded-full object-cover border border-border/40 bg-muted"
-                        />
-                        <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
+                {selectedMarker.type === "venue" &&
+                  selectedMarker.raw?.facilities_data?.length > 0 && (
+                    <div className="mt-5 space-y-3">
+                      <h3 className="text-sm font-bold tracking-tight mb-2">Facilities</h3>
+                      <div className="flex flex-col gap-3">
+                        {selectedMarker.raw.facilities_data.map((facility: any) => (
+                          <div
+                            key={facility.id}
+                            className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40"
+                          >
+                            {facility.image_url && (
+                              <img
+                                src={facility.image_url}
+                                alt={facility.name}
+                                className="w-16 h-16 object-cover rounded-md shrink-0"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                              <p className="font-bold text-sm truncate">{facility.name}</p>
+                              <p className="text-[10px] text-muted-foreground capitalize mt-0.5">
+                                {facility.type?.replace(/_/g, " ")}
+                              </p>
+                              <Link
+                                to="/venues/$venueId/facilities/checkout/$facilityId"
+                                params={{ venueId: selectedMarker.raw.id, facilityId: facility.id }}
+                                className="inline-block mt-2 w-full"
+                              >
+                                <Button
+                                  size="sm"
+                                  className="w-full h-8 text-xs rounded-full shadow-[var(--shadow-glow)] transition-all"
+                                  style={{ background: "var(--gradient-primary)" }}
+                                >
+                                  {facility.requires_approval ? "Request Booking" : "Book Now"}
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
                       </div>
+                    </div>
+                  )}
 
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm truncate">{event.organizer.name}</h3>
-                        <p className="text-xs text-muted-foreground truncate">
-                          Attended {event.title}
+                {selectedMarker.type === "space" && selectedMarker.raw?.plans?.length > 0 && (
+                  <div className="mt-5 p-3 bg-secondary/20 rounded-xl border border-border/40">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground mb-0.5">
+                      Starting from
+                    </p>
+                    <p className="text-lg font-bold text-primary">
+                      {selectedMarker.raw.plans[0]?.price} {selectedMarker.raw.currency || "RWF"}
+                    </p>
+                  </div>
+                )}
+
+                {selectedMarker.type === "cinema" && (
+                  <div className="mt-5 space-y-3">
+                    <h3 className="text-sm font-bold tracking-tight mb-2">Playing Today</h3>
+                    {dbSchedules.filter((s: any) => s.cinema?.id === selectedMarker.raw.id).length >
+                    0 ? (
+                      dbSchedules
+                        .filter((s: any) => s.cinema?.id === selectedMarker.raw.id)
+                        .map((schedule: any) => (
+                          <div
+                            key={schedule.id}
+                            className="flex gap-3 bg-secondary/20 p-3 rounded-xl border border-border/40"
+                          >
+                            {schedule.movie?.cover_url && (
+                              <img
+                                src={schedule.movie.cover_url}
+                                alt={schedule.movie.title}
+                                className="w-12 h-16 object-cover rounded-md"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-sm truncate">{schedule.movie?.title}</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                {schedule.movie?.genre} • {schedule.movie?.duration_minutes}m
+                              </p>
+                              <p className="text-xs font-semibold text-primary mt-1">
+                                {schedule.start_time.substring(0, 5)}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        No movies scheduled for today.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Button */}
+              <div className="mt-auto pt-6">
+                <Button
+                  className="w-full rounded-full shadow-[var(--shadow-glow)] h-12"
+                  style={{ background: "var(--gradient-primary)" }}
+                  onClick={() => {
+                    const rawId = selectedMarker.id.split("-").slice(1).join("-");
+                    if (selectedMarker.type === "event") {
+                      router.navigate({ to: "/events/$eventId", params: { eventId: rawId } });
+                    } else if (selectedMarker.type === "venue") {
+                      router.navigate({ to: "/venues/$venueId", params: { venueId: rawId } });
+                    } else if (selectedMarker.type === "space") {
+                      router.navigate({ to: "/spaces/$spaceId", params: { spaceId: rawId } });
+                    } else if (selectedMarker.type === "cinema") {
+                      router.navigate({ to: "/cinemas/$cinemaId", params: { cinemaId: rawId } });
+                    } else {
+                      router.navigate({ to: "/organizers" });
+                    }
+                  }}
+                >
+                  View Details <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col h-full overflow-hidden">
+            {/* Events Section */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
+                <h2 className="text-xl font-bold tracking-tight">Events</h2>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <MapPin className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
+                {isLoadingEvents ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex gap-4 p-2">
+                      <Skeleton className="h-16 w-16 rounded-xl shrink-0" />
+                      <div className="flex flex-col justify-center flex-1 space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-3 w-2/3" />
+                      </div>
+                    </div>
+                  ))
+                ) : upcomingEvents.length === 0 ? (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    No upcoming events found.
+                  </div>
+                ) : (
+                  upcomingEvents.map((event: any) => (
+                    <Link
+                      key={event.id}
+                      to="/events/$eventId"
+                      params={{ eventId: event.id }}
+                      className="group flex gap-4 rounded-2xl bg-secondary/30 p-2 cursor-pointer transition-colors hover:bg-secondary/60 block"
+                    >
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="h-16 w-16 shrink-0 rounded-xl object-cover shadow-sm"
+                      />
+                      <div className="flex flex-col justify-center min-w-0">
+                        <h3 className="font-semibold text-sm truncate">{event.title}</h3>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                          {event.venue}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{event.date}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{event.date}</p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Past Events Section */}
+            <div className="h-[45%] flex flex-col border-t border-border/40 bg-secondary/10">
+              <div className="p-5 pb-2 flex items-center justify-between border-b border-border/20">
+                <h2 className="text-xl font-bold tracking-tight">Previous Events</h2>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto hide-scrollbar p-5 pt-3 space-y-3">
+                {isLoadingTickets ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex gap-3 p-3 border border-border/40 rounded-2xl">
+                      <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                      <div className="flex flex-col justify-center flex-1 space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-3 w-2/3" />
                       </div>
                     </div>
+                  ))
+                ) : pastEvents.length === 0 ? (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    You haven't attended any events yet.
                   </div>
-                ))
-              )}
+                ) : (
+                  pastEvents.map((event: any) => (
+                    <div
+                      key={event.id}
+                      className="group relative overflow-hidden rounded-2xl bg-card p-3 shadow-sm border border-border/40 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="relative shrink-0">
+                          <img
+                            src={event.organizer.avatar}
+                            alt={event.organizer.name}
+                            className="h-10 w-10 rounded-full object-cover border border-border/40 bg-muted"
+                          />
+                          <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{event.organizer.name}</h3>
+                          <p className="text-xs text-muted-foreground truncate">
+                            Attended {event.title}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{event.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {

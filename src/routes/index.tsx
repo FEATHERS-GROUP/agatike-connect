@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
 import { useEffect, useState, lazy, Suspense } from "react";
+import { RenderedPage } from "@/components/page-builder/RenderedPage";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { MapPin } from "lucide-react";
 
@@ -34,9 +35,20 @@ function Home() {
   const router = useRouter();
 
   const [isClient, setIsClient] = useState(false);
+  const [subdomainSlug, setSubdomainSlug] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
+    // Detect Subdomain
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
+      const potentialSlug = parts[0];
+      if (potentialSlug !== "www") {
+        setSubdomainSlug(potentialSlug);
+      }
+    }
   }, []);
 
   if (!isClient) {
@@ -45,6 +57,10 @@ function Home() {
         <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
       </div>
     );
+  }
+
+  if (subdomainSlug) {
+    return <RenderedPage slug={subdomainSlug} isPreview={false} />;
   }
 
   return (

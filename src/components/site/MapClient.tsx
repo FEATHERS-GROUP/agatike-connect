@@ -72,7 +72,7 @@ function MapController({
     } else if (selectedCity && selectedCity.bounds && selectedCity.bounds.length > 0) {
       const bounds = L.latLngBounds(selectedCity.bounds);
       if (!bounds.isValid()) return;
-      
+
       const size = map.getSize();
       // If the map hasn't fully laid out, animation will crash with NaN. Set view instantly.
       if (size.x < 10 || size.y < 10) {
@@ -280,10 +280,10 @@ export default function MapClient() {
 
   const createCustomIcon = (marker: any, isSelected: boolean) => {
     const selectedClass = isSelected ? "scale-125 z-50" : "z-10 hover:scale-110";
-    
+
     let borderColor = "border-border/20 bg-background";
     let triangleColor = "border-t-background";
-    
+
     if (marker.type === "event") {
       borderColor = "border-primary bg-primary/10";
       triangleColor = "border-t-primary";
@@ -338,6 +338,9 @@ export default function MapClient() {
                 ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             }
+            keepBuffer={8}
+            updateWhenZooming={false}
+            updateWhenIdle={true}
           />
           <MapController selectedCity={selectedCityObj} selectedMarker={selectedMarker} />
           <MapEvents onMapClick={() => setSelectedMarker(null)} />

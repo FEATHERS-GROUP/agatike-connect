@@ -279,6 +279,7 @@ export const getWorkspaceEvents = createServerFn({ method: "POST" })
   .validator((d: { workspace_id: string }) => d)
   .handler(async (ctx) => {
     const { workspace_id } = ctx.data;
+    if (!workspace_id) return [];
     const data = await hasuraRequest<{ events: any[] }>(GET_WORKSPACE_EVENTS, { workspace_id });
     return data.events || [];
   });

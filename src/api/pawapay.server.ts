@@ -16,7 +16,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     console.log(`[PawaPay Webhook] Received callback for ${path}:`, body);
 
     const providerReference = body.depositId || body.payoutId || body.refundId;
-    const providerStatus = body.status; // e.g., "COMPLETED", "FAILED"
+    const providerStatus = body.status;
 
     if (providerReference) {
       // 1. Update the wallet transaction status
@@ -58,6 +58,31 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       const tx = res.update_wallet_transactions?.returning?.[0];
 
+      let wsSlug = "";
+      let wsName = "";
+      if (tx?.workspace_id) {
+        try {
+          const wsData = await hasuraRequest<{
+            workspaces_by_pk: { name: string };
+            workspace_pages: { slug: string }[];
+          }>(
+            `query GetWS($id: uuid!) { 
+                workspaces_by_pk(id: $id) { name } 
+                workspace_pages(where: { workspace_id: { _eq: $id } }, limit: 1) { slug }
+             }`,
+            { id: tx.workspace_id },
+          );
+          if (wsData?.workspaces_by_pk) {
+            wsName = wsData.workspaces_by_pk.name;
+          }
+          if (wsData?.workspace_pages?.length) {
+            wsSlug = wsData.workspace_pages[0].slug;
+          }
+        } catch (e) {
+          console.error("Failed to fetch workspace", e);
+        }
+      }
+
       let customerFee = 0;
       if (tx) {
         // Now update earnings safely via wallet_transaction_id instead of relying on relationships
@@ -74,7 +99,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       // 2. If it's a completed deposit, activate the associated ticket/subscription
       if (tx && tx.status === "completed") {
-        if (tx.type === "event_ticket") {
+        if (tx.type === "event_ticket" || tx.type === "page_builder_checkout") {
           // Update event_attendees status to "Confirmed" based on a unique custom group ID (reference_id)
           const confirmQuery = `
             mutation ConfirmEventAttendees($booking_ref: String!) {
@@ -116,6 +141,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   product_id
                   qty
                   size
+                  qr_code_string
                   product {
                     name
                   }
@@ -163,15 +189,44 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             .map((a) => a.qrcode_number)
             .filter(Boolean)
             .join(", ");
+          // Extract Guest Email from product_orders if present
+          let guestEmail: string | null = null;
+          let productQrCode: string | null = null;
+
+          if (confirmedOrders.length > 0) {
+            confirmedOrders.forEach((o) => {
+              if (o.qr_code_string) productQrCode = o.qr_code_string;
+              if (o.size && o.size.includes("| email:")) {
+                const parts = o.size.split("| email:");
+                o.size = parts[0].trim();
+                if (!guestEmail) guestEmail = parts[1].trim();
+              } else if (o.size && o.size.startsWith("email:")) {
+                if (!guestEmail) guestEmail = o.size.replace("email:", "").trim();
+                o.size = "";
+              }
+            });
+          }
+
           const productsText =
             confirmedOrders.length > 0
-              ? `Products: ${confirmedOrders.map((o) => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}`
+              ? `${confirmedOrders.map((o) => `${o.qty}x ${o.product?.name || "Item"} (${o.size || "Standard"})`).join(", ")}`
               : "";
           const feeText =
             customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
 
-          const detailedMessage =
-            `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText}`.trim();
+          const baseDomain = process.env.PROJECT_PRODUCTION_URL || "agatike.com";
+          const domain = wsSlug ? `${wsSlug}.${baseDomain}` : baseDomain;
+
+          let detailedMessage = "";
+
+          if (!firstAtt && confirmedOrders.length > 0) {
+            // Product-only purchase
+            detailedMessage = `Payment completed for ${productsText}. Thank you for visiting ${domain}. It will be delivered to you or choose pickup. Order Ref: ${productQrCode || "N/A"}`;
+          } else {
+            // Ticket purchase
+            detailedMessage =
+              `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText ? `Products: ${productsText}` : ""}`.trim();
+          }
 
           if (firstAtt) {
             const { sendAttendeeEmail } = await import("./email");
@@ -194,6 +249,22 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 },
               } as any).catch((e) => console.error("Failed to send attendee email", e));
             }
+          } else if (confirmedOrders.length > 0 && guestEmail) {
+            // Product-only purchase email receipt
+            const { sendAttendeeEmail } = await import("./email");
+            const orgName = wsName || domain;
+
+            await sendAttendeeEmail({
+              data: {
+                to: guestEmail,
+                subject: `Your purchase from ${orgName} is confirmed!`,
+                message: detailedMessage,
+                eventName: "Product Store",
+                organizerName: orgName,
+                appUrl,
+                badgeLink: `${appUrl}/`, // No specific badge link for products yet
+              },
+            } as any).catch((e) => console.error("Failed to send product email", e));
           }
 
           // Send Event SMS with direct ticket links and products

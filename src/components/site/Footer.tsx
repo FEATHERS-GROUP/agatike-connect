@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 
 export function Footer() {
+  if (typeof window !== "undefined" && window.location.search.includes("embed=true")) {
+    return null;
+  }
+
   return (
     <footer className="hidden md:block mt-24 border-t border-border/60 bg-secondary/40">
       <div className="mx-auto max-w-7xl px-6 py-14 grid gap-10 md:grid-cols-5">

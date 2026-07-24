@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getWorkspacePageUrl } from "@/lib/utils";
 import {
   Loader2,
   Plus,
@@ -70,6 +71,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/edi
       pageId: search.pageId as string | undefined,
       templateId: search.templateId as string | undefined,
       parentId: search.parentId as string | undefined,
+      slug: search.slug as string | undefined,
     };
   },
   component: PageBuilder,
@@ -113,7 +115,7 @@ function makeBlankPage() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
-  const { pageId, templateId, parentId } = Route.useSearch();
+  const { pageId, templateId, parentId, slug } = Route.useSearch();
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const workspace_id = activeWorkspace?.id;
@@ -129,9 +131,9 @@ function PageBuilder() {
     setActivePageId(pageId || null);
     setIsInitialized(false);
     if (!pageId && !templateId) {
-      setEditorState({ ...makeBlankPage(), parent_id: parentId || null });
+      setEditorState({ ...makeBlankPage(), parent_id: parentId || null, slug: slug || "" });
     }
-  }, [pageId, templateId, parentId]);
+  }, [pageId, templateId, parentId, slug]);
 
   // ── Fetch: individual page when activePageId changes ──────────────────────
   const { data: pageData, isLoading: isLoadingPage } = useQuery({
@@ -187,7 +189,7 @@ function PageBuilder() {
       if (template) {
         setEditorState({
           id: null,
-          slug: "",
+          slug: slug || "",
           title: template.title,
           description: template.pageDescription,
           themeColor: template.themeColor,
@@ -226,7 +228,7 @@ function PageBuilder() {
         setActivePageId(result.id);
         navigate({
           from: Route.fullPath,
-          search: { pageId: result.id, templateId: undefined },
+          search: (prev) => ({ ...prev, pageId: result.id, templateId: undefined }),
           replace: true,
         });
       }
@@ -282,7 +284,7 @@ function PageBuilder() {
   };
 
   const handleCopyLink = (slug: string) => {
-    const url = `${window.location.origin}/p/${slug}`;
+    const url = getWorkspacePageUrl(slug);
     navigator.clipboard
       .writeText(url)
       .then(() => {

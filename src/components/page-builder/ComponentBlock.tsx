@@ -18,6 +18,7 @@ import {
   Plus,
 } from "lucide-react";
 import { PreviewComponent } from "./PreviewComponent";
+import { InventorySelector } from "./InventorySelector";
 
 export function ComponentBlock({
   comp,
@@ -416,9 +417,13 @@ export function ComponentBlock({
                 <Input
                   value={comp.paymentLink || ""}
                   onChange={(e) => updateComponent(idx, "paymentLink", e.target.value)}
-                  placeholder="https://... (Leave blank to use internal checkout)"
+                  placeholder="https://... (Leave blank for internal checkout)"
                   className="bg-background"
                 />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Leave this blank to automatically trigger the built-in checkout modal. Payments
+                  will be processed via your workspace's configured Mobile Money network.
+                </p>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Description (Optional)</Label>
@@ -429,6 +434,73 @@ export function ComponentBlock({
                   className="w-full bg-background border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[60px]"
                 />
               </div>
+            </div>
+          )}
+
+          {/* INVENTORY LISTS */}
+          {["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(
+            comp.type,
+          ) && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-[2] space-y-1">
+                  <Label className="text-xs">Section Title</Label>
+                  <Input
+                    value={comp.title || ""}
+                    onChange={(e) => updateComponent(idx, "title", e.target.value)}
+                    placeholder="e.g. Featured Items"
+                    className="bg-background"
+                  />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <Label className="text-xs">Layout</Label>
+                  <Select
+                    value={comp.layout || "grid"}
+                    onValueChange={(val) => updateComponent(idx, "layout", val)}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">Grid (Cards)</SelectItem>
+                      <SelectItem value="list">List (Rows)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/40">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-semibold">Allow Selling / Booking</Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Show "Buy" or "Book" buttons next to items.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={comp.allowSelling !== false ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={() => updateComponent(idx, "allowSelling", true)}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={comp.allowSelling === false ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={() => updateComponent(idx, "allowSelling", false)}
+                  >
+                    No (View Only)
+                  </Button>
+                </div>
+              </div>
+              <InventorySelector
+                type={comp.type}
+                workspace_id={workspace_id}
+                comp={comp}
+                updateComponent={updateComponent}
+                idx={idx}
+              />
             </div>
           )}
 

@@ -41,13 +41,16 @@ const readmeSections = (() => {
   try {
     const raw = readmeRaw as string;
     const parts = raw.split(/^## /m);
-    return parts.map((part) => {
-      const lines = part.split("\n");
-      return {
-        title: lines[0].replace(/#/g, "").trim() || "Introduction",
-        content: lines.slice(1).join("\n").trim(),
-      };
-    }).filter((p) => p.content.length > 0).map((p, i) => ({ ...p, id: i }));
+    return parts
+      .map((part) => {
+        const lines = part.split("\n");
+        return {
+          title: lines[0].replace(/#/g, "").trim() || "Introduction",
+          content: lines.slice(1).join("\n").trim(),
+        };
+      })
+      .filter((p) => p.content.length > 0)
+      .map((p, i) => ({ ...p, id: i }));
   } catch (e) {
     return [];
   }
@@ -56,14 +59,20 @@ const readmeSections = (() => {
 function formatInline(text: string) {
   return text
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/`(.*?)`/g, '<code class="bg-gray-100 dark:bg-[#222] px-1 py-0.5 rounded text-[11px] text-[#f97316]">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-500 hover:underline">$1</a>');
+    .replace(
+      /`(.*?)`/g,
+      '<code class="bg-gray-100 dark:bg-[#222] px-1 py-0.5 rounded text-[11px] text-[#f97316]">$1</code>',
+    )
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank" class="text-blue-500 hover:underline">$1</a>',
+    );
 }
 
 function SimpleMarkdownRenderer({ text }: { text: string }) {
   if (!text) return null;
   const blocks = text.split(/(```[\s\S]*?```)/g);
-  
+
   return (
     <>
       {blocks.map((block, i) => {
@@ -73,33 +82,53 @@ function SimpleMarkdownRenderer({ text }: { text: string }) {
           const lang = lines[0].trim();
           const code = lines.slice(1).join("\n");
           return (
-            <pre key={i} className="bg-gray-100 dark:bg-[#111] p-4 rounded-md overflow-x-auto text-[11px] font-mono border border-gray-200 dark:border-[#333] my-4 custom-scrollbar">
+            <pre
+              key={i}
+              className="bg-gray-100 dark:bg-[#111] p-4 rounded-md overflow-x-auto text-[11px] font-mono border border-gray-200 dark:border-[#333] my-4 custom-scrollbar"
+            >
               <code className="text-gray-800 dark:text-[#ccc]">{code || lang}</code>
             </pre>
           );
         }
-        
+
         const paragraphs = block.split(/\n\n+/);
         return paragraphs.map((p, j) => {
           if (!p.trim()) return null;
-          
+
           if (p.trim().startsWith("- ")) {
-            const items = p.split("\n").filter(l => l.trim().startsWith("- ")).map(l => l.replace(/^- /, ""));
+            const items = p
+              .split("\n")
+              .filter((l) => l.trim().startsWith("- "))
+              .map((l) => l.replace(/^- /, ""));
             return (
-              <ul key={`${i}-${j}`} className="list-disc pl-5 space-y-1 my-3 text-gray-700 dark:text-[#ccc] leading-relaxed">
+              <ul
+                key={`${i}-${j}`}
+                className="list-disc pl-5 space-y-1 my-3 text-gray-700 dark:text-[#ccc] leading-relaxed"
+              >
                 {items.map((item, k) => (
                   <li key={k} dangerouslySetInnerHTML={{ __html: formatInline(item) }} />
                 ))}
               </ul>
             );
           }
-          
+
           if (p.trim().startsWith("### ")) {
-             return <h3 key={`${i}-${j}`} className="text-lg font-bold text-gray-900 dark:text-white mt-6 mb-2">{p.trim().replace(/^### /, "")}</h3>;
+            return (
+              <h3
+                key={`${i}-${j}`}
+                className="text-lg font-bold text-gray-900 dark:text-white mt-6 mb-2"
+              >
+                {p.trim().replace(/^### /, "")}
+              </h3>
+            );
           }
-          
+
           return (
-            <p key={`${i}-${j}`} className="my-3 text-gray-700 dark:text-[#ccc] leading-relaxed" dangerouslySetInnerHTML={{ __html: formatInline(p) }} />
+            <p
+              key={`${i}-${j}`}
+              className="my-3 text-gray-700 dark:text-[#ccc] leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: formatInline(p) }}
+            />
           );
         });
       })}
@@ -510,90 +539,95 @@ function AdminSupportPage() {
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
-          {activeTab === "documentation" ? (() => {
-            const filteredSections = readmeSections.filter(
-              (sec) =>
-                sec.title.toLowerCase().includes(docSearchQuery.toLowerCase()) ||
-                sec.content.toLowerCase().includes(docSearchQuery.toLowerCase())
-            );
+          {activeTab === "documentation" ? (
+            (() => {
+              const filteredSections = readmeSections.filter(
+                (sec) =>
+                  sec.title.toLowerCase().includes(docSearchQuery.toLowerCase()) ||
+                  sec.content.toLowerCase().includes(docSearchQuery.toLowerCase()),
+              );
 
-            // Get the actual section to display
-            const displaySection = readmeSections.find((s) => s.id === activeDocTopic) || filteredSections[0] || null;
+              // Get the actual section to display
+              const displaySection =
+                readmeSections.find((s) => s.id === activeDocTopic) || filteredSections[0] || null;
 
-            return (
-              <div className="flex h-full">
-                {/* Sidebar topics */}
-                <div className="w-64 border-r border-gray-200 dark:border-[#333] flex flex-col shrink-0">
-                  <div className="p-3 border-b border-gray-200 dark:border-[#333]">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search documentation..."
-                        value={docSearchQuery}
-                        onChange={(e) => setDocSearchQuery(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 bg-gray-100 dark:bg-[#1a1a1a] border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-[#f97316] dark:focus:border-[#f97316] rounded-md text-[12px] text-gray-900 dark:text-white outline-none transition-all"
-                      />
+              return (
+                <div className="flex h-full">
+                  {/* Sidebar topics */}
+                  <div className="w-64 border-r border-gray-200 dark:border-[#333] flex flex-col shrink-0">
+                    <div className="p-3 border-b border-gray-200 dark:border-[#333]">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search documentation..."
+                          value={docSearchQuery}
+                          onChange={(e) => setDocSearchQuery(e.target.value)}
+                          className="w-full pl-8 pr-3 py-1.5 bg-gray-100 dark:bg-[#1a1a1a] border-transparent focus:bg-white dark:focus:bg-[#111] focus:border-[#f97316] dark:focus:border-[#f97316] rounded-md text-[12px] text-gray-900 dark:text-white outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                      {filteredSections.map((sec) => (
+                        <button
+                          key={sec.id}
+                          onClick={() => setActiveDocTopic(sec.id)}
+                          className={`w-full text-left px-4 py-3 text-[13px] transition-colors border-l-[3px] ${
+                            displaySection?.id === sec.id
+                              ? "border-[#f97316] bg-[#f97316]/10 text-[#f97316]"
+                              : "border-transparent text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#1a1a1a]"
+                          }`}
+                        >
+                          <div
+                            className={`font-medium ${displaySection?.id === sec.id ? "text-[#f97316]" : "text-gray-800 dark:text-[#ddd]"}`}
+                          >
+                            {sec.title}
+                          </div>
+                          <div className="mt-1 flex items-center gap-1">
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
+                              <Tag className="h-2.5 w-2.5" />
+                              Admin Docs
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                      {filteredSections.length === 0 && (
+                        <div className="p-4 text-center text-[12px] text-gray-500">
+                          No articles found.
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {filteredSections.map((sec) => (
-                      <button
-                        key={sec.id}
-                        onClick={() => setActiveDocTopic(sec.id)}
-                        className={`w-full text-left px-4 py-3 text-[13px] transition-colors border-l-[3px] ${
-                          (displaySection?.id === sec.id)
-                            ? "border-[#f97316] bg-[#f97316]/10 text-[#f97316]"
-                            : "border-transparent text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#1a1a1a]"
-                        }`}
-                      >
-                        <div className={`font-medium ${displaySection?.id === sec.id ? "text-[#f97316]" : "text-gray-800 dark:text-[#ddd]"}`}>
-                          {sec.title}
+                  {/* Content area */}
+                  <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                    {displaySection ? (
+                      <div className="max-w-3xl mx-auto">
+                        <div className="mb-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
+                              <Tag className="h-3 w-3" />
+                              Admin Docs
+                            </span>
+                          </div>
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <BookOpen className="h-6 w-6 text-[#f97316]" />
+                            {displaySection.title}
+                          </h2>
                         </div>
-                        <div className="mt-1 flex items-center gap-1">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
-                            <Tag className="h-2.5 w-2.5" />
-                            Admin Docs
-                          </span>
+                        <div className="text-[13px]">
+                          <SimpleMarkdownRenderer text={displaySection.content || ""} />
                         </div>
-                      </button>
-                    ))}
-                    {filteredSections.length === 0 && (
-                      <div className="p-4 text-center text-[12px] text-gray-500">
-                        No articles found.
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        No documentation available.
                       </div>
                     )}
                   </div>
                 </div>
-                {/* Content area */}
-                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-                  {displaySection ? (
-                    <div className="max-w-3xl mx-auto">
-                      <div className="mb-6">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase tracking-wider">
-                            <Tag className="h-3 w-3" />
-                            Admin Docs
-                          </span>
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          <BookOpen className="h-6 w-6 text-[#f97316]" />
-                          {displaySection.title}
-                        </h2>
-                      </div>
-                      <div className="text-[13px]">
-                        <SimpleMarkdownRenderer text={displaySection.content || ""} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      No documentation available.
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })() : isLoading ? (
+              );
+            })()
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-[#f97316]" />
             </div>
