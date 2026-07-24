@@ -70,6 +70,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/edi
       pageId: search.pageId as string | undefined,
       templateId: search.templateId as string | undefined,
       parentId: search.parentId as string | undefined,
+      slug: search.slug as string | undefined,
     };
   },
   component: PageBuilder,
@@ -113,7 +114,7 @@ function makeBlankPage() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
-  const { pageId, templateId, parentId } = Route.useSearch();
+  const { pageId, templateId, parentId, slug } = Route.useSearch();
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const workspace_id = activeWorkspace?.id;
@@ -129,9 +130,9 @@ function PageBuilder() {
     setActivePageId(pageId || null);
     setIsInitialized(false);
     if (!pageId && !templateId) {
-      setEditorState({ ...makeBlankPage(), parent_id: parentId || null });
+      setEditorState({ ...makeBlankPage(), parent_id: parentId || null, slug: slug || "" });
     }
-  }, [pageId, templateId, parentId]);
+  }, [pageId, templateId, parentId, slug]);
 
   // ── Fetch: individual page when activePageId changes ──────────────────────
   const { data: pageData, isLoading: isLoadingPage } = useQuery({
@@ -187,7 +188,7 @@ function PageBuilder() {
       if (template) {
         setEditorState({
           id: null,
-          slug: "",
+          slug: slug || "",
           title: template.title,
           description: template.pageDescription,
           themeColor: template.themeColor,

@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
@@ -109,11 +111,43 @@ function PageBuilderGallery() {
         return <Users className="w-5 h-5 text-purple-500" />;
       case "Sales":
         return <HandCoins className="w-5 h-5 text-emerald-500" />;
-      case "Non-Profit":
-        return <HandCoins className="w-5 h-5 text-amber-500" />;
+      case "Community":
+        return <Users className="w-5 h-5 text-purple-500" />;
       default:
-        return <LayoutTemplate className="w-5 h-5 text-slate-500" />;
+        return <Globe className="w-5 h-5 text-gray-500" />;
     }
+  };
+
+  const [slugPromptOpen, setSlugPromptOpen] = useState(false);
+  const [newSlug, setNewSlug] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
+  const handleStartProject = (templateId: string | null) => {
+    if (!canCreatePageBuilder()) {
+      toast.error("Page Builder limit reached. Please upgrade your plan to create more pages.");
+      return;
+    }
+    setSelectedTemplate(templateId);
+    setNewSlug("");
+    setSlugPromptOpen(true);
+  };
+
+  const submitSlugAndContinue = () => {
+    if (!newSlug.trim()) {
+      toast.error("Please enter a slug.");
+      return;
+    }
+    const slugRegex = /^[a-z0-9-]+$/;
+    if (!slugRegex.test(newSlug)) {
+      toast.error("Slug can only contain lowercase letters, numbers, and hyphens.");
+      return;
+    }
+
+    setSlugPromptOpen(false);
+    navigate({
+      to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
+      search: selectedTemplate ? { templateId: selectedTemplate, slug: newSlug } : { slug: newSlug },
+    });
   };
 
   if (limitsLoading) return null;

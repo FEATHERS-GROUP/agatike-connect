@@ -18,6 +18,7 @@ import {
   Plus,
 } from "lucide-react";
 import { PreviewComponent } from "./PreviewComponent";
+import { InventorySelector } from "./InventorySelector";
 
 export function ComponentBlock({
   comp,
@@ -492,6 +493,13 @@ export function ComponentBlock({
                   </Button>
                 </div>
               </div>
+              <InventorySelector
+                type={comp.type}
+                workspace_id={workspace_id}
+                comp={comp}
+                updateComponent={updateComponent}
+                idx={idx}
+              />
             </div>
           )}
 
