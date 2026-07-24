@@ -65,18 +65,21 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Size</Label>
                 <div className="flex flex-wrap gap-2">
-                  {product.available_sizes.map((size: string) => (
-                    <Button
-                      key={size}
-                      type="button"
-                      variant={selectedSize === size ? "default" : "outline"}
-                      className="h-9 px-4 rounded-full font-medium"
-                      style={selectedSize === size && themeColor ? { backgroundColor: themeColor } : {}}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      {size}
-                    </Button>
-                  ))}
+                  {product.available_sizes.map((sizeObj: any, idx: number) => {
+                    const sizeName = typeof sizeObj === 'string' ? sizeObj : sizeObj.name;
+                    return (
+                      <Button
+                        key={sizeName || idx}
+                        type="button"
+                        variant={selectedSize === sizeName ? "default" : "outline"}
+                        className="h-9 px-4 rounded-full font-medium"
+                        style={selectedSize === sizeName && themeColor ? { backgroundColor: themeColor } : {}}
+                        onClick={() => setSelectedSize(sizeName)}
+                      >
+                        {sizeName}
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -85,21 +88,25 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">Color</Label>
                 <div className="flex flex-wrap gap-2">
-                  {product.available_colors.map((color: string) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
-                        selectedColor === color ? "border-primary scale-110 shadow-sm" : "border-transparent shadow-sm hover:scale-105"
-                      }`}
-                      style={{ backgroundColor: color }}
-                    >
-                      {selectedColor === color && (
-                        <div className="w-2 h-2 bg-white rounded-full mix-blend-difference" />
-                      )}
-                    </button>
-                  ))}
+                  {product.available_colors.map((colorObj: any, idx: number) => {
+                    const colorValue = typeof colorObj === 'string' ? colorObj : colorObj.hex || colorObj.color || colorObj.name;
+                    const colorKey = typeof colorObj === 'string' ? colorObj : colorObj.name || colorValue || idx.toString();
+                    return (
+                      <button
+                        key={colorKey}
+                        type="button"
+                        onClick={() => setSelectedColor(colorValue)}
+                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
+                          selectedColor === colorValue ? "border-primary scale-110 shadow-sm" : "border-transparent shadow-sm hover:scale-105"
+                        }`}
+                        style={{ backgroundColor: colorValue }}
+                      >
+                        {selectedColor === colorValue && (
+                          <div className="w-2 h-2 bg-white rounded-full mix-blend-difference" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
