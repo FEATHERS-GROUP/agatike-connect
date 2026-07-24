@@ -75,6 +75,7 @@ const GET_WORKSPACE_PRODUCTS = `
 export const getWorkspaceProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = (ctx.data as any).data || ctx.data;
   const { workspace_id } = payload as { workspace_id: string };
+  if (!workspace_id) return [];
   const data = await hasuraRequest<{ products: any[] }>(GET_WORKSPACE_PRODUCTS, { workspace_id });
   return data.products || [];
 });

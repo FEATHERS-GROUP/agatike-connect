@@ -33,11 +33,12 @@ export async function hasuraRequest<T = any>(
     if (slackUrl) {
       try {
         const errorMessages = json.errors.map((e: any) => e.message || "Unknown error").join("\n");
+        const envLabel = process.env.NODE_ENV === "production" ? "[PROD]" : "[DEV]";
         await fetch(slackUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            text: `🚨 *Agatike API GraphQL Error*\n*Errors:*\n${errorMessages}\n\n*Variables:*\n\`\`\`json\n${JSON.stringify(variables, null, 2)}\n\`\`\`\n\n*Failing Query:*\n\`\`\`graphql\n${query}\n\`\`\``,
+            text: `🚨 *Agatike API GraphQL Error ${envLabel}*\n*Errors:*\n${errorMessages}\n\n*Variables:*\n\`\`\`json\n${JSON.stringify(variables, null, 2)}\n\`\`\`\n\n*Failing Query:*\n\`\`\`graphql\n${query}\n\`\`\``,
           }),
         });
       } catch (err) {

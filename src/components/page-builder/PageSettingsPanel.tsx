@@ -23,6 +23,11 @@ import {
   UploadCloud,
   FileText,
   DollarSign,
+  Package,
+  CalendarDays,
+  Building,
+  Film,
+  MapPin,
 } from "lucide-react";
 
 export function PageSettingsPanel({
@@ -71,6 +76,30 @@ export function PageSettingsPanel({
                   ? "bg-primary/10 text-primary hover:bg-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
               }`}
+              onClick={() => addComponent(item.type)}
+            >
+              <item.icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{item.label}</span>
+            </Button>
+          ))}
+        </div>
+
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mt-5 mb-3 flex items-center gap-2">
+          <Package className="w-3 h-3" />
+          Inventory & Sales
+        </h2>
+        <div className="grid grid-cols-2 gap-1">
+          {[
+            { type: "product_list", icon: Package, label: "Products" },
+            { type: "event_list", icon: CalendarDays, label: "Events" },
+            { type: "space_list", icon: Building, label: "Spaces" },
+            { type: "venue_list", icon: MapPin, label: "Venues" },
+            { type: "movie_list", icon: Film, label: "Movies" },
+          ].map((item) => (
+            <Button
+              key={item.type}
+              variant="ghost"
+              className="justify-start gap-2 h-8 px-2.5 text-[11px] font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
               onClick={() => addComponent(item.type)}
             >
               <item.icon className="h-3.5 w-3.5 shrink-0" />

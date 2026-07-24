@@ -435,6 +435,66 @@ export function ComponentBlock({
             </div>
           )}
 
+          {/* INVENTORY LISTS */}
+          {["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(
+            comp.type,
+          ) && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-[2] space-y-1">
+                  <Label className="text-xs">Section Title</Label>
+                  <Input
+                    value={comp.title || ""}
+                    onChange={(e) => updateComponent(idx, "title", e.target.value)}
+                    placeholder="e.g. Featured Items"
+                    className="bg-background"
+                  />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <Label className="text-xs">Layout</Label>
+                  <Select
+                    value={comp.layout || "grid"}
+                    onValueChange={(val) => updateComponent(idx, "layout", val)}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">Grid (Cards)</SelectItem>
+                      <SelectItem value="list">List (Rows)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/40">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-semibold">Allow Selling / Booking</Label>
+                  <p className="text-[10px] text-muted-foreground">
+                    Show "Buy" or "Book" buttons next to items.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={comp.allowSelling !== false ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={() => updateComponent(idx, "allowSelling", true)}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={comp.allowSelling === false ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={() => updateComponent(idx, "allowSelling", false)}
+                  >
+                    No (View Only)
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* QR CODE */}
           {comp.type === "qr_code" && (
             <div className="space-y-4">

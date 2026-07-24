@@ -221,7 +221,9 @@ function RootComponent() {
     location.pathname.startsWith("/dashboard") ||
     location.pathname === "/signin" ||
     location.pathname === "/signup" ||
-    location.pathname === "/onboarding",
+    location.pathname === "/onboarding" ||
+    (location.search as any)?.embed === "true" ||
+    (location.search as any)?.embed === true,
   );
 
   return (

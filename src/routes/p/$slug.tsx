@@ -2,7 +2,12 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspacePageBySlug } from "@/api/workspace-pages";
 import { getWorkspaceForms } from "@/api/rsvps";
-import { Loader2, ArrowRight } from "lucide-react";
+import { getWorkspaceProducts } from "@/api/products";
+import { getWorkspaceEvents } from "@/api/events";
+import { getSpaces } from "@/api/spaces";
+import { getWorkspaceVenueProjects } from "@/api/venues";
+import { getMovies } from "@/api/cinema_management";
+import { Loader2, ArrowRight, Package, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
@@ -59,6 +64,46 @@ function PublicCompanyPage() {
     queryFn: () => getWorkspaceForms({ data: { workspace_id } } as any),
     enabled: !!workspace_id,
   });
+
+  const components = page?.components || [];
+  
+  const hasProducts = components.some((c: any) => c.type === "product_list");
+  const hasEvents = components.some((c: any) => c.type === "event_list");
+  const hasSpaces = components.some((c: any) => c.type === "space_list");
+  const hasVenues = components.some((c: any) => c.type === "venue_list");
+  const hasMovies = components.some((c: any) => c.type === "movie_list");
+
+  const { data: products = [] } = useQuery({
+    queryKey: ["workspace-products", workspace_id],
+    queryFn: () => getWorkspaceProducts({ data: { workspace_id } } as any),
+    enabled: !!workspace_id && hasProducts,
+  });
+
+  const { data: events = [] } = useQuery({
+    queryKey: ["workspace-events", workspace_id],
+    queryFn: () => getWorkspaceEvents({ data: { workspace_id } } as any),
+    enabled: !!workspace_id && hasEvents,
+  });
+
+  const { data: spaces = [] } = useQuery({
+    queryKey: ["workspace-spaces", workspace_id],
+    queryFn: () => getSpaces({ data: { workspace_id } } as any),
+    enabled: !!workspace_id && hasSpaces,
+  });
+
+  const { data: venues = [] } = useQuery({
+    queryKey: ["workspace-venues", workspace_id],
+    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id } } as any),
+    enabled: !!workspace_id && hasVenues,
+  });
+
+  const { data: movies = [] } = useQuery({
+    queryKey: ["workspace-movies", workspace_id],
+    queryFn: () => getMovies({ data: { workspace_id } } as any),
+    enabled: !!workspace_id && hasMovies,
+  });
+
+  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
 
   const { mutate: doPayment, isPending: isProcessingPayment } = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -186,7 +231,7 @@ function PublicCompanyPage() {
     );
   }
 
-  const { title, description, header_image_url, logo_url, theme_color, components } = page;
+  const { title, description, header_image_url, logo_url, theme_color } = page;
 
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
   const logoPosition = settingsBlock?.logoPosition || "hero";
@@ -1033,6 +1078,86 @@ function PublicCompanyPage() {
                   }
                 }
 
+                if (["product_list", "event_list", "space_list", "venue_list", "movie_list"].includes(comp.type)) {
+                  const isGrid = comp.layout !== "list";
+                  let items: any[] = [];
+                  let itemType = "";
+                  let linkPrefix = "";
+                  let btnLabel = "";
+
+                  if (comp.type === "product_list") {
+                    items = products;
+                    itemType = "Product";
+                    btnLabel = "Buy";
+                  } else if (comp.type === "event_list") {
+                    items = events;
+                    itemType = "Event";
+                    btnLabel = "Get Tickets";
+                    linkPrefix = "/events/";
+                  } else if (comp.type === "space_list") {
+                    items = spaces;
+                    itemType = "Space";
+                    btnLabel = "Book Space";
+                    linkPrefix = "/spaces/checkout/";
+                  } else if (comp.type === "venue_list") {
+                    items = venues;
+                    itemType = "Venue";
+                    btnLabel = "Book Venue";
+                    linkPrefix = "/venues/";
+                  } else if (comp.type === "movie_list") {
+                    items = movies;
+                    itemType = "Movie";
+                    btnLabel = "Book Tickets";
+                    linkPrefix = "/movies/";
+                  }
+
+                  if (items.length === 0) return null;
+
+                  return (
+                    <div key={comp.id} className="py-8 w-full max-w-6xl mx-auto px-4">
+                      {comp.title && <h3 className="text-2xl font-bold text-center mb-8">{comp.title}</h3>}
+                      <div className={`grid gap-6 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 max-w-4xl mx-auto"}`}>
+                        {items.map((item: any) => (
+                          <div key={item.id} className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-row"} group`}>
+                            <div className={`${isGrid ? "w-full aspect-[4/3]" : "w-40 md:w-48 h-full min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}>
+                              {(item.image_url || item.cover || item.cover_image || item.poster_url || item.images?.[0]) ? (
+                                <img src={item.image_url || item.cover || item.cover_image || item.poster_url || item.images?.[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center opacity-50">
+                                  <Package className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-5 flex-1 flex flex-col min-w-0">
+                              <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">{item.name || item.title}</h4>
+                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{item.description || item.synopsis || "No details provided."}</p>
+                              <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
+                                <span className="font-semibold truncate mr-2">
+                                  {item.price ? `${item.price} RWF` : itemType === "Product" ? "" : "Check Availability"}
+                                </span>
+                                {comp.allowSelling !== false && (
+                                  comp.type === "product_list" ? (
+                                    <Button size="sm" className="rounded-full shrink-0" style={{ background: theme_color }} onClick={() => {
+                                      setSelectedPaymentBlock({ ...comp, amount: item.price, label: `Buy ${item.name || item.title}` });
+                                      setPaymentModalOpen(true);
+                                    }}>
+                                      {btnLabel}
+                                    </Button>
+                                  ) : (
+                                    <Button size="sm" className="rounded-full shrink-0" style={{ background: theme_color }} onClick={() => setEmbedUrl(`${linkPrefix}${item.id}?embed=true`)}>
+                                      {btnLabel}
+                                    </Button>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
                 return null;
               };
 
@@ -1069,6 +1194,23 @@ function PublicCompanyPage() {
             </a>
           </div>
         </footer>
+
+        <Dialog open={!!embedUrl} onOpenChange={(open) => !open && setEmbedUrl(null)}>
+          <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 border-0 bg-background shadow-2xl rounded-xl overflow-hidden flex flex-col">
+            <DialogTitle className="sr-only">Checkout</DialogTitle>
+            <div className="h-12 border-b border-border/60 bg-secondary/50 flex items-center justify-between px-4 shrink-0">
+              <span className="font-semibold text-sm">Checkout Flow</span>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setEmbedUrl(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex-1 w-full bg-background relative">
+              {embedUrl && (
+                <iframe src={embedUrl} className="absolute inset-0 w-full h-full border-0" />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
