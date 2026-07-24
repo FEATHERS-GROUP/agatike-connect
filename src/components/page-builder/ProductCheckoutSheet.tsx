@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
-interface ProductCheckoutModalProps {
+interface ProductCheckoutSheetProps {
   product: any;
   isOpen: boolean;
   onClose: () => void;
-  onProceedToPayment: (totalAmount: number, details: any) => void;
   themeColor?: string;
 }
 
-export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPayment, themeColor }: ProductCheckoutModalProps) {
+export function ProductCheckoutSheet({ product, isOpen, onClose, themeColor }: ProductCheckoutSheetProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const navigate = useNavigate();
 
   // Reset state when a new product is selected
   useEffect(() => {
@@ -35,12 +35,25 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
   const canProceed = (!hasSizes || selectedSize) && (!hasColors || selectedColor);
   const total = (product.price || 0) * quantity;
 
+  const handleProceed = () => {
+    // Navigate to dedicated checkout route on the current subdomain
+    navigate({
+      to: `/checkout/product/${product.id}`,
+      search: {
+        qty: quantity,
+        size: selectedSize || undefined,
+        color: selectedColor || undefined,
+      },
+    });
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-background rounded-2xl overflow-hidden p-0 border-0 shadow-2xl">
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent className="sm:max-w-md bg-background overflow-y-auto p-0 border-l">
         {/* Header Image */}
         {product.image_url && (
-          <div className="w-full h-48 bg-secondary relative">
+          <div className="w-full h-56 bg-secondary relative">
             <img 
               src={product.image_url} 
               alt={product.name} 
@@ -50,19 +63,19 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
           </div>
         )}
         
-        <div className={`p-6 ${product.image_url ? '-mt-12 relative z-10' : ''}`}>
-          <DialogHeader className="mb-6 text-left">
-            <DialogTitle className="text-2xl font-bold line-clamp-2 leading-tight">
+        <div className={`p-6 ${product.image_url ? '-mt-16 relative z-10' : ''}`}>
+          <SheetHeader className="mb-6 text-left">
+            <SheetTitle className="text-2xl font-bold leading-tight">
               {product.name}
-            </DialogTitle>
-            <DialogDescription className="text-primary font-semibold text-lg mt-1">
+            </SheetTitle>
+            <SheetDescription className="text-primary font-semibold text-lg mt-1">
               RWF {product.price?.toLocaleString()}
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="space-y-5">
+          <div className="space-y-6">
             {hasSizes && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-sm font-semibold">Size</Label>
                 <div className="flex flex-wrap gap-2">
                   {product.available_sizes.map((sizeObj: any, idx: number) => {
@@ -72,7 +85,7 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
                         key={sizeName || idx}
                         type="button"
                         variant={selectedSize === sizeName ? "default" : "outline"}
-                        className="h-9 px-4 rounded-full font-medium"
+                        className="h-10 px-5 rounded-full font-medium"
                         style={selectedSize === sizeName && themeColor ? { backgroundColor: themeColor } : {}}
                         onClick={() => setSelectedSize(sizeName)}
                       >
@@ -85,9 +98,9 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
             )}
 
             {hasColors && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-sm font-semibold">Color</Label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {product.available_colors.map((colorObj: any, idx: number) => {
                     const colorValue = typeof colorObj === 'string' ? colorObj : colorObj.hex || colorObj.color || colorObj.name;
                     const colorKey = typeof colorObj === 'string' ? colorObj : colorObj.name || colorValue || idx.toString();
@@ -96,13 +109,13 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
                         key={colorKey}
                         type="button"
                         onClick={() => setSelectedColor(colorValue)}
-                        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all ${
-                          selectedColor === colorValue ? "border-primary scale-110 shadow-sm" : "border-transparent shadow-sm hover:scale-105"
+                        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all ${
+                          selectedColor === colorValue ? "border-primary scale-110 shadow-md" : "border-transparent shadow hover:scale-105"
                         }`}
                         style={{ backgroundColor: colorValue }}
                       >
                         {selectedColor === colorValue && (
-                          <div className="w-2 h-2 bg-white rounded-full mix-blend-difference" />
+                          <div className="w-3 h-3 bg-white rounded-full mix-blend-difference" />
                         )}
                       </button>
                     );
@@ -111,28 +124,28 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
               </div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label className="text-sm font-semibold">Quantity</Label>
               <div className="flex items-center gap-4">
-                <div className="flex items-center border border-border/60 rounded-full bg-background/50">
+                <div className="flex items-center border border-border/60 rounded-full bg-background/50 h-12 px-1">
                   <button 
                     className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="w-5 h-5" />
                   </button>
-                  <span className="w-8 text-center font-semibold text-sm">{quantity}</span>
+                  <span className="w-10 text-center font-bold text-base">{quantity}</span>
                   <button 
                     className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                     onClick={() => setQuantity(quantity + 1)}
                     disabled={product.stock_limit && quantity >= product.stock_limit}
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-5 h-5" />
                   </button>
                 </div>
                 {product.stock_limit && (
-                  <span className="text-xs text-muted-foreground font-medium">
+                  <span className="text-sm text-muted-foreground font-medium">
                     {product.stock_limit} left in stock
                   </span>
                 )}
@@ -140,29 +153,22 @@ export function ProductCheckoutModal({ product, isOpen, onClose, onProceedToPaym
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-border/40 space-y-4">
+          <div className="mt-10 pt-6 border-t border-border/40 space-y-5">
             <div className="flex justify-between items-center px-1">
-              <span className="text-sm text-muted-foreground font-medium">Total</span>
-              <span className="text-xl font-bold">RWF {total.toLocaleString()}</span>
+              <span className="text-base text-muted-foreground font-medium">Total</span>
+              <span className="text-2xl font-bold">RWF {total.toLocaleString()}</span>
             </div>
             <Button
-              className="w-full h-12 rounded-xl text-md font-bold shadow-sm flex items-center justify-center gap-2"
+              className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
               disabled={!canProceed}
               style={themeColor ? { backgroundColor: themeColor } : {}}
-              onClick={() => {
-                onProceedToPayment(total, {
-                  quantity,
-                  size: selectedSize,
-                  color: selectedColor
-                });
-              }}
+              onClick={handleProceed}
             >
-              <ShoppingBag className="w-5 h-5" />
-              Proceed to Payment
+              Proceed to Checkout
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

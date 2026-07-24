@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useMutation } from "@tanstack/react-query";
 import { PaymentModal } from "@/components/shared/PaymentModal";
-import { ProductCheckoutModal } from "@/components/page-builder/ProductCheckoutModal";
+import { ProductCheckoutSheet } from "@/components/page-builder/ProductCheckoutSheet";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
 import { toast } from "sonner";
 import { Smartphone } from "lucide-react";
@@ -41,7 +41,7 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
 
-  const [productCheckoutModalOpen, setProductCheckoutModalOpen] = useState(false);
+  const [productCheckoutSheetOpen, setProductCheckoutSheetOpen] = useState(false);
   const [selectedProductForCheckout, setSelectedProductForCheckout] = useState<any>(null);
 
   const { data: dbPage, isLoading: isLoadingPage } = useQuery({
@@ -1140,7 +1140,7 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                                     <Button size="sm" className="rounded-full shrink-0" style={{ background: theme_color }} onClick={() => {
                                       setSelectedProductForCheckout(item);
                                       setSelectedPaymentBlock(comp);
-                                      setProductCheckoutModalOpen(true);
+                                      setProductCheckoutSheetOpen(true);
                                     }}>
                                       {btnLabel}
                                     </Button>
@@ -1213,22 +1213,15 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
           </DialogContent>
         </Dialog>
 
-        {/* Product Checkout Modal */}
-        <ProductCheckoutModal
-          product={selectedProductForCheckout}
-          isOpen={productCheckoutModalOpen}
-          onClose={() => setProductCheckoutModalOpen(false)}
-          themeColor={theme_color}
-          onProceedToPayment={(totalAmount, details) => {
-            setProductCheckoutModalOpen(false);
-            setSelectedPaymentBlock({
-              ...selectedPaymentBlock,
-              amount: totalAmount,
-              label: `Buy ${selectedProductForCheckout?.name} (Qty: ${details.quantity}${details.size ? `, Size: ${details.size}` : ''})`,
-            });
-            setPaymentModalOpen(true);
-          }}
-        />
+        {/* Product Checkout Sheet */}
+        {selectedProductForCheckout && (
+          <ProductCheckoutSheet
+            product={selectedProductForCheckout}
+            isOpen={productCheckoutSheetOpen}
+            onClose={() => setProductCheckoutSheetOpen(false)}
+            themeColor={theme_color || undefined}
+          />
+        )}
       </div>
     </>
   );

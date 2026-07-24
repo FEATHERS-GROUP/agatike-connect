@@ -77,6 +77,7 @@ import { Route as DashboardWorkspaceSlugScannerRouteImport } from './routes/dash
 import { Route as DashboardWorkspaceSlugProductsChar38addOnsRouteImport } from './routes/dashboard/$workspaceSlug/products&add-ons'
 import { Route as DashboardWorkspaceSlugMembershipsRouteImport } from './routes/dashboard/$workspaceSlug/memberships'
 import { Route as DashboardWorkspaceSlugCommunityRouteImport } from './routes/dashboard/$workspaceSlug/community'
+import { Route as CheckoutItemTypeItemIdRouteImport } from './routes/checkout/$itemType/$itemId'
 import { Route as InternalControlAdminIndexRouteImport } from './routes/internal/control/admin/index'
 import { Route as DashboardBillingSubscriptionsIndexRouteImport } from './routes/dashboard/billing/subscriptions/index'
 import { Route as DashboardWorkspaceSlugWithdrawalsIndexRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/index'
@@ -565,6 +566,11 @@ const DashboardWorkspaceSlugCommunityRoute =
     path: '/$workspaceSlug/community',
     getParentRoute: () => DashboardRoute,
   } as any)
+const CheckoutItemTypeItemIdRoute = CheckoutItemTypeItemIdRouteImport.update({
+  id: '/checkout/$itemType/$itemId',
+  path: '/checkout/$itemType/$itemId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InternalControlAdminIndexRoute =
   InternalControlAdminIndexRouteImport.update({
     id: '/',
@@ -1443,6 +1449,7 @@ export interface FileRoutesByFullPath {
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/checkout/$itemType/$itemId': typeof CheckoutItemTypeItemIdRoute
   '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
   '/dashboard/$workspaceSlug/memberships': typeof DashboardWorkspaceSlugMembershipsRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
@@ -1650,6 +1657,7 @@ export interface FileRoutesByTo {
   '/buses': typeof BusesIndexRoute
   '/events': typeof EventsIndexRoute
   '/venues': typeof VenuesIndexRoute
+  '/checkout/$itemType/$itemId': typeof CheckoutItemTypeItemIdRoute
   '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
   '/dashboard/$workspaceSlug/memberships': typeof DashboardWorkspaceSlugMembershipsRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
@@ -1854,6 +1862,7 @@ export interface FileRoutesById {
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/checkout/$itemType/$itemId': typeof CheckoutItemTypeItemIdRoute
   '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
   '/dashboard/$workspaceSlug/memberships': typeof DashboardWorkspaceSlugMembershipsRoute
   '/dashboard/$workspaceSlug/products&add-ons': typeof DashboardWorkspaceSlugProductsChar38addOnsRoute
@@ -2063,6 +2072,7 @@ export interface FileRouteTypes {
     | '/buses/'
     | '/events/'
     | '/venues/'
+    | '/checkout/$itemType/$itemId'
     | '/dashboard/$workspaceSlug/community'
     | '/dashboard/$workspaceSlug/memberships'
     | '/dashboard/$workspaceSlug/products&add-ons'
@@ -2270,6 +2280,7 @@ export interface FileRouteTypes {
     | '/buses'
     | '/events'
     | '/venues'
+    | '/checkout/$itemType/$itemId'
     | '/dashboard/$workspaceSlug/community'
     | '/dashboard/$workspaceSlug/memberships'
     | '/dashboard/$workspaceSlug/products&add-ons'
@@ -2473,6 +2484,7 @@ export interface FileRouteTypes {
     | '/buses/'
     | '/events/'
     | '/venues/'
+    | '/checkout/$itemType/$itemId'
     | '/dashboard/$workspaceSlug/community'
     | '/dashboard/$workspaceSlug/memberships'
     | '/dashboard/$workspaceSlug/products&add-ons'
@@ -2674,6 +2686,7 @@ export interface RootRouteChildren {
   BusesIndexRoute: typeof BusesIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
   VenuesIndexRoute: typeof VenuesIndexRoute
+  CheckoutItemTypeItemIdRoute: typeof CheckoutItemTypeItemIdRoute
   FEventIdReviewRoute: typeof FEventIdReviewRoute
   InternalControlAdminRoute: typeof InternalControlAdminRouteWithChildren
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
@@ -3162,6 +3175,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/community'
       preLoaderRoute: typeof DashboardWorkspaceSlugCommunityRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/checkout/$itemType/$itemId': {
+      id: '/checkout/$itemType/$itemId'
+      path: '/checkout/$itemType/$itemId'
+      fullPath: '/checkout/$itemType/$itemId'
+      preLoaderRoute: typeof CheckoutItemTypeItemIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/internal/control/admin/': {
       id: '/internal/control/admin/'
@@ -4660,6 +4680,7 @@ const rootRouteChildren: RootRouteChildren = {
   BusesIndexRoute: BusesIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
   VenuesIndexRoute: VenuesIndexRoute,
+  CheckoutItemTypeItemIdRoute: CheckoutItemTypeItemIdRoute,
   FEventIdReviewRoute: FEventIdReviewRoute,
   InternalControlAdminRoute: InternalControlAdminRouteWithChildren,
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
