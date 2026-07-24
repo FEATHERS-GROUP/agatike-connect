@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getWorkspacePageUrl } from "@/lib/utils";
 import {
   Loader2,
   Plus,
@@ -283,7 +284,7 @@ function PageBuilder() {
   };
 
   const handleCopyLink = (slug: string) => {
-    const url = `${window.location.origin}/p/${slug}`;
+    const url = getWorkspacePageUrl(slug);
     navigator.clipboard
       .writeText(url)
       .then(() => {

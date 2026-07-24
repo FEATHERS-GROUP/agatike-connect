@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAllWorkspacePages } from "@/api/workspace-pages";
+import { getAllWorkspacePages, checkWorkspacePageSlugAvailability } from "@/api/workspace-pages";
 import { updateWorkspacePageFolder } from "@/api/workspace-pages";
 import { FolderManager } from "@/components/ui/FolderManager";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
+import { getWorkspacePageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -26,8 +27,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { SlugPromptModal } from "@/components/page-builder/SlugPromptModal";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 
@@ -88,7 +88,7 @@ function PageBuilderGallery() {
   );
 
   const handleCopyLink = (slug: string) => {
-    const url = `${window.location.origin}/p/${slug}`;
+    const url = getWorkspacePageUrl(slug);
     navigator.clipboard
       .writeText(url)
       .then(() => {
@@ -119,7 +119,6 @@ function PageBuilderGallery() {
   };
 
   const [slugPromptOpen, setSlugPromptOpen] = useState(false);
-  const [newSlug, setNewSlug] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const handleStartProject = (templateId: string | null) => {
@@ -128,26 +127,7 @@ function PageBuilderGallery() {
       return;
     }
     setSelectedTemplate(templateId);
-    setNewSlug("");
     setSlugPromptOpen(true);
-  };
-
-  const submitSlugAndContinue = () => {
-    if (!newSlug.trim()) {
-      toast.error("Please enter a slug.");
-      return;
-    }
-    const slugRegex = /^[a-z0-9-]+$/;
-    if (!slugRegex.test(newSlug)) {
-      toast.error("Slug can only contain lowercase letters, numbers, and hyphens.");
-      return;
-    }
-
-    setSlugPromptOpen(false);
-    navigate({
-      to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
-      search: selectedTemplate ? { templateId: selectedTemplate, slug: newSlug } : { slug: newSlug },
-    });
   };
 
   if (limitsLoading) return null;
@@ -188,15 +168,7 @@ function PageBuilderGallery() {
                 {/* Blank Page Card */}
                 <div
                   className="group relative flex flex-col items-center justify-center border-2 border-dashed border-border/60 rounded-2xl p-8 bg-card hover:bg-secondary/20 hover:border-primary/50 transition-colors cursor-pointer text-center h-64"
-                  onClick={() => {
-                    if (!canCreatePageBuilder()) {
-                      toast.error(
-                        "Page Builder limit reached. Please upgrade your plan to create more pages.",
-                      );
-                      return;
-                    }
-                    navigate({ to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor` });
-                  }}
+                  onClick={() => handleStartProject(null)}
                 >
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Plus className="w-6 h-6 text-primary" />
@@ -212,18 +184,7 @@ function PageBuilderGallery() {
                   <div
                     key={template.id}
                     className="group border border-border/60 rounded-2xl overflow-hidden bg-card hover:shadow-md transition-all cursor-pointer flex flex-col h-64"
-                    onClick={() => {
-                      if (!canCreatePageBuilder()) {
-                        toast.error(
-                          "Page Builder limit reached. Please upgrade your plan to create more pages.",
-                        );
-                        return;
-                      }
-                      navigate({
-                        to: `/dashboard/${activeWorkspace?.slug}/page-builder/editor`,
-                        search: { templateId: template.id },
-                      });
-                    }}
+                    onClick={() => handleStartProject(template.id)}
                   >
                     <div className="h-32 bg-secondary flex items-center justify-center relative overflow-hidden">
                       <img
@@ -402,7 +363,7 @@ function PageBuilderGallery() {
                                           asChild
                                         >
                                           <a
-                                            href={`/p/${page.slug}`}
+                                            href={getWorkspacePageUrl(page.slug)}
                                             target="_blank"
                                             rel="noreferrer"
                                           >
@@ -426,6 +387,13 @@ function PageBuilderGallery() {
           </Tabs>
         </div>
       </div>
+      
+      <SlugPromptModal
+        open={slugPromptOpen}
+        setOpen={setSlugPromptOpen}
+        workspaceSlug={activeWorkspace?.slug}
+        selectedTemplate={selectedTemplate}
+      />
     </div>
   );
 }
