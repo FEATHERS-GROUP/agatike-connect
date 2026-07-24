@@ -228,7 +228,7 @@ function PageBuilder() {
         setActivePageId(result.id);
         navigate({
           from: Route.fullPath,
-          search: { pageId: result.id, templateId: undefined },
+          search: (prev) => ({ ...prev, pageId: result.id, templateId: undefined }),
           replace: true,
         });
       }
