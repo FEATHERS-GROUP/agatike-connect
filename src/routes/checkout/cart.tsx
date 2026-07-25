@@ -2,11 +2,11 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getWorkspacePageBySlug } from "@/api/workspace-pages";
-import { getProduct, createProductOrders, checkProductOrderStatus } from "@/api/products";
+import { createProductOrders, checkProductOrderStatus } from "@/api/products";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle } from "lucide-react";
+import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle, ShoppingCart } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import {
@@ -16,16 +16,16 @@ import {
 } from "@/api/pawapay";
 import { toast } from "sonner";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useCart } from "@/contexts/CartContext";
 
-export const Route = createFileRoute("/checkout/$itemType/$itemId")({
-  component: CheckoutPage,
+export const Route = createFileRoute("/checkout/cart")({
+  component: CartCheckoutPage,
 });
 
-function CheckoutPage() {
-  const { itemType, itemId } = Route.useParams();
-  const searchParams = Route.useSearch() as any;
+function CartCheckoutPage() {
   const router = useRouter();
   const { user } = useUserAuth();
+  const { items, cartTotal, clearCart } = useCart();
 
   const [subdomainSlug, setSubdomainSlug] = useState<string | null>(null);
   const [buyerName, setBuyerName] = useState("");
@@ -64,59 +64,48 @@ function CheckoutPage() {
   const workspaceId = pageData?.workspace_id;
   const logoUrl = pageData?.logo_url;
 
-  // 2. Fetch Real Product
-  const { data: product, isLoading: isProductLoading } = useQuery({
-    queryKey: ["product", itemId],
-    queryFn: () => getProduct({ data: { id: itemId } } as any),
-    enabled: itemType === "product" && !!itemId,
-  });
-
-  const qty = parseInt(searchParams.qty || "1");
-  const size = searchParams.size;
-  const color = searchParams.color;
-
-  const price = product?.price || 0;
-  const total = price * qty;
-
   // 3. Payment Processing Mutation
   const paymentMutation = useMutation({
     mutationFn: async (paymentDetails: any) => {
-      if (!workspaceId || !product) throw new Error("Missing required data for checkout.");
+      if (!workspaceId || items.length === 0) throw new Error("Missing required data for checkout.");
 
       const isPawaPay = paymentDetails?.network && paymentDetails?.phone;
       if (!isPawaPay) throw new Error("Currently only mobile money is supported.");
 
       const newBookingRef = crypto.randomUUID();
 
-      // Create Product Order (Pending)
-      const variantString = [size, color].filter(Boolean).join(" - ");
-      const encodedSize = variantString
-        ? `${variantString} | email:${buyerEmail}`
-        : `email:${buyerEmail}`;
-      const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
+      // Map cart items to Product Order objects
+      const orderObjects = items.map(item => {
+         const variantString = [item.size, item.color].filter(Boolean).join(" - ");
+         const encodedSize = variantString
+           ? `${variantString} | email:${buyerEmail}`
+           : `email:${buyerEmail}`;
+         const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
+         
+         return {
+            product_id: item.product.id,
+            qty: item.qty.toString(),
+            status: "Pending Payment",
+            amount_paid: (item.product.price || 0) * item.qty,
+            phone: buyerPhone,
+            decrptions: newBookingRef, // Shared booking ref links them!
+            qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-0`,
+            ticket_id: null,
+            buyer_id: user?.id || null,
+            picked: false,
+            size: encodedSize,
+         };
+      });
 
+      // Create all Product Orders at once (Pending)
       await createProductOrders({
         data: {
-          objects: [
-            {
-              product_id: product.id,
-              qty: qty.toString(),
-              status: "Pending Payment",
-              amount_paid: total,
-              phone: buyerPhone,
-              decrptions: newBookingRef, // Maps to booking_ref in webhook
-              qr_code_string: `${qrBase}-${product.id.substring(0, 4).toUpperCase()}-0`,
-              ticket_id: null,
-              buyer_id: user?.id || null, // Guest logic
-              picked: false,
-              size: encodedSize,
-            },
-          ],
+          objects: orderObjects,
         },
       } as any);
 
-      // Initiate PawaPay
-      const baseAmount = total;
+      // Initiate PawaPay with total sum
+      const baseAmount = cartTotal;
       const finalAmount = paymentDetails.convertedAmount || baseAmount;
       setActualCharge(finalAmount);
 
@@ -131,7 +120,7 @@ function CheckoutPage() {
           type: "page_builder_checkout",
           referenceId: newBookingRef,
           workspaceId: workspaceId,
-          reason: `Buy ${product.name} (Qty: ${qty})`,
+          reason: `Buy ${items.length} items`,
           shortfall: paymentDetails.shortfall || 0,
         },
       } as any);
@@ -166,9 +155,9 @@ function CheckoutPage() {
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         } else if (orderStatus && orderStatus !== "Pending Payment") {
-          // Absolute DB Confirmation
           setIsPollingPawaPay(false);
           setPaymentSuccess(true);
+          clearCart(); // Clear the cart upon successful payment
           toast.success("Payment successful! Your order is confirmed.");
         }
       } catch (err) {
@@ -177,13 +166,17 @@ function CheckoutPage() {
     }, 5000);
 
     return () => clearInterval(intervalId);
-  }, [isPollingPawaPay, pawapayDepositId, bookingRef]);
+  }, [isPollingPawaPay, pawapayDepositId, bookingRef, clearCart]);
 
-  if (isProductLoading) {
+  if (items.length === 0 && !paymentSuccess) {
     return (
-      <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background">
-        <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-      </div>
+       <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background space-y-6">
+          <ShoppingCart className="w-20 h-20 text-muted-foreground opacity-50" />
+          <h2 className="text-2xl font-bold">Your cart is empty</h2>
+          <Button onClick={() => window.history.back()} variant="outline">
+            Return to Store
+          </Button>
+       </div>
     );
   }
 
@@ -199,11 +192,7 @@ function CheckoutPage() {
           </div>
           <h1 className="text-3xl font-bold">Payment Successful!</h1>
           <p className="text-muted-foreground">
-            Thank you, {buyerName || "Guest"}! Your order for{" "}
-            <span className="font-semibold text-foreground">
-              {qty}x {product?.name}
-            </span>{" "}
-            has been confirmed.
+            Thank you, {buyerName || "Guest"}! Your order has been confirmed.
           </p>
           <p className="text-sm text-muted-foreground">
             We've sent a receipt to {buyerEmail || buyerPhone}.
@@ -233,21 +222,12 @@ function CheckoutPage() {
         <h1 className="text-3xl font-bold mb-4">Check Your Phone</h1>
         <p className="text-lg text-muted-foreground mb-10 max-w-sm mx-auto">
           We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-          payment of <strong>RWF {(actualCharge || total).toLocaleString()}</strong>.
+          payment of <strong>RWF {(actualCharge || cartTotal).toLocaleString()}</strong>.
         </p>
         <div className="flex gap-3 mb-10 justify-center">
-          <div
-            className="h-3 w-3 rounded-full animate-bounce"
-            style={{ backgroundColor: themeColor }}
-          />
-          <div
-            className="h-3 w-3 rounded-full animate-bounce delay-75"
-            style={{ backgroundColor: themeColor }}
-          />
-          <div
-            className="h-3 w-3 rounded-full animate-bounce delay-150"
-            style={{ backgroundColor: themeColor }}
-          />
+          <div className="h-3 w-3 rounded-full animate-bounce" style={{ backgroundColor: themeColor }} />
+          <div className="h-3 w-3 rounded-full animate-bounce delay-75" style={{ backgroundColor: themeColor }} />
+          <div className="h-3 w-3 rounded-full animate-bounce delay-150" style={{ backgroundColor: themeColor }} />
         </div>
         <Button
           variant="outline"
@@ -291,7 +271,6 @@ function CheckoutPage() {
         className="w-full md:w-1/2 lg:w-[45%] p-6 md:p-12 lg:p-20 flex flex-col justify-between shrink-0 text-white relative overflow-hidden"
         style={{ backgroundColor: themeColor || "#0B3B24" }}
       >
-        {/* Subtle Background Gradient Overlay */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
         
         <div className="relative z-10 space-y-8 max-w-md w-full ml-auto mr-auto md:ml-auto md:mr-8">
@@ -306,42 +285,36 @@ function CheckoutPage() {
           </div>
 
           <div className="pt-6">
-            <h3 className="text-white/80 text-base mb-2">Pay for {product?.name || "Product"}</h3>
+            <h3 className="text-white/80 text-base mb-2">Pay for Order</h3>
             <div className="flex items-baseline gap-2 mb-4">
-               <span className="text-4xl md:text-5xl font-bold tracking-tight">RWF {price.toLocaleString()}</span>
-               <span className="text-white/70 text-base">/ item</span>
+               <span className="text-4xl md:text-5xl font-bold tracking-tight">RWF {cartTotal.toLocaleString()}</span>
             </div>
-            
-             <div className="flex flex-col gap-2 mt-6">
-                {size && (
-                  <p className="text-sm text-white/80">
-                    Size: <span className="font-medium text-white">{size}</span>
-                  </p>
-                )}
-                {color && (
-                  <p className="text-sm text-white/80 flex items-center gap-2">
-                    Color:
-                    <span
-                      className="w-4 h-4 rounded-full border border-white/20 shadow-sm inline-block"
-                      style={{ backgroundColor: color }}
-                    />
-                  </p>
-                )}
-              </div>
           </div>
           
           <div className="space-y-4 pt-6">
-            <div className="bg-white/10 rounded-xl p-4 mb-6">
-               <div className="flex justify-between items-center mb-1">
-                 <span className="font-medium">{product?.name || "Product"}</span>
-                 <span className="font-medium">RWF {price.toLocaleString()}</span>
-               </div>
-               <div className="text-white/70 text-sm">Qty: {qty}</div>
+            {/* Cart Items List */}
+            <div className="space-y-3 mb-6">
+               {items.map(item => (
+                 <div key={item.id} className="bg-white/10 rounded-xl p-4 flex gap-4">
+                   {item.product.image_url && (
+                     <img src={item.product.image_url} alt={item.product.name} className="w-12 h-12 rounded object-cover" />
+                   )}
+                   <div className="flex-1">
+                     <div className="flex justify-between items-start">
+                       <span className="font-medium text-sm line-clamp-1">{item.product.name}</span>
+                       <span className="font-medium text-sm">RWF {((item.product.price || 0) * item.qty).toLocaleString()}</span>
+                     </div>
+                     <div className="text-white/70 text-xs mt-1">
+                       Qty: {item.qty} {item.size ? `• Size: ${item.size}` : ''}
+                     </div>
+                   </div>
+                 </div>
+               ))}
             </div>
 
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
               <span className="text-sm">Subtotal</span>
-              <span className="font-medium text-white">RWF {total.toLocaleString()}</span>
+              <span className="font-medium text-white">RWF {cartTotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
               <span className="text-sm">Taxes</span>
@@ -349,7 +322,7 @@ function CheckoutPage() {
             </div>
             <div className="flex justify-between items-center pt-2">
               <span className="font-semibold text-base">Total due today</span>
-              <span className="text-xl font-bold">RWF {total.toLocaleString()}</span>
+              <span className="text-xl font-bold">RWF {cartTotal.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -363,7 +336,6 @@ function CheckoutPage() {
 
       {/* Right Column - Checkout Form */}
       <div className="w-full md:w-1/2 lg:w-[55%] bg-background p-6 md:p-12 lg:p-20 overflow-y-auto relative">
-        
         {/* Top Right Logo */}
         <div className="absolute top-6 right-6 md:top-8 md:right-8 lg:top-10 lg:right-12 flex items-center gap-3">
            <img
@@ -470,7 +442,7 @@ function CheckoutPage() {
               onClick={handlePayClick}
               disabled={paymentMutation.isPending}
             >
-              {paymentMutation.isPending ? "Processing..." : `Pay RWF ${total.toLocaleString()}`}
+              {paymentMutation.isPending ? "Processing..." : `Pay RWF ${cartTotal.toLocaleString()}`}
             </Button>
             
             <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed max-w-sm mx-auto">
@@ -487,9 +459,9 @@ function CheckoutPage() {
           paymentMethod="momo"
           setPaymentMethod={() => {}}
           workspaceId={workspaceId}
-          baseAmount={total}
-          quantity={qty}
-          itemLabel={`Buy ${product?.name}`}
+          baseAmount={cartTotal}
+          quantity={items.length}
+          itemLabel={`Buy ${items.length} items`}
           baseCurrency="RWF"
           userPhone={buyerPhone}
           isProcessing={paymentMutation.isPending}

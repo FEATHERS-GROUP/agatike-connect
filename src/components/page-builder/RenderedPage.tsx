@@ -1135,10 +1135,10 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                         {items.map((item: any) => (
                           <div
                             key={item.id}
-                            className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-row"} group`}
+                            className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-col sm:flex-row"} group`}
                           >
                             <div
-                              className={`${isGrid ? "w-full aspect-[4/3]" : "w-40 md:w-48 h-full min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
+                              className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
                             >
                               {item.image_url ||
                               item.cover ||

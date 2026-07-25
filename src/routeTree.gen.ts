@@ -52,6 +52,7 @@ import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
 import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
+import { Route as CheckoutCartRouteImport } from './routes/checkout/cart'
 import { Route as BusesMobileRouteImport } from './routes/buses/mobile'
 import { Route as BusesTripIdRouteImport } from './routes/buses/$tripId'
 import { Route as BookEventIdRouteImport } from './routes/book/$eventId'
@@ -430,6 +431,11 @@ const DashboardCreateOrganizerRoute =
 const CinemasCinemaIdRoute = CinemasCinemaIdRouteImport.update({
   id: '/cinemas/$cinemaId',
   path: '/cinemas/$cinemaId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutCartRoute = CheckoutCartRouteImport.update({
+  id: '/checkout/cart',
+  path: '/checkout/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BusesMobileRoute = BusesMobileRouteImport.update({
@@ -1431,6 +1437,7 @@ export interface FileRoutesByFullPath {
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
+  '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
@@ -1639,6 +1646,7 @@ export interface FileRoutesByTo {
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
+  '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
@@ -1844,6 +1852,7 @@ export interface FileRoutesById {
   '/book/$eventId': typeof BookEventIdRoute
   '/buses/$tripId': typeof BusesTripIdRoute
   '/buses/mobile': typeof BusesMobileRoute
+  '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
@@ -2054,6 +2063,7 @@ export interface FileRouteTypes {
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
+    | '/checkout/cart'
     | '/cinemas/$cinemaId'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
@@ -2262,6 +2272,7 @@ export interface FileRouteTypes {
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
+    | '/checkout/cart'
     | '/cinemas/$cinemaId'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
@@ -2466,6 +2477,7 @@ export interface FileRouteTypes {
     | '/book/$eventId'
     | '/buses/$tripId'
     | '/buses/mobile'
+    | '/checkout/cart'
     | '/cinemas/$cinemaId'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
@@ -2675,6 +2687,7 @@ export interface RootRouteChildren {
   BookEventIdRoute: typeof BookEventIdRoute
   BusesTripIdRoute: typeof BusesTripIdRoute
   BusesMobileRoute: typeof BusesMobileRoute
+  CheckoutCartRoute: typeof CheckoutCartRoute
   CinemasCinemaIdRoute: typeof CinemasCinemaIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
@@ -2999,6 +3012,13 @@ declare module '@tanstack/react-router' {
       path: '/cinemas/$cinemaId'
       fullPath: '/cinemas/$cinemaId'
       preLoaderRoute: typeof CinemasCinemaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/cart': {
+      id: '/checkout/cart'
+      path: '/checkout/cart'
+      fullPath: '/checkout/cart'
+      preLoaderRoute: typeof CheckoutCartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buses/mobile': {
@@ -4669,6 +4689,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookEventIdRoute: BookEventIdRoute,
   BusesTripIdRoute: BusesTripIdRoute,
   BusesMobileRoute: BusesMobileRoute,
+  CheckoutCartRoute: CheckoutCartRoute,
   CinemasCinemaIdRoute: CinemasCinemaIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,

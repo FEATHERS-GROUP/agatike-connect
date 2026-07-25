@@ -12,7 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { AppProvider } from "@/lib/AppContext";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { UserAuthProvider, useUserAuth } from "@/contexts/UserAuthContext";
 import { MobileNav } from "@/components/mobile/MobileNav";
 import { InstallPrompt } from "@/components/mobile/InstallPrompt";
@@ -24,8 +24,12 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GlobalNotificationListener } from "@/components/providers/GlobalNotificationListener";
 import { GlobalUserNotificationListener } from "@/components/providers/GlobalUserNotificationListener";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { Rss } from "lucide-react";
+import { Rss, ShoppingCart } from "lucide-react";
 import { useTelemetry } from "@/hooks/useTelemetry";
+import { CartProvider, useCart } from "@/contexts/CartContext";
+import { CartSidebar } from "@/components/page-builder/CartSidebar";
+import { getWorkspacePageBySlug } from "@/api/workspace-pages";
+import { useQuery } from "@tanstack/react-query";
 
 function TelemetryTracker() {
   useTelemetry();
@@ -234,13 +238,16 @@ function RootComponent() {
             <UserAuthProvider>
               <WorkspaceProvider>
                 <LoaderProvider>
-                  <TelemetryTracker />
-                  <GlobalNotificationListener />
-                  <GlobalUserNotificationListener />
-                  {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-                  <div className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-                    <Outlet />
-                  </div>
+                  <CartProvider>
+                    <TelemetryTracker />
+                    <GlobalNotificationListener />
+                    <GlobalUserNotificationListener />
+                    {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+                    <div className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                      <Outlet />
+                    </div>
+
+                    <CartSidebar />
 
                   {/* Floating Mobile Navigation - Hidden on Desktop */}
                   {!hideNav && (
@@ -250,10 +257,12 @@ function RootComponent() {
                   )}
 
                   <AuthDependentFeedBubble hideNav={hideNav} />
+                  <CartBubble hideNav={hideNav} />
 
-                  <InstallPrompt />
-                  <SplashLoader />
-                  <Toaster position="top-center" />
+                    <InstallPrompt />
+                    <SplashLoader />
+                    <Toaster position="top-center" />
+                  </CartProvider>
                 </LoaderProvider>
               </WorkspaceProvider>
             </UserAuthProvider>
@@ -312,3 +321,51 @@ function AuthDependentFeedBubble({ hideNav }: { hideNav: boolean }) {
     </Link>
   );
 }
+
+function CartBubble({ hideNav }: { hideNav: boolean }) {
+  const { cartCount, openCart } = useCart();
+  const location = useRouterState({ select: (s) => s.location });
+  
+  const [subdomainSlug, setSubdomainSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
+      const potentialSlug = parts[0];
+      if (potentialSlug !== "www") {
+        setSubdomainSlug(potentialSlug);
+      }
+    }
+  }, []);
+
+  const { data: pageData } = useQuery({
+    queryKey: ["workspace-page-by-slug", subdomainSlug],
+    queryFn: () => getWorkspacePageBySlug({ data: { slug: subdomainSlug! } } as any),
+    enabled: !!subdomainSlug,
+  });
+
+  const settingsBlock = pageData?.components?.find((c: any) => c.type === "page_settings");
+  const themeColor = settingsBlock?.themeColor || pageData?.theme_color || undefined;
+
+  if (cartCount === 0 || hideNav || location.pathname.startsWith("/checkout")) return null;
+
+  return (
+    <button
+      onClick={openCart}
+      className="fixed bottom-24 left-4 md:bottom-8 md:left-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95 bg-foreground"
+      aria-label="Open Cart"
+    >
+      <div className="relative">
+        <ShoppingCart className="h-6 w-6 text-background" />
+        <span 
+          className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-sm"
+          style={themeColor ? { backgroundColor: themeColor, color: '#fff' } : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+        >
+          {cartCount}
+        </span>
+      </div>
+    </button>
+  );
+}
+
