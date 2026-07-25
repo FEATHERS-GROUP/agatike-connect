@@ -122,6 +122,7 @@ function CartCheckoutPage() {
           workspaceId: workspaceId,
           reason: `Buy ${items.length} items`,
           shortfall: paymentDetails.shortfall || 0,
+          pageSlug: subdomainSlug,
         },
       } as any);
 

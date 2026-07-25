@@ -251,6 +251,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       currency,
       reason,
       shortfall = 0,
+      pageSlug,
     } = ctx.data as any;
 
     if (!currency) {
@@ -427,13 +428,14 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         $type: String!, $provider_status: String!, $status: String!,
         $wallet_id: uuid!, $workspace_id: uuid!,
         $gross: numeric!, $cost: numeric!, $rev: numeric!, $profit: numeric!,
-        $cust_fee: numeric!, $org_fee: numeric!, $platform_fee: numeric!
+        $cust_fee: numeric!, $org_fee: numeric!, $platform_fee: numeric!,
+        $description: String!
       ) {
         insert_wallet_transactions_one(object: {
           amount: $amount, net_amount: $net_amount, currency: $currency,
           provider_reference: $provider_reference, reference_id: $reference_id,
           type: $type, provider_status: $provider_status, status: $status,
-          wallet_id: $wallet_id, workspace_id: $workspace_id, description: "PawaPay Deposit",
+          wallet_id: $wallet_id, workspace_id: $workspace_id, description: $description,
           platform_fee: $platform_fee
         }) { id }
         insert_earnings_one(object: {
@@ -466,6 +468,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
+        description: pageSlug ? `PawaPay Deposit::${pageSlug}` : "PawaPay Deposit",
       },
     );
 

@@ -21,6 +21,12 @@ export async function generateProductReceiptPdf(
         parseInt(hex.substring(2, 4), 16),
         parseInt(hex.substring(4, 6), 16),
       ];
+    } else if (hex.length === 3) {
+      primaryColor = [
+        parseInt(hex[0] + hex[0], 16),
+        parseInt(hex[1] + hex[1], 16),
+        parseInt(hex[2] + hex[2], 16),
+      ];
     }
   }
 

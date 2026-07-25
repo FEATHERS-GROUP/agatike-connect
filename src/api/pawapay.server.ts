@@ -68,16 +68,25 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       if (tx?.workspace_id) {
         try {
+          let targetSlug = "";
+          if (tx.description && tx.description.includes("PawaPay Deposit::")) {
+            targetSlug = tx.description.split("::")[1];
+          }
+
+          const wsQuery = targetSlug
+            ? `query GetWS($id: uuid!, $slug: String!) { 
+                workspaces_by_pk(id: $id) { name city address orgnizer_id } 
+                workspace_pages(where: { workspace_id: { _eq: $id }, slug: { _eq: $slug } }, limit: 1) { slug theme_color components }
+             }`
+            : `query GetWS($id: uuid!) { 
+                workspaces_by_pk(id: $id) { name city address orgnizer_id } 
+                workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { slug theme_color components }
+             }`;
+
           const wsData = await hasuraRequest<{
             workspaces_by_pk: { name: string; city: string; address: string; orgnizer_id: string };
             workspace_pages: { slug: string; theme_color: string; components: any }[];
-          }>(
-            `query GetWS($id: uuid!) { 
-                workspaces_by_pk(id: $id) { name city address orgnizer_id } 
-                workspace_pages(where: { workspace_id: { _eq: $id } }, limit: 1) { slug theme_color components }
-             }`,
-            { id: tx.workspace_id },
-          );
+          }>(wsQuery, targetSlug ? { id: tx.workspace_id, slug: targetSlug } : { id: tx.workspace_id });
           if (wsData?.workspaces_by_pk) {
             wsName = wsData.workspaces_by_pk.name;
             wsCity = wsData.workspaces_by_pk.city || "";
@@ -103,6 +112,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
             }
             wsThemeColor = dbTheme || "";
+            console.log("[PawaPay Webhook] EXTRACTED THEME COLOR:", wsThemeColor);
           }
         } catch (e) {
           console.error("Failed to fetch workspace", e);
@@ -389,7 +399,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Send general SMS Confirmation via Pindo for other types
-        if (tx.type !== "event_ticket" && body?.payer?.address?.value) {
+        if (tx.type !== "event_ticket" && tx.type !== "page_builder_checkout" && body?.payer?.address?.value) {
           const phone = body.payer.address.value;
           const { sendSMS } = await import("./pindo");
 
