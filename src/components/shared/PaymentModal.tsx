@@ -454,8 +454,7 @@ export function PaymentModal({
                           {simulation.serviceFee.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between font-medium text-foreground md:text-background border-t border-border/40 md:border-background/20 pt-1">
-                        <span>Total Amount</span>
+                      <div className="flex justify-end font-medium text-foreground md:text-background border-t border-border/40 md:border-background/20 pt-1">
                         <span>
                           {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
                         </span>

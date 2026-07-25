@@ -60,23 +60,49 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       let wsSlug = "";
       let wsName = "";
+      let wsCity = "";
+      let wsAddress = "";
+      let wsThemeColor = "";
+      let orgEmail = "";
+      let orgPhone = "";
+
       if (tx?.workspace_id) {
         try {
           const wsData = await hasuraRequest<{
-            workspaces_by_pk: { name: string };
-            workspace_pages: { slug: string }[];
+            workspaces_by_pk: { name: string; city: string; address: string; orgnizer_id: string };
+            workspace_pages: { slug: string; theme_color: string; components: any }[];
           }>(
             `query GetWS($id: uuid!) { 
-                workspaces_by_pk(id: $id) { name } 
-                workspace_pages(where: { workspace_id: { _eq: $id } }, limit: 1) { slug }
+                workspaces_by_pk(id: $id) { name city address orgnizer_id } 
+                workspace_pages(where: { workspace_id: { _eq: $id } }, limit: 1) { slug theme_color components }
              }`,
             { id: tx.workspace_id },
           );
           if (wsData?.workspaces_by_pk) {
             wsName = wsData.workspaces_by_pk.name;
+            wsCity = wsData.workspaces_by_pk.city || "";
+            wsAddress = wsData.workspaces_by_pk.address || "";
+            
+            if (wsData.workspaces_by_pk.orgnizer_id) {
+              const orgData = await hasuraRequest<{ organizers_by_pk: { email: string; phone: string } }>(
+                `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { email phone } }`,
+                { id: wsData.workspaces_by_pk.orgnizer_id }
+              );
+              if (orgData?.organizers_by_pk) {
+                orgEmail = orgData.organizers_by_pk.email || "";
+                orgPhone = orgData.organizers_by_pk.phone || "";
+              }
+            }
           }
           if (wsData?.workspace_pages?.length) {
             wsSlug = wsData.workspace_pages[0].slug;
+            let dbTheme = wsData.workspace_pages[0].theme_color;
+            const components = wsData.workspace_pages[0].components;
+            if (components && Array.isArray(components)) {
+              const settingsBlock = components.find((b: any) => b.type === "settings");
+              if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
+            }
+            wsThemeColor = dbTheme || "";
           }
         } catch (e) {
           console.error("Failed to fetch workspace", e);
@@ -141,7 +167,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   product_id
                   qty
                   size
+                  amount_paid
                   qr_code_string
+                  phone
                   product {
                     name
                   }
@@ -221,7 +249,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           if (!firstAtt && confirmedOrders.length > 0) {
             // Product-only purchase
-            detailedMessage = `Payment completed for ${productsText}. Thank you for visiting ${domain}. It will be delivered to you or choose pickup. Order Ref: ${productQrCode || "N/A"}`;
+            detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${domain}!`;
           } else {
             // Ticket purchase
             detailedMessage =
@@ -257,7 +285,25 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
             let pdfBase64;
             try {
-              const pdfBuffer = await generateProductReceiptPdf(confirmedOrders, orgName);
+              const orgDetails = {
+                name: wsName || domain,
+                email: orgEmail,
+                phone: orgPhone,
+                city: wsCity,
+                address: wsAddress,
+                themeColor: wsThemeColor,
+              };
+              let phoneToNotify = body?.payer?.address?.value;
+              if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
+              if (!phoneToNotify && confirmedOrders.length > 0) phoneToNotify = confirmedOrders[0].phone;
+
+              const customerDetails = {
+                name: firstAtt?.names || "Guest",
+                email: guestEmail || firstAtt?.email || "",
+                phone: phoneToNotify || "",
+              };
+
+              const pdfBuffer = await generateProductReceiptPdf(confirmedOrders, orgDetails, customerDetails, customerFee);
               pdfBase64 = pdfBuffer.toString("base64");
             } catch (e) {
               console.error("Failed to generate product receipt PDF", e);
