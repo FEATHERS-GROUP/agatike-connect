@@ -47,7 +47,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {!isSubdomain && <Navbar />}
+      {!hideLayout && !isSubdomain && <Navbar />}
 
       {/* Cinematic banner */}
       <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
@@ -437,7 +437,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
         </aside>
       </div>
 
-      {!isSubdomain && <Footer />}
+      {!hideLayout && !isSubdomain && <Footer />}
 
       {selectedGalleryIndex !== null && venue?.images && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm">

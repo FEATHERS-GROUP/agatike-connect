@@ -26,6 +26,7 @@ export function EventDetailsDesktop({
 }: {
   eventId: string;
   event?: any;
+  hideLayout?: boolean;
 }) {
   const [isClient, setIsClient] = useState(false);
   const [isSubdomain, setIsSubdomain] = useState(false);
@@ -42,7 +43,7 @@ export function EventDetailsDesktop({
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {!isSubdomain && <Navbar />}
+      {!hideLayout && !isSubdomain && <Navbar />}
 
       <EventBannerDesktop
         cover={d.ev.cover}
@@ -214,7 +215,7 @@ export function EventDetailsDesktop({
         />
       </div>
 
-      {!isSubdomain && <Footer />}
+      {!hideLayout && !isSubdomain && <Footer />}
 
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">

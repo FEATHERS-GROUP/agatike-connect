@@ -52,17 +52,17 @@ function VenueDetails() {
   const innerContent = (
     <>
       <div className="md:hidden">
-        <VenueDetailsMobile venue={venue} />
+        <VenueDetailsMobile venue={venue} hideLayout={!!subdomainSlug} />
       </div>
       <div className="hidden md:block">
-        <VenueDetailsDesktop venue={venue} />
+        <VenueDetailsDesktop venue={venue} hideLayout={!!subdomainSlug} />
       </div>
     </>
   );
 
   if (subdomainSlug) {
     return (
-      <RenderedPage slug={subdomainSlug} isPreview={false} hideHero={true}>
+      <RenderedPage slug={subdomainSlug} isPreview={false} hideHero={true} hideComponents={true}>
         {innerContent}
       </RenderedPage>
     );

@@ -7,7 +7,7 @@ import { getWorkspaceEvents } from "@/api/events";
 import { getSpaces } from "@/api/spaces";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { getMovies } from "@/api/cinema_management";
-import { Loader2, ArrowRight, Package, X } from "lucide-react";
+import { Loader2, ArrowRight, Package, X, MapPin } from "lucide-react";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -19,6 +19,8 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { useMutation } from "@tanstack/react-query";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { ProductCheckoutSheet } from "@/components/page-builder/ProductCheckoutSheet";
+import { FacilityCheckoutSheet } from "@/components/page-builder/FacilityCheckoutSheet";
+import { VenueCheckoutSheet } from "@/components/page-builder/VenueCheckoutSheet";
 import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
@@ -27,7 +29,7 @@ import {
 import { toast } from "sonner";
 import { Smartphone } from "lucide-react";
 
-export function RenderedPage({ slug, isPreview = false, children, hideHero = false }: { slug: string; isPreview?: boolean; children?: React.ReactNode; hideHero?: boolean }) {
+export function RenderedPage({ slug, isPreview = false, children, hideHero = false, hideComponents = false }: { slug: string; isPreview?: boolean; children?: React.ReactNode; hideHero?: boolean; hideComponents?: boolean }) {
   const [previewData, setPreviewData] = useState<any>(() => {
     if (isPreview && typeof window !== "undefined") {
       try {
@@ -48,6 +50,13 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
 
   const [productCheckoutSheetOpen, setProductCheckoutSheetOpen] = useState(false);
   const [selectedProductForCheckout, setSelectedProductForCheckout] = useState<any>(null);
+
+  const [facilityCheckoutSheetOpen, setFacilityCheckoutSheetOpen] = useState(false);
+  const [selectedFacilityForCheckout, setSelectedFacilityForCheckout] = useState<any>(null);
+  const [selectedFacilityVenue, setSelectedFacilityVenue] = useState<any>(null);
+
+  const [venueCheckoutSheetOpen, setVenueCheckoutSheetOpen] = useState(false);
+  const [selectedVenueForCheckout, setSelectedVenueForCheckout] = useState<any>(null);
 
   const { data: dbPage, isLoading: isLoadingPage } = useQuery({
     queryKey: ["workspace-page-public", slug],
@@ -209,6 +218,9 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
   }
 
   if (isLoadingPage && !isPreview) {
+    if (children) {
+      return <div className="min-h-screen bg-background">{children}</div>;
+    }
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -539,7 +551,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
             {/* Dynamic Components */}
             <div className="space-y-16 md:space-y-24">
-              {actualComponents?.map((comp: any) => {
+              {!hideComponents && actualComponents?.map((comp: any) => {
                 const renderComponent = () => {
                   if (comp.type === "text") {
                     return (
@@ -1160,8 +1172,9 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                         >
                           {items.map((item: any) => {
                             const isProduct = comp.type === "product_list";
-                            const CardWrapper = isProduct ? "div" : "a";
-                            const wrapperProps = !isProduct 
+                            const isVenueType = comp.type === "venue_list";
+                            const CardWrapper = isProduct || isVenueType ? "div" : "a";
+                            const wrapperProps = !isProduct && !isVenueType 
                               ? { href: item.is_facility ? `/venues/${item.venue_id}/facilities/checkout/${item.id.split('_').pop()}` : `${linkPrefix}${item.id}` } 
                               : {};
 
@@ -1200,8 +1213,14 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                               </div>
                               <div className="p-5 flex-1 flex flex-col min-w-0">
                                 <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
-                                  {item.name || item.title}
-                                </h4>
+                                    {item.name || item.title}
+                                  </h4>
+                                  {isVenueType && (item.city || item.address) && (
+                                    <div className="flex items-center text-xs text-muted-foreground mb-1 gap-1">
+                                      <MapPin className="h-3 w-3" />
+                                      <span>{item.city}{item.city && item.address ? ", " : ""}{item.address}</span>
+                                    </div>
+                                  )}
                                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                                   {item.description || item.synopsis || (comp.type === "venue_list" ? `${item.city ? item.city + ' • ' : ''}Up to ${item.capacity || 'TBD'} guests` : "No details provided.")}
                                 </p>
@@ -1221,16 +1240,28 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                                     })()}
                                   </span>
                                   {comp.allowSelling !== false &&
-                                    (isProduct ? (
+                                      (isProduct || isVenueType ? (
                                       <Button
                                         size="sm"
                                         className="rounded-full shrink-0"
                                         style={{ background: theme_color }}
                                         onClick={(e) => {
                                           e.preventDefault();
-                                          setSelectedProductForCheckout(item);
-                                          setSelectedPaymentBlock(comp);
-                                          setProductCheckoutSheetOpen(true);
+                                          if (isProduct) {
+                                            setSelectedProductForCheckout(item);
+                                            setSelectedPaymentBlock(comp);
+                                            setProductCheckoutSheetOpen(true);
+                                          } else if (isVenueType) {
+                                            if (item.is_facility) {
+                                              const originalVenue = venues.find(v => v.id === item.venue_id);
+                                              setSelectedFacilityVenue(originalVenue);
+                                              setSelectedFacilityForCheckout(item);
+                                              setFacilityCheckoutSheetOpen(true);
+                                            } else {
+                                              setSelectedVenueForCheckout(item);
+                                              setVenueCheckoutSheetOpen(true);
+                                            }
+                                          }
                                         }}
                                       >
                                         {item.is_facility ? "Book Space" : btnLabel}
@@ -1301,6 +1332,25 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
             product={selectedProductForCheckout}
             isOpen={productCheckoutSheetOpen}
             onClose={() => setProductCheckoutSheetOpen(false)}
+            themeColor={theme_color || undefined}
+          />
+        )}
+
+        {selectedFacilityForCheckout && selectedFacilityVenue && (
+          <FacilityCheckoutSheet
+            venue={selectedFacilityVenue}
+            facility={selectedFacilityForCheckout}
+            isOpen={facilityCheckoutSheetOpen}
+            onClose={() => setFacilityCheckoutSheetOpen(false)}
+            themeColor={theme_color || undefined}
+          />
+        )}
+
+        {selectedVenueForCheckout && (
+          <VenueCheckoutSheet
+            venue={selectedVenueForCheckout}
+            isOpen={venueCheckoutSheetOpen}
+            onClose={() => setVenueCheckoutSheetOpen(false)}
             themeColor={theme_color || undefined}
           />
         )}

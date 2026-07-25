@@ -100,17 +100,17 @@ function EventDetailsRoute() {
   const innerContent = (
     <>
       <div className="md:hidden">
-        <EventDetailsMobile eventId={eventId} event={event} />
+        <EventDetailsMobile eventId={eventId} event={event} hideLayout={!!subdomainSlug} />
       </div>
       <div className="hidden md:block">
-        <EventDetailsDesktop eventId={eventId} event={event} />
+        <EventDetailsDesktop eventId={eventId} event={event} hideLayout={!!subdomainSlug} />
       </div>
     </>
   );
 
   if (subdomainSlug) {
     return (
-      <RenderedPage slug={subdomainSlug} isPreview={false} hideHero={true}>
+      <RenderedPage slug={subdomainSlug} isPreview={false} hideHero={true} hideComponents={true}>
         {innerContent}
       </RenderedPage>
     );

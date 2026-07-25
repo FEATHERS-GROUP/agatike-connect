@@ -30,6 +30,7 @@ export function EventDetailsMobile({
 }: {
   eventId: string;
   event?: any;
+  hideLayout?: boolean;
 }) {
   const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,7 +56,7 @@ export function EventDetailsMobile({
   return (
     <div className="min-h-screen bg-background text-foreground pb-[140px] md:pb-24">
       {/* Sticky Top Header */}
-      {!isSubdomain && (
+      {!hideLayout && !isSubdomain && (
         <div
           className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
           isScrolled
