@@ -7,10 +7,23 @@ import { Footer } from "@/components/site/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function VenueDetailsDesktop({ venue }: { venue: any }) {
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
+      const potentialSlug = parts[0];
+      if (potentialSlug !== "www") {
+        setIsSubdomain(true);
+      }
+    }
+  }, []);
 
   if (!venue) return null;
 
@@ -34,7 +47,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      {!isSubdomain && <Navbar />}
 
       {/* Cinematic banner */}
       <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
@@ -413,7 +426,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               >
                 <Button
                   className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ background: "var(--gradient-primary)" }}
+                  style={{ background: "var(--custom-theme-color, var(--gradient-primary))" }}
                 >
                   {venue.rental_model === "ENTIRE_VENUE" ? "Rent Now" : "Get Ticket"}{" "}
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -424,7 +437,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
         </aside>
       </div>
 
-      <Footer />
+      {!isSubdomain && <Footer />}
 
       {selectedGalleryIndex !== null && venue?.images && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm">

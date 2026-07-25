@@ -21,6 +21,18 @@ import { Button } from "@/components/ui/button";
 
 export function VenueDetailsMobile({ venue }: { venue: any }) {
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
+      const potentialSlug = parts[0];
+      if (potentialSlug !== "www") {
+        setIsSubdomain(true);
+      }
+    }
+  }, []);
 
   if (!venue) return null;
 
@@ -57,12 +69,16 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
         <div className="absolute top-0 left-0 right-0 pt-safe-top p-4 flex items-center justify-between z-10">
-          <Link
-            to="/venues"
-            className="w-10 h-10 rounded-full bg-background/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Link>
+          {!isSubdomain ? (
+            <Link
+              to="/venues"
+              className="w-10 h-10 rounded-full bg-background/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Link>
+          ) : (
+            <div />
+          )}
           <div className="flex gap-2">
             <button className="w-10 h-10 rounded-full bg-background/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10">
               <Share2 className="h-5 w-5" />
@@ -474,7 +490,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               >
                 <button
                   className="w-full h-12 rounded-xl text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] active:scale-[0.98] transition-transform"
-                  style={{ background: "var(--gradient-primary)" }}
+                  style={{ background: "var(--custom-theme-color, var(--gradient-primary))" }}
                 >
                   {venue.rental_model === "ENTIRE_VENUE" ? "Rent Now" : "Book Ticket"}
                 </button>

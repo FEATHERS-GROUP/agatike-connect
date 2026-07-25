@@ -5,7 +5,7 @@ import { getWorkspaceForms } from "@/api/rsvps";
 import { getWorkspaceProducts } from "@/api/products";
 import { getWorkspaceEvents } from "@/api/events";
 import { getSpaces } from "@/api/spaces";
-import { getWorkspaceVenueProjects } from "@/api/venues";
+import { getRentableVenues } from "@/api/rentable_venues";
 import { getMovies } from "@/api/cinema_management";
 import { Loader2, ArrowRight, Package, X } from "lucide-react";
 import { StorefrontFooter } from "./StorefrontFooter";
@@ -92,7 +92,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
 
   const { data: venues = [] } = useQuery({
     queryKey: ["workspace-venues", workspace_id],
-    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id } } as any),
+    queryFn: () => getRentableVenues({ data: { workspace_id } } as any),
     enabled: !!workspace_id && hasVenues,
   });
 
@@ -1119,7 +1119,19 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                       btnLabel = "Book Space";
                       linkPrefix = "/spaces/checkout/";
                     } else if (comp.type === "venue_list") {
-                      items = venues;
+                      items = venues.flatMap((v: any) => [
+                        v,
+                        ...(v.facilities_data || []).map((fac: any) => ({
+                          ...fac,
+                          id: `facility_${v.id}_${fac.id}`,
+                          name: fac.name,
+                          is_facility: true,
+                          venue_id: v.id,
+                          cover_url: fac.image_url || v.cover_url,
+                          capacity: fac.max_capacity,
+                          city: v.city,
+                        })),
+                      ]);
                       itemType = "Venue";
                       btnLabel = "Book Venue";
                       linkPrefix = "/venues/";
@@ -1149,7 +1161,9 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                           {items.map((item: any) => {
                             const isProduct = comp.type === "product_list";
                             const CardWrapper = isProduct ? "div" : "a";
-                            const wrapperProps = !isProduct ? { href: `${linkPrefix}${item.id}` } : {};
+                            const wrapperProps = !isProduct 
+                              ? { href: item.is_facility ? `/venues/${item.venue_id}/facilities/checkout/${item.id.split('_').pop()}` : `${linkPrefix}${item.id}` } 
+                              : {};
 
                             return (
                               <CardWrapper
@@ -1162,6 +1176,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                               >
                                 {item.image_url ||
                                 item.cover ||
+                                item.cover_url ||
                                 item.cover_image ||
                                 item.poster_url ||
                                 item.images?.[0] ? (
@@ -1169,6 +1184,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                                     src={
                                       item.image_url ||
                                       item.cover ||
+                                      item.cover_url ||
                                       item.cover_image ||
                                       item.poster_url ||
                                       item.images?.[0]
@@ -1187,7 +1203,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                                   {item.name || item.title}
                                 </h4>
                                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                                  {item.description || item.synopsis || "No details provided."}
+                                  {item.description || item.synopsis || (comp.type === "venue_list" ? `${item.city ? item.city + ' • ' : ''}Up to ${item.capacity || 'TBD'} guests` : "No details provided.")}
                                 </p>
                                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
                                   <span className="font-semibold truncate mr-2">
@@ -1217,7 +1233,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                                           setProductCheckoutSheetOpen(true);
                                         }}
                                       >
-                                        {btnLabel}
+                                        {item.is_facility ? "Book Space" : btnLabel}
                                       </Button>
                                     ) : (
                                       <Button
@@ -1225,7 +1241,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
                                         className="rounded-full shrink-0 pointer-events-none"
                                         style={{ background: theme_color }}
                                       >
-                                        {btnLabel}
+                                        {item.is_facility ? "Book Space" : btnLabel}
                                       </Button>
                                     ))}
                                 </div>

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceProducts } from "@/api/products";
 import { getWorkspaceEvents } from "@/api/events";
 import { getSpaces } from "@/api/spaces";
-import { getWorkspaceVenueProjects } from "@/api/venues";
+import { getRentableVenues } from "@/api/rentable_venues";
 import { getMovies } from "@/api/cinema_management";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,7 @@ export function InventorySelector({ type, workspace_id, comp, updateComponent, i
 
   const { data: venues = [] } = useQuery({
     queryKey: ["workspace-venues", workspace_id],
-    queryFn: () => getWorkspaceVenueProjects({ data: { workspace_id } } as any),
+    queryFn: () => getRentableVenues({ data: { workspace_id } } as any),
     enabled: type === "venue_list" && !!workspace_id,
   });
 
@@ -47,7 +47,14 @@ export function InventorySelector({ type, workspace_id, comp, updateComponent, i
         : type === "space_list"
           ? spaces
           : type === "venue_list"
-            ? venues
+            ? venues.flatMap((v: any) => [
+                v,
+                ...(v.facilities_data || []).map((fac: any) => ({
+                  ...fac,
+                  id: `facility_${v.id}_${fac.id}`,
+                  name: `${v.name} - ${fac.name}`,
+                })),
+              ])
             : type === "movie_list"
               ? movies
               : [];
