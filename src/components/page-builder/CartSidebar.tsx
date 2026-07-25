@@ -5,7 +5,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -52,10 +52,19 @@ export function CartSidebar() {
       >
         <div className="p-6 border-b border-border/40">
           <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl font-bold flex items-center gap-3">
-              <ShoppingCart className="w-6 h-6" />
-              Your Cart
-            </SheetTitle>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={closeCart}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary transition-colors -ml-2"
+                aria-label="Back to store"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <SheetTitle className="text-2xl font-bold flex items-center gap-3 m-0">
+                <ShoppingCart className="w-6 h-6" />
+                Your Cart
+              </SheetTitle>
+            </div>
           </SheetHeader>
         </div>
 
@@ -64,6 +73,9 @@ export function CartSidebar() {
             <div className="h-full flex flex-col items-center justify-center text-muted-foreground space-y-4 opacity-70">
               <ShoppingCart className="w-16 h-16" />
               <p className="text-lg font-medium">Your cart is empty.</p>
+              <Button onClick={closeCart} variant="outline" className="mt-4 rounded-full px-8">
+                Continue Shopping
+              </Button>
             </div>
           ) : (
             <div className="space-y-6">

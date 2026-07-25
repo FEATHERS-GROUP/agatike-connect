@@ -417,7 +417,7 @@ function CheckoutPage() {
                 <div
                   className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "momo" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
                   onClick={() => setSelectedPaymentGroup("momo")}
-                  style={selectedPaymentGroup === "momo" && themeColor ? { borderColor: themeColor, backgroundColor: `${themeColor}0A`, ringColor: themeColor } : {}}
+                  style={selectedPaymentGroup === "momo" && themeColor ? { borderColor: themeColor, backgroundColor: `${themeColor}0A`, '--tw-ring-color': themeColor } as React.CSSProperties : {}}
                 >
                   <RadioGroupItem
                     value="momo"
@@ -441,7 +441,7 @@ function CheckoutPage() {
                  <div
                   className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "card" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
                   onClick={() => setSelectedPaymentGroup("card")}
-                  style={selectedPaymentGroup === "card" && themeColor ? { borderColor: themeColor, backgroundColor: `${themeColor}0A`, ringColor: themeColor } : {}}
+                  style={selectedPaymentGroup === "card" && themeColor ? { borderColor: themeColor, backgroundColor: `${themeColor}0A`, '--tw-ring-color': themeColor } as React.CSSProperties : {}}
                 >
                   <RadioGroupItem
                     value="card"

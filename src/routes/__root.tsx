@@ -217,8 +217,11 @@ function RootComponent() {
     } catch (_) {}
   }, [location.pathname]);
 
-  // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, and auth pages
+  const isSubdomain = typeof window !== "undefined" && window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+
+  // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, auth pages, and all subdomains (page builder)
   const hideNav = Boolean(
+    isSubdomain ||
     location.pathname.match(/^\/(events|venues|spaces|book|book-movie|community|ticket|f|b)\/.+/) ||
     (location.pathname.match(/^\/.+\/message$/) && !!(location.search as any)?.chatId) ||
     (location.pathname.startsWith("/buses/") && location.pathname !== "/buses/mobile") ||
@@ -348,12 +351,18 @@ function CartBubble({ hideNav }: { hideNav: boolean }) {
   const settingsBlock = pageData?.components?.find((c: any) => c.type === "page_settings");
   const themeColor = settingsBlock?.themeColor || pageData?.theme_color || undefined;
 
-  if (cartCount === 0 || hideNav || location.pathname.startsWith("/checkout")) return null;
+  if (
+    cartCount === 0 ||
+    location.pathname.startsWith("/checkout") ||
+    location.pathname.startsWith("/dashboard")
+  ) {
+    return null;
+  }
 
   return (
     <button
       onClick={openCart}
-      className="fixed bottom-24 left-4 md:bottom-8 md:left-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95 bg-foreground"
+      className={`fixed ${hideNav ? 'bottom-8 md:bottom-8' : 'bottom-24 md:bottom-8'} left-4 md:left-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95 bg-foreground`}
       aria-label="Open Cart"
     >
       <div className="relative">
