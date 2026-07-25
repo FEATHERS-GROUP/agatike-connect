@@ -8,6 +8,7 @@ import { getSpaces } from "@/api/spaces";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { getMovies } from "@/api/cinema_management";
 import { Loader2, ArrowRight, Package, X } from "lucide-react";
+import { StorefrontFooter } from "./StorefrontFooter";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
@@ -865,9 +866,9 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                       <div key={comp.id} className="group">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <button className="w-full text-left focus:outline-none">
+                            <div role="button" tabIndex={0} className="w-full text-left focus:outline-none">
                               {cardContent}
-                            </button>
+                            </div>
                           </DialogTrigger>
                           <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
                             <DialogTitle className="sr-only">Form</DialogTitle>
@@ -883,9 +884,9 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                       <div key={comp.id} className="group">
                         <Sheet>
                           <SheetTrigger asChild>
-                            <button className="w-full text-left focus:outline-none">
+                            <div role="button" tabIndex={0} className="w-full text-left focus:outline-none">
                               {cardContent}
-                            </button>
+                            </div>
                           </SheetTrigger>
                           <SheetContent
                             side="right"
@@ -1034,9 +1035,9 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                       <div key={comp.id} className="flex justify-center w-full px-4 group">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <button className="focus:outline-none w-full flex justify-center">
+                            <div role="button" tabIndex={0} className="focus:outline-none w-full flex justify-center">
                               {triggerContent}
-                            </button>
+                            </div>
                           </DialogTrigger>
                           <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
                             <DialogTitle className="sr-only">{title}</DialogTitle>
@@ -1056,9 +1057,9 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                       <div key={comp.id} className="flex justify-center w-full px-4 group">
                         <Sheet>
                           <SheetTrigger asChild>
-                            <button className="focus:outline-none w-full flex justify-center">
+                            <div role="button" tabIndex={0} className="focus:outline-none w-full flex justify-center">
                               {triggerContent}
-                            </button>
+                            </div>
                           </SheetTrigger>
                           <SheetContent
                             side="right"
@@ -1132,11 +1133,17 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                       <div
                         className={`grid gap-6 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 max-w-4xl mx-auto"}`}
                       >
-                        {items.map((item: any) => (
-                          <div
-                            key={item.id}
-                            className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-col sm:flex-row"} group`}
-                          >
+                        {items.map((item: any) => {
+                          const isProduct = comp.type === "product_list";
+                          const CardWrapper = isProduct ? "div" : "a";
+                          const wrapperProps = !isProduct ? { href: `${linkPrefix}${item.id}` } : {};
+
+                          return (
+                            <CardWrapper
+                              key={item.id}
+                              {...(wrapperProps as any)}
+                              className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-col sm:flex-row"} group ${!isProduct && comp.allowSelling !== false ? "cursor-pointer block" : ""}`}
+                            >
                             <div
                               className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
                             >
@@ -1171,19 +1178,27 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                               </p>
                               <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
                                 <span className="font-semibold truncate mr-2">
-                                  {item.price
-                                    ? `${item.price} RWF`
-                                    : itemType === "Product"
-                                      ? ""
-                                      : "Check Availability"}
+                                  {(() => {
+                                    if (item.price) return `${Number(item.price).toLocaleString()} RWF`;
+                                    if (comp.type === "event_list") {
+                                      if (item.event_tickets && item.event_tickets.length > 0) {
+                                        const minPrice = Math.min(...item.event_tickets.map((t: any) => t.cost || 0));
+                                        return minPrice === 0 ? "Free" : `From ${minPrice.toLocaleString()} RWF`;
+                                      }
+                                      return "Free";
+                                    }
+                                    if (comp.type === "space_list" || comp.type === "venue_list") return "Check Availability";
+                                    return "";
+                                  })()}
                                 </span>
                                 {comp.allowSelling !== false &&
-                                  (comp.type === "product_list" ? (
+                                  (isProduct ? (
                                     <Button
                                       size="sm"
                                       className="rounded-full shrink-0"
                                       style={{ background: theme_color }}
-                                      onClick={() => {
+                                      onClick={(e) => {
+                                        e.preventDefault();
                                         setSelectedProductForCheckout(item);
                                         setSelectedPaymentBlock(comp);
                                         setProductCheckoutSheetOpen(true);
@@ -1194,19 +1209,17 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
                                   ) : (
                                     <Button
                                       size="sm"
-                                      className="rounded-full shrink-0"
+                                      className="rounded-full shrink-0 pointer-events-none"
                                       style={{ background: theme_color }}
-                                      onClick={() =>
-                                        setEmbedUrl(`${linkPrefix}${item.id}?embed=true`)
-                                      }
                                     >
                                       {btnLabel}
                                     </Button>
                                   ))}
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          </CardWrapper>
+                        );
+                      })}
                       </div>
                     </div>
                   );
@@ -1228,26 +1241,7 @@ export function RenderedPage({ slug, isPreview = false }: { slug: string; isPrev
           </div>
         </div>
 
-        {/* Footer Watermark */}
-        <footer className="w-full py-8 mt-12 border-t border-border/40 bg-card/30">
-          <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center text-center">
-            <p className="text-sm text-muted-foreground flex items-center gap-2">
-              Built with
-              <span className="font-bold text-foreground flex items-center gap-1.5">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-primary text-[10px] text-primary-foreground">
-                  A
-                </span>
-                Agatike Connect
-              </span>
-            </p>
-            <a
-              href="/"
-              className="text-xs text-muted-foreground/60 hover:text-primary transition-colors mt-2"
-            >
-              Create your own page today
-            </a>
-          </div>
-        </footer>
+        <StorefrontFooter />
 
         <Dialog open={!!embedUrl} onOpenChange={(open) => !open && setEmbedUrl(null)}>
           <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 border-0 bg-background shadow-2xl rounded-xl overflow-hidden flex flex-col">

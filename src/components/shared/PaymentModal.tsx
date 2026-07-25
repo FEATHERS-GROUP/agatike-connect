@@ -324,11 +324,16 @@ export function PaymentModal({
                                 e.stopPropagation();
                                 const cleanPhone = userPhone.replace(/\D/g, "");
                                 const max = selectedNetworkObj?.maxLen || 15;
-                                // If cleanPhone starts with country code, we might want to strip it,
-                                // but let's just use the last maxLen characters if it's too long,
-                                // or just let them edit it.
-                                const val =
-                                  cleanPhone.length > max ? cleanPhone.slice(-max) : cleanPhone;
+                                let val = cleanPhone;
+                                if (selectedNetworkObj && val.startsWith(selectedNetworkObj.code)) {
+                                  val = val.slice(selectedNetworkObj.code.length);
+                                }
+                                if (val.startsWith("0")) {
+                                  val = val.slice(1);
+                                }
+                                if (val.length > max) {
+                                  val = val.slice(-max);
+                                }
                                 setPhone(val);
                               }}
                               className="text-[10px] font-medium text-primary hover:underline bg-primary/10 px-2 py-0.5 rounded-full transition-colors"
@@ -352,8 +357,11 @@ export function PaymentModal({
                             }
                             value={phone}
                             onChange={(e) => {
-                              const val = e.target.value.replace(/\D/g, "");
+                              let val = e.target.value.replace(/\D/g, "");
                               const max = selectedNetworkObj?.maxLen || 15;
+                              if (val.startsWith("0") && val.length > 1) {
+                                val = val.slice(1);
+                              }
                               if (val.length <= max) setPhone(val);
                             }}
                             className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent rounded-none"
@@ -367,13 +375,12 @@ export function PaymentModal({
             </div>
           </div>
 
-          {/* Right Column: Receipt / Summary */}
           <div 
-            className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-foreground border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-background relative overflow-hidden"
-            style={{ backgroundColor: window.innerWidth >= 768 ? (themeColor || 'var(--foreground)') : undefined }}
+            className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-[var(--panel-bg)] border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-background relative overflow-hidden"
+            style={{ "--panel-bg": themeColor || 'var(--foreground)' } as React.CSSProperties}
           >
             {/* Subtle Gradient Overlay on Desktop */}
-            <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
+            <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay pointer-events-none"></div>
             
             <h3 className="font-bold text-lg md:text-xl mb-6 md:mb-8 relative z-10 md:text-background/90">Order Summary</h3>
 
@@ -528,8 +535,8 @@ export function PaymentModal({
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
                 style={
                   themeColor
-                    ? { backgroundColor: themeColor, color: "#fff" }
-                    : { background: "var(--gradient-primary)" }
+                    ? { backgroundColor: "#fff", color: themeColor }
+                    : { background: "var(--gradient-primary)", color: "#fff" }
                 }
               >
                 {isGenerating

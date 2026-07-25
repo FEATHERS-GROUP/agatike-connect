@@ -1,4 +1,5 @@
 import { createFileRoute, notFound, useParams } from "@tanstack/react-router";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EventDetailsMobile } from "@/components/mobile/EventDetailsMobile";
 import { EventDetailsDesktop } from "@/components/desktop/EventDetailsDesktop";
 import { getEventById } from "@/api/events";
@@ -41,7 +42,26 @@ export const Route = createFileRoute("/events/$eventId")({
     };
   },
   component: EventDetailsRoute,
+  pendingComponent: EventDetailsSkeleton,
 });
+
+function EventDetailsSkeleton() {
+  return (
+    <div className="min-h-screen bg-background p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+      <Skeleton className="w-full aspect-[21/9] rounded-2xl md:rounded-3xl" />
+      <div className="grid md:grid-cols-[1fr_400px] gap-8">
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-3/4 rounded-lg" />
+          <Skeleton className="h-4 w-1/2 rounded-lg" />
+          <Skeleton className="h-32 w-full rounded-2xl mt-8" />
+        </div>
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full rounded-3xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function EventDetailsRoute() {
   const { event } = Route.useLoaderData();

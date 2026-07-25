@@ -9,6 +9,7 @@ import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 
 import { EventBannerDesktop } from "./EventBannerDesktop";
 import { EventCheckoutSidebar } from "./EventCheckoutSidebar";
+import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 import { EventOrganizerInfo } from "@/components/shared/event-details/EventOrganizerInfo";
 import { EventAttendees } from "@/components/shared/event-details/EventAttendees";
 import { EventLineup } from "@/components/shared/event-details/EventLineup";
@@ -28,13 +29,21 @@ export function EventDetailsDesktop({
   event?: any;
 }) {
   const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
 
   const d = useEventDetails(eventId, initialEvent);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      {!isSubdomain && <Navbar />}
 
       <EventBannerDesktop
         cover={d.ev.cover}
@@ -206,7 +215,8 @@ export function EventDetailsDesktop({
         />
       </div>
 
-      <Footer />
+      {!isSubdomain && <Footer />}
+      {isSubdomain && <StorefrontFooter />}
 
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">

@@ -74,8 +74,8 @@ export async function generateProductReceiptPdf(orders: any[], organizerName: st
   orders.forEach((order) => {
     const productName = order.product?.name || "Product Item";
     const qty = order.qty || 1;
-    const price = order.amount_paid / qty;
-    const total = order.amount_paid;
+    const total = order.amount_paid || 0;
+    const price = total / qty;
     
     totalAmount += total;
 

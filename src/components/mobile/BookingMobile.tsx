@@ -55,12 +55,21 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 
 export function BookingMobile({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
 
   const [paymentMethod, setPaymentMethod] = useState("apple");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);

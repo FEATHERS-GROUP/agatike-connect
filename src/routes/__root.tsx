@@ -252,10 +252,12 @@ function RootComponent() {
                     <TelemetryTracker />
                     <GlobalNotificationListener />
                     <GlobalUserNotificationListener />
-                    {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-                    <div className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}>
-                      <Outlet />
-                    </div>
+                    <SubdomainThemeProvider>
+                      {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
+                      <div className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                        <Outlet />
+                      </div>
+                    </SubdomainThemeProvider>
 
                     <CartSidebar />
 
@@ -312,6 +314,45 @@ function AuthRedirect() {
   }, [isLoading, isLoggedIn, location.pathname, navigate]);
 
   return null;
+}
+
+function SubdomainThemeProvider({ children }: { children: React.ReactNode }) {
+  const [subdomainSlug, setSubdomainSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
+      const potentialSlug = parts[0];
+      if (potentialSlug !== "www") {
+        setSubdomainSlug(potentialSlug);
+      }
+    }
+  }, []);
+
+  const { data: pageData } = useQuery({
+    queryKey: ["workspace-page-by-slug", subdomainSlug],
+    queryFn: () => getWorkspacePageBySlug({ data: { slug: subdomainSlug! } } as any),
+    enabled: !!subdomainSlug,
+  });
+
+  const settingsBlock = pageData?.components?.find((c: any) => c.type === "page_settings");
+  const themeColor = settingsBlock?.themeColor || pageData?.theme_color || undefined;
+
+  return (
+    <>
+      {themeColor && (
+        <style>
+          {`
+            :root {
+              --primary: ${themeColor};
+            }
+          `}
+        </style>
+      )}
+      {children}
+    </>
+  );
 }
 
 function AuthDependentFeedBubble({ hideNav }: { hideNav: boolean }) {

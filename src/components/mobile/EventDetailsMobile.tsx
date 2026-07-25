@@ -13,6 +13,7 @@ import { EventReviews } from "@/components/shared/event-details/EventReviews";
 import { EventVipPrivileges } from "@/components/shared/event-details/EventVipPrivileges";
 import { EventCheckoutDrawer } from "./EventCheckoutDrawer";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
+import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 import {
   Drawer,
   DrawerContent,
@@ -34,10 +35,15 @@ export function EventDetailsMobile({
   const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTicketsExpanded, setIsTicketsExpanded] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsClient(true);
+    if (typeof window !== "undefined") {
+      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -301,7 +307,13 @@ export function EventDetailsMobile({
         timerDate={d.timerDate}
       />
 
-      {d.currentVenueProject && d.activeTicketIdForMap && (
+      {isSubdomain && (
+        <div className="pb-[120px]">
+          <StorefrontFooter />
+        </div>
+      )}
+
+      {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <>
           <Drawer open={d.isSeatModalOpen} onOpenChange={d.setIsSeatModalOpen}>
             <DrawerContent className="h-[100dvh] max-h-[100dvh] flex flex-col bg-background px-0 pb-0 border-none rounded-none focus:outline-none">
