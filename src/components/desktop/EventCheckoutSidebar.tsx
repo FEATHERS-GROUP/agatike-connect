@@ -109,7 +109,7 @@ export function EventCheckoutSidebar({
               <Button
                 asChild
                 className="mt-4 h-12 w-full rounded-2xl text-base shadow-[var(--shadow-glow)]"
-                style={{ background: "var(--gradient-primary)" }}
+                style={{ background: "var(--custom-theme-color, var(--gradient-primary))" }}
               >
                 {waitlistUrl.startsWith("/") ? (
                   <Link to={waitlistUrl} className="w-full block">
@@ -315,7 +315,7 @@ export function EventCheckoutSidebar({
                     ? "var(--muted)"
                     : total === 0 && totalTickets > 0
                       ? "var(--foreground)"
-                      : "var(--gradient-primary)",
+                      : "var(--custom-theme-color, var(--gradient-primary))",
                 opacity: isPastEvent || isSuspended || totalTickets === 0 ? 0.5 : 1,
                 pointerEvents: isPastEvent || isSuspended || totalTickets === 0 ? "none" : "auto",
                 color: isPastEvent || isSuspended ? "var(--muted-foreground)" : undefined,

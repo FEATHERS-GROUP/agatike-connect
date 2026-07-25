@@ -396,7 +396,7 @@ export function EventDetailsMobile({
                 </div>
                 <Button
                   className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-[0_8px_20px_rgb(var(--primary)_/_0.3)] active:scale-[0.98] transition-all"
-                  style={{ background: "var(--gradient-primary)" }}
+                  style={{ background: "var(--custom-theme-color, var(--gradient-primary))" }}
                   onClick={() => d.setIsSeatModalOpen(false)}
                   disabled={d.selectedSeatsObj.length === 0}
                 >

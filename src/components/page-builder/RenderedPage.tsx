@@ -303,6 +303,7 @@ export function RenderedPage({ slug, isPreview = false, children, hideHero = fal
           {
             "--primary": theme_color,
             "--primary-foreground": "#fff",
+            "--custom-theme-color": theme_color,
             fontFamily: `'${fontFamily}', sans-serif`,
           } as React.CSSProperties
         }
