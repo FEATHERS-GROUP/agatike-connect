@@ -174,7 +174,7 @@ function CartCheckoutPage() {
           <ShoppingCart className="w-20 h-20 text-muted-foreground opacity-50" />
           <h2 className="text-2xl font-bold">Your cart is empty</h2>
           <Button onClick={() => window.history.back()} variant="outline">
-            Return to Store
+            Return to {pageData?.title || "Store"}
           </Button>
        </div>
     );
@@ -202,7 +202,7 @@ function CartCheckoutPage() {
             style={{ backgroundColor: themeColor, color: "#fff" }}
             onClick={() => window.history.back()}
           >
-            Return to Store
+            Return to {pageData?.title || "Store"}
           </Button>
         </div>
       </div>

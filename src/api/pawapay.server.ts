@@ -252,17 +252,26 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           } else if (confirmedOrders.length > 0 && guestEmail) {
             // Product-only purchase email receipt
             const { sendAttendeeEmail } = await import("./email");
+            const { generateProductReceiptPdf } = await import("./receipts");
             const orgName = wsName || domain;
+
+            let pdfBase64;
+            try {
+              const pdfBuffer = await generateProductReceiptPdf(confirmedOrders, orgName);
+              pdfBase64 = pdfBuffer.toString("base64");
+            } catch (e) {
+              console.error("Failed to generate product receipt PDF", e);
+            }
 
             await sendAttendeeEmail({
               data: {
                 to: guestEmail,
                 subject: `Your purchase from ${orgName} is confirmed!`,
-                message: detailedMessage,
+                message: detailedMessage + `<br/><br/><i>Your purchase receipt is attached to this email.</i>`,
                 eventName: "Product Store",
                 organizerName: orgName,
                 appUrl,
-                badgeLink: `${appUrl}/`, // No specific badge link for products yet
+                pdfBase64,
               },
             } as any).catch((e) => console.error("Failed to send product email", e));
           }

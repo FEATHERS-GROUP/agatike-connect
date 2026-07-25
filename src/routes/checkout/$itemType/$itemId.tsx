@@ -213,7 +213,7 @@ function CheckoutPage() {
             style={{ backgroundColor: themeColor, color: "#fff" }}
             onClick={() => window.history.back()}
           >
-            Return to Store
+            Return to {pageData?.title || "Store"}
           </Button>
         </div>
       </div>

@@ -217,7 +217,14 @@ function RootComponent() {
     } catch (_) {}
   }, [location.pathname]);
 
-  const isSubdomain = typeof window !== "undefined" && window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
 
   // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, auth pages, and all subdomains (page builder)
   const hideNav = Boolean(

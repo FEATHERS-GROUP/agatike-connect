@@ -12,6 +12,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       organizerSocials,
       badgeLink,
       appUrl,
+      pdfBase64,
     } = ctx.data as any;
 
     const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -129,18 +130,29 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
     const senderEmail = `${sanitizedName}@agatike.rw`;
     const senderName = organizerName || "Agatike Connect";
 
+    const payload: any = {
+      from: `${senderName} <${senderEmail}>`,
+      to: [to],
+      subject: subject || `Update from ${organizerName}: ${eventName}`,
+      html: html,
+    };
+
+    if (pdfBase64) {
+      payload.attachments = [
+        {
+          filename: `Receipt.pdf`,
+          content: pdfBase64,
+        },
+      ];
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
-      body: JSON.stringify({
-        from: `${senderName} <${senderEmail}>`,
-        to: [to],
-        subject: subject || `Update from ${organizerName}: ${eventName}`,
-        html: html,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();

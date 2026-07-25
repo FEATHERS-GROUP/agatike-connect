@@ -203,11 +203,11 @@ export function PaymentModal({
     >
       <DialogContent
         aria-describedby={undefined}
-        className="max-w-[95vw] md:max-w-3xl p-0 overflow-hidden rounded-3xl bg-background/95 backdrop-blur-xl border-border/60"
+        className="w-full h-[100dvh] max-w-full m-0 p-0 rounded-none sm:h-auto sm:max-w-[95vw] md:max-w-4xl lg:max-w-5xl sm:rounded-3xl overflow-hidden bg-background/95 backdrop-blur-xl border-0 sm:border border-border/60 flex flex-col"
       >
-        <div className="flex flex-col md:flex-row h-full">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden h-full">
           {/* Left Column: Payment Methods */}
-          <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+          <div className="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto">
             <DialogHeader className="mb-2">
               <DialogTitle className="text-2xl font-bold text-left">Payment Method</DialogTitle>
             </DialogHeader>
@@ -368,10 +368,16 @@ export function PaymentModal({
           </div>
 
           {/* Right Column: Receipt / Summary */}
-          <div className="md:w-80 bg-secondary/30 border-t md:border-t-0 md:border-l border-border/60 p-6 flex flex-col">
-            <h3 className="font-bold text-lg mb-6">Order Summary</h3>
+          <div 
+            className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-foreground border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-background relative overflow-hidden"
+            style={{ backgroundColor: window.innerWidth >= 768 ? (themeColor || 'var(--foreground)') : undefined }}
+          >
+            {/* Subtle Gradient Overlay on Desktop */}
+            <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
+            
+            <h3 className="font-bold text-lg md:text-xl mb-6 md:mb-8 relative z-10 md:text-background/90">Order Summary</h3>
 
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 space-y-6 relative z-10">
               <div className="space-y-2">
                 {quantity && subtotal && (
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
@@ -384,8 +390,8 @@ export function PaymentModal({
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm pt-2 border-t border-border/40">
-                  <span className="text-muted-foreground">Base Price</span>
+                <div className="flex justify-between text-sm pt-4 border-t border-border/40 md:border-background/20">
+                  <span className="text-muted-foreground md:text-background/70">Base Price</span>
                   <span className="font-semibold">
                     {baseCurrency} {baseAmount.toLocaleString()}
                   </span>
@@ -423,25 +429,25 @@ export function PaymentModal({
                 <span className="font-bold">Total to Pay</span>
                 <div className="text-right">
                   {isSimulating ? (
-                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground md:text-background/70">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Calculating exact fees...</span>
                     </div>
                   ) : simulation && paymentMethod === "momo" ? (
                     <div className="space-y-1 w-full text-sm">
-                      <div className="flex justify-between text-gray-600">
+                      <div className="flex justify-between text-muted-foreground md:text-background/70">
                         <span>Base Ticket</span>
                         <span>
                           {baseAmount} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between text-gray-600">
+                      <div className="flex justify-between text-muted-foreground md:text-background/70">
                         <span>Service Fee</span>
                         <span>
                           {simulation.serviceFee.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between font-medium text-gray-900 border-t pt-1">
+                      <div className="flex justify-between font-medium text-foreground md:text-background border-t border-border/40 md:border-background/20 pt-1">
                         <span>Total Amount</span>
                         <span>
                           {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
@@ -501,7 +507,7 @@ export function PaymentModal({
                       )}
                     </div>
                   ) : (
-                    <span className="font-semibold text-lg text-gray-900 dark:text-white">
+                    <span className="font-semibold text-lg text-foreground md:text-background">
                       Total: {convertedAmount.toLocaleString()} {targetCurrency}
                     </span>
                   )}
