@@ -13,7 +13,6 @@ import { EventReviews } from "@/components/shared/event-details/EventReviews";
 import { EventVipPrivileges } from "@/components/shared/event-details/EventVipPrivileges";
 import { EventCheckoutDrawer } from "./EventCheckoutDrawer";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
-import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 import {
   Drawer,
   DrawerContent,
@@ -56,8 +55,9 @@ export function EventDetailsMobile({
   return (
     <div className="min-h-screen bg-background text-foreground pb-[140px] md:pb-24">
       {/* Sticky Top Header */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
+      {!isSubdomain && (
+        <div
+          className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
           isScrolled
             ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
             : "bg-transparent"
@@ -81,7 +81,7 @@ export function EventDetailsMobile({
           </Button>
         </div>
       </div>
-
+      )}
       {/* Hero Image */}
       <div className="relative aspect-[4/5] w-full overflow-hidden">
         <img
@@ -116,7 +116,6 @@ export function EventDetailsMobile({
             <span className="text-[11px] text-muted-foreground truncate">{d.city}</span>
           </div>
         </div>
-
         <EventOrganizerInfo
           organizerName={d.organizerName}
           organizerHandle={d.organizerHandle}
@@ -307,11 +306,7 @@ export function EventDetailsMobile({
         timerDate={d.timerDate}
       />
 
-      {isSubdomain && (
-        <div className="pb-[120px]">
-          <StorefrontFooter />
-        </div>
-      )}
+
 
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <>

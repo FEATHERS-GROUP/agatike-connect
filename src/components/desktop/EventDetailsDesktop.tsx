@@ -9,7 +9,6 @@ import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 
 import { EventBannerDesktop } from "./EventBannerDesktop";
 import { EventCheckoutSidebar } from "./EventCheckoutSidebar";
-import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 import { EventOrganizerInfo } from "@/components/shared/event-details/EventOrganizerInfo";
 import { EventAttendees } from "@/components/shared/event-details/EventAttendees";
 import { EventLineup } from "@/components/shared/event-details/EventLineup";
@@ -216,7 +215,6 @@ export function EventDetailsDesktop({
       </div>
 
       {!isSubdomain && <Footer />}
-      {isSubdomain && <StorefrontFooter />}
 
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">

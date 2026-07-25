@@ -256,14 +256,19 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const domain = wsSlug ? `${wsSlug}.${baseDomain}` : baseDomain;
 
           let detailedMessage = "";
+          let shortSmsMessage = "";
 
           if (!firstAtt && confirmedOrders.length > 0) {
             // Product-only purchase
             detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${domain}!`;
+            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
           } else {
             // Ticket purchase
             detailedMessage =
-              `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed for ${eventName}! Date: ${dateStr}. ${eventLocation ? `Location: ${eventLocation}.` : ""} ${ticketCodes ? `Tickets: ${ticketCodes}` : ""} ${productsText ? `Products: ${productsText}` : ""}`.trim();
+              `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
+              `\n\nOrganizer: ${domain}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
+              (productsText ? `\nProducts: ${productsText}` : "");
+            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
           }
 
           if (firstAtt) {
@@ -341,7 +346,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           if (phoneToNotify) {
             const { sendSMS } = await import("./pindo");
             try {
-              await sendSMS(phoneToNotify, detailedMessage);
+              await sendSMS(phoneToNotify, shortSmsMessage);
             } catch (e) {
               console.error("[Pindo SMS] Failed to send payment confirmation:", e);
             }
