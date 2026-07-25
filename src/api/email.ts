@@ -125,6 +125,10 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
     </div>
   `;
 
+    const sanitizedName = organizerName ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "") : "hello";
+    const senderEmail = `${sanitizedName}@agatike.rw`;
+    const senderName = organizerName || "Agatike Connect";
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -132,7 +136,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
         Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
+        from: `${senderName} <${senderEmail}>`,
         to: [to],
         subject: subject || `Update from ${organizerName}: ${eventName}`,
         html: html,
