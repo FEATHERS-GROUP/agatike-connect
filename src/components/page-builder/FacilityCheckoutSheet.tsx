@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/site/Navbar";
-import { Footer } from "@/components/site/Footer";
 import { formatCurrency } from "@/lib/currency";
 import { toast } from "sonner";
 import { format, isBefore, startOfDay, addDays } from "date-fns";
@@ -700,7 +699,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
   if (isSuccess) {
     return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-xl bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
         <SheetTitle className="sr-only">Checkout</SheetTitle>
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
           <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
@@ -799,7 +798,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-xl bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
         <SheetTitle className="sr-only">Checkout</SheetTitle>
         <div className="flex flex-col text-foreground p-6">
 
@@ -1083,7 +1082,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
                   (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
               }
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-              style={{ background: "var(--gradient-primary)" }}
+              style={{ background: themeColor || "var(--gradient-primary)" }}
             >
               {bookingMutation.isPending
                 ? "Processing..."
@@ -1139,7 +1138,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
                 (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
             }
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
-            style={{ background: "var(--gradient-primary)" }}
+            style={{ background: themeColor || "var(--gradient-primary)" }}
           >
             {bookingMutation.isPending ? (
               <>
@@ -1205,8 +1204,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
         </div>
       )}
 
-      <Footer />
-      {isGenerating && issuedTickets.length > 0 && venueProject && (
+            {isGenerating && issuedTickets.length > 0 && venueProject && (
         <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>
           {issuedTickets.map((ticket: any) => (
             <div

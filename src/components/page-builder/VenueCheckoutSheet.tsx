@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
-import { Footer } from "@/components/site/Footer";
 import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
@@ -546,7 +545,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-xl bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
         <SheetTitle className="sr-only">Checkout</SheetTitle>
         <div className="flex flex-col text-foreground p-6">
       {showOverrideDialog && (
@@ -964,7 +963,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                         type="button"
                         disabled
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                        style={{ background: "var(--gradient-primary)" }}
+                        style={{ background: themeColor || "var(--gradient-primary)" }}
                       >
                         <span className="flex items-center justify-center">
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -976,7 +975,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                         type="button"
                         onClick={() => setIsGenerating(true)}
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                        style={{ background: "var(--gradient-primary)" }}
+                        style={{ background: themeColor || "var(--gradient-primary)" }}
                       >
                         Retry Ticket Generation
                       </Button>
@@ -985,7 +984,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                         type="submit"
                         disabled={totalTickets === 0 || !isStep2Valid}
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
-                        style={{ background: "var(--gradient-primary)" }}
+                        style={{ background: themeColor || "var(--gradient-primary)" }}
                       >
                         Pay{" "}
                         {total > 0
