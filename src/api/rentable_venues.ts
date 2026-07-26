@@ -83,6 +83,7 @@ const GET_RENTABLE_VENUES = `
   query GetRentableVenues($workspace_id: uuid!) {
     rentable_venues(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
+      workspace_id
       name
       type
       city

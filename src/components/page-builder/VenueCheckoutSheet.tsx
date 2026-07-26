@@ -963,7 +963,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                         type="button"
                         disabled
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                        style={{ background: themeColor || "var(--gradient-primary)" }}
+                        style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
                       >
                         <span className="flex items-center justify-center">
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -975,7 +975,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                         type="button"
                         onClick={() => setIsGenerating(true)}
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                        style={{ background: themeColor || "var(--gradient-primary)" }}
+                        style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
                       >
                         Retry Ticket Generation
                       </Button>
@@ -984,7 +984,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                         type="submit"
                         disabled={totalTickets === 0 || !isStep2Valid}
                         className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
-                        style={{ background: themeColor || "var(--gradient-primary)" }}
+                        style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
                       >
                         Pay{" "}
                         {total > 0

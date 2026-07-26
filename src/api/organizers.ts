@@ -644,7 +644,7 @@ export const sendAccountConversionOtp = createServerFn({ method: "POST" }).handl
 
   if (phone) {
     try {
-      const { sendSMS } = await import("./pindo");
+      const { sendSMS } = await import("./pindo.server");
       await sendSMS(phone, `Your Agatike Connect verification code is: ${otp}`, session.sub);
     } catch (err) {
       console.error("Failed to send SMS OTP:", err);

@@ -344,7 +344,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             phoneToNotify = confirmedOrders[0].phone;
 
           if (phoneToNotify) {
-            const { sendSMS } = await import("./pindo");
+            const { sendSMS } = await import("./pindo.server");
             try {
               await sendSMS(phoneToNotify, shortSmsMessage);
             } catch (e) {
@@ -406,7 +406,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         // Send general SMS Confirmation via Pindo for other types
         if (tx.type !== "event_ticket" && tx.type !== "page_builder_checkout" && body?.payer?.address?.value) {
           const phone = body.payer.address.value;
-          const { sendSMS } = await import("./pindo");
+          const { sendSMS } = await import("./pindo.server");
 
           // Use the PawaPay callback's requestedAmount + currency — this is already
           // converted to the customer's local currency (e.g. 56,650 RWF not $4.35 USD)

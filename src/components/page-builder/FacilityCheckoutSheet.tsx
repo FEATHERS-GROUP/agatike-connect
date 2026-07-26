@@ -416,7 +416,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
             type: "venue_booking",
-            referenceId: results.map((r: any) => r.id).join(","),
+            referenceId: results.length > 1 ? paymentRef! : results[0].id,
             workspaceId: venue.workspace_id,
             reason: `${facility?.name} Booking`,
             shortfall: paymentDetails?.shortfall || 0,
@@ -483,6 +483,23 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
       toast.error(err.message || "Failed to create booking.");
     },
   });
+
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDate(undefined);
+      setQuantity(1);
+      setIsGenerating(false);
+      setIssuedTickets([]);
+      setSelectedSlots([]);
+      setIsSuccess(false);
+      setIsPaymentModalOpen(false);
+      setPawapayDepositId(null);
+      setIsPollingPawaPay(false);
+      setBookingRef("");
+      setSummaryExpanded(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isPollingPawaPay || !pawapayDepositId) return;
@@ -1082,7 +1099,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
                   (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
               }
               className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-              style={{ background: themeColor || "var(--gradient-primary)" }}
+              style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
             >
               {bookingMutation.isPending
                 ? "Processing..."
@@ -1138,7 +1155,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
                 (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
             }
             className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
-            style={{ background: themeColor || "var(--gradient-primary)" }}
+            style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
           >
             {bookingMutation.isPending ? (
               <>
@@ -1170,6 +1187,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
         }
         baseCurrency={currency}
         userPhone={phone}
+        themeColor={themeColor}
       />
 
       {isPollingPawaPay && (

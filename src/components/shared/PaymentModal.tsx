@@ -109,7 +109,7 @@ export function PaymentModal({
   });
 
   const baseCurrency = propsBaseCurrency || wallet?.currency || "RWF";
-  const supportedNetworks = wallet?.supported_networks || [];
+  const supportedNetworks = wallet?.supported_networks?.length > 0 ? wallet.supported_networks : ALL_NETWORKS.map(n => n.value);
 
   // Fetch profitability check for all supported networks
   const { data: profitableNetworksData, isLoading: isProfitableLoading } = useQuery({
@@ -532,11 +532,7 @@ export function PaymentModal({
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-                style={
-                  themeColor
-                    ? { backgroundColor: "#fff", color: themeColor }
-                    : { background: "var(--gradient-primary)", color: "#fff" }
-                }
+                style={{ background: themeColor || "var(--gradient-primary)", color: "#fff" }}
               >
                 {isGenerating
                   ? "Generating..."
