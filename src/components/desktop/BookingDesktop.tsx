@@ -613,7 +613,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             }
           } else {
             for (const ticket of issuedTickets) {
-              const fallbackPdf = generateFallbackReceipt({
+              const fallbackPdf = await generateFallbackReceipt({
                 entityName: event?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,

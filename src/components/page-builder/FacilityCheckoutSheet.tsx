@@ -572,7 +572,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
         try {
           const attachments = [];
 
-          const coverUrl = venueProject.coverImage;
+          const coverUrl = venueProject?.coverImage;
           if (coverUrl) {
             await new Promise<void>((resolve) => {
               const img = new Image();
@@ -622,7 +622,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
             }
           } else {
             for (const ticket of issuedTickets) {
-              const fallbackPdf = generateFallbackReceipt({
+              const fallbackPdf = await generateFallbackReceipt({
                 entityName: venue?.name || "Event/Venue",
                 ticket,
                 bookingRef: ticket.booking_ref || bookingRef,

@@ -387,7 +387,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             }
           } else {
             for (const ticket of issuedTickets) {
-              const fallbackPdf = generateFallbackReceipt({
+              const fallbackPdf = await generateFallbackReceipt({
                 entityName: activeMovie?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,

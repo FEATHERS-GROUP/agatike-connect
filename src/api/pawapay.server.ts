@@ -150,6 +150,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   names
                   qrcode_number
                   events {
+                    id
                     title
                     tour_stops
                     workspaces {
@@ -279,6 +280,38 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
             ];
 
+            let fallbackPdfBase64: string | undefined = undefined;
+            if (firstAtt.events?.id) {
+              try {
+                const projRes = await hasuraRequest<{ workspace_ticket_projects: any[] }>(`
+                  query GetTicketProject($eventId: uuid!) {
+                    workspace_ticket_projects(where: { event_id: { _eq: $eventId } }, limit: 1) { id }
+                  }
+                `, { eventId: firstAtt.events.id });
+                
+                if (!projRes.workspace_ticket_projects || projRes.workspace_ticket_projects.length === 0) {
+                  const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
+                  
+                  // Extract time separately for layout
+                  const tourStops = Array.isArray(firstAtt.events.tour_stops) ? firstAtt.events.tour_stops : (firstAtt.events.tour_stops ? [firstAtt.events.tour_stops] : []);
+                  const firstStop = tourStops[0] || {};
+                  
+                  const fallbackRes = await generateFallbackReceipt({
+                    entityName: orgName,
+                    customerName: firstAtt.names,
+                    ticket: { id: firstAtt.qrcode_number, tier: "Event Ticket" },
+                    dateStr: firstStop.date || "TBD",
+                    timeStr: firstStop.time || "TBD",
+                    locationStr: eventLocation,
+                    bookingRef: tx.reference_id
+                  });
+                  fallbackPdfBase64 = fallbackRes.content;
+                }
+              } catch(e) {
+                console.error("Failed to generate fallback ticket", e);
+              }
+            }
+
             for (const email of emailAddresses) {
               await sendAttendeeEmail({
                 data: {
@@ -289,6 +322,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   organizerName: orgName,
                   appUrl,
                   badgeLink: `${appUrl}/ticket/${firstAtt.id}`,
+                  pdfBase64: fallbackPdfBase64,
                 },
               } as any).catch((e) => console.error("Failed to send attendee email", e));
             }
@@ -383,7 +417,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             const confirmQuery = `
               mutation ConfirmVenueBookings($ref: String!) {
                 update_venue_bookings(
-                  where: { tickets_data: { _contains: { payment_ref: $ref } } },
+                  where: {
+                    _or: [
+                      { tickets_data: { _contains: { payment_ref: $ref } } },
+                      { tickets_data: { _contains: { summary: { payment_ref: $ref } } } }
+                    ]
+                  },
                   _set: { payment_status: "Paid", status: "Confirmed" }
                 ) { affected_rows }
               }
