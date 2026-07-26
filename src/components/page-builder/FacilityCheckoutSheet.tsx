@@ -731,7 +731,10 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
   if (isSuccess) {
     return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent 
+        className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
+        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
+      >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
           <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
@@ -830,7 +833,10 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent 
+        className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
+        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
+      >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
         <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
 
@@ -1206,16 +1212,16 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
 
       {isPollingPawaPay && (
         <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
+          <Smartphone className="h-16 w-16 mb-6 animate-pulse" style={{ color: "var(--primary)" }} />
           <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
           <p className="text-muted-foreground mb-8 max-w-sm">
             We've sent a payment request to your mobile number. Please enter your PIN to confirm the
             payment.
           </p>
           <div className="flex gap-2 mb-8 justify-center">
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
+            <div className="h-2 w-2 rounded-full animate-bounce" style={{ backgroundColor: "var(--primary)" }} />
+            <div className="h-2 w-2 rounded-full animate-bounce delay-75" style={{ backgroundColor: "var(--primary)" }} />
+            <div className="h-2 w-2 rounded-full animate-bounce delay-150" style={{ backgroundColor: "var(--primary)" }} />
           </div>
           <Button
             variant="outline"

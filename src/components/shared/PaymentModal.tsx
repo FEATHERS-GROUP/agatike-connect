@@ -377,7 +377,7 @@ export function PaymentModal({
 
           <div 
             className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-[var(--panel-bg)] border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-background relative overflow-hidden"
-            style={{ "--panel-bg": themeColor || 'var(--foreground)' } as React.CSSProperties}
+            style={{ "--panel-bg": 'var(--foreground)' } as React.CSSProperties}
           >
             {/* Subtle Gradient Overlay on Desktop */}
             <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay pointer-events-none"></div>

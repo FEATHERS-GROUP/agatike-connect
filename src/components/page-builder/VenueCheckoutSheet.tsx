@@ -54,6 +54,17 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
 
   const storageKey = `venue_checkout_desktop_${venue?.id}`;
   const [date, setDate] = useState("");
@@ -469,7 +480,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isStep1Valid || !isStep2Valid) return;
-    if (!user && !hasSkippedAuth) {
+    if (!user && !hasSkippedAuth && !isSubdomain) {
       setIsAuthSuggestionOpen(true);
       return;
     }
@@ -477,78 +488,93 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      const timer = setTimeout(() => {
-        navigate({ to: "/venues" });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess, navigate]);
+    // Removed redirection to /venues since this is used on custom domains/pages
+  }, [isSuccess]);
 
-  if (isPollingPawaPay) {
-    return (
-      <div className="min-h-screen bg-background text-foreground relative flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
-          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-            payment.
-          </p>
-          <div className="flex gap-2 mb-8 justify-center">
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
-          </div>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              setIsPollingPawaPay(false);
-              if (pawapayDepositId) {
-                try {
-                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                } catch (e) {
-                  console.error("Cancel cleanup failed:", e);
-                }
-              }
-            }}
-            className="rounded-2xl h-12 px-8"
-          >
-            Cancel Payment
-          </Button>
-        </main>
-      </div>
-    );
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-secondary/20 flex flex-col items-center justify-center p-4">
-        <div className="bg-card p-12 rounded-3xl shadow-xl text-center max-w-md w-full border border-border/50">
-          <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
-          <p className="text-muted-foreground mb-8">
-            Your ticket for {venue.name} has been secured.
-          </p>
-          <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
-            <Ticket className="w-6 h-6 text-primary" />
-            <span className="font-bold tracking-widest">
-              {Math.random().toString(36).substring(2, 10).toUpperCase()}
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground">Redirecting to venues...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Wrap all states in the Sheet to prevent unmounting
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent 
+        className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
+        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
+      >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
-        <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
-      {showOverrideDialog && (
+
+        {isPollingPawaPay ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <Smartphone
+              className="h-16 w-16 mb-6 animate-pulse"
+              style={{ color: "var(--primary)" }}
+            />
+            <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+              We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment.
+            </p>
+            <div className="flex gap-2 mb-8 justify-center">
+              <div
+                className="h-2 w-2 rounded-full animate-bounce"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+              <div
+                className="h-2 w-2 rounded-full animate-bounce delay-75"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+              <div
+                className="h-2 w-2 rounded-full animate-bounce delay-150"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setIsPollingPawaPay(false);
+                if (pawapayDepositId) {
+                  try {
+                    await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                  } catch (e) {
+                    console.error("Cancel cleanup failed:", e);
+                  }
+                }
+              }}
+              className="rounded-2xl h-12 px-8"
+            >
+              Cancel Payment
+            </Button>
+          </div>
+        ) : isSuccess ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <div className="bg-card p-12 rounded-3xl shadow-xl text-center max-w-md w-full border border-border/50">
+              <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
+              <h2 className="text-3xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
+              <p className="text-muted-foreground mb-8">
+                Your ticket for {venue.name} has been secured.
+              </p>
+              <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
+                <Ticket
+                  className="w-6 h-6"
+                  style={{ color: "var(--primary)" }}
+                />
+                <span className="font-bold tracking-widest">
+                  {Math.random().toString(36).substring(2, 10).toUpperCase()}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">You can now safely close this window.</p>
+              <Button onClick={onClose} className="mt-6 w-full rounded-2xl h-12 text-lg font-bold text-white shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                Done
+              </Button>
+            </div>
+          </div>
+        ) : isGenerating ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <Loader2 className="h-16 w-16 mb-6 animate-spin" style={{ color: "var(--primary)" }} />
+            <h1 className="text-2xl font-bold mb-3">Generating Tickets...</h1>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              Please wait while we prepare your custom tickets. This might take a moment.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
+            {showOverrideDialog && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
           <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
             <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
@@ -599,15 +625,18 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
           <div className="flex-1 bg-card rounded-3xl p-5 md:p-6 border border-border/50 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "text-white" : "bg-secondary text-muted-foreground"}`}
+                style={step >= 1 ? { backgroundColor: "var(--primary)" } : undefined}
               >
                 1
               </div>
               <div
-                className={`h-1 w-12 rounded-full ${step >= 2 ? "bg-primary" : "bg-secondary"}`}
+                className={`h-1 w-12 rounded-full ${step < 2 ? "bg-secondary" : ""}`}
+                style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
               />
               <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? "text-white" : "bg-secondary text-muted-foreground"}`}
+                style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
               >
                 2
               </div>
@@ -1015,7 +1044,10 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
 
               <div className="border-t border-border/40 pt-4 flex justify-between items-end">
                 <span className="text-muted-foreground font-semibold">Total</span>
-                <span className="text-3xl font-bold text-primary">
+                <span
+                  className="text-3xl font-bold"
+                  style={{ color: "var(--primary)" }}
+                >
                   {total > 0
                     ? `${venue.currency} ${total.toLocaleString()}`
                     : totalTickets > 0
@@ -1108,9 +1140,11 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
         itemLabel="Ticket(s)"
         baseCurrency={venue.currency}
         userPhone={undefined}
+        themeColor={themeColor}
       />
-      </div>
-    </SheetContent>
-  </Sheet>
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }
