@@ -128,7 +128,7 @@ function CheckoutPage() {
           phone: paymentDetails.phone,
           network: paymentDetails.network,
           currency: paymentDetails.currency || "RWF",
-          type: "page_builder_checkout",
+          type: `page_builder_checkout::${window.location.hostname}`,
           referenceId: newBookingRef,
           workspaceId: workspaceId,
           reason: `Buy ${product.name} (Qty: ${qty})`,

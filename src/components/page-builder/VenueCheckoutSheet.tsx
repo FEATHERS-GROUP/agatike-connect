@@ -360,7 +360,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
           const attachments = [];
 
           // Pre-load cover image so it's cached before the first ticket renders
-          const coverUrl = venueProject.coverImage;
+          const coverUrl = venueProject?.coverImage;
           if (coverUrl) {
             await new Promise<void>((resolve) => {
               const img = new Image();

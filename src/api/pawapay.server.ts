@@ -135,7 +135,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       // 2. If it's a completed deposit, activate the associated ticket/subscription
       if (tx && tx.status === "completed") {
-        if (tx.type === "event_ticket" || tx.type === "page_builder_checkout") {
+        if (tx.type === "event_ticket" || tx.type?.startsWith("page_builder_checkout")) {
           // Update event_attendees status to "Confirmed" based on a unique custom group ID (reference_id)
           const confirmQuery = `
             mutation ConfirmEventAttendees($booking_ref: String!) {
@@ -443,7 +443,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Send general SMS Confirmation via Pindo for other types
-        if (tx.type !== "event_ticket" && tx.type !== "page_builder_checkout" && body?.payer?.address?.value) {
+        if (tx.type !== "event_ticket" && !tx.type?.startsWith("page_builder_checkout") && body?.payer?.address?.value) {
           const phone = body.payer.address.value;
           const { sendSMS } = await import("./pindo.server");
 

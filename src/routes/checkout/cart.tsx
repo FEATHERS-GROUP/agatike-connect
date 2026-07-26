@@ -117,7 +117,7 @@ function CartCheckoutPage() {
           phone: paymentDetails.phone,
           network: paymentDetails.network,
           currency: paymentDetails.currency || "RWF",
-          type: "page_builder_checkout",
+          type: `page_builder_checkout::${window.location.hostname}`,
           referenceId: newBookingRef,
           workspaceId: workspaceId,
           reason: `Buy ${items.length} items`,
