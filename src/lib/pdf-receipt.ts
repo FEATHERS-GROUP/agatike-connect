@@ -81,7 +81,7 @@ export const generateFallbackReceipt = async (options: {
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
   pdf.text("Booking Reference", 20, 190);
-  
+
   pdf.setFontSize(16);
   pdf.setTextColor(0, 0, 0);
   const refCode = bookingRef || ticket.otp || ticket.id;
@@ -112,7 +112,9 @@ export const generateFallbackReceipt = async (options: {
 
   // QR Code
   try {
-    const qrRes = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${refCode}&margin=2`);
+    const qrRes = await fetch(
+      `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${refCode}&margin=2`,
+    );
     if (qrRes.ok) {
       const arrayBuffer = await qrRes.arrayBuffer();
       let base64Str = "";

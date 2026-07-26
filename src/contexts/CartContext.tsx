@@ -61,21 +61,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // Item exists, update quantity
         const newItems = [...prev];
         const newQty = newItems[existingItemIndex].qty + qty;
-        
+
         // Respect stock limit if available
         if (product.stock_limit && newQty > product.stock_limit) {
-           newItems[existingItemIndex].qty = product.stock_limit;
-           toast.error(`Cannot add more. Only ${product.stock_limit} available.`);
+          newItems[existingItemIndex].qty = product.stock_limit;
+          toast.error(`Cannot add more. Only ${product.stock_limit} available.`);
         } else {
-           newItems[existingItemIndex].qty = newQty;
-           toast.success("Cart updated");
+          newItems[existingItemIndex].qty = newQty;
+          toast.success("Cart updated");
         }
         return newItems;
       } else {
         // New item
         if (product.stock_limit && qty > product.stock_limit) {
-            toast.error(`Cannot add more. Only ${product.stock_limit} available.`);
-            return prev;
+          toast.error(`Cannot add more. Only ${product.stock_limit} available.`);
+          return prev;
         }
         toast.success("Added to cart");
         return [...prev, { id, product, qty, size, color }];
@@ -102,7 +102,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           return { ...item, qty };
         }
         return item;
-      })
+      }),
     );
   };
 

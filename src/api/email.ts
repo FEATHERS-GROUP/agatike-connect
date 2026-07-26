@@ -126,7 +126,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
     </div>
   `;
 
-    const sanitizedName = organizerName ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "") : "hello";
+    const sanitizedName = organizerName
+      ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "")
+      : "hello";
     const senderEmail = `${sanitizedName}@agatike.rw`;
     const senderName = organizerName || "Agatike Connect";
 

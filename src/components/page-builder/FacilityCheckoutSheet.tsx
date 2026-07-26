@@ -15,7 +15,13 @@ import {
   ChevronUp,
   Loader2,
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,14 +56,18 @@ interface FacilityCheckoutSheetProps {
   themeColor?: string;
 }
 
-export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeColor }: FacilityCheckoutSheetProps) {
+export function FacilityCheckoutSheet({
+  venue,
+  facility,
+  isOpen,
+  onClose,
+  themeColor,
+}: FacilityCheckoutSheetProps) {
   const queryClient = useQueryClient();
   const session = null;
   const venueId = venue?.id;
-  const facilityId = facility?.id?.replace(/^facility_/, '');
+  const facilityId = facility?.id?.replace(/^facility_/, "");
 
-
-  
   const isSharedAccess = facility?.type === "shared_access";
   const isSharedSlot = facility?.type === "shared_slot";
   const isActivity = facility?.category === "activity";
@@ -484,7 +494,6 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
     },
   });
 
-
   useEffect(() => {
     if (!isOpen) {
       setDate(undefined);
@@ -730,42 +739,39 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
 
   if (isSuccess) {
     return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent 
-        className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
-        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
-      >
-        <SheetTitle className="sr-only">Checkout</SheetTitle>
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
-          <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
-            <CheckCircle2 className="w-12 h-12 text-green-500" />
-          </div>
-          <h1 className="text-3xl font-bold mb-4">Booking Submitted!</h1>
+      <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <SheetContent
+          className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
+          style={themeColor ? ({ "--primary": themeColor } as React.CSSProperties) : undefined}
+        >
+          <SheetTitle className="sr-only">Checkout</SheetTitle>
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle2 className="w-12 h-12 text-green-500" />
+            </div>
+            <h1 className="text-3xl font-bold mb-4">Booking Submitted!</h1>
 
-          <div className="bg-secondary/30 border border-border/60 rounded-2xl p-6 mb-8 w-full max-w-sm">
-            <p className="text-sm text-muted-foreground mb-2">Your Booking Reference (OTP)</p>
-            <p className="text-4xl font-mono font-bold tracking-widest text-primary">
-              {bookingRef}
-            </p>
-            <p className="text-xs text-muted-foreground mt-4">
-              Please show this code at the facility.
-            </p>
-          </div>
+            <div className="bg-secondary/30 border border-border/60 rounded-2xl p-6 mb-8 w-full max-w-sm">
+              <p className="text-sm text-muted-foreground mb-2">Your Booking Reference (OTP)</p>
+              <p className="text-4xl font-mono font-bold tracking-widest text-primary">
+                {bookingRef}
+              </p>
+              <p className="text-xs text-muted-foreground mt-4">
+                Please show this code at the facility.
+              </p>
+            </div>
 
-          <p className="text-muted-foreground max-w-md mx-auto mb-8">
-            {facility.requires_approval
-              ? "Your request has been sent to the venue for approval. You will receive an email once it is confirmed."
-              : "Your booking is confirmed! We have sent the details to your email address."}
-          </p>
-          <Button
-            onClick={onClose}
-            className="rounded-xl h-12 px-8"
-          >
-            Close
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+            <p className="text-muted-foreground max-w-md mx-auto mb-8">
+              {facility.requires_approval
+                ? "Your request has been sent to the venue for approval. You will receive an email once it is confirmed."
+                : "Your booking is confirmed! We have sent the details to your email address."}
+            </p>
+            <Button onClick={onClose} className="rounded-xl h-12 px-8">
+              Close
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
 
@@ -833,281 +839,342 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent 
+      <SheetContent
         className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
-        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
+        style={themeColor ? ({ "--primary": themeColor } as React.CSSProperties) : undefined}
       >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
         <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
+            <div className="space-y-6 lg:space-y-8">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+                  Book {facility.name}
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  Select your date(s), time, and enter your details to complete your booking.
+                </p>
+              </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
-          <div className="space-y-6 lg:space-y-8">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Book {facility.name}</h1>
-              <p className="text-sm md:text-base text-muted-foreground">
-                Select your date(s), time, and enter your details to complete your booking.
-              </p>
-            </div>
-
-            <form id="booking-form" onSubmit={handlePaymentStart} className="space-y-6 lg:space-y-8">
-              <div className="bg-card border border-border/60 rounded-3xl p-5 md:p-6 shadow-sm">
-                <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">1. Date & Time</h2>
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <Label>Select Date (Click to pick a single day or a range)</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full h-12 justify-start text-left font-normal rounded-xl bg-secondary/30",
-                            !date?.from && "text-muted-foreground",
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {date?.from ? (
-                            date.to ? (
-                              <>
-                                {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
-                              </>
+              <form
+                id="booking-form"
+                onSubmit={handlePaymentStart}
+                className="space-y-6 lg:space-y-8"
+              >
+                <div className="bg-card border border-border/60 rounded-3xl p-5 md:p-6 shadow-sm">
+                  <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">1. Date & Time</h2>
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-2">
+                      <Label>Select Date (Click to pick a single day or a range)</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full h-12 justify-start text-left font-normal rounded-xl bg-secondary/30",
+                              !date?.from && "text-muted-foreground",
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {date?.from ? (
+                              date.to ? (
+                                <>
+                                  {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                                </>
+                              ) : (
+                                format(date.from, "LLL dd, y")
+                              )
                             ) : (
-                              format(date.from, "LLL dd, y")
-                            )
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="range"
-                          selected={date}
-                          onSelect={(d) => {
-                            setDate(d);
-                            setSelectedSlots([]);
-                          }}
-                          disabled={(d) =>
-                            isBefore(d, startOfDay(new Date())) || isDateFullyBooked(d)
-                          }
-                          initialFocus
-                          numberOfMonths={1}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {date?.from && (isSharedAccess || isSharedSlot) && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                      <Label>Quantity (Passes)</Label>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {isSharedSlot
-                          ? "Select the number of passes you need per session."
-                          : "Select the number of passes you need per day."}
-                      </p>
-                      <div className="flex items-center gap-4 mt-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <span className="text-xl font-bold w-12 text-center">{quantity}</span>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          disabled={quantity >= availableCapacity}
-                          onClick={() => setQuantity((q) => Math.min(availableCapacity, q + 1))}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                        {availableCapacity !== Infinity && availableCapacity > 0 && (
-                          <span className="text-sm font-medium text-orange-500">
-                            Only {availableCapacity} left for selected date(s)
-                          </span>
-                        )}
-                        {availableCapacity === 0 && (
-                          <span className="text-sm font-bold text-red-500">
-                            Sold Out for selected date(s)
-                          </span>
-                        )}
-                      </div>
+                              <span>Pick a date</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="range"
+                            selected={date}
+                            onSelect={(d) => {
+                              setDate(d);
+                              setSelectedSlots([]);
+                            }}
+                            disabled={(d) =>
+                              isBefore(d, startOfDay(new Date())) || isDateFullyBooked(d)
+                            }
+                            initialFocus
+                            numberOfMonths={1}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
-                  )}
 
-                  {date?.from &&
-                    !isSharedAccess &&
-                    (() => {
-                      const isWholeDayAvailable =
-                        DYNAMIC_SLOTS.length > 0 &&
-                        DYNAMIC_SLOTS.every((slot) => !getSlotStatusAcrossRange(slot).isBooked);
+                    {date?.from && (isSharedAccess || isSharedSlot) && (
+                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                        <Label>Quantity (Passes)</Label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {isSharedSlot
+                            ? "Select the number of passes you need per session."
+                            : "Select the number of passes you need per day."}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="text-xl font-bold w-12 text-center">{quantity}</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            disabled={quantity >= availableCapacity}
+                            onClick={() => setQuantity((q) => Math.min(availableCapacity, q + 1))}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          {availableCapacity !== Infinity && availableCapacity > 0 && (
+                            <span className="text-sm font-medium text-orange-500">
+                              Only {availableCapacity} left for selected date(s)
+                            </span>
+                          )}
+                          {availableCapacity === 0 && (
+                            <span className="text-sm font-bold text-red-500">
+                              Sold Out for selected date(s)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
-                      const renderSlotGrid = (label: string, slots: number[]) => {
-                        if (slots.length === 0) return null;
-                        return (
-                          <div className="flex items-start gap-4 py-4 border-b border-border/50 last:border-0">
-                            <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">
-                              {label}
-                            </div>
-                            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                              {slots.map((slotMins) => {
-                                const { isBooked, bookedCount, maxCapacity, isBlockedByAdmin } =
-                                  getSlotStatusAcrossRange(slotMins);
-                                const isSelected = selectedSlots.includes(slotMins);
-                                const timeString = formatSlot(slotMins);
+                    {date?.from &&
+                      !isSharedAccess &&
+                      (() => {
+                        const isWholeDayAvailable =
+                          DYNAMIC_SLOTS.length > 0 &&
+                          DYNAMIC_SLOTS.every((slot) => !getSlotStatusAcrossRange(slot).isBooked);
 
-                                let dynamicClass = "";
+                        const renderSlotGrid = (label: string, slots: number[]) => {
+                          if (slots.length === 0) return null;
+                          return (
+                            <div className="flex items-start gap-4 py-4 border-b border-border/50 last:border-0">
+                              <div className="w-24 shrink-0 font-medium text-muted-foreground mt-2">
+                                {label}
+                              </div>
+                              <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                {slots.map((slotMins) => {
+                                  const { isBooked, bookedCount, maxCapacity, isBlockedByAdmin } =
+                                    getSlotStatusAcrossRange(slotMins);
+                                  const isSelected = selectedSlots.includes(slotMins);
+                                  const timeString = formatSlot(slotMins);
 
-                                if (isBlockedByAdmin) {
-                                  dynamicClass =
-                                    "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
-                                } else if (bookedCount > 0) {
-                                  const fillPercentage =
-                                    maxCapacity === Infinity
-                                      ? 0
-                                      : Math.min(
-                                          100,
-                                          Math.round((bookedCount / maxCapacity) * 100),
-                                        );
+                                  let dynamicClass = "";
 
-                                  if (fillPercentage >= 100 || isBooked) {
-                                    if (fillPercentage >= 100 || maxCapacity === 1) {
-                                      dynamicClass =
-                                        "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary";
-                                    } else {
+                                  if (isBlockedByAdmin) {
+                                    dynamicClass =
+                                      "opacity-40 cursor-not-allowed line-through bg-secondary/20 hover:bg-secondary/20";
+                                  } else if (bookedCount > 0) {
+                                    const fillPercentage =
+                                      maxCapacity === Infinity
+                                        ? 0
+                                        : Math.min(
+                                            100,
+                                            Math.round((bookedCount / maxCapacity) * 100),
+                                          );
+
+                                    if (fillPercentage >= 100 || isBooked) {
+                                      if (fillPercentage >= 100 || maxCapacity === 1) {
+                                        dynamicClass =
+                                          "opacity-80 cursor-not-allowed bg-primary text-primary-foreground border-primary";
+                                      } else {
+                                        if (fillPercentage < 25) {
+                                          dynamicClass =
+                                            "opacity-80 cursor-not-allowed bg-primary/20 text-primary border-primary/30";
+                                        } else if (fillPercentage < 50) {
+                                          dynamicClass =
+                                            "opacity-80 cursor-not-allowed bg-primary/40 text-primary-foreground border-primary/50";
+                                        } else if (fillPercentage < 75) {
+                                          dynamicClass =
+                                            "opacity-80 cursor-not-allowed bg-primary/60 text-primary-foreground border-primary/70";
+                                        } else {
+                                          dynamicClass =
+                                            "opacity-80 cursor-not-allowed bg-primary/80 text-primary-foreground border-primary/90";
+                                        }
+                                      }
+                                    } else if (fillPercentage > 0) {
                                       if (fillPercentage < 25) {
                                         dynamicClass =
-                                          "opacity-80 cursor-not-allowed bg-primary/20 text-primary border-primary/30";
+                                          "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
                                       } else if (fillPercentage < 50) {
                                         dynamicClass =
-                                          "opacity-80 cursor-not-allowed bg-primary/40 text-primary-foreground border-primary/50";
+                                          "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
                                       } else if (fillPercentage < 75) {
                                         dynamicClass =
-                                          "opacity-80 cursor-not-allowed bg-primary/60 text-primary-foreground border-primary/70";
+                                          "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
                                       } else {
                                         dynamicClass =
-                                          "opacity-80 cursor-not-allowed bg-primary/80 text-primary-foreground border-primary/90";
+                                          "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
                                       }
                                     }
-                                  } else if (fillPercentage > 0) {
-                                    if (fillPercentage < 25) {
-                                      dynamicClass =
-                                        "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30";
-                                    } else if (fillPercentage < 50) {
-                                      dynamicClass =
-                                        "bg-primary/40 text-primary-foreground border-primary/50 hover:bg-primary/50";
-                                    } else if (fillPercentage < 75) {
-                                      dynamicClass =
-                                        "bg-primary/60 text-primary-foreground border-primary/70 hover:bg-primary/70";
-                                    } else {
-                                      dynamicClass =
-                                        "bg-primary/80 text-primary-foreground border-primary/90 hover:bg-primary/90";
-                                    }
+                                  } else if (isBooked) {
+                                    dynamicClass = "opacity-40 cursor-not-allowed bg-secondary/30";
                                   }
-                                } else if (isBooked) {
-                                  dynamicClass = "opacity-40 cursor-not-allowed bg-secondary/30";
-                                }
 
-                                return (
-                                  <Button
-                                    key={slotMins}
-                                    type="button"
-                                    variant={isSelected ? "default" : "outline"}
-                                    className={cn(
-                                      "h-10 rounded-xl transition-all font-medium text-sm border-border/60",
-                                      dynamicClass,
-                                      isSelected &&
-                                        "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
-                                    )}
-                                    disabled={isBooked}
-                                    onClick={() => handleSlotClick(slotMins)}
-                                  >
-                                    {timeString}
-                                  </Button>
-                                );
-                              })}
+                                  return (
+                                    <Button
+                                      key={slotMins}
+                                      type="button"
+                                      variant={isSelected ? "default" : "outline"}
+                                      className={cn(
+                                        "h-10 rounded-xl transition-all font-medium text-sm border-border/60",
+                                        dynamicClass,
+                                        isSelected &&
+                                          "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
+                                      )}
+                                      disabled={isBooked}
+                                      onClick={() => handleSlotClick(slotMins)}
+                                    >
+                                      {timeString}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        };
+
+                        return (
+                          <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                            <div className="flex justify-between items-end">
+                              <div>
+                                <Label>Available Time Slots</Label>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Select continuous slots. These will be booked for{" "}
+                                  <strong>every day</strong> in your selected range.
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                className="rounded-xl"
+                                disabled={!isWholeDayAvailable}
+                                onClick={() => setSelectedSlots(DYNAMIC_SLOTS)}
+                              >
+                                Book Whole Day
+                              </Button>
+                            </div>
+
+                            <div className="bg-background/50 rounded-2xl p-4 sm:p-6 border border-border/60 shadow-inner mt-4">
+                              {renderSlotGrid("Morning", groupedSlots.morning)}
+                              {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
+                              {renderSlotGrid("Evening", groupedSlots.evening)}
                             </div>
                           </div>
                         );
-                      };
-
-                      return (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                          <div className="flex justify-between items-end">
-                            <div>
-                              <Label>Available Time Slots</Label>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Select continuous slots. These will be booked for{" "}
-                                <strong>every day</strong> in your selected range.
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              className="rounded-xl"
-                              disabled={!isWholeDayAvailable}
-                              onClick={() => setSelectedSlots(DYNAMIC_SLOTS)}
-                            >
-                              Book Whole Day
-                            </Button>
-                          </div>
-
-                          <div className="bg-background/50 rounded-2xl p-4 sm:p-6 border border-border/60 shadow-inner mt-4">
-                            {renderSlotGrid("Morning", groupedSlots.morning)}
-                            {renderSlotGrid("Afternoon", groupedSlots.afternoon)}
-                            {renderSlotGrid("Evening", groupedSlots.evening)}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                </div>
-              </div>
-
-              <div className="bg-card border border-border/60 rounded-3xl p-5 md:p-6 shadow-sm">
-                <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">2. Your Details</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>Full Name</Label>
-                    <Input
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="John Doe"
-                      className="h-12 rounded-xl bg-secondary/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email Address</Label>
-                    <Input
-                      required
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="john@example.com"
-                      className="h-12 rounded-xl bg-secondary/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number (Optional)</Label>
-                    <Input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+250 700 000 000"
-                      className="h-12 rounded-xl bg-secondary/30"
-                    />
+                      })()}
                   </div>
                 </div>
-              </div>
-            </form>
+
+                <div className="bg-card border border-border/60 rounded-3xl p-5 md:p-6 shadow-sm">
+                  <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">2. Your Details</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label>Full Name</Label>
+                      <Input
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="John Doe"
+                        className="h-12 rounded-xl bg-secondary/30"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email Address</Label>
+                      <Input
+                        required
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="john@example.com"
+                        className="h-12 rounded-xl bg-secondary/30"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Phone Number (Optional)</Label>
+                      <Input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+250 700 000 000"
+                        className="h-12 rounded-xl bg-secondary/30"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Order Summary Sidebar */}
+            <div className="hidden lg:block bg-card border border-border/60 rounded-3xl p-6 shadow-[var(--shadow-card)] sticky top-24">
+              <h3 className="text-xl font-semibold mb-6">Booking Summary</h3>
+              <OrderSummaryContent />
+              <Button
+                type="submit"
+                form="booking-form"
+                disabled={
+                  bookingMutation.isPending ||
+                  !date?.from ||
+                  (!isSharedAccess && selectedSlots.length === 0) ||
+                  (isSharedAccess &&
+                    (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
+                }
+                className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
+              >
+                {bookingMutation.isPending
+                  ? "Processing..."
+                  : facility.requires_approval
+                    ? "Request Booking"
+                    : "Proceed to Payment"}
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+
+              {facility.requires_approval && (
+                <p className="text-xs text-center text-muted-foreground mt-4">
+                  This facility requires manual approval from the venue.
+                </p>
+              )}
+            </div>
           </div>
+        </div>
 
-          {/* Order Summary Sidebar */}
-          <div className="hidden lg:block bg-card border border-border/60 rounded-3xl p-6 shadow-[var(--shadow-card)] sticky top-24">
-            <h3 className="text-xl font-semibold mb-6">Booking Summary</h3>
-            <OrderSummaryContent />
+        {/* Mobile Bottom Action Bar */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300">
+          <div className="max-w-md mx-auto p-4">
+            <div
+              className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
+              onClick={() => setSummaryExpanded(!summaryExpanded)}
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-muted-foreground font-semibold">Order Summary</span>
+                <ChevronUp
+                  className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${summaryExpanded ? "rotate-180" : ""}`}
+                />
+              </div>
+              {!summaryExpanded && (
+                <span className="font-bold text-primary text-sm">
+                  {formatCurrency(totalAmount, currency)}
+                </span>
+              )}
+            </div>
+
+            {summaryExpanded && (
+              <div className="mb-4 text-sm animate-in slide-in-from-bottom-2 fade-in duration-200 border-t border-border/40 pt-4 max-h-[50vh] overflow-y-auto scrollbar-hide">
+                <OrderSummaryContent />
+              </div>
+            )}
+
             <Button
               type="submit"
               form="booking-form"
@@ -1118,183 +1185,139 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
                 (isSharedAccess &&
                   (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
               }
-              className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
               style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
             >
-              {bookingMutation.isPending
-                ? "Processing..."
-                : facility.requires_approval
-                  ? "Request Booking"
-                  : "Proceed to Payment"}
-              <ArrowRight className="w-5 h-5 ml-2" />
+              {bookingMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
+                </>
+              ) : facility.requires_approval ? (
+                "Request Booking"
+              ) : (
+                "Proceed to Payment"
+              )}
             </Button>
-
-            {facility.requires_approval && (
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                This facility requires manual approval from the venue.
-              </p>
-            )}
           </div>
         </div>
-      </div>
 
-      {/* Mobile Bottom Action Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/50 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.12)] transition-transform duration-300">
-        <div className="max-w-md mx-auto p-4">
-          <div
-            className="flex items-center justify-between gap-4 mb-3 cursor-pointer active:opacity-70 transition-opacity"
-            onClick={() => setSummaryExpanded(!summaryExpanded)}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm text-muted-foreground font-semibold">Order Summary</span>
-              <ChevronUp
-                className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${summaryExpanded ? "rotate-180" : ""}`}
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onOpenChange={setIsPaymentModalOpen}
+          baseAmount={totalAmount}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          onProceed={(details) => bookingMutation.mutate(details)}
+          isProcessing={bookingMutation.isPending || isPollingPawaPay}
+          isGenerating={false}
+          workspaceId={venue.workspace_id}
+          itemLabel={
+            isSharedAccess
+              ? `${daysInRange.length} day(s) × ${quantity} pass(es)`
+              : `${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`
+          }
+          baseCurrency={currency}
+          userPhone={phone}
+          themeColor={themeColor}
+        />
+
+        {isPollingPawaPay && (
+          <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+            <Smartphone
+              className="h-16 w-16 mb-6 animate-pulse"
+              style={{ color: "var(--primary)" }}
+            />
+            <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+            <p className="text-muted-foreground mb-8 max-w-sm">
+              We've sent a payment request to your mobile number. Please enter your PIN to confirm
+              the payment.
+            </p>
+            <div className="flex gap-2 mb-8 justify-center">
+              <div
+                className="h-2 w-2 rounded-full animate-bounce"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+              <div
+                className="h-2 w-2 rounded-full animate-bounce delay-75"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+              <div
+                className="h-2 w-2 rounded-full animate-bounce delay-150"
+                style={{ backgroundColor: "var(--primary)" }}
               />
             </div>
-            {!summaryExpanded && (
-              <span className="font-bold text-primary text-sm">
-                {formatCurrency(totalAmount, currency)}
-              </span>
-            )}
-          </div>
-
-          {summaryExpanded && (
-            <div className="mb-4 text-sm animate-in slide-in-from-bottom-2 fade-in duration-200 border-t border-border/40 pt-4 max-h-[50vh] overflow-y-auto scrollbar-hide">
-              <OrderSummaryContent />
-            </div>
-          )}
-
-          <Button
-            type="submit"
-            form="booking-form"
-            disabled={
-              bookingMutation.isPending ||
-              !date?.from ||
-              (!isSharedAccess && selectedSlots.length === 0) ||
-              (isSharedAccess &&
-                (quantity < 1 || quantity > availableCapacity || availableCapacity === 0))
-            }
-            className="w-full h-12 text-md font-bold rounded-xl shadow-[var(--shadow-glow)]"
-            style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
-          >
-            {bookingMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...
-              </>
-            ) : facility.requires_approval ? (
-              "Request Booking"
-            ) : (
-              "Proceed to Payment"
-            )}
-          </Button>
-        </div>
-      </div>
-
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onOpenChange={setIsPaymentModalOpen}
-        baseAmount={totalAmount}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-        onProceed={(details) => bookingMutation.mutate(details)}
-        isProcessing={bookingMutation.isPending || isPollingPawaPay}
-        isGenerating={false}
-        workspaceId={venue.workspace_id}
-        itemLabel={
-          isSharedAccess
-            ? `${daysInRange.length} day(s) × ${quantity} pass(es)`
-            : `${daysInRange.length} day(s) × ${selectedSlots.length} hour(s)`
-        }
-        baseCurrency={currency}
-        userPhone={phone}
-        themeColor={themeColor}
-      />
-
-      {isPollingPawaPay && (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-          <Smartphone className="h-16 w-16 mb-6 animate-pulse" style={{ color: "var(--primary)" }} />
-          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-          <p className="text-muted-foreground mb-8 max-w-sm">
-            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-            payment.
-          </p>
-          <div className="flex gap-2 mb-8 justify-center">
-            <div className="h-2 w-2 rounded-full animate-bounce" style={{ backgroundColor: "var(--primary)" }} />
-            <div className="h-2 w-2 rounded-full animate-bounce delay-75" style={{ backgroundColor: "var(--primary)" }} />
-            <div className="h-2 w-2 rounded-full animate-bounce delay-150" style={{ backgroundColor: "var(--primary)" }} />
-          </div>
-          <Button
-            variant="outline"
-            className="rounded-xl h-12 px-8"
-            onClick={async () => {
-              setIsPollingPawaPay(false);
-              if (pawapayDepositId) {
-                try {
-                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                } catch (e) {
-                  console.error("Cancel cleanup failed:", e);
+            <Button
+              variant="outline"
+              className="rounded-xl h-12 px-8"
+              onClick={async () => {
+                setIsPollingPawaPay(false);
+                if (pawapayDepositId) {
+                  try {
+                    await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                  } catch (e) {
+                    console.error("Cancel cleanup failed:", e);
+                  }
                 }
-              }
-            }}
-          >
-            Cancel Payment
-          </Button>
-        </div>
-      )}
-
-            {isGenerating && issuedTickets.length > 0 && venueProject && (
-        <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>
-          {issuedTickets.map((ticket: any) => (
-            <div
-              key={ticket.id}
-              id={`ticket-render-${ticket.id}`}
-              style={{ display: "inline-block" }}
+              }}
             >
-              <TicketPreview
-                template={venueProject.template}
-                palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                tier={ticket.tier || "Facility Access"}
-                title={venue.name}
-                subtitle={facility.name}
-                date={date?.from ? format(date.from, "LLL dd, yyyy") : ""}
-                time="Full Day Access"
-                seat={name || "General"}
-                price={totalAmount.toString()}
-                currency={currency}
-                cover={venueProject.coverImage || ""}
-                logoText={venueProject.logoText || "Agatike"}
-                logoImage={venueProject.logoImage}
-                logoScale={Number(venueProject.logoScale || 24)}
-                logoOpacity={Number(venueProject.logoOpacity ?? 1)}
-                logoColorMode={venueProject.logoColorMode || "original"}
-                orderId={ticket.otp || bookingRef}
-                qrValue={`${window.location.origin}/v/${ticket.otp}`}
-                previewMode="Front"
-                layout={
-                  venueProject.design_overrides?.layout || {
-                    titleSize: 30,
-                    subtitleSize: 14,
-                    metaSize: 11,
-                    titleAlign: "left",
-                    titleOffsetY: 0,
-                    subtitleOffsetY: 0,
-                    metaOffsetY: 0,
+              Cancel Payment
+            </Button>
+          </div>
+        )}
+
+        {isGenerating && issuedTickets.length > 0 && venueProject && (
+          <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>
+            {issuedTickets.map((ticket: any) => (
+              <div
+                key={ticket.id}
+                id={`ticket-render-${ticket.id}`}
+                style={{ display: "inline-block" }}
+              >
+                <TicketPreview
+                  template={venueProject.template}
+                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                  tier={ticket.tier || "Facility Access"}
+                  title={venue.name}
+                  subtitle={facility.name}
+                  date={date?.from ? format(date.from, "LLL dd, yyyy") : ""}
+                  time="Full Day Access"
+                  seat={name || "General"}
+                  price={totalAmount.toString()}
+                  currency={currency}
+                  cover={venueProject.coverImage || ""}
+                  logoText={venueProject.logoText || "Agatike"}
+                  logoImage={venueProject.logoImage}
+                  logoScale={Number(venueProject.logoScale || 24)}
+                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                  logoColorMode={venueProject.logoColorMode || "original"}
+                  orderId={ticket.otp || bookingRef}
+                  qrValue={`${window.location.origin}/v/${ticket.otp}`}
+                  previewMode="Front"
+                  layout={
+                    venueProject.design_overrides?.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
                   }
-                }
-                back={
-                  venueProject.design_overrides?.back || {
-                    showQr: true,
-                    showBarcode: false,
-                    showTerms: true,
-                    termsText: venueProject.terms || "Standard venue terms apply.",
+                  back={
+                    venueProject.design_overrides?.back || {
+                      showQr: true,
+                      showBarcode: false,
+                      showTerms: true,
+                      termsText: venueProject.terms || "Standard venue terms apply.",
+                    }
                   }
-                }
-              />
-            </div>
-          ))}
-        </div>
-      )}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

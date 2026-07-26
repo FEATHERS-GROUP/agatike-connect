@@ -1,9 +1,4 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
@@ -46,14 +41,14 @@ export function CartSidebar() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={(open) => !open && closeCart()}>
-      <SheetContent 
+      <SheetContent
         className="w-full sm:max-w-md bg-background overflow-hidden flex flex-col p-0 border-l"
         style={{ fontFamily: `${fontFamily}, sans-serif` }}
       >
         <div className="p-6 border-b border-border/40">
           <SheetHeader className="text-left">
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 onClick={closeCart}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary transition-colors -ml-2"
                 aria-label="Back to store"
@@ -118,7 +113,7 @@ export function CartSidebar() {
                       <div className="font-bold">
                         RWF {(item.product.price || 0).toLocaleString()}
                       </div>
-                      
+
                       <div className="flex items-center border border-border/60 rounded-lg bg-background/50 h-8">
                         <button
                           className="w-8 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
@@ -131,7 +126,9 @@ export function CartSidebar() {
                         <button
                           className="w-8 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                           onClick={() => updateQuantity(item.id, item.qty + 1)}
-                          disabled={!!(item.product.stock_limit && item.qty >= item.product.stock_limit)}
+                          disabled={
+                            !!(item.product.stock_limit && item.qty >= item.product.stock_limit)
+                          }
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -157,10 +154,12 @@ export function CartSidebar() {
               <span className="font-medium text-muted-foreground">Subtotal</span>
               <span className="font-bold text-xl">RWF {cartTotal.toLocaleString()}</span>
             </div>
-            
+
             <Button
               className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg transition-transform active:scale-[0.98]"
-              style={themeColor ? { backgroundColor: themeColor, color: "#fff" } : { color: "#fff" }}
+              style={
+                themeColor ? { backgroundColor: themeColor, color: "#fff" } : { color: "#fff" }
+              }
               onClick={handleCheckout}
             >
               Proceed to Checkout

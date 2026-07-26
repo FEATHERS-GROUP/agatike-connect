@@ -287,16 +287,16 @@ function CheckoutPage() {
       style={{ fontFamily: `${fontFamily}, sans-serif` }}
     >
       {/* Left Column - Order Summary */}
-      <div 
+      <div
         className="w-full md:w-1/2 lg:w-[45%] p-6 md:p-12 lg:p-20 flex flex-col justify-between shrink-0 text-white relative overflow-hidden"
         style={{ backgroundColor: themeColor || "#0B3B24" }}
       >
         {/* Subtle Background Gradient Overlay */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
-        
+
         <div className="relative z-10 space-y-8 max-w-md w-full ml-auto mr-auto md:ml-auto md:mr-8">
           <div className="flex items-center gap-3">
-             <button
+            <button
               onClick={() => window.history.back()}
               className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10 transition-colors"
             >
@@ -308,35 +308,37 @@ function CheckoutPage() {
           <div className="pt-6">
             <h3 className="text-white/80 text-base mb-2">Pay for {product?.name || "Product"}</h3>
             <div className="flex items-baseline gap-2 mb-4">
-               <span className="text-4xl md:text-5xl font-bold tracking-tight">RWF {price.toLocaleString()}</span>
-               <span className="text-white/70 text-base">/ item</span>
+              <span className="text-4xl md:text-5xl font-bold tracking-tight">
+                RWF {price.toLocaleString()}
+              </span>
+              <span className="text-white/70 text-base">/ item</span>
             </div>
-            
-             <div className="flex flex-col gap-2 mt-6">
-                {size && (
-                  <p className="text-sm text-white/80">
-                    Size: <span className="font-medium text-white">{size}</span>
-                  </p>
-                )}
-                {color && (
-                  <p className="text-sm text-white/80 flex items-center gap-2">
-                    Color:
-                    <span
-                      className="w-4 h-4 rounded-full border border-white/20 shadow-sm inline-block"
-                      style={{ backgroundColor: color }}
-                    />
-                  </p>
-                )}
-              </div>
+
+            <div className="flex flex-col gap-2 mt-6">
+              {size && (
+                <p className="text-sm text-white/80">
+                  Size: <span className="font-medium text-white">{size}</span>
+                </p>
+              )}
+              {color && (
+                <p className="text-sm text-white/80 flex items-center gap-2">
+                  Color:
+                  <span
+                    className="w-4 h-4 rounded-full border border-white/20 shadow-sm inline-block"
+                    style={{ backgroundColor: color }}
+                  />
+                </p>
+              )}
+            </div>
           </div>
-          
+
           <div className="space-y-4 pt-6">
             <div className="bg-white/10 rounded-xl p-4 mb-6">
-               <div className="flex justify-between items-center mb-1">
-                 <span className="font-medium">{product?.name || "Product"}</span>
-                 <span className="font-medium">RWF {price.toLocaleString()}</span>
-               </div>
-               <div className="text-white/70 text-sm">Qty: {qty}</div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium">{product?.name || "Product"}</span>
+                <span className="font-medium">RWF {price.toLocaleString()}</span>
+              </div>
+              <div className="text-white/70 text-sm">Qty: {qty}</div>
             </div>
 
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
@@ -353,24 +355,27 @@ function CheckoutPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="relative z-10 mt-16 text-xs text-white/50 max-w-md w-full ml-auto mr-auto md:ml-auto md:mr-8 flex items-center gap-4">
-           <span>© {new Date().getFullYear()} All rights reserved</span>
-           <a href="#" className="hover:text-white transition-colors">Terms</a>
-           <a href="#" className="hover:text-white transition-colors">Privacy</a>
+          <span>© {new Date().getFullYear()} All rights reserved</span>
+          <a href="#" className="hover:text-white transition-colors">
+            Terms
+          </a>
+          <a href="#" className="hover:text-white transition-colors">
+            Privacy
+          </a>
         </div>
       </div>
 
       {/* Right Column - Checkout Form */}
       <div className="w-full md:w-1/2 lg:w-[55%] bg-background p-6 md:p-12 lg:p-20 overflow-y-auto relative">
-        
         {/* Top Right Logo */}
         <div className="absolute top-6 right-6 md:top-8 md:right-8 lg:top-10 lg:right-12 flex items-center gap-3">
-           <img
-              src={logoUrl || "/src/assets/logo/Agatike%20Icon.png"}
-              alt="Brand Logo"
-              className="w-10 h-10 rounded-full bg-background object-contain shadow-sm border border-border p-0.5"
-            />
+          <img
+            src={logoUrl || "/src/assets/logo/Agatike%20Icon.png"}
+            alt="Brand Logo"
+            className="w-10 h-10 rounded-full bg-background object-contain shadow-sm border border-border p-0.5"
+          />
         </div>
 
         <div className="max-w-md w-full mx-auto md:mx-0 md:ml-8 space-y-8 mt-12 md:mt-0">
@@ -417,12 +422,24 @@ function CheckoutPage() {
                 <div
                   className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "momo" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
                   onClick={() => setSelectedPaymentGroup("momo")}
-                  style={selectedPaymentGroup === "momo" && themeColor ? { borderColor: themeColor, backgroundColor: `${themeColor}0A`, '--tw-ring-color': themeColor } as React.CSSProperties : {}}
+                  style={
+                    selectedPaymentGroup === "momo" && themeColor
+                      ? ({
+                          borderColor: themeColor,
+                          backgroundColor: `${themeColor}0A`,
+                          "--tw-ring-color": themeColor,
+                        } as React.CSSProperties)
+                      : {}
+                  }
                 >
                   <RadioGroupItem
                     value="momo"
                     id="momo"
-                    style={selectedPaymentGroup === "momo" && themeColor ? { color: themeColor, borderColor: themeColor } : {}}
+                    style={
+                      selectedPaymentGroup === "momo" && themeColor
+                        ? { color: themeColor, borderColor: themeColor }
+                        : {}
+                    }
                   />
                   <Label
                     htmlFor="momo"
@@ -437,16 +454,28 @@ function CheckoutPage() {
                     </span>
                   </Label>
                 </div>
-                
-                 <div
+
+                <div
                   className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "card" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
                   onClick={() => setSelectedPaymentGroup("card")}
-                  style={selectedPaymentGroup === "card" && themeColor ? { borderColor: themeColor, backgroundColor: `${themeColor}0A`, '--tw-ring-color': themeColor } as React.CSSProperties : {}}
+                  style={
+                    selectedPaymentGroup === "card" && themeColor
+                      ? ({
+                          borderColor: themeColor,
+                          backgroundColor: `${themeColor}0A`,
+                          "--tw-ring-color": themeColor,
+                        } as React.CSSProperties)
+                      : {}
+                  }
                 >
                   <RadioGroupItem
                     value="card"
                     id="card"
-                    style={selectedPaymentGroup === "card" && themeColor ? { color: themeColor, borderColor: themeColor } : {}}
+                    style={
+                      selectedPaymentGroup === "card" && themeColor
+                        ? { color: themeColor, borderColor: themeColor }
+                        : {}
+                    }
                   />
                   <Label
                     htmlFor="card"
@@ -466,15 +495,18 @@ function CheckoutPage() {
 
             <Button
               className="w-full h-14 rounded-xl text-base font-semibold shadow-md mt-6 transition-transform active:scale-[0.98]"
-              style={themeColor ? { backgroundColor: themeColor, color: "#fff" } : { color: "#fff" }}
+              style={
+                themeColor ? { backgroundColor: themeColor, color: "#fff" } : { color: "#fff" }
+              }
               onClick={handlePayClick}
               disabled={paymentMutation.isPending}
             >
               {paymentMutation.isPending ? "Processing..." : `Pay RWF ${total.toLocaleString()}`}
             </Button>
-            
+
             <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed max-w-sm mx-auto">
-              By confirming your payment, you allow us to charge your selected method for this payment in accordance with terms. You can always cancel before confirmation.
+              By confirming your payment, you allow us to charge your selected method for this
+              payment in accordance with terms. You can always cancel before confirmation.
             </p>
           </div>
         </div>

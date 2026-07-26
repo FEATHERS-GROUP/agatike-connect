@@ -86,17 +86,21 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const wsData = await hasuraRequest<{
             workspaces_by_pk: { name: string; city: string; address: string; orgnizer_id: string };
             workspace_pages: { slug: string; theme_color: string; components: any }[];
-          }>(wsQuery, targetSlug ? { id: tx.workspace_id, slug: targetSlug } : { id: tx.workspace_id });
+          }>(
+            wsQuery,
+            targetSlug ? { id: tx.workspace_id, slug: targetSlug } : { id: tx.workspace_id },
+          );
           if (wsData?.workspaces_by_pk) {
             wsName = wsData.workspaces_by_pk.name;
             wsCity = wsData.workspaces_by_pk.city || "";
             wsAddress = wsData.workspaces_by_pk.address || "";
-            
+
             if (wsData.workspaces_by_pk.orgnizer_id) {
-              const orgData = await hasuraRequest<{ organizers_by_pk: { email: string; phone: string } }>(
-                `query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { email phone } }`,
-                { id: wsData.workspaces_by_pk.orgnizer_id }
-              );
+              const orgData = await hasuraRequest<{
+                organizers_by_pk: { email: string; phone: string };
+              }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { email phone } }`, {
+                id: wsData.workspaces_by_pk.orgnizer_id,
+              });
               if (orgData?.organizers_by_pk) {
                 orgEmail = orgData.organizers_by_pk.email || "";
                 orgPhone = orgData.organizers_by_pk.phone || "";
@@ -283,19 +287,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             let fallbackPdfBase64: string | undefined = undefined;
             if (firstAtt.events?.id) {
               try {
-                const projRes = await hasuraRequest<{ workspace_ticket_projects: any[] }>(`
+                const projRes = await hasuraRequest<{ workspace_ticket_projects: any[] }>(
+                  `
                   query GetTicketProject($eventId: uuid!) {
                     workspace_ticket_projects(where: { event_id: { _eq: $eventId } }, limit: 1) { id }
                   }
-                `, { eventId: firstAtt.events.id });
-                
-                if (!projRes.workspace_ticket_projects || projRes.workspace_ticket_projects.length === 0) {
+                `,
+                  { eventId: firstAtt.events.id },
+                );
+
+                if (
+                  !projRes.workspace_ticket_projects ||
+                  projRes.workspace_ticket_projects.length === 0
+                ) {
                   const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
-                  
+
                   // Extract time separately for layout
-                  const tourStops = Array.isArray(firstAtt.events.tour_stops) ? firstAtt.events.tour_stops : (firstAtt.events.tour_stops ? [firstAtt.events.tour_stops] : []);
+                  const tourStops = Array.isArray(firstAtt.events.tour_stops)
+                    ? firstAtt.events.tour_stops
+                    : firstAtt.events.tour_stops
+                      ? [firstAtt.events.tour_stops]
+                      : [];
                   const firstStop = tourStops[0] || {};
-                  
+
                   const fallbackRes = await generateFallbackReceipt({
                     entityName: orgName,
                     customerName: firstAtt.names,
@@ -303,11 +317,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     dateStr: firstStop.date || "TBD",
                     timeStr: firstStop.time || "TBD",
                     locationStr: eventLocation,
-                    bookingRef: tx.reference_id
+                    bookingRef: tx.reference_id,
                   });
                   fallbackPdfBase64 = fallbackRes.content;
                 }
-              } catch(e) {
+              } catch (e) {
                 console.error("Failed to generate fallback ticket", e);
               }
             }
@@ -344,7 +358,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               };
               let phoneToNotify = body?.payer?.address?.value;
               if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
-              if (!phoneToNotify && confirmedOrders.length > 0) phoneToNotify = confirmedOrders[0].phone;
+              if (!phoneToNotify && confirmedOrders.length > 0)
+                phoneToNotify = confirmedOrders[0].phone;
 
               const customerDetails = {
                 name: firstAtt?.names || "Guest",
@@ -352,7 +367,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 phone: phoneToNotify || "",
               };
 
-              const pdfBuffer = await generateProductReceiptPdf(confirmedOrders, orgDetails, customerDetails, customerFee);
+              const pdfBuffer = await generateProductReceiptPdf(
+                confirmedOrders,
+                orgDetails,
+                customerDetails,
+                customerFee,
+              );
               pdfBase64 = pdfBuffer.toString("base64");
             } catch (e) {
               console.error("Failed to generate product receipt PDF", e);
@@ -362,7 +382,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               data: {
                 to: guestEmail,
                 subject: `Your purchase from ${orgName} is confirmed!`,
-                message: detailedMessage + `<br/><br/><i>Your purchase receipt is attached to this email.</i>`,
+                message:
+                  detailedMessage +
+                  `<br/><br/><i>Your purchase receipt is attached to this email.</i>`,
                 eventName: "Product Store",
                 organizerName: orgName,
                 appUrl,
@@ -443,7 +465,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Send general SMS Confirmation via Pindo for other types
-        if (tx.type !== "event_ticket" && !tx.type?.startsWith("page_builder_checkout") && body?.payer?.address?.value) {
+        if (
+          tx.type !== "event_ticket" &&
+          !tx.type?.startsWith("page_builder_checkout") &&
+          body?.payer?.address?.value
+        ) {
           const phone = body.payer.address.value;
           const { sendSMS } = await import("./pindo.server");
 

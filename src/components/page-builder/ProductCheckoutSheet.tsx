@@ -56,9 +56,9 @@ export function ProductCheckoutSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent 
+      <SheetContent
         className="w-full sm:max-w-md bg-background overflow-y-auto p-0 border-l"
-        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
+        style={themeColor ? ({ "--primary": themeColor } as React.CSSProperties) : undefined}
       >
         {/* Header Image */}
         {product.image_url && (

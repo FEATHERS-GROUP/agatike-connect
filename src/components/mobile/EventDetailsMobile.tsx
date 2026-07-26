@@ -42,7 +42,10 @@ export function EventDetailsMobile({
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== "undefined") {
-      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
       setIsSubdomain(isSub);
     }
     const handleScroll = () => {
@@ -60,29 +63,29 @@ export function EventDetailsMobile({
       {!hideLayout && !isSubdomain && (
         <div
           className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
-          isScrolled
-            ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
-            : "bg-transparent"
-        }`}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`h-10 w-10 rounded-full ${isScrolled ? "bg-secondary text-foreground" : "bg-black/20 text-white backdrop-blur-md"}`}
-          onClick={() => window.history.back()}
+            isScrolled
+              ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
+              : "bg-transparent"
+          }`}
         >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className={`h-10 w-10 rounded-full ${isScrolled ? "bg-secondary text-foreground" : "bg-black/20 text-white backdrop-blur-md"}`}
+            onClick={() => window.history.back()}
           >
-            <Share2 className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-10 w-10 rounded-full ${isScrolled ? "bg-secondary text-foreground" : "bg-black/20 text-white backdrop-blur-md"}`}
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
-      </div>
       )}
       {/* Hero Image */}
       <div className="relative aspect-[4/5] w-full overflow-hidden">
@@ -307,8 +310,6 @@ export function EventDetailsMobile({
         waitlistUrl={d.waitlistUrl}
         timerDate={d.timerDate}
       />
-
-
 
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <>

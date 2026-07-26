@@ -92,7 +92,9 @@ export function EventCheckoutDrawer({
                 disabled={!waitlistUrl}
                 className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
                 style={{
-                  background: waitlistUrl ? "var(--custom-theme-color, var(--gradient-primary))" : "var(--muted)",
+                  background: waitlistUrl
+                    ? "var(--custom-theme-color, var(--gradient-primary))"
+                    : "var(--muted)",
                   color: waitlistUrl ? undefined : "var(--muted-foreground)",
                 }}
               >

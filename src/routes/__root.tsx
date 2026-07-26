@@ -221,7 +221,10 @@ function RootComponent() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
       setIsSubdomain(isSub);
     }
   }, []);
@@ -254,22 +257,24 @@ function RootComponent() {
                     <GlobalUserNotificationListener />
                     <SubdomainThemeProvider>
                       {/* The main content area with bottom padding to avoid overlapping the navbar on mobile */}
-                      <div className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}>
+                      <div
+                        className={`min-h-[100dvh] print:min-h-0 md:pb-0 ${hideNav ? "" : "pb-24"}`}
+                      >
                         <Outlet />
                       </div>
                     </SubdomainThemeProvider>
 
                     <CartSidebar />
 
-                  {/* Floating Mobile Navigation - Hidden on Desktop */}
-                  {!hideNav && (
-                    <div className="md:hidden">
-                      <MobileNav />
-                    </div>
-                  )}
+                    {/* Floating Mobile Navigation - Hidden on Desktop */}
+                    {!hideNav && (
+                      <div className="md:hidden">
+                        <MobileNav />
+                      </div>
+                    )}
 
-                  <AuthDependentFeedBubble hideNav={hideNav} />
-                  <CartBubble hideNav={hideNav} />
+                    <AuthDependentFeedBubble hideNav={hideNav} />
+                    <CartBubble hideNav={hideNav} />
 
                     <InstallPrompt />
                     <SplashLoader />
@@ -376,7 +381,7 @@ function AuthDependentFeedBubble({ hideNav }: { hideNav: boolean }) {
 function CartBubble({ hideNav }: { hideNav: boolean }) {
   const { cartCount, openCart } = useCart();
   const location = useRouterState({ select: (s) => s.location });
-  
+
   const [subdomainSlug, setSubdomainSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -410,14 +415,18 @@ function CartBubble({ hideNav }: { hideNav: boolean }) {
   return (
     <button
       onClick={openCart}
-      className={`fixed ${hideNav ? 'bottom-8 md:bottom-8' : 'bottom-24 md:bottom-8'} left-4 md:left-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95 bg-foreground`}
+      className={`fixed ${hideNav ? "bottom-8 md:bottom-8" : "bottom-24 md:bottom-8"} left-4 md:left-8 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-transform hover:scale-105 active:scale-95 bg-foreground`}
       aria-label="Open Cart"
     >
       <div className="relative">
         <ShoppingCart className="h-6 w-6 text-background" />
-        <span 
+        <span
           className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold shadow-sm"
-          style={themeColor ? { backgroundColor: themeColor, color: '#fff' } : { backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+          style={
+            themeColor
+              ? { backgroundColor: themeColor, color: "#fff" }
+              : { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
+          }
         >
           {cartCount}
         </span>
@@ -425,4 +434,3 @@ function CartBubble({ hideNav }: { hideNav: boolean }) {
     </button>
   );
 }
-

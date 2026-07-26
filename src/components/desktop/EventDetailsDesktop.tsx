@@ -35,7 +35,10 @@ export function EventDetailsDesktop({
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== "undefined") {
-      const isSub = window.location.hostname.split(".").length > (window.location.hostname.includes("localhost") ? 1 : 2) && window.location.hostname.split(".")[0] !== "www";
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
       setIsSubdomain(isSub);
     }
   }, []);

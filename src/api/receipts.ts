@@ -2,7 +2,7 @@ export async function generateProductReceiptPdf(
   orders: any[],
   orgDetails: any,
   customerDetails: any,
-  customerFee: number = 0
+  customerFee: number = 0,
 ): Promise<any> {
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
@@ -10,7 +10,7 @@ export async function generateProductReceiptPdf(
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
   const W = 210;
   const H = 297;
-  
+
   // Default primary color is orange, but use themeColor if provided (convert hex to rgb)
   let primaryColor: [number, number, number] = [242, 87, 29]; // #F2571D
   if (orgDetails?.themeColor && orgDetails.themeColor.startsWith("#")) {
@@ -70,18 +70,18 @@ export async function generateProductReceiptPdf(
     `Date: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" })}`,
     W - 14,
     25,
-    { align: "right" }
+    { align: "right" },
   );
 
   // ── Info Blocks ──────────────────────────────────────────
   let startY = 55;
-  
+
   // Billed To (Customer Info)
   doc.setTextColor(...darkColor);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("Billed To:", 14, startY);
-  
+
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(customerDetails?.name || "Customer", 14, startY + 8);
@@ -98,7 +98,7 @@ export async function generateProductReceiptPdf(
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("From:", 120, startY);
-  
+
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(orgDetails?.name || "Organizer", 120, startY + 8);
@@ -140,21 +140,21 @@ export async function generateProductReceiptPdf(
     const qty = order.qty || 1;
     const total = order.amount_paid || 0;
     const price = total / qty;
-    
+
     subtotalAmount += total;
 
     doc.setFont("helvetica", "bold");
     doc.text(productName, 18, cursorY);
-    
+
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...mutedColor);
-    
+
     if (order.size) {
       // Don't show the email hack inside the size field
       let cleanSize = order.size;
       if (cleanSize.includes("| email:")) cleanSize = cleanSize.split("| email:")[0].trim();
       if (cleanSize.startsWith("email:")) cleanSize = "";
-      
+
       if (cleanSize) {
         doc.text(`Variant: ${cleanSize}`, 18, cursorY + 5);
       }
@@ -175,13 +175,13 @@ export async function generateProductReceiptPdf(
 
   cursorY += 8;
   doc.setFontSize(10);
-  
+
   // Subtotal
   doc.setTextColor(...mutedColor);
   doc.text("Subtotal", 130, cursorY, { align: "right" });
   doc.setTextColor(...darkColor);
   doc.text(`RWF ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, { align: "right" });
-  
+
   // Fees
   cursorY += 8;
   doc.setTextColor(...mutedColor);
@@ -192,12 +192,12 @@ export async function generateProductReceiptPdf(
   // Total
   cursorY += 6;
   doc.line(120, cursorY, W - 14, cursorY);
-  
+
   cursorY += 8;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
-  
+
   doc.setTextColor(...primaryColor);
   const finalTotal = subtotalAmount + customerFee;
   doc.text(`RWF ${finalTotal.toLocaleString()}`, W - 18, cursorY, { align: "right" });

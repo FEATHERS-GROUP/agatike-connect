@@ -109,7 +109,10 @@ export function PaymentModal({
   });
 
   const baseCurrency = propsBaseCurrency || wallet?.currency || "RWF";
-  const supportedNetworks = wallet?.supported_networks?.length > 0 ? wallet.supported_networks : ALL_NETWORKS.map(n => n.value);
+  const supportedNetworks =
+    wallet?.supported_networks?.length > 0
+      ? wallet.supported_networks
+      : ALL_NETWORKS.map((n) => n.value);
 
   // Fetch profitability check for all supported networks
   const { data: profitableNetworksData, isLoading: isProfitableLoading } = useQuery({
@@ -375,14 +378,16 @@ export function PaymentModal({
             </div>
           </div>
 
-          <div 
+          <div
             className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-[var(--panel-bg)] border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-background relative overflow-hidden"
-            style={{ "--panel-bg": 'var(--foreground)' } as React.CSSProperties}
+            style={{ "--panel-bg": "var(--foreground)" } as React.CSSProperties}
           >
             {/* Subtle Gradient Overlay on Desktop */}
             <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay pointer-events-none"></div>
-            
-            <h3 className="font-bold text-lg md:text-xl mb-6 md:mb-8 relative z-10 md:text-background/90">Order Summary</h3>
+
+            <h3 className="font-bold text-lg md:text-xl mb-6 md:mb-8 relative z-10 md:text-background/90">
+              Order Summary
+            </h3>
 
             <div className="flex-1 space-y-6 relative z-10">
               <div className="space-y-2">

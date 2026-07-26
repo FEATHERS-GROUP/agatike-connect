@@ -10,7 +10,13 @@ import {
   Plus,
   Smartphone,
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
@@ -49,7 +55,12 @@ interface VenueCheckoutSheetProps {
   themeColor?: string;
 }
 
-export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: VenueCheckoutSheetProps) {
+export function VenueCheckoutSheet({
+  venue,
+  isOpen,
+  onClose,
+  themeColor,
+}: VenueCheckoutSheetProps) {
   const navigate = useNavigate();
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
@@ -200,7 +211,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
   if (!venue) {
     return (
       <div className="min-h-screen bg-secondary/20 flex flex-col font-sans">
-                <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="space-y-6">
             <div className="h-10 w-48 bg-secondary/40 rounded-xl animate-pulse" />
             <div className="h-64 w-full bg-secondary/40 rounded-3xl animate-pulse" />
@@ -487,9 +498,9 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
   // Wrap all states in the Sheet to prevent unmounting
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent 
+      <SheetContent
         className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
-        style={themeColor ? { "--primary": themeColor } as React.CSSProperties : undefined}
+        style={themeColor ? ({ "--primary": themeColor } as React.CSSProperties) : undefined}
       >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
 
@@ -501,7 +512,8 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
             />
             <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
             <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-              We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment.
+              We've sent a payment request to your mobile number. Please enter your PIN to confirm
+              the payment.
             </p>
             <div className="flex gap-2 mb-8 justify-center">
               <div
@@ -543,16 +555,17 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
                 Your ticket for {venue.name} has been secured.
               </p>
               <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
-                <Ticket
-                  className="w-6 h-6"
-                  style={{ color: "var(--primary)" }}
-                />
+                <Ticket className="w-6 h-6" style={{ color: "var(--primary)" }} />
                 <span className="font-bold tracking-widest">
                   {Math.random().toString(36).substring(2, 10).toUpperCase()}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">You can now safely close this window.</p>
-              <Button onClick={onClose} className="mt-6 w-full rounded-2xl h-12 text-lg font-bold text-white shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+              <Button
+                onClick={onClose}
+                className="mt-6 w-full rounded-2xl h-12 text-lg font-bold text-white shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
                 Done
               </Button>
             </div>
@@ -568,573 +581,585 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
         ) : (
           <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
             {showOverrideDialog && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
-          <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
-            <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
-            <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-              You just signed in! Would you like to use your account details (Name, Phone, Email,
-              Nationality) or keep the customer information you already entered?
-            </p>
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={() => {
-                  if (user?.username) setName(user.username);
-                  if (user?.phone) setPhone(user.phone);
-                  if (user?.email) setEmail(user.email);
-                  if (user?.country) setNationality(user.country);
-                  setShowOverrideDialog(false);
-                }}
-                className="w-full h-12 text-base font-semibold"
-              >
-                Use Account Details
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowOverrideDialog(false)}
-                className="w-full h-12 text-base font-semibold"
-              >
-                Keep Entered Info
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="w-full pt-4 md:pt-6">
-        <Link
-          to="/venues/$venueId"
-          params={{ venueId: venue.id }}
-          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" /> Back to Details
-        </Link>
-
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">
-          {venue?.rental_model === "ENTIRE_VENUE" ? "Book your date" : "Secure your tickets"}
-        </h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
-          {/* Left Column: Form */}
-          <div className="flex-1 bg-card rounded-3xl p-5 md:p-6 border border-border/50 shadow-[var(--shadow-card)]">
-            <div className="flex items-center gap-3 mb-6 md:mb-8">
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "text-white" : "bg-secondary text-muted-foreground"}`}
-                style={step >= 1 ? { backgroundColor: "var(--primary)" } : undefined}
-              >
-                1
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
+                <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
+                  <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
+                  <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+                    You just signed in! Would you like to use your account details (Name, Phone,
+                    Email, Nationality) or keep the customer information you already entered?
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      onClick={() => {
+                        if (user?.username) setName(user.username);
+                        if (user?.phone) setPhone(user.phone);
+                        if (user?.email) setEmail(user.email);
+                        if (user?.country) setNationality(user.country);
+                        setShowOverrideDialog(false);
+                      }}
+                      className="w-full h-12 text-base font-semibold"
+                    >
+                      Use Account Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowOverrideDialog(false)}
+                      className="w-full h-12 text-base font-semibold"
+                    >
+                      Keep Entered Info
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div
-                className={`h-1 w-12 rounded-full ${step < 2 ? "bg-secondary" : ""}`}
-                style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
-              />
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? "text-white" : "bg-secondary text-muted-foreground"}`}
-                style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
-              >
-                2
-              </div>
-            </div>
+            )}
 
-            <form onSubmit={handleCheckout} className="space-y-6">
-              {step === 1 && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    <div className="space-y-2 max-w-sm">
-                      <label className="text-sm font-medium text-muted-foreground block">
-                        Select Date of Visit
-                      </label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full h-12 justify-start text-left font-normal bg-secondary/20 border-border/85 rounded-xl",
-                              !date && "text-muted-foreground",
-                            )}
-                          >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {date ? format(new Date(date), "PPP") : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={date ? new Date(date) : undefined}
-                            onSelect={(d: any) => setDate(d ? format(d, "yyyy-MM-dd") : "")}
-                            disabled={isDateBooked}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <p className="text-[11px] text-muted-foreground/80 mt-1">
-                        Click anywhere on the field above to open the calendar and choose a date.
-                      </p>
+            <div className="w-full pt-4 md:pt-6">
+              <Link
+                to="/venues/$venueId"
+                params={{ venueId: venue.id }}
+                className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back to Details
+              </Link>
+
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">
+                {venue?.rental_model === "ENTIRE_VENUE" ? "Book your date" : "Secure your tickets"}
+              </h1>
+
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
+                {/* Left Column: Form */}
+                <div className="flex-1 bg-card rounded-3xl p-5 md:p-6 border border-border/50 shadow-[var(--shadow-card)]">
+                  <div className="flex items-center gap-3 mb-6 md:mb-8">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "text-white" : "bg-secondary text-muted-foreground"}`}
+                      style={step >= 1 ? { backgroundColor: "var(--primary)" } : undefined}
+                    >
+                      1
+                    </div>
+                    <div
+                      className={`h-1 w-12 rounded-full ${step < 2 ? "bg-secondary" : ""}`}
+                      style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
+                    />
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? "text-white" : "bg-secondary text-muted-foreground"}`}
+                      style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
+                    >
+                      2
                     </div>
                   </div>
 
-                  <div className="border-t border-border/40 pt-6">
-                    <h3 className="text-xl font-semibold mb-1">
-                      {venue?.rental_model === "ENTIRE_VENUE"
-                        ? "Package Selection"
-                        : "Ticket Selection"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {venue?.rental_model === "ENTIRE_VENUE"
-                        ? "Select a rental package for your booking."
-                        : "Specify how many tickets you'd like to purchase for this visit using the selector buttons."}
-                    </p>
-                    <div className="space-y-3">
-                      {(venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
-                        ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
-                        : []
-                      )
-                        .concat(venue?.pricing_tiers || [])
-                        .map((tier: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
-                          >
-                            <div>
-                              <p className="font-semibold">{tier.name || "Standard Entry"}</p>
-                              <p className="text-sm text-muted-foreground mt-0.5">
-                                {tier.amount > 0
-                                  ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
-                                  : "Free"}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
-                              {venue?.rental_model === "ENTIRE_VENUE" ? (
+                  <form onSubmit={handleCheckout} className="space-y-6">
+                    {step === 1 && (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-6">
+                          <div className="space-y-2 max-w-sm">
+                            <label className="text-sm font-medium text-muted-foreground block">
+                              Select Date of Visit
+                            </label>
+                            <Popover>
+                              <PopoverTrigger asChild>
                                 <Button
-                                  type="button"
-                                  variant={
-                                    ticketsData[tier.name || "Standard Entry"]
-                                      ? "default"
-                                      : "outline"
-                                  }
-                                  onClick={() => {
-                                    setTicketsData({ [tier.name || "Standard Entry"]: 1 });
-                                  }}
-                                  className="h-8 rounded-lg text-xs"
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full h-12 justify-start text-left font-normal bg-secondary/20 border-border/85 rounded-xl",
+                                    !date && "text-muted-foreground",
+                                  )}
                                 >
-                                  {ticketsData[tier.name || "Standard Entry"]
-                                    ? "Selected"
-                                    : "Select"}
+                                  <Calendar className="mr-2 h-4 w-4" />
+                                  {date ? format(new Date(date), "PPP") : <span>Pick a date</span>}
                                 </Button>
-                              ) : (
-                                <>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    disabled={
-                                      (ticketsData[tier.name || "Standard Entry"] || 0) <= 0
-                                    }
-                                    onClick={() => {
-                                      const val = ticketsData[tier.name || "Standard Entry"] || 0;
-                                      if (val > 0) {
-                                        setTicketsData((p) => ({
-                                          ...p,
-                                          [tier.name || "Standard Entry"]: val - 1,
-                                        }));
-                                      }
-                                    }}
-                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
-                                  >
-                                    <Minus className="h-4 w-4" />
-                                  </Button>
-                                  <span className="w-10 text-center font-bold text-sm tracking-tight">
-                                    {ticketsData[tier.name || "Standard Entry"] || 0}
-                                  </span>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                      const val = ticketsData[tier.name || "Standard Entry"] || 0;
-                                      setTicketsData((p) => ({
-                                        ...p,
-                                        [tier.name || "Standard Entry"]: val + 1,
-                                      }));
-                                    }}
-                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
-                                  >
-                                    <Plus className="h-4 w-4" />
-                                  </Button>
-                                </>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={date ? new Date(date) : undefined}
+                                  onSelect={(d: any) => setDate(d ? format(d, "yyyy-MM-dd") : "")}
+                                  disabled={isDateBooked}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <p className="text-[11px] text-muted-foreground/80 mt-1">
+                              Click anywhere on the field above to open the calendar and choose a
+                              date.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-border/40 pt-6">
+                          <h3 className="text-xl font-semibold mb-1">
+                            {venue?.rental_model === "ENTIRE_VENUE"
+                              ? "Package Selection"
+                              : "Ticket Selection"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {venue?.rental_model === "ENTIRE_VENUE"
+                              ? "Select a rental package for your booking."
+                              : "Specify how many tickets you'd like to purchase for this visit using the selector buttons."}
+                          </p>
+                          <div className="space-y-3">
+                            {(venue?.rental_model !== "ENTIRE_VENUE" &&
+                            venue?.entrance_type !== "free"
+                              ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
+                              : []
+                            )
+                              .concat(venue?.pricing_tiers || [])
+                              .map((tier: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
+                                >
+                                  <div>
+                                    <p className="font-semibold">{tier.name || "Standard Entry"}</p>
+                                    <p className="text-sm text-muted-foreground mt-0.5">
+                                      {tier.amount > 0
+                                        ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
+                                        : "Free"}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
+                                    {venue?.rental_model === "ENTIRE_VENUE" ? (
+                                      <Button
+                                        type="button"
+                                        variant={
+                                          ticketsData[tier.name || "Standard Entry"]
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                        onClick={() => {
+                                          setTicketsData({ [tier.name || "Standard Entry"]: 1 });
+                                        }}
+                                        className="h-8 rounded-lg text-xs"
+                                      >
+                                        {ticketsData[tier.name || "Standard Entry"]
+                                          ? "Selected"
+                                          : "Select"}
+                                      </Button>
+                                    ) : (
+                                      <>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          disabled={
+                                            (ticketsData[tier.name || "Standard Entry"] || 0) <= 0
+                                          }
+                                          onClick={() => {
+                                            const val =
+                                              ticketsData[tier.name || "Standard Entry"] || 0;
+                                            if (val > 0) {
+                                              setTicketsData((p) => ({
+                                                ...p,
+                                                [tier.name || "Standard Entry"]: val - 1,
+                                              }));
+                                            }
+                                          }}
+                                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
+                                        >
+                                          <Minus className="h-4 w-4" />
+                                        </Button>
+                                        <span className="w-10 text-center font-bold text-sm tracking-tight">
+                                          {ticketsData[tier.name || "Standard Entry"] || 0}
+                                        </span>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => {
+                                            const val =
+                                              ticketsData[tier.name || "Standard Entry"] || 0;
+                                            setTicketsData((p) => ({
+                                              ...p,
+                                              [tier.name || "Standard Entry"]: val + 1,
+                                            }));
+                                          }}
+                                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+                                        >
+                                          <Plus className="h-4 w-4" />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {venue?.rental_model === "ENTIRE_VENUE" && (
+                          <div className="border-t border-border/40 pt-6">
+                            <h3 className="text-xl font-semibold mb-4">Reason for booking</h3>
+                            <div className="space-y-4 max-w-sm">
+                              <select
+                                value={bookingReason}
+                                onChange={(e) => setBookingReason(e.target.value)}
+                                className="w-full h-12 bg-secondary/20 border border-border/85 rounded-xl px-4 text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
+                              >
+                                <option value="" disabled>
+                                  Select reason
+                                </option>
+                                <option value="Wedding">Wedding</option>
+                                <option value="Corporate Event">Corporate Event</option>
+                                <option value="Birthday Party">Birthday Party</option>
+                                <option value="Concert/Performance">Concert/Performance</option>
+                                <option value="Other">Other</option>
+                              </select>
+                              {bookingReason === "Other" && (
+                                <Input
+                                  placeholder="Please specify"
+                                  value={bookingReasonOther}
+                                  onChange={(e) => setBookingReasonOther(e.target.value)}
+                                  className="h-12 w-full bg-secondary/20 border border-border/85 rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
+                                />
                               )}
                             </div>
                           </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {venue?.rental_model === "ENTIRE_VENUE" && (
-                    <div className="border-t border-border/40 pt-6">
-                      <h3 className="text-xl font-semibold mb-4">Reason for booking</h3>
-                      <div className="space-y-4 max-w-sm">
-                        <select
-                          value={bookingReason}
-                          onChange={(e) => setBookingReason(e.target.value)}
-                          className="w-full h-12 bg-secondary/20 border border-border/85 rounded-xl px-4 text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
-                        >
-                          <option value="" disabled>
-                            Select reason
-                          </option>
-                          <option value="Wedding">Wedding</option>
-                          <option value="Corporate Event">Corporate Event</option>
-                          <option value="Birthday Party">Birthday Party</option>
-                          <option value="Concert/Performance">Concert/Performance</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        {bookingReason === "Other" && (
-                          <Input
-                            placeholder="Please specify"
-                            value={bookingReasonOther}
-                            onChange={(e) => setBookingReasonOther(e.target.value)}
-                            className="h-12 w-full bg-secondary/20 border border-border/85 rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
-                          />
                         )}
-                      </div>
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    disabled={!isStep1Valid}
-                    onClick={() => setStep(2)}
-                    className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] mt-4"
-                  >
-                    Continue to Details
-                  </Button>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          Full Name
-                        </label>
-                        <Input
-                          required
-                          placeholder="e.g. Jane Doe"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="h-12 bg-secondary/40"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          ID or Passport Number
-                        </label>
-                        <Input
-                          required
-                          placeholder="Enter ID/Passport"
-                          value={idPassport}
-                          onChange={(e) => setIdPassport(e.target.value)}
-                          className="h-12 bg-secondary/40"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          Email Address
-                        </label>
-                        <Input
-                          required
-                          type="email"
-                          placeholder="e.g. jane@example.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="h-12 bg-secondary/40"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          Nationality
-                        </label>
-                        <select
-                          required
-                          value={nationality}
-                          onChange={(e) => setNationality(e.target.value)}
-                          disabled={!!user?.country}
-                          className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                        <Button
+                          type="button"
+                          disabled={!isStep1Valid}
+                          onClick={() => setStep(2)}
+                          className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] mt-4"
                         >
-                          <option value="" disabled>
-                            Select Country
-                          </option>
-                          {countries.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
+                          Continue to Details
+                        </Button>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          Phone Number
-                        </label>
-                        <Input
-                          required
-                          type="tel"
-                          placeholder="e.g. 0780000000"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          className="h-12 bg-secondary/40"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    )}
 
-                  {totalTickets > 1 && (
-                    <div className="border-t border-border/40 pt-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-semibold">Additional Attendees</h3>
-                        <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
-                          {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to
-                          assign
-                        </span>
-                      </div>
+                    {step === 2 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
 
-                      <div className="space-y-4">
-                        {attendees.map((att, idx) => (
-                          <div key={idx} className="flex gap-4 items-start">
-                            <div className="flex-1 space-y-1.5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="space-y-2">
                               <label className="text-sm font-medium text-muted-foreground">
-                                Attendee {idx + 2} Name
+                                Full Name
                               </label>
                               <Input
                                 required
-                                placeholder="Full Name"
-                                value={att.name}
-                                onChange={(e) => {
-                                  const newArr = [...attendees];
-                                  newArr[idx].name = e.target.value;
-                                  setAttendees(newArr);
-                                }}
-                                className="h-12 rounded-xl bg-secondary/40"
+                                placeholder="e.g. Jane Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="h-12 bg-secondary/40"
                               />
                             </div>
-                            <div className="flex-1 space-y-1.5">
+                            <div className="space-y-2">
                               <label className="text-sm font-medium text-muted-foreground">
-                                ID / Passport
+                                ID or Passport Number
                               </label>
                               <Input
-                                placeholder="Optional"
-                                value={att.id_document}
-                                onChange={(e) => {
-                                  const newArr = [...attendees];
-                                  newArr[idx].id_document = e.target.value;
-                                  setAttendees(newArr);
-                                }}
-                                className="h-12 rounded-xl bg-secondary/40"
+                                required
+                                placeholder="Enter ID/Passport"
+                                value={idPassport}
+                                onChange={(e) => setIdPassport(e.target.value)}
+                                className="h-12 bg-secondary/40"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Email Address
+                              </label>
+                              <Input
+                                required
+                                type="email"
+                                placeholder="e.g. jane@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="h-12 bg-secondary/40"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Nationality
+                              </label>
+                              <select
+                                required
+                                value={nationality}
+                                onChange={(e) => setNationality(e.target.value)}
+                                disabled={!!user?.country}
+                                className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="" disabled>
+                                  Select Country
+                                </option>
+                                {countries.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Phone Number
+                              </label>
+                              <Input
+                                required
+                                type="tel"
+                                placeholder="e.g. 0780000000"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="h-12 bg-secondary/40"
                               />
                             </div>
                           </div>
-                        ))}
+                        </div>
+
+                        {totalTickets > 1 && (
+                          <div className="border-t border-border/40 pt-6">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-xl font-semibold">Additional Attendees</h3>
+                              <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
+                                {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to
+                                assign
+                              </span>
+                            </div>
+
+                            <div className="space-y-4">
+                              {attendees.map((att, idx) => (
+                                <div key={idx} className="flex gap-4 items-start">
+                                  <div className="flex-1 space-y-1.5">
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Attendee {idx + 2} Name
+                                    </label>
+                                    <Input
+                                      required
+                                      placeholder="Full Name"
+                                      value={att.name}
+                                      onChange={(e) => {
+                                        const newArr = [...attendees];
+                                        newArr[idx].name = e.target.value;
+                                        setAttendees(newArr);
+                                      }}
+                                      className="h-12 rounded-xl bg-secondary/40"
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-1.5">
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      ID / Passport
+                                    </label>
+                                    <Input
+                                      placeholder="Optional"
+                                      value={att.id_document}
+                                      onChange={(e) => {
+                                        const newArr = [...attendees];
+                                        newArr[idx].id_document = e.target.value;
+                                        setAttendees(newArr);
+                                      }}
+                                      className="h-12 rounded-xl bg-secondary/40"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex gap-4 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setStep(1)}
+                            className="w-1/3 h-14 text-lg font-bold rounded-2xl"
+                          >
+                            Back
+                          </Button>
+                          {isGenerating || isCheckingOut ? (
+                            <Button
+                              type="button"
+                              disabled
+                              className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                              style={{
+                                background: themeColor || "var(--gradient-primary)",
+                                color: "#ffffff",
+                              }}
+                            >
+                              <span className="flex items-center justify-center">
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                {isCheckingOut ? "Processing..." : "Generating Tickets..."}
+                              </span>
+                            </Button>
+                          ) : issuedTickets.length > 0 ? (
+                            <Button
+                              type="button"
+                              onClick={() => setIsGenerating(true)}
+                              className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                              style={{
+                                background: themeColor || "var(--gradient-primary)",
+                                color: "#ffffff",
+                              }}
+                            >
+                              Retry Ticket Generation
+                            </Button>
+                          ) : (
+                            <Button
+                              type="submit"
+                              disabled={totalTickets === 0 || !isStep2Valid}
+                              className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
+                              style={{
+                                background: themeColor || "var(--gradient-primary)",
+                                color: "#ffffff",
+                              }}
+                            >
+                              Pay{" "}
+                              {total > 0
+                                ? `${venue.currency} ${total.toLocaleString()}`
+                                : totalTickets > 0
+                                  ? "Free"
+                                  : `${venue.currency} 0`}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </form>
+                </div>
+
+                {/* Right Column: Order Summary */}
+                <div className="w-full lg:w-[400px] shrink-0">
+                  <div className="sticky top-24 rounded-3xl border border-border/50 bg-card p-6 shadow-[var(--shadow-card)]">
+                    <h3 className="text-xl font-bold tracking-tight mb-6">Order Summary</h3>
+
+                    <div className="flex gap-4 mb-6 pb-6 border-b border-border/40">
+                      <img
+                        src={venue.cover_url}
+                        alt={venue.name}
+                        className="w-20 h-20 rounded-xl object-cover"
+                      />
+                      <div>
+                        <h4 className="font-bold text-lg leading-tight mb-1">{venue.name}</h4>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {venue.city || venue.address}
+                        </p>
                       </div>
                     </div>
-                  )}
 
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStep(1)}
-                      className="w-1/3 h-14 text-lg font-bold rounded-2xl"
-                    >
-                      Back
-                    </Button>
-                    {isGenerating || isCheckingOut ? (
-                      <Button
-                        type="button"
-                        disabled
-                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                        style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
-                      >
-                        <span className="flex items-center justify-center">
-                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          {isCheckingOut ? "Processing..." : "Generating Tickets..."}
-                        </span>
-                      </Button>
-                    ) : issuedTickets.length > 0 ? (
-                      <Button
-                        type="button"
-                        onClick={() => setIsGenerating(true)}
-                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
-                        style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
-                      >
-                        Retry Ticket Generation
-                      </Button>
-                    ) : (
-                      <Button
-                        type="submit"
-                        disabled={totalTickets === 0 || !isStep2Valid}
-                        className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
-                        style={{ background: themeColor || "var(--gradient-primary)", color: "#ffffff" }}
-                      >
-                        Pay{" "}
+                    <div className="space-y-4 text-sm font-medium mb-6">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date</span>
+                        <span>{date ? date : "Not selected"}</span>
+                      </div>
+                      {Object.entries(ticketsData)
+                        .filter(([_, qty]) => qty > 0)
+                        .map(([name, qty], i) => {
+                          const tier =
+                            name === "Standard Entry"
+                              ? { amount: venue?.entrance_fee || 0 }
+                              : venue.pricing_tiers?.find((t: any) => t.name === name) || {
+                                  amount: 0,
+                                };
+                          return (
+                            <div key={i} className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                {name} x {qty}
+                              </span>
+                              <span>
+                                {tier.amount > 0
+                                  ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}`
+                                  : "Free"}
+                              </span>
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    <div className="border-t border-border/40 pt-4 flex justify-between items-end">
+                      <span className="text-muted-foreground font-semibold">Total</span>
+                      <span className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
                         {total > 0
                           ? `${venue.currency} ${total.toLocaleString()}`
                           : totalTickets > 0
                             ? "Free"
                             : `${venue.currency} 0`}
-                      </Button>
-                    )}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              )}
-            </form>
-          </div>
-
-          {/* Right Column: Order Summary */}
-          <div className="w-full lg:w-[400px] shrink-0">
-            <div className="sticky top-24 rounded-3xl border border-border/50 bg-card p-6 shadow-[var(--shadow-card)]">
-              <h3 className="text-xl font-bold tracking-tight mb-6">Order Summary</h3>
-
-              <div className="flex gap-4 mb-6 pb-6 border-b border-border/40">
-                <img
-                  src={venue.cover_url}
-                  alt={venue.name}
-                  className="w-20 h-20 rounded-xl object-cover"
-                />
-                <div>
-                  <h4 className="font-bold text-lg leading-tight mb-1">{venue.name}</h4>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <MapPin className="w-3 h-3" /> {venue.city || venue.address}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 text-sm font-medium mb-6">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Date</span>
-                  <span>{date ? date : "Not selected"}</span>
-                </div>
-                {Object.entries(ticketsData)
-                  .filter(([_, qty]) => qty > 0)
-                  .map(([name, qty], i) => {
-                    const tier =
-                      name === "Standard Entry"
-                        ? { amount: venue?.entrance_fee || 0 }
-                        : venue.pricing_tiers?.find((t: any) => t.name === name) || { amount: 0 };
-                    return (
-                      <div key={i} className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          {name} x {qty}
-                        </span>
-                        <span>
-                          {tier.amount > 0
-                            ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}`
-                            : "Free"}
-                        </span>
-                      </div>
-                    );
-                  })}
-              </div>
-
-              <div className="border-t border-border/40 pt-4 flex justify-between items-end">
-                <span className="text-muted-foreground font-semibold">Total</span>
-                <span
-                  className="text-3xl font-bold"
-                  style={{ color: "var(--primary)" }}
-                >
-                  {total > 0
-                    ? `${venue.currency} ${total.toLocaleString()}`
-                    : totalTickets > 0
-                      ? "Free"
-                      : `${venue.currency} 0`}
-                </span>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Hidden Ticket Renderer */}
-      {isGenerating && issuedTickets.length > 0 && venueProject && (
-        <div
-          className="absolute -z-50 pointer-events-none"
-          style={{ top: "-9999px", left: "-9999px" }}
-        >
-          {issuedTickets.map((t) => (
-            <div
-              key={t.id}
-              id={`ticket-render-${t.id}`}
-              className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-            >
-              <TicketPreview
-                template={venueProject.template}
-                palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                tier={t.tier}
-                title={venue.name}
-                subtitle={venue.address || t.attendee_name || name}
-                date={date}
-                time="Opening Hours"
-                seat={t.attendee_name || name || "General"}
-                price={total.toString()}
-                currency={venue.currency}
-                cover={venueProject.coverImage || ""}
-                logoText={venueProject.logoText || "Agatike"}
-                logoImage={venueProject.logoImage}
-                logoScale={Number(venueProject.logoScale || 24)}
-                logoOpacity={Number(venueProject.logoOpacity ?? 1)}
-                logoColorMode={venueProject.logoColorMode || "original"}
-                orderId={t.otp}
-                qrValue={`${window.location.origin}/v/${t.otp}`}
-                previewMode="Front"
-                layout={
-                  venueProject.design_overrides?.layout || {
-                    titleSize: 30,
-                    subtitleSize: 14,
-                    metaSize: 11,
-                    titleAlign: "left",
-                    titleOffsetY: 0,
-                    subtitleOffsetY: 0,
-                    metaOffsetY: 0,
-                  }
-                }
-                back={
-                  venueProject.design_overrides?.back || {
-                    backText: "",
-                    backImage: "",
-                    backImageOpacity: 0.3,
-                  }
-                }
-              />
-            </div>
-          ))}
-        </div>
-      )}
+            {/* Hidden Ticket Renderer */}
+            {isGenerating && issuedTickets.length > 0 && venueProject && (
+              <div
+                className="absolute -z-50 pointer-events-none"
+                style={{ top: "-9999px", left: "-9999px" }}
+              >
+                {issuedTickets.map((t) => (
+                  <div
+                    key={t.id}
+                    id={`ticket-render-${t.id}`}
+                    className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+                  >
+                    <TicketPreview
+                      template={venueProject.template}
+                      palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                      font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                      tier={t.tier}
+                      title={venue.name}
+                      subtitle={venue.address || t.attendee_name || name}
+                      date={date}
+                      time="Opening Hours"
+                      seat={t.attendee_name || name || "General"}
+                      price={total.toString()}
+                      currency={venue.currency}
+                      cover={venueProject.coverImage || ""}
+                      logoText={venueProject.logoText || "Agatike"}
+                      logoImage={venueProject.logoImage}
+                      logoScale={Number(venueProject.logoScale || 24)}
+                      logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                      logoColorMode={venueProject.logoColorMode || "original"}
+                      orderId={t.otp}
+                      qrValue={`${window.location.origin}/v/${t.otp}`}
+                      previewMode="Front"
+                      layout={
+                        venueProject.design_overrides?.layout || {
+                          titleSize: 30,
+                          subtitleSize: 14,
+                          metaSize: 11,
+                          titleAlign: "left",
+                          titleOffsetY: 0,
+                          subtitleOffsetY: 0,
+                          metaOffsetY: 0,
+                        }
+                      }
+                      back={
+                        venueProject.design_overrides?.back || {
+                          backText: "",
+                          backImage: "",
+                          backImageOpacity: 0.3,
+                        }
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
-      <AuthSuggestionModal
-        isOpen={isAuthSuggestionOpen}
-        onOpenChange={setIsAuthSuggestionOpen}
-        onSkip={() => {
-          setHasSkippedAuth(true);
-          setIsPaymentModalOpen(true);
-        }}
-      />
+            <AuthSuggestionModal
+              isOpen={isAuthSuggestionOpen}
+              onOpenChange={setIsAuthSuggestionOpen}
+              onSkip={() => {
+                setHasSkippedAuth(true);
+                setIsPaymentModalOpen(true);
+              }}
+            />
 
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onOpenChange={setIsPaymentModalOpen}
-        baseAmount={total}
-        paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-        onProceed={(details) => doCheckout(details)}
-        isProcessing={isCheckingOut || isPollingPawaPay}
-        isGenerating={isGenerating}
-        workspaceId={venue.workspace_id}
-        quantity={totalTickets}
-        itemLabel="Ticket(s)"
-        baseCurrency={venue.currency}
-        userPhone={undefined}
-        themeColor={themeColor}
-      />
+            <PaymentModal
+              isOpen={isPaymentModalOpen}
+              onOpenChange={setIsPaymentModalOpen}
+              baseAmount={total}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              onProceed={(details) => doCheckout(details)}
+              isProcessing={isCheckingOut || isPollingPawaPay}
+              isGenerating={isGenerating}
+              workspaceId={venue.workspace_id}
+              quantity={totalTickets}
+              itemLabel="Ticket(s)"
+              baseCurrency={venue.currency}
+              userPhone={undefined}
+              themeColor={themeColor}
+            />
           </div>
         )}
       </SheetContent>
