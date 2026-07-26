@@ -545,9 +545,9 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
         <SheetTitle className="sr-only">Checkout</SheetTitle>
-        <div className="flex flex-col text-foreground p-6">
+        <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
       {showOverrideDialog && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
           <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
@@ -581,40 +581,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
         </div>
       )}
 
-      {showOverrideDialog && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
-          <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
-            <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
-            <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-              You just signed in! Would you like to use your account details (Name, Phone, Email,
-              Nationality) or keep the customer information you already entered?
-            </p>
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={() => {
-                  if (user?.username) setName(user.username);
-                  if (user?.phone) setPhone(user.phone);
-                  if (user?.email) setEmail(user.email);
-                  if (user?.country) setNationality(user.country);
-                  setShowOverrideDialog(false);
-                }}
-                className="w-full h-12 text-base font-semibold"
-              >
-                Use Account Details
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowOverrideDialog(false)}
-                className="w-full h-12 text-base font-semibold"
-              >
-                Keep Entered Info
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 md:px-8 xl:px-12 pt-8 pb-20 md:pt-12">
+      <div className="w-full pt-4 md:pt-6">
         <Link
           to="/venues/$venueId"
           params={{ venueId: venue.id }}
@@ -623,14 +590,14 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
           <ChevronLeft className="w-4 h-4 mr-1" /> Back to Details
         </Link>
 
-        <h1 className="text-3xl font-bold tracking-tight mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">
           {venue?.rental_model === "ENTIRE_VENUE" ? "Book your date" : "Secure your tickets"}
         </h1>
 
-        <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 xl:gap-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
           {/* Left Column: Form */}
-          <div className="flex-1 bg-card rounded-3xl p-8 border border-border/50 shadow-[var(--shadow-card)]">
-            <div className="flex items-center gap-3 mb-8">
+          <div className="flex-1 bg-card rounded-3xl p-5 md:p-6 border border-border/50 shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-3 mb-6 md:mb-8">
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
               >
@@ -1059,7 +1026,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Hidden Ticket Renderer */}
       {isGenerating && issuedTickets.length > 0 && venueProject && (
@@ -1143,7 +1110,7 @@ export function VenueCheckoutSheet({ venue, isOpen, onClose, themeColor }: Venue
         userPhone={undefined}
       />
       </div>
-      </SheetContent>
-    </Sheet>
+    </SheetContent>
+  </Sheet>
   );
 }

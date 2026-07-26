@@ -23,6 +23,7 @@ const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
 export function EventDetailsDesktop({
   eventId,
   event: initialEvent,
+  hideLayout,
 }: {
   eventId: string;
   event?: any;

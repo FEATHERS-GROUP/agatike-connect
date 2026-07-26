@@ -830,23 +830,22 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] sm:!max-w-[1000px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
+      <SheetContent className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl">
         <SheetTitle className="sr-only">Checkout</SheetTitle>
-        <div className="flex flex-col text-foreground p-6">
+        <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
 
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
-          <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
+          <div className="space-y-6 lg:space-y-8">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight mb-2">Book {facility.name}</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">Book {facility.name}</h1>
+              <p className="text-sm md:text-base text-muted-foreground">
                 Select your date(s), time, and enter your details to complete your booking.
               </p>
             </div>
 
-            <form id="booking-form" onSubmit={handlePaymentStart} className="space-y-8">
-              <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-6">1. Date & Time</h2>
+            <form id="booking-form" onSubmit={handlePaymentStart} className="space-y-6 lg:space-y-8">
+              <div className="bg-card border border-border/60 rounded-3xl p-5 md:p-6 shadow-sm">
+                <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">1. Date & Time</h2>
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-2">
                     <Label>Select Date (Click to pick a single day or a range)</Label>
@@ -1060,9 +1059,9 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
                 </div>
               </div>
 
-              <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-6">2. Your Details</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="bg-card border border-border/60 rounded-3xl p-5 md:p-6 shadow-sm">
+                <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">2. Your Details</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-2 sm:col-span-2">
                     <Label>Full Name</Label>
                     <Input
