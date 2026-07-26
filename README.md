@@ -2596,4 +2596,15 @@ Shows all `product_orders` for this product, with search:
 
 ---
 
+## 29. Global State & Caching Architecture
+
+**Logic:**
+
+- The application uses **TanStack Query** (React Query) and **TanStack Router** configured for aggressive global caching to ensure near-instant page loads and seamless navigation.
+- **Global Data Caching:** The root `QueryClient` (`src/router.tsx`) forces a global `staleTime` of 5 minutes and a `gcTime` (Garbage Collection Time) of 1 hour for all queries. This ensures that once data is fetched, the user can navigate freely across the app for up to an hour and see the UI instantly rendered from memory without blocking network requests.
+- **Router Preloading:** TanStack Router is configured with `defaultPreloadStaleTime` of 5 minutes. Whenever a user hovers over any link in the application, the route's data is pre-fetched and cached for 5 minutes. This creates a perceived 0ms load time when the user finally clicks the link.
+- **Redundancy Prevention:** Since these caching mechanisms are declared globally at the router context level, individual components (like the `RenderedPage` page builder) do not need to explicitly declare their own `staleTime` unless they explicitly require a different, component-specific caching strategy.
+
+---
+
 _Last updated: July 2026 — Agatike Connect_
