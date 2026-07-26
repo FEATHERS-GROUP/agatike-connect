@@ -471,7 +471,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
         return;
       }
 
-      if (isSharedAccess && td?.issued && td.issued.length > 0) {
+      if (td?.issued && td.issued.length > 0) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
@@ -512,7 +512,7 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (isSharedAccess && issuedTickets.length > 0) {
+          if (issuedTickets && issuedTickets.length > 0) {
             setIsGenerating(true);
           } else {
             setIsSuccess(true);
@@ -633,14 +633,29 @@ export function FacilityCheckoutSheet({ venue, facility, isOpen, onClose, themeC
           }
 
           if (attachments.length > 0 && email) {
-            await sendTicketsEmail({
+            const dateRangeStr = date?.from
+              ? date.to
+                ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+                : format(date.from, "LLL dd, y")
+              : "";
+            const timeRangeStr =
+              isSharedAccess || selectedSlots.length === 0
+                ? "Full Day"
+                : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+            await sendVenueBookingEmail({
               data: {
                 to: email,
                 customerName: name,
-                venueName: venue.name || "the Venue",
+                facilityName: facility?.name || "Facility",
+                venueName: venue.name,
+                venueLocation: venue.address || venue.city || "Venue Location",
+                dateRange: dateRangeStr,
+                timeRange: timeRangeStr,
+                bookingRef: bookingRef,
                 attachments,
-              } as any,
-            });
+              },
+            } as any);
             await sendSmsAlert(bookingRef);
 
             toast.success("Booking confirmed and tickets emailed!");

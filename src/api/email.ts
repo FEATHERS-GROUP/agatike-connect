@@ -901,12 +901,26 @@ export const sendVenueBookingEmail = createServerFn({ method: "POST" })
             <p style="margin: 0; color: #374151; font-size: 15px;"><strong>Booking Reference:</strong> <span style="font-family: monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">${bookingRef}</span></p>
           </div>
           
-          <p style="color: #4b5563; font-size: 15px; margin-bottom: 0;">
-            Please keep your booking reference handy and show it at the venue when you arrive.
+          <p style="color: #4b5563; font-size: 15px; margin-top: 24px;">
+            Please keep this confirmation handy. If you have any questions, feel free to contact the venue directly.
           </p>
+        </div>
+        <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eaeaec;">
+          <p style="color: #9ca3af; font-size: 13px; margin: 0;">Powered securely by <strong>Agatike Connect</strong></p>
         </div>
       </div>
     `;
+
+    const emailPayload: any = {
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Booking Confirmed: ${facilityName} at ${venueName}`,
+      html,
+    };
+
+    if (ctx.data.attachments && ctx.data.attachments.length > 0) {
+      emailPayload.attachments = ctx.data.attachments;
+    }
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -914,12 +928,7 @@ export const sendVenueBookingEmail = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
         Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
-      body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
-        to: [to],
-        subject: `Booking Confirmation: ${facilityName} at ${venueName}`,
-        html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const resData = await res.json();
