@@ -128,7 +128,7 @@ function CheckoutPage() {
           phone: paymentDetails.phone,
           network: paymentDetails.network,
           currency: paymentDetails.currency || "RWF",
-          type: "page_builder_checkout",
+          type: `page_builder_checkout::${window.location.hostname}`,
           referenceId: newBookingRef,
           workspaceId: workspaceId,
           reason: `Buy ${product.name} (Qty: ${qty})`,
@@ -213,7 +213,7 @@ function CheckoutPage() {
             style={{ backgroundColor: themeColor, color: "#fff" }}
             onClick={() => window.history.back()}
           >
-            Return to Store
+            Return to {pageData?.title || "Store"}
           </Button>
         </div>
       </div>
@@ -283,194 +283,231 @@ function CheckoutPage() {
 
   return (
     <div
-      className="min-h-[100dvh] w-full flex flex-col-reverse md:flex-row bg-background"
+      className="min-h-[100dvh] w-full flex flex-col md:flex-row bg-background"
       style={{ fontFamily: `${fontFamily}, sans-serif` }}
     >
-      {/* Left Column - Checkout Form */}
-      <div className="flex-1 p-6 md:p-12 overflow-y-auto">
-        <div className="max-w-xl mx-auto space-y-8">
-          <div className="flex items-center justify-between">
+      {/* Left Column - Order Summary */}
+      <div
+        className="w-full md:w-1/2 lg:w-[45%] p-6 md:p-12 lg:p-20 flex flex-col justify-between shrink-0 text-white relative overflow-hidden"
+        style={{ backgroundColor: themeColor || "#0B3B24" }}
+      >
+        {/* Subtle Background Gradient Overlay */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay"></div>
+
+        <div className="relative z-10 space-y-8 max-w-md w-full ml-auto mr-auto md:ml-auto md:mr-8">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => window.history.back()}
-              className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Return to Store
+              <ArrowLeft className="w-5 h-5 text-white" />
             </button>
-            <img
-              src={logoUrl || "/src/assets/logo/Agatike%20Icon.png"}
-              alt="Brand Logo"
-              className="w-10 h-10 rounded-lg object-contain"
-            />
+            <span className="font-semibold text-lg">{pageData?.title || "Checkout"}</span>
           </div>
 
-          <div>
-            <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+          <div className="pt-6">
+            <h3 className="text-white/80 text-base mb-2">Pay for {product?.name || "Product"}</h3>
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="text-4xl md:text-5xl font-bold tracking-tight">
+                RWF {price.toLocaleString()}
+              </span>
+              <span className="text-white/70 text-base">/ item</span>
+            </div>
 
-            <div className="space-y-8">
-              <section className="space-y-5">
-                <h2 className="text-xl font-semibold">Contact Information</h2>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Full Name *</Label>
-                    <Input
-                      placeholder="John Doe"
-                      value={buyerName}
-                      onChange={(e) => setBuyerName(e.target.value)}
-                      className="h-12 rounded-xl bg-secondary/20 border-border/60"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Email Address</Label>
-                      <Input
-                        placeholder="you@example.com"
-                        value={buyerEmail}
-                        onChange={(e) => setBuyerEmail(e.target.value)}
-                        className="h-12 rounded-xl bg-secondary/20 border-border/60"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Phone Number</Label>
-                      <Input
-                        placeholder="+250 700 000 000"
-                        value={buyerPhone}
-                        onChange={(e) => setBuyerPhone(e.target.value)}
-                        className="h-12 rounded-xl bg-secondary/20 border-border/60"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    We will use this to send you your receipt and order updates.
-                  </p>
-                </div>
-              </section>
+            <div className="flex flex-col gap-2 mt-6">
+              {size && (
+                <p className="text-sm text-white/80">
+                  Size: <span className="font-medium text-white">{size}</span>
+                </p>
+              )}
+              {color && (
+                <p className="text-sm text-white/80 flex items-center gap-2">
+                  Color:
+                  <span
+                    className="w-4 h-4 rounded-full border border-white/20 shadow-sm inline-block"
+                    style={{ backgroundColor: color }}
+                  />
+                </p>
+              )}
+            </div>
+          </div>
 
-              <section className="space-y-5 pt-6 border-t border-border/40">
-                <h2 className="text-xl font-semibold">Payment Method</h2>
-                <RadioGroup
-                  value={selectedPaymentGroup}
-                  onValueChange={setSelectedPaymentGroup}
-                  className="space-y-3"
-                >
-                  <div
-                    className={`flex items-center space-x-3 border p-5 rounded-2xl cursor-pointer transition-colors ${selectedPaymentGroup === "momo" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/20"}`}
-                    onClick={() => setSelectedPaymentGroup("momo")}
-                  >
-                    <RadioGroupItem
-                      value="momo"
-                      id="momo"
-                      style={selectedPaymentGroup === "momo" ? { color: themeColor } : {}}
-                    />
-                    <Label
-                      htmlFor="momo"
-                      className="flex flex-1 items-center justify-between cursor-pointer"
-                    >
-                      <span className="flex items-center gap-3 font-medium text-base">
-                        <Smartphone className="w-5 h-5 text-muted-foreground" />
-                        Mobile Money
-                      </span>
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        MTN / Airtel
-                      </span>
-                    </Label>
-                  </div>
-                  <div
-                    className={`flex items-center space-x-3 border p-5 rounded-2xl cursor-pointer transition-colors ${selectedPaymentGroup === "card" ? "border-primary bg-primary/5" : "border-border/60 hover:bg-secondary/20"}`}
-                    onClick={() => setSelectedPaymentGroup("card")}
-                  >
-                    <RadioGroupItem
-                      value="card"
-                      id="card"
-                      style={selectedPaymentGroup === "card" ? { color: themeColor } : {}}
-                    />
-                    <Label
-                      htmlFor="card"
-                      className="flex flex-1 items-center justify-between cursor-pointer"
-                    >
-                      <span className="flex items-center gap-3 font-medium text-base">
-                        <CreditCard className="w-5 h-5 text-muted-foreground" />
-                        Credit / Debit Card
-                      </span>
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Visa / MC
-                      </span>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </section>
+          <div className="space-y-4 pt-6">
+            <div className="bg-white/10 rounded-xl p-4 mb-6">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium">{product?.name || "Product"}</span>
+                <span className="font-medium">RWF {price.toLocaleString()}</span>
+              </div>
+              <div className="text-white/70 text-sm">Qty: {qty}</div>
+            </div>
 
-              <Button
-                className="w-full h-16 rounded-2xl text-xl font-bold shadow-xl mt-8 gap-3 transition-transform active:scale-[0.98]"
-                style={{ backgroundColor: themeColor, color: "#fff" }}
-                onClick={handlePayClick}
-                disabled={paymentMutation.isPending}
-              >
-                <Lock className="w-5 h-5" />
-                {paymentMutation.isPending ? "Processing..." : `Pay RWF ${total.toLocaleString()}`}
-              </Button>
+            <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
+              <span className="text-sm">Subtotal</span>
+              <span className="font-medium text-white">RWF {total.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
+              <span className="text-sm">Taxes</span>
+              <span className="font-medium text-white">RWF 0.00</span>
+            </div>
+            <div className="flex justify-between items-center pt-2">
+              <span className="font-semibold text-base">Total due today</span>
+              <span className="text-xl font-bold">RWF {total.toLocaleString()}</span>
             </div>
           </div>
         </div>
+
+        <div className="relative z-10 mt-16 text-xs text-white/50 max-w-md w-full ml-auto mr-auto md:ml-auto md:mr-8 flex items-center gap-4">
+          <span>© {new Date().getFullYear()} All rights reserved</span>
+          <a href="#" className="hover:text-white transition-colors">
+            Terms
+          </a>
+          <a href="#" className="hover:text-white transition-colors">
+            Privacy
+          </a>
+        </div>
       </div>
 
-      {/* Right Column - Order Summary */}
-      <div className="w-full md:w-[450px] lg:w-[500px] bg-secondary/20 p-6 md:p-12 border-b md:border-b-0 md:border-l border-border/40 shrink-0">
-        <div className="max-w-sm mx-auto space-y-8 sticky top-12">
-          <h2 className="text-xl font-semibold hidden md:block">Order Summary</h2>
+      {/* Right Column - Checkout Form */}
+      <div className="w-full md:w-1/2 lg:w-[55%] bg-background p-6 md:p-12 lg:p-20 overflow-y-auto relative">
+        {/* Top Right Logo */}
+        <div className="absolute top-6 right-6 md:top-8 md:right-8 lg:top-10 lg:right-12 flex items-center gap-3">
+          <img
+            src={logoUrl || "/src/assets/logo/Agatike%20Icon.png"}
+            alt="Brand Logo"
+            className="w-10 h-10 rounded-full bg-background object-contain shadow-sm border border-border p-0.5"
+          />
+        </div>
 
-          <div className="flex gap-5">
-            <div className="w-24 h-24 bg-secondary rounded-2xl border border-border/60 overflow-hidden shrink-0 relative shadow-sm">
-              {product?.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
+        <div className="max-w-md w-full mx-auto md:mx-0 md:ml-8 space-y-8 mt-12 md:mt-0">
+          <h1 className="text-2xl font-bold text-foreground">Payment Details</h1>
+
+          <div className="space-y-8">
+            <section className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Email address</Label>
+                <Input
+                  placeholder="example@gmail.com"
+                  value={buyerEmail}
+                  onChange={(e) => setBuyerEmail(e.target.value)}
+                  className="h-12 rounded-lg bg-background border-border shadow-sm focus-visible:ring-1"
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
-                  Image
-                </div>
-              )}
-            </div>
-            <div className="flex-1 flex flex-col justify-center">
-              <h3 className="font-bold text-lg line-clamp-2 leading-tight">
-                {product?.name || "Product"}
-              </h3>
-              <div className="space-y-1 mt-2">
-                {size && (
-                  <p className="text-sm text-muted-foreground">
-                    Size: <span className="font-medium text-foreground">{size}</span>
-                  </p>
-                )}
-                {color && (
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    Color:
-                    <span
-                      className="w-3 h-3 rounded-full border border-border shadow-sm inline-block"
-                      style={{ backgroundColor: color }}
-                    />
-                  </p>
-                )}
               </div>
-            </div>
-            <div className="font-bold text-lg pt-1">RWF {price.toLocaleString()}</div>
-          </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Full name</Label>
+                <Input
+                  placeholder="John Smith"
+                  value={buyerName}
+                  onChange={(e) => setBuyerName(e.target.value)}
+                  className="h-12 rounded-lg bg-background border-border shadow-sm focus-visible:ring-1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Phone number</Label>
+                <Input
+                  placeholder="+250 700 000 000"
+                  value={buyerPhone}
+                  onChange={(e) => setBuyerPhone(e.target.value)}
+                  className="h-12 rounded-lg bg-background border-border shadow-sm focus-visible:ring-1"
+                />
+              </div>
+            </section>
 
-          <div className="pt-8 border-t border-border/40 space-y-4 text-base">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal (x{qty})</span>
-              <span className="font-medium text-foreground">RWF {total.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>Taxes & Fees</span>
-              <span className="font-medium text-foreground">Calculated next step</span>
-            </div>
-          </div>
+            <section className="space-y-4 pt-2">
+              <h2 className="text-sm font-medium">Payment Method</h2>
+              <RadioGroup
+                value={selectedPaymentGroup}
+                onValueChange={setSelectedPaymentGroup}
+                className="space-y-3"
+              >
+                <div
+                  className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "momo" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
+                  onClick={() => setSelectedPaymentGroup("momo")}
+                  style={
+                    selectedPaymentGroup === "momo" && themeColor
+                      ? ({
+                          borderColor: themeColor,
+                          backgroundColor: `${themeColor}0A`,
+                          "--tw-ring-color": themeColor,
+                        } as React.CSSProperties)
+                      : {}
+                  }
+                >
+                  <RadioGroupItem
+                    value="momo"
+                    id="momo"
+                    style={
+                      selectedPaymentGroup === "momo" && themeColor
+                        ? { color: themeColor, borderColor: themeColor }
+                        : {}
+                    }
+                  />
+                  <Label
+                    htmlFor="momo"
+                    className="flex flex-1 items-center justify-between cursor-pointer"
+                  >
+                    <span className="flex items-center gap-3 font-medium text-sm">
+                      <Smartphone className="w-5 h-5 text-muted-foreground" />
+                      Mobile Money
+                    </span>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      MTN / Airtel
+                    </span>
+                  </Label>
+                </div>
 
-          <div className="pt-8 border-t border-border/40 flex justify-between items-center">
-            <span className="font-bold text-lg">Total</span>
-            <span className="text-3xl font-black">RWF {total.toLocaleString()}</span>
+                <div
+                  className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "card" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
+                  onClick={() => setSelectedPaymentGroup("card")}
+                  style={
+                    selectedPaymentGroup === "card" && themeColor
+                      ? ({
+                          borderColor: themeColor,
+                          backgroundColor: `${themeColor}0A`,
+                          "--tw-ring-color": themeColor,
+                        } as React.CSSProperties)
+                      : {}
+                  }
+                >
+                  <RadioGroupItem
+                    value="card"
+                    id="card"
+                    style={
+                      selectedPaymentGroup === "card" && themeColor
+                        ? { color: themeColor, borderColor: themeColor }
+                        : {}
+                    }
+                  />
+                  <Label
+                    htmlFor="card"
+                    className="flex flex-1 items-center justify-between cursor-pointer"
+                  >
+                    <span className="flex items-center gap-3 font-medium text-sm">
+                      <CreditCard className="w-5 h-5 text-muted-foreground" />
+                      Credit / Debit Card
+                    </span>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Visa / MC
+                    </span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </section>
+
+            <Button
+              className="w-full h-14 rounded-xl text-base font-semibold shadow-md mt-6 transition-transform active:scale-[0.98]"
+              style={
+                themeColor ? { backgroundColor: themeColor, color: "#fff" } : { color: "#fff" }
+              }
+              onClick={handlePayClick}
+              disabled={paymentMutation.isPending}
+            >
+              {paymentMutation.isPending ? "Processing..." : `Pay RWF ${total.toLocaleString()}`}
+            </Button>
+
+            <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed max-w-sm mx-auto">
+              By confirming your payment, you allow us to charge your selected method for this
+              payment in accordance with terms. You can always cancel before confirmation.
+            </p>
           </div>
         </div>
       </div>

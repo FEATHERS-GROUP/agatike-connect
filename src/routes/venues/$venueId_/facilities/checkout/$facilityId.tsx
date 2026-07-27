@@ -618,7 +618,7 @@ function FacilityCheckoutPage() {
             }
           } else {
             for (const ticket of issuedTickets) {
-              const fallbackPdf = generateFallbackReceipt({
+              const fallbackPdf = await generateFallbackReceipt({
                 entityName: venue?.name || "Event/Venue",
                 ticket,
                 bookingRef: ticket.booking_ref || bookingRef,

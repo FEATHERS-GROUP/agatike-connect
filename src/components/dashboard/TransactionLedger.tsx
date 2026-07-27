@@ -124,7 +124,9 @@ export function TransactionLedger({
                                 : "Withdrawal")}
                           </p>
                           <p className="text-xs text-muted-foreground capitalize">
-                            {txn.type?.replace("_", " ")}
+                            {txn.type?.startsWith("page_builder_checkout::")
+                              ? txn.type.split("::")[1]
+                              : txn.type?.replace("_", " ")}
                             {Number(txn.platform_fee || 0) + Number(txn.network_fee || 0) > 0 ? (
                               <span className="ml-2 font-medium text-[#f97316]">
                                 · Processing Fee:{" "}

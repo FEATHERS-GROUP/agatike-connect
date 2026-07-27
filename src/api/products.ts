@@ -48,6 +48,7 @@ const GET_WORKSPACE_PRODUCTS = `
   query GetWorkspaceProducts($workspace_id: uuid!) {
     products(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
+      workspace_id
       name
       type
       description

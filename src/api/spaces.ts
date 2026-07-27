@@ -46,6 +46,7 @@ const GET_SPACES = `
   query GetSpaces($workspace_id: uuid!) {
     spaces(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
+      workspace_id
       name
       type
       description

@@ -23,18 +23,31 @@ const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
 export function EventDetailsDesktop({
   eventId,
   event: initialEvent,
+  hideLayout,
 }: {
   eventId: string;
   event?: any;
+  hideLayout?: boolean;
 }) {
   const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    if (typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
 
   const d = useEventDetails(eventId, initialEvent);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      {!hideLayout && !isSubdomain && <Navbar />}
 
       <EventBannerDesktop
         cover={d.ev.cover}
@@ -206,7 +219,7 @@ export function EventDetailsDesktop({
         />
       </div>
 
-      <Footer />
+      {!hideLayout && !isSubdomain && <Footer />}
 
       {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-200">

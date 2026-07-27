@@ -1,0 +1,1168 @@
+import { Link, useNavigate } from "@tanstack/react-router";
+import {
+  ChevronLeft,
+  Calendar,
+  Users,
+  MapPin,
+  CheckCircle2,
+  Ticket,
+  Minus,
+  Plus,
+  Smartphone,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Navbar } from "@/components/site/Navbar";
+import { useState, useEffect } from "react";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
+import { getWorkspaceTicketProjects } from "@/api/events";
+import { sendTicketsEmail } from "@/api/email";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
+import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+
+import { COUNTRIES } from "@/lib/countries";
+
+const countries = COUNTRIES.map((c) => c.name).sort();
+
+interface VenueCheckoutSheetProps {
+  venue: any;
+  isOpen: boolean;
+  onClose: () => void;
+  themeColor?: string;
+}
+
+export function VenueCheckoutSheet({
+  venue,
+  isOpen,
+  onClose,
+  themeColor,
+}: VenueCheckoutSheetProps) {
+  const navigate = useNavigate();
+  const { user } = useUserAuth();
+  const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
+  const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
+
+  const storageKey = `venue_checkout_desktop_${venue?.id}`;
+  const [date, setDate] = useState("");
+  const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
+  const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [idPassport, setIdPassport] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [step, setStep] = useState(1);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
+  const [bookingReason, setBookingReason] = useState("");
+  const [bookingReasonOther, setBookingReasonOther] = useState("");
+
+  const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+
+  const { data: ticketProjects } = useQuery({
+    queryKey: ["workspace-ticket-projects", venue?.workspace_id],
+    queryFn: () =>
+      getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
+    enabled: !!venue?.workspace_id,
+  });
+
+  const { data: bookings } = useQuery({
+    queryKey: ["venueBookings", venue?.id],
+    queryFn: () => getVenueBookings({ data: { venue_id: venue?.id } } as any),
+    enabled: !!venue?.id,
+  });
+
+  const bookedDates = bookings
+    ? bookings
+        .filter((b: any) => ["Confirmed", "Pending"].includes(b.status) && b.start_time)
+        .map((b: any) => b.start_time.split("T")[0])
+    : [];
+
+  const isDateBooked = (d: Date) => {
+    // Disable past dates
+    if (d < new Date(new Date().setHours(0, 0, 0, 0))) return true;
+
+    // Only block specific dates if renting entire venue
+    if (venue?.rental_model !== "ENTIRE_VENUE") return false;
+
+    return bookedDates.includes(format(d, "yyyy-MM-dd"));
+  };
+  const venueProject =
+    ticketProjects?.find((p: any) => p.venueId === venue.id) || ticketProjects?.[0];
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.date) setDate(parsed.date);
+        if (parsed.ticketsData) setTicketsData(parsed.ticketsData);
+        if (parsed.attendees) setAttendees(parsed.attendees);
+        if (parsed.name) setName(parsed.name);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.idPassport) setIdPassport(parsed.idPassport);
+        if (parsed.nationality) setNationality(parsed.nationality);
+        if (parsed.phone) setPhone(parsed.phone);
+        if (parsed.step) setStep(parsed.step);
+        if (parsed.bookingReason) setBookingReason(parsed.bookingReason);
+        if (parsed.bookingReasonOther) setBookingReasonOther(parsed.bookingReasonOther);
+      } else {
+        // Default first ticket tier to 1 if no saved session
+        const firstTierName = venue?.pricing_tiers?.[0]?.name || "Standard Entry";
+        setTicketsData({ [firstTierName]: 1 });
+      }
+    } catch {
+      setTicketsData({ "Standard Entry": 1 });
+    }
+    setIsHydrated(true);
+  }, [storageKey, venue]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    const returning = sessionStorage.getItem(`returning_from_login_${venue?.id}`);
+
+    if (returning === "true" && user) {
+      sessionStorage.removeItem(`returning_from_login_${venue?.id}`);
+      setShowOverrideDialog(true);
+    }
+
+    if (user && !returning) {
+      if (!name && user.username) setName(user.username);
+      if (!phone && user.phone) setPhone(user.phone);
+      if (!email && user.email) setEmail(user.email);
+      if (!nationality && user.country) setNationality(user.country);
+    }
+  }, [user, isHydrated, venue?.id]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        date,
+        ticketsData,
+        attendees,
+        name,
+        email,
+        idPassport,
+        nationality,
+        phone,
+        step,
+        bookingReason,
+        bookingReasonOther,
+      }),
+    );
+  }, [
+    date,
+    ticketsData,
+    attendees,
+    name,
+    email,
+    idPassport,
+    nationality,
+    phone,
+    step,
+    storageKey,
+    isHydrated,
+  ]);
+
+  if (!venue) {
+    return (
+      <div className="min-h-screen bg-secondary/20 flex flex-col font-sans">
+        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="space-y-6">
+            <div className="h-10 w-48 bg-secondary/40 rounded-xl animate-pulse" />
+            <div className="h-64 w-full bg-secondary/40 rounded-3xl animate-pulse" />
+          </div>
+          <div className="bg-card rounded-3xl shadow-xl border border-border/50 h-[500px] animate-pulse" />
+        </main>
+      </div>
+    );
+  }
+
+  const totalTickets = Object.values(ticketsData).reduce((a, b) => a + (Number(b) || 0), 0) || 0;
+  const isStep1Valid =
+    date !== "" &&
+    totalTickets > 0 &&
+    (venue?.rental_model !== "ENTIRE_VENUE" ||
+      (bookingReason !== "" && (bookingReason !== "Other" || bookingReasonOther.trim() !== "")));
+  const isStep2Valid =
+    name.trim() !== "" &&
+    email.trim() !== "" &&
+    idPassport.trim() !== "" &&
+    nationality.trim() !== "" &&
+    phone.trim() !== "" &&
+    attendees.every((att) => att.name.trim() !== "");
+
+  const total =
+    (venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
+      ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
+      : []
+    )
+      .concat(venue?.pricing_tiers || [])
+      .reduce((acc: number, tier: any) => {
+        const qty = ticketsData[tier.name || "Standard Entry"] || 0;
+        return acc + qty * (Number(tier.amount) || 0);
+      }, 0) || 0;
+
+  const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
+    mutationFn: async (paymentDetails?: {
+      phone?: string;
+      network?: string;
+      currency?: string;
+      convertedAmount?: number;
+      shortfall?: number;
+    }) => {
+      const totalAttendees = 1 + attendees.length;
+      const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
+      const isPawaPay =
+        total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+
+      const payload = {
+        workspace_id: venue.workspace_id,
+        venue_id: venue.id,
+        user_id: user?.id || null,
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        customer_id_document: idPassport,
+        start_time: new Date(date).toISOString(),
+        end_time: new Date(date).toISOString(),
+        status: "Confirmed",
+        payment_status: isPawaPay ? "Pending" : "Paid",
+        amount: Number(total),
+        number_of_attendees: totalAttendees,
+        tickets_data: ticketsData,
+        attendees_info: attendees.length > 0 ? attendees : null,
+        internal_notes:
+          venue?.rental_model === "ENTIRE_VENUE"
+            ? bookingReason === "Other"
+              ? bookingReasonOther
+              : bookingReason
+            : null,
+        venue_name: venue.name,
+        venue_currency: venue.currency,
+      };
+
+      const res = await createVenueBooking({ data: payload });
+
+      if (isPawaPay) {
+        const pawaRes = await initiatePawaPayDeposit({
+          data: {
+            amount: paymentDetails?.convertedAmount || total,
+            baseAmount: total,
+            baseCurrency: venue.currency,
+            phone: paymentDetails!.phone,
+            network: paymentDetails!.network,
+            currency: paymentDetails?.currency || venue.currency,
+            type: "venue_booking",
+            referenceId: res.id,
+            workspaceId: venue.workspace_id,
+            reason: venue?.name || "Venue Booking",
+            shortfall: paymentDetails?.shortfall || 0,
+          },
+        } as any);
+        return { res, isPawaPay: true, depositId: pawaRes.depositId };
+      }
+
+      return { res, isPawaPay: false };
+    },
+    onSuccess: (data: any) => {
+      const res = data.res;
+      const td = res?.tickets_data;
+      if (td?.issued) {
+        setIssuedTickets(td.issued);
+      }
+
+      if (data.isPawaPay) {
+        setPawapayDepositId(data.depositId);
+        setIsPollingPawaPay(true);
+        setIsPaymentModalOpen(false);
+        return;
+      }
+
+      if (td?.issued && td.issued.length > 0) {
+        setIsGenerating(true);
+      } else {
+        localStorage.removeItem(storageKey);
+        setIsSuccess(true);
+      }
+    },
+    onError: (e: any) => {
+      toast.error(e.message || "Checkout failed");
+    },
+  });
+
+  useEffect(() => {
+    if (!isPollingPawaPay || !pawapayDepositId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
+          setIsPollingPawaPay(false);
+          localStorage.removeItem(storageKey);
+          if (issuedTickets.length > 0) {
+            setIsGenerating(true);
+          } else {
+            setIsSuccess(true);
+          }
+        } else if (res?.status?.toLowerCase() === "failed") {
+          setIsPollingPawaPay(false);
+          toast.error("Mobile Money payment failed or was cancelled.");
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [isPollingPawaPay, pawapayDepositId, issuedTickets, venueProject, storageKey]);
+
+  useEffect(() => {
+    if (isGenerating && issuedTickets.length > 0) {
+      const generatePDFs = async () => {
+        try {
+          const attachments = [];
+
+          // Pre-load cover image so it's cached before the first ticket renders
+          const coverUrl = venueProject?.coverImage;
+          if (coverUrl) {
+            await new Promise<void>((resolve) => {
+              const img = new Image();
+              img.crossOrigin = "anonymous";
+              img.onload = () => resolve();
+              img.onerror = () => resolve(); // don't block on failure
+              img.src = coverUrl;
+            });
+          }
+
+          // Extra settle time for React DOM + fonts
+          await new Promise((r) => setTimeout(r, 600));
+
+          if (venueProject) {
+            for (const ticket of issuedTickets) {
+              const el = document.getElementById(`ticket-render-${ticket.id}`);
+              if (!el) continue;
+
+              // Wait a tiny bit more for React to flush the DOM
+              await new Promise((r) => setTimeout(r, 100));
+
+              const rectDebug = el.getBoundingClientRect();
+              console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
+
+              const imgData = await htmlToImage.toJpeg(el, {
+                pixelRatio: 1.5,
+                quality: 0.8,
+                backgroundColor: "#ffffff",
+                width: 720,
+                height: 260,
+              });
+              console.log("Generated imgData length:", imgData?.length);
+              if (!imgData || imgData === "data:,") {
+                throw new Error(
+                  "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+                );
+              }
+
+              const rect = el.getBoundingClientRect();
+              const width = rect.width || 720;
+              const height = rect.height || 260;
+
+              const pdf = new jsPDF({
+                orientation: "landscape",
+                unit: "px",
+                format: [width, height],
+              });
+              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+              const base64 = pdf.output("datauristring").split(",")[1];
+
+              attachments.push({
+                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                content: base64,
+              });
+            }
+          } else {
+            for (const ticket of issuedTickets) {
+              const fallbackPdf = await generateFallbackReceipt({
+                entityName: venue?.name || "Event/Venue",
+                ticket,
+                bookingRef: ticket.booking_ref || ticket.otp || "",
+                customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+              });
+              attachments.push(fallbackPdf);
+            }
+          }
+
+          if (attachments.length > 0 && email) {
+            await sendTicketsEmail({
+              data: {
+                to: email,
+                customerName: name,
+                venueName: venue.name || "the Venue",
+                attachments,
+              } as any,
+            });
+            toast.success("Booking confirmed and tickets emailed!");
+          } else {
+            toast.success("Booking confirmed!");
+          }
+          setIsGenerating(false);
+          localStorage.removeItem(storageKey);
+          setIsSuccess(true);
+        } catch (e: any) {
+          console.error("PDF generation error:", e);
+          toast.error(
+            `Ticket generation failed: ${e.message || "Unknown error"}. Please try again.`,
+          );
+          setIsGenerating(false);
+          // Don't set isSuccess(true) so they can try again
+        }
+      };
+      setTimeout(generatePDFs, 1000);
+    }
+  }, [isGenerating, issuedTickets, venueProject, email, name, venue?.name, storageKey]);
+
+  useEffect(() => {
+    const requiredAttendees = Math.max(0, totalTickets - 1);
+    setAttendees((prev) => {
+      if (prev.length === requiredAttendees) return prev;
+      if (prev.length > requiredAttendees) return prev.slice(0, requiredAttendees);
+      const newAttendees = [...prev];
+      while (newAttendees.length < requiredAttendees) {
+        newAttendees.push({ name: "", id_document: "" });
+      }
+      return newAttendees;
+    });
+  }, [totalTickets]);
+
+  const handleCheckout = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isStep1Valid || !isStep2Valid) return;
+    if (!user && !hasSkippedAuth && !isSubdomain) {
+      setIsAuthSuggestionOpen(true);
+      return;
+    }
+    setIsPaymentModalOpen(true);
+  };
+
+  useEffect(() => {
+    // Removed redirection to /venues since this is used on custom domains/pages
+  }, [isSuccess]);
+
+  // Wrap all states in the Sheet to prevent unmounting
+  return (
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        className="!w-full !max-w-[100vw] sm:!w-[90vw] md:!w-[85vw] lg:!max-w-[1100px] xl:!max-w-[1200px] bg-background overflow-y-auto p-0 border-l border-border/40 sm:rounded-l-2xl shadow-2xl"
+        style={themeColor ? ({ "--primary": themeColor } as React.CSSProperties) : undefined}
+      >
+        <SheetTitle className="sr-only">Checkout</SheetTitle>
+
+        {isPollingPawaPay ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <Smartphone
+              className="h-16 w-16 mb-6 animate-pulse"
+              style={{ color: "var(--primary)" }}
+            />
+            <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
+            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+              We've sent a payment request to your mobile number. Please enter your PIN to confirm
+              the payment.
+            </p>
+            <div className="flex gap-2 mb-8 justify-center">
+              <div
+                className="h-2 w-2 rounded-full animate-bounce"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+              <div
+                className="h-2 w-2 rounded-full animate-bounce delay-75"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+              <div
+                className="h-2 w-2 rounded-full animate-bounce delay-150"
+                style={{ backgroundColor: "var(--primary)" }}
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                setIsPollingPawaPay(false);
+                if (pawapayDepositId) {
+                  try {
+                    await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                  } catch (e) {
+                    console.error("Cancel cleanup failed:", e);
+                  }
+                }
+              }}
+              className="rounded-2xl h-12 px-8"
+            >
+              Cancel Payment
+            </Button>
+          </div>
+        ) : isSuccess ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <div className="bg-card p-12 rounded-3xl shadow-xl text-center max-w-md w-full border border-border/50">
+              <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
+              <h2 className="text-3xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
+              <p className="text-muted-foreground mb-8">
+                Your ticket for {venue.name} has been secured.
+              </p>
+              <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
+                <Ticket className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                <span className="font-bold tracking-widest">
+                  {Math.random().toString(36).substring(2, 10).toUpperCase()}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">You can now safely close this window.</p>
+              <Button
+                onClick={onClose}
+                className="mt-6 w-full rounded-2xl h-12 text-lg font-bold text-white shadow-[var(--shadow-glow)]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        ) : isGenerating ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
+            <Loader2 className="h-16 w-16 mb-6 animate-spin" style={{ color: "var(--primary)" }} />
+            <h1 className="text-2xl font-bold mb-3">Generating Tickets...</h1>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              Please wait while we prepare your custom tickets. This might take a moment.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col text-foreground p-4 md:p-8 lg:p-10 pb-32 lg:pb-10">
+            {showOverrideDialog && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
+                <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
+                  <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
+                  <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+                    You just signed in! Would you like to use your account details (Name, Phone,
+                    Email, Nationality) or keep the customer information you already entered?
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      onClick={() => {
+                        if (user?.username) setName(user.username);
+                        if (user?.phone) setPhone(user.phone);
+                        if (user?.email) setEmail(user.email);
+                        if (user?.country) setNationality(user.country);
+                        setShowOverrideDialog(false);
+                      }}
+                      className="w-full h-12 text-base font-semibold"
+                    >
+                      Use Account Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowOverrideDialog(false)}
+                      className="w-full h-12 text-base font-semibold"
+                    >
+                      Keep Entered Info
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="w-full pt-4 md:pt-6">
+              <Link
+                to="/venues/$venueId"
+                params={{ venueId: venue.id }}
+                className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back to Details
+              </Link>
+
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-6 md:mb-8">
+                {venue?.rental_model === "ENTIRE_VENUE" ? "Book your date" : "Secure your tickets"}
+              </h1>
+
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] xl:grid-cols-[1fr_400px] gap-6 lg:gap-10 items-start">
+                {/* Left Column: Form */}
+                <div className="flex-1 bg-card rounded-3xl p-5 md:p-6 border border-border/50 shadow-[var(--shadow-card)]">
+                  <div className="flex items-center gap-3 mb-6 md:mb-8">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 1 ? "text-white" : "bg-secondary text-muted-foreground"}`}
+                      style={step >= 1 ? { backgroundColor: "var(--primary)" } : undefined}
+                    >
+                      1
+                    </div>
+                    <div
+                      className={`h-1 w-12 rounded-full ${step < 2 ? "bg-secondary" : ""}`}
+                      style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
+                    />
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${step >= 2 ? "text-white" : "bg-secondary text-muted-foreground"}`}
+                      style={step >= 2 ? { backgroundColor: "var(--primary)" } : undefined}
+                    >
+                      2
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleCheckout} className="space-y-6">
+                    {step === 1 && (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-6">
+                          <div className="space-y-2 max-w-sm">
+                            <label className="text-sm font-medium text-muted-foreground block">
+                              Select Date of Visit
+                            </label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full h-12 justify-start text-left font-normal bg-secondary/20 border-border/85 rounded-xl",
+                                    !date && "text-muted-foreground",
+                                  )}
+                                >
+                                  <Calendar className="mr-2 h-4 w-4" />
+                                  {date ? format(new Date(date), "PPP") : <span>Pick a date</span>}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={date ? new Date(date) : undefined}
+                                  onSelect={(d: any) => setDate(d ? format(d, "yyyy-MM-dd") : "")}
+                                  disabled={isDateBooked}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <p className="text-[11px] text-muted-foreground/80 mt-1">
+                              Click anywhere on the field above to open the calendar and choose a
+                              date.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-border/40 pt-6">
+                          <h3 className="text-xl font-semibold mb-1">
+                            {venue?.rental_model === "ENTIRE_VENUE"
+                              ? "Package Selection"
+                              : "Ticket Selection"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {venue?.rental_model === "ENTIRE_VENUE"
+                              ? "Select a rental package for your booking."
+                              : "Specify how many tickets you'd like to purchase for this visit using the selector buttons."}
+                          </p>
+                          <div className="space-y-3">
+                            {(venue?.rental_model !== "ENTIRE_VENUE" &&
+                            venue?.entrance_type !== "free"
+                              ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
+                              : []
+                            )
+                              .concat(venue?.pricing_tiers || [])
+                              .map((tier: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between bg-secondary/20 p-4 rounded-xl border border-border/50 hover:bg-secondary/30 transition-colors"
+                                >
+                                  <div>
+                                    <p className="font-semibold">{tier.name || "Standard Entry"}</p>
+                                    <p className="text-sm text-muted-foreground mt-0.5">
+                                      {tier.amount > 0
+                                        ? `${venue.currency} ${Number(tier.amount).toLocaleString()}`
+                                        : "Free"}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-1 bg-background border border-border/40 rounded-xl p-1 shadow-sm">
+                                    {venue?.rental_model === "ENTIRE_VENUE" ? (
+                                      <Button
+                                        type="button"
+                                        variant={
+                                          ticketsData[tier.name || "Standard Entry"]
+                                            ? "default"
+                                            : "outline"
+                                        }
+                                        onClick={() => {
+                                          setTicketsData({ [tier.name || "Standard Entry"]: 1 });
+                                        }}
+                                        className="h-8 rounded-lg text-xs"
+                                      >
+                                        {ticketsData[tier.name || "Standard Entry"]
+                                          ? "Selected"
+                                          : "Select"}
+                                      </Button>
+                                    ) : (
+                                      <>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          disabled={
+                                            (ticketsData[tier.name || "Standard Entry"] || 0) <= 0
+                                          }
+                                          onClick={() => {
+                                            const val =
+                                              ticketsData[tier.name || "Standard Entry"] || 0;
+                                            if (val > 0) {
+                                              setTicketsData((p) => ({
+                                                ...p,
+                                                [tier.name || "Standard Entry"]: val - 1,
+                                              }));
+                                            }
+                                          }}
+                                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary disabled:opacity-40 transition-all active:scale-95"
+                                        >
+                                          <Minus className="h-4 w-4" />
+                                        </Button>
+                                        <span className="w-10 text-center font-bold text-sm tracking-tight">
+                                          {ticketsData[tier.name || "Standard Entry"] || 0}
+                                        </span>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => {
+                                            const val =
+                                              ticketsData[tier.name || "Standard Entry"] || 0;
+                                            setTicketsData((p) => ({
+                                              ...p,
+                                              [tier.name || "Standard Entry"]: val + 1,
+                                            }));
+                                          }}
+                                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all active:scale-95"
+                                        >
+                                          <Plus className="h-4 w-4" />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {venue?.rental_model === "ENTIRE_VENUE" && (
+                          <div className="border-t border-border/40 pt-6">
+                            <h3 className="text-xl font-semibold mb-4">Reason for booking</h3>
+                            <div className="space-y-4 max-w-sm">
+                              <select
+                                value={bookingReason}
+                                onChange={(e) => setBookingReason(e.target.value)}
+                                className="w-full h-12 bg-secondary/20 border border-border/85 rounded-xl px-4 text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
+                              >
+                                <option value="" disabled>
+                                  Select reason
+                                </option>
+                                <option value="Wedding">Wedding</option>
+                                <option value="Corporate Event">Corporate Event</option>
+                                <option value="Birthday Party">Birthday Party</option>
+                                <option value="Concert/Performance">Concert/Performance</option>
+                                <option value="Other">Other</option>
+                              </select>
+                              {bookingReason === "Other" && (
+                                <Input
+                                  placeholder="Please specify"
+                                  value={bookingReasonOther}
+                                  onChange={(e) => setBookingReasonOther(e.target.value)}
+                                  className="h-12 w-full bg-secondary/20 border border-border/85 rounded-xl text-sm focus-visible:ring-1 focus-visible:ring-primary/50"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        <Button
+                          type="button"
+                          disabled={!isStep1Valid}
+                          onClick={() => setStep(2)}
+                          className="w-full h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] mt-4"
+                        >
+                          Continue to Details
+                        </Button>
+                      </div>
+                    )}
+
+                    {step === 2 && (
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-xl font-semibold mb-4">Primary Attendee</h3>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Full Name
+                              </label>
+                              <Input
+                                required
+                                placeholder="e.g. Jane Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="h-12 bg-secondary/40"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                ID or Passport Number
+                              </label>
+                              <Input
+                                required
+                                placeholder="Enter ID/Passport"
+                                value={idPassport}
+                                onChange={(e) => setIdPassport(e.target.value)}
+                                className="h-12 bg-secondary/40"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Email Address
+                              </label>
+                              <Input
+                                required
+                                type="email"
+                                placeholder="e.g. jane@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="h-12 bg-secondary/40"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Nationality
+                              </label>
+                              <select
+                                required
+                                value={nationality}
+                                onChange={(e) => setNationality(e.target.value)}
+                                disabled={!!user?.country}
+                                className="flex h-12 w-full rounded-md border border-input bg-secondary/40 px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <option value="" disabled>
+                                  Select Country
+                                </option>
+                                {countries.map((c) => (
+                                  <option key={c} value={c}>
+                                    {c}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-muted-foreground">
+                                Phone Number
+                              </label>
+                              <Input
+                                required
+                                type="tel"
+                                placeholder="e.g. 0780000000"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="h-12 bg-secondary/40"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {totalTickets > 1 && (
+                          <div className="border-t border-border/40 pt-6">
+                            <div className="flex items-center justify-between mb-4">
+                              <h3 className="text-xl font-semibold">Additional Attendees</h3>
+                              <span className="text-sm font-medium bg-secondary px-3 py-1 rounded-full text-muted-foreground">
+                                {totalTickets - 1} ticket{totalTickets - 1 !== 1 ? "s" : ""} left to
+                                assign
+                              </span>
+                            </div>
+
+                            <div className="space-y-4">
+                              {attendees.map((att, idx) => (
+                                <div key={idx} className="flex gap-4 items-start">
+                                  <div className="flex-1 space-y-1.5">
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      Attendee {idx + 2} Name
+                                    </label>
+                                    <Input
+                                      required
+                                      placeholder="Full Name"
+                                      value={att.name}
+                                      onChange={(e) => {
+                                        const newArr = [...attendees];
+                                        newArr[idx].name = e.target.value;
+                                        setAttendees(newArr);
+                                      }}
+                                      className="h-12 rounded-xl bg-secondary/40"
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-1.5">
+                                    <label className="text-sm font-medium text-muted-foreground">
+                                      ID / Passport
+                                    </label>
+                                    <Input
+                                      placeholder="Optional"
+                                      value={att.id_document}
+                                      onChange={(e) => {
+                                        const newArr = [...attendees];
+                                        newArr[idx].id_document = e.target.value;
+                                        setAttendees(newArr);
+                                      }}
+                                      className="h-12 rounded-xl bg-secondary/40"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex gap-4 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setStep(1)}
+                            className="w-1/3 h-14 text-lg font-bold rounded-2xl"
+                          >
+                            Back
+                          </Button>
+                          {isGenerating || isCheckingOut ? (
+                            <Button
+                              type="button"
+                              disabled
+                              className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                              style={{
+                                background: themeColor || "var(--gradient-primary)",
+                                color: "#ffffff",
+                              }}
+                            >
+                              <span className="flex items-center justify-center">
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                {isCheckingOut ? "Processing..." : "Generating Tickets..."}
+                              </span>
+                            </Button>
+                          ) : issuedTickets.length > 0 ? (
+                            <Button
+                              type="button"
+                              onClick={() => setIsGenerating(true)}
+                              className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98]"
+                              style={{
+                                background: themeColor || "var(--gradient-primary)",
+                                color: "#ffffff",
+                              }}
+                            >
+                              Retry Ticket Generation
+                            </Button>
+                          ) : (
+                            <Button
+                              type="submit"
+                              disabled={totalTickets === 0 || !isStep2Valid}
+                              className="w-2/3 h-14 text-lg font-bold rounded-2xl shadow-[var(--shadow-glow)] transition-transform active:scale-[0.98] disabled:opacity-45 disabled:cursor-not-allowed"
+                              style={{
+                                background: themeColor || "var(--gradient-primary)",
+                                color: "#ffffff",
+                              }}
+                            >
+                              Pay{" "}
+                              {total > 0
+                                ? `${venue.currency} ${total.toLocaleString()}`
+                                : totalTickets > 0
+                                  ? "Free"
+                                  : `${venue.currency} 0`}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </form>
+                </div>
+
+                {/* Right Column: Order Summary */}
+                <div className="w-full lg:w-[400px] shrink-0">
+                  <div className="sticky top-24 rounded-3xl border border-border/50 bg-card p-6 shadow-[var(--shadow-card)]">
+                    <h3 className="text-xl font-bold tracking-tight mb-6">Order Summary</h3>
+
+                    <div className="flex gap-4 mb-6 pb-6 border-b border-border/40">
+                      <img
+                        src={venue.cover_url}
+                        alt={venue.name}
+                        className="w-20 h-20 rounded-xl object-cover"
+                      />
+                      <div>
+                        <h4 className="font-bold text-lg leading-tight mb-1">{venue.name}</h4>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> {venue.city || venue.address}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 text-sm font-medium mb-6">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date</span>
+                        <span>{date ? date : "Not selected"}</span>
+                      </div>
+                      {Object.entries(ticketsData)
+                        .filter(([_, qty]) => qty > 0)
+                        .map(([name, qty], i) => {
+                          const tier =
+                            name === "Standard Entry"
+                              ? { amount: venue?.entrance_fee || 0 }
+                              : venue.pricing_tiers?.find((t: any) => t.name === name) || {
+                                  amount: 0,
+                                };
+                          return (
+                            <div key={i} className="flex justify-between">
+                              <span className="text-muted-foreground">
+                                {name} x {qty}
+                              </span>
+                              <span>
+                                {tier.amount > 0
+                                  ? `${venue.currency} ${(qty * tier.amount).toLocaleString()}`
+                                  : "Free"}
+                              </span>
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    <div className="border-t border-border/40 pt-4 flex justify-between items-end">
+                      <span className="text-muted-foreground font-semibold">Total</span>
+                      <span className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
+                        {total > 0
+                          ? `${venue.currency} ${total.toLocaleString()}`
+                          : totalTickets > 0
+                            ? "Free"
+                            : `${venue.currency} 0`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Hidden Ticket Renderer */}
+            {isGenerating && issuedTickets.length > 0 && venueProject && (
+              <div
+                className="absolute -z-50 pointer-events-none"
+                style={{ top: "-9999px", left: "-9999px" }}
+              >
+                {issuedTickets.map((t) => (
+                  <div
+                    key={t.id}
+                    id={`ticket-render-${t.id}`}
+                    className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+                  >
+                    <TicketPreview
+                      template={venueProject.template}
+                      palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                      font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                      tier={t.tier}
+                      title={venue.name}
+                      subtitle={venue.address || t.attendee_name || name}
+                      date={date}
+                      time="Opening Hours"
+                      seat={t.attendee_name || name || "General"}
+                      price={total.toString()}
+                      currency={venue.currency}
+                      cover={venueProject.coverImage || ""}
+                      logoText={venueProject.logoText || "Agatike"}
+                      logoImage={venueProject.logoImage}
+                      logoScale={Number(venueProject.logoScale || 24)}
+                      logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                      logoColorMode={venueProject.logoColorMode || "original"}
+                      orderId={t.otp}
+                      qrValue={`${window.location.origin}/v/${t.otp}`}
+                      previewMode="Front"
+                      layout={
+                        venueProject.design_overrides?.layout || {
+                          titleSize: 30,
+                          subtitleSize: 14,
+                          metaSize: 11,
+                          titleAlign: "left",
+                          titleOffsetY: 0,
+                          subtitleOffsetY: 0,
+                          metaOffsetY: 0,
+                        }
+                      }
+                      back={
+                        venueProject.design_overrides?.back || {
+                          backText: "",
+                          backImage: "",
+                          backImageOpacity: 0.3,
+                        }
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <AuthSuggestionModal
+              isOpen={isAuthSuggestionOpen}
+              onOpenChange={setIsAuthSuggestionOpen}
+              onSkip={() => {
+                setHasSkippedAuth(true);
+                setIsPaymentModalOpen(true);
+              }}
+            />
+
+            <PaymentModal
+              isOpen={isPaymentModalOpen}
+              onOpenChange={setIsPaymentModalOpen}
+              baseAmount={total}
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              onProceed={(details) => doCheckout(details)}
+              isProcessing={isCheckingOut || isPollingPawaPay}
+              isGenerating={isGenerating}
+              workspaceId={venue.workspace_id}
+              quantity={totalTickets}
+              itemLabel="Ticket(s)"
+              baseCurrency={venue.currency}
+              userPhone={undefined}
+              themeColor={themeColor}
+            />
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}

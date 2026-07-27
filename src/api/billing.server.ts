@@ -1,6 +1,6 @@
 import { hasuraRequest } from "./graphql.server";
 import { sendEmail } from "./email";
-import { sendSMS } from "./pindo";
+import { sendSMS } from "./pindo.server";
 
 const GET_DUE_SUBSCRIPTIONS = `
   query GetDueSubscriptions($now: timestamptz!) {

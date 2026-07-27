@@ -1,10 +1,23 @@
 import { Navbar } from "@/components/site/Navbar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
 
 export function CheckoutSkeleton() {
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      <Navbar />
+      {!isSubdomain && <Navbar />}
       <main className="mx-auto max-w-6xl px-6 py-12">
         <Skeleton className="h-4 w-32 mb-8" />
         <div className="grid lg:grid-cols-[1fr_400px] gap-12">

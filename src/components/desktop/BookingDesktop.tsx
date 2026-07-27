@@ -29,6 +29,7 @@ import { SuccessState } from "@/components/desktop/booking/SuccessState";
 import { OrderSummary } from "@/components/desktop/booking/OrderSummary";
 import { BookingForm } from "@/components/desktop/booking/BookingForm";
 import { HiddenPDFGenerator } from "@/components/desktop/booking/HiddenPDFGenerator";
+import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
@@ -53,6 +54,17 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
+  }, []);
 
   // Fetch Event
   const { data: dbEvent } = useQuery({
@@ -604,7 +616,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             }
           } else {
             for (const ticket of issuedTickets) {
-              const fallbackPdf = generateFallbackReceipt({
+              const fallbackPdf = await generateFallbackReceipt({
                 entityName: event?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,
@@ -676,9 +688,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
   if (isPollingPawaPay) {
     return (
-      <div className="min-h-screen bg-background text-foreground relative flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+      <div className="min-h-screen bg-background text-foreground">
+        {!isSubdomain && <Navbar />}
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
           <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
           <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
           <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
@@ -706,8 +718,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           >
             Cancel Payment
           </Button>
-        </main>
-        <Footer />
+        </div>
+        {!isSubdomain && <Footer />}
       </div>
     );
   }
@@ -726,7 +738,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      <Navbar />
+      {!isSubdomain && <Navbar />}
 
       <main className="mx-auto max-w-6xl px-6 py-12">
         <Link
@@ -821,7 +833,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         />
       )}
 
-      <Footer />
+      {!isSubdomain && <Footer />}
+      {isSubdomain && <StorefrontFooter />}
     </div>
   );
 }

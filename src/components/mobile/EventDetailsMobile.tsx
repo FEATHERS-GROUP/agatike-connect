@@ -27,17 +27,27 @@ const ExperienceMap = lazy(() => import("@/components/desktop/ExperienceMap"));
 export function EventDetailsMobile({
   eventId,
   event: initialEvent,
+  hideLayout,
 }: {
   eventId: string;
   event?: any;
+  hideLayout?: boolean;
 }) {
   const [isClient, setIsClient] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTicketsExpanded, setIsTicketsExpanded] = useState(false);
+  const [isSubdomain, setIsSubdomain] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsClient(true);
+    if (typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      setIsSubdomain(isSub);
+    }
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -50,32 +60,33 @@ export function EventDetailsMobile({
   return (
     <div className="min-h-screen bg-background text-foreground pb-[140px] md:pb-24">
       {/* Sticky Top Header */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
-          isScrolled
-            ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
-            : "bg-transparent"
-        }`}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`h-10 w-10 rounded-full ${isScrolled ? "bg-secondary text-foreground" : "bg-black/20 text-white backdrop-blur-md"}`}
-          onClick={() => window.history.back()}
+      {!hideLayout && !isSubdomain && (
+        <div
+          className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 ${
+            isScrolled
+              ? "bg-background/80 backdrop-blur-lg border-b border-border/50 shadow-sm"
+              : "bg-transparent"
+          }`}
         >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             className={`h-10 w-10 rounded-full ${isScrolled ? "bg-secondary text-foreground" : "bg-black/20 text-white backdrop-blur-md"}`}
+            onClick={() => window.history.back()}
           >
-            <Share2 className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-10 w-10 rounded-full ${isScrolled ? "bg-secondary text-foreground" : "bg-black/20 text-white backdrop-blur-md"}`}
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
-      </div>
-
+      )}
       {/* Hero Image */}
       <div className="relative aspect-[4/5] w-full overflow-hidden">
         <img
@@ -110,7 +121,6 @@ export function EventDetailsMobile({
             <span className="text-[11px] text-muted-foreground truncate">{d.city}</span>
           </div>
         </div>
-
         <EventOrganizerInfo
           organizerName={d.organizerName}
           organizerHandle={d.organizerHandle}
@@ -301,7 +311,7 @@ export function EventDetailsMobile({
         timerDate={d.timerDate}
       />
 
-      {d.currentVenueProject && d.activeTicketIdForMap && (
+      {d.isSeatModalOpen && d.currentVenueProject && d.activeTicketIdForMap && (
         <>
           <Drawer open={d.isSeatModalOpen} onOpenChange={d.setIsSeatModalOpen}>
             <DrawerContent className="h-[100dvh] max-h-[100dvh] flex flex-col bg-background px-0 pb-0 border-none rounded-none focus:outline-none">
@@ -389,7 +399,7 @@ export function EventDetailsMobile({
                 </div>
                 <Button
                   className="w-full h-14 rounded-2xl text-base font-bold text-white shadow-[0_8px_20px_rgb(var(--primary)_/_0.3)] active:scale-[0.98] transition-all"
-                  style={{ background: "var(--gradient-primary)" }}
+                  style={{ background: "var(--custom-theme-color, var(--gradient-primary))" }}
                   onClick={() => d.setIsSeatModalOpen(false)}
                   disabled={d.selectedSeatsObj.length === 0}
                 >

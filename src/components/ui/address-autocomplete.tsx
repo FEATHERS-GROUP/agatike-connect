@@ -115,7 +115,7 @@ export function AddressAutocomplete({
         {...props}
       />
       {isOpen && typeof value === "string" && value.trim() && (
-        <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover text-popover-foreground shadow-md outline-none">
+        <div className="absolute z-[200] mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-popover text-popover-foreground shadow-md outline-none">
           {isLoading && (
             <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground justify-center">
               <Loader2 className="h-4 w-4 animate-spin" />

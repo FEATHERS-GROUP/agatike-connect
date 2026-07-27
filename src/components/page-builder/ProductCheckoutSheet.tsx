@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useCart } from "@/contexts/CartContext";
 
 interface ProductCheckoutSheetProps {
   product: any;
@@ -27,6 +28,7 @@ export function ProductCheckoutSheet({
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const { addToCart, openCart } = useCart();
   const navigate = useNavigate();
 
   // Reset state when a new product is selected
@@ -47,21 +49,17 @@ export function ProductCheckoutSheet({
   const total = (product.price || 0) * quantity;
 
   const handleProceed = () => {
-    // Navigate to dedicated checkout route on the current subdomain
-    navigate({
-      to: `/checkout/product/${product.id}`,
-      search: {
-        qty: quantity,
-        size: selectedSize || undefined,
-        color: selectedColor || undefined,
-      },
-    });
+    addToCart(product, quantity, selectedSize || undefined, selectedColor || undefined);
     onClose();
+    openCart();
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="sm:max-w-md bg-background overflow-y-auto p-0 border-l">
+      <SheetContent
+        className="w-full sm:max-w-md bg-background overflow-y-auto p-0 border-l"
+        style={themeColor ? ({ "--primary": themeColor } as React.CSSProperties) : undefined}
+      >
         {/* Header Image */}
         {product.image_url && (
           <div className="w-full h-56 bg-secondary relative">
@@ -185,7 +183,8 @@ export function ProductCheckoutSheet({
               style={themeColor ? { backgroundColor: themeColor } : {}}
               onClick={handleProceed}
             >
-              Proceed to Checkout
+              <ShoppingCart className="w-5 h-5" />
+              Add to Cart
             </Button>
           </div>
         </div>

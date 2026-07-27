@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,19 @@ export function AuthSuggestionModal({
   redirectPath,
 }: AuthSuggestionModalProps) {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isOpen && typeof window !== "undefined") {
+      const isSub =
+        window.location.hostname.split(".").length >
+          (window.location.hostname.includes("localhost") ? 1 : 2) &&
+        window.location.hostname.split(".")[0] !== "www";
+      if (isSub) {
+        onOpenChange(false);
+        onSkip();
+      }
+    }
+  }, [isOpen, onOpenChange, onSkip]);
 
   const handleSignIn = () => {
     onOpenChange(false);

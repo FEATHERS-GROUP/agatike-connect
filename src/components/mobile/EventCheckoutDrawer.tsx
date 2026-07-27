@@ -92,7 +92,9 @@ export function EventCheckoutDrawer({
                 disabled={!waitlistUrl}
                 className="w-full h-12 rounded-xl text-sm font-bold shadow-[var(--shadow-glow)] tracking-wide"
                 style={{
-                  background: waitlistUrl ? "var(--gradient-primary)" : "var(--muted)",
+                  background: waitlistUrl
+                    ? "var(--custom-theme-color, var(--gradient-primary))"
+                    : "var(--muted)",
                   color: waitlistUrl ? undefined : "var(--muted-foreground)",
                 }}
               >
@@ -503,7 +505,7 @@ export function EventCheckoutDrawer({
                         ? "var(--muted)"
                         : total === 0 && totalTickets > 0
                           ? "var(--foreground)"
-                          : "var(--gradient-primary)",
+                          : "var(--custom-theme-color, var(--gradient-primary))",
                     opacity:
                       isPastEvent || isSuspended || (totalTickets === 0 && hasSelectedStop)
                         ? 0.5

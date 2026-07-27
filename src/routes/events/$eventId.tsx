@@ -1,7 +1,10 @@
 import { createFileRoute, notFound, useParams } from "@tanstack/react-router";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EventDetailsMobile } from "@/components/mobile/EventDetailsMobile";
 import { EventDetailsDesktop } from "@/components/desktop/EventDetailsDesktop";
 import { getEventById } from "@/api/events";
+import { useState, useEffect } from "react";
+import { RenderedPage } from "@/components/page-builder/RenderedPage";
 
 // Stubbed mock data
 const events: any[] = [];
@@ -41,20 +44,77 @@ export const Route = createFileRoute("/events/$eventId")({
     };
   },
   component: EventDetailsRoute,
+  pendingComponent: EventDetailsSkeleton,
 });
+
+function EventDetailsSkeleton() {
+  return (
+    <div className="min-h-screen bg-background p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+      <Skeleton className="w-full aspect-[21/9] rounded-2xl md:rounded-3xl" />
+      <div className="grid md:grid-cols-[1fr_400px] gap-8">
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-3/4 rounded-lg" />
+          <Skeleton className="h-4 w-1/2 rounded-lg" />
+          <Skeleton className="h-32 w-full rounded-2xl mt-8" />
+        </div>
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full rounded-3xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function EventDetailsRoute() {
   const { event } = Route.useLoaderData();
   const { eventId } = Route.useParams();
 
-  return (
+  const [subdomainSlug, setSubdomainSlug] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+    if (parts.length > 2 || (hostname.includes("localhost") && parts.length > 1)) {
+      const potentialSlug = parts[0];
+      if (potentialSlug !== "www") {
+        setSubdomainSlug(potentialSlug);
+      }
+    }
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8 space-y-8">
+        <Skeleton className="w-full h-[50vh] md:h-[60vh] rounded-3xl" />
+        <div className="max-w-7xl mx-auto space-y-4">
+          <Skeleton className="h-10 w-1/3" />
+          <Skeleton className="h-6 w-1/4" />
+          <Skeleton className="h-6 w-1/2" />
+        </div>
+      </div>
+    );
+  }
+
+  const innerContent = (
     <>
       <div className="md:hidden">
-        <EventDetailsMobile eventId={eventId} event={event} />
+        <EventDetailsMobile eventId={eventId} event={event} hideLayout={!!subdomainSlug} />
       </div>
       <div className="hidden md:block">
-        <EventDetailsDesktop eventId={eventId} event={event} />
+        <EventDetailsDesktop eventId={eventId} event={event} hideLayout={!!subdomainSlug} />
       </div>
     </>
   );
+
+  if (subdomainSlug) {
+    return (
+      <RenderedPage slug={subdomainSlug} isPreview={false} hideHero={true} hideComponents={true}>
+        {innerContent}
+      </RenderedPage>
+    );
+  }
+
+  return innerContent;
 }

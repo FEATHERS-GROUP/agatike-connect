@@ -241,6 +241,7 @@ const GET_WORKSPACE_EVENTS = `
   query GetWorkspaceEvents($workspace_id: uuid!) {
     events(where: { workspace_id: { _eq: $workspace_id } }, order_by: { created_at: desc }) {
       id
+      workspace_id
       title
       category
       description
