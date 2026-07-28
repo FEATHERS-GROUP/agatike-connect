@@ -93,6 +93,7 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
+import { Route as PSlugCheckoutCartRouteImport } from './routes/p_.$slug.checkout.cart'
 import { Route as InternalControlAdminUsersRouteImport } from './routes/internal/control/admin/users'
 import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal/control/admin/transactions'
 import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal/control/admin/providers'
@@ -661,6 +662,11 @@ const DashboardWorkspaceSlugCinemaIndexRoute =
     path: '/$workspaceSlug/Cinema/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const PSlugCheckoutCartRoute = PSlugCheckoutCartRouteImport.update({
+  id: '/p_/$slug/checkout/cart',
+  path: '/p/$slug/checkout/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InternalControlAdminUsersRoute =
   InternalControlAdminUsersRouteImport.update({
     id: '/users',
@@ -1517,6 +1523,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
+  '/p/$slug/checkout/cart': typeof PSlugCheckoutCartRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1723,6 +1730,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
+  '/p/$slug/checkout/cart': typeof PSlugCheckoutCartRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1932,6 +1940,7 @@ export interface FileRoutesById {
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
+  '/p_/$slug/checkout/cart': typeof PSlugCheckoutCartRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -2143,6 +2152,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
+    | '/p/$slug/checkout/cart'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2349,6 +2359,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
+    | '/p/$slug/checkout/cart'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
     | '/dashboard/$workspaceSlug/book'
@@ -2557,6 +2568,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
+    | '/p_/$slug/checkout/cart'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2708,6 +2720,7 @@ export interface RootRouteChildren {
   StaffEventEventIdRoute: typeof StaffEventEventIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
   AdminWithdrawalsIndexRoute: typeof AdminWithdrawalsIndexRoute
+  PSlugCheckoutCartRoute: typeof PSlugCheckoutCartRoute
   VenuesVenueIdFacilitiesCheckoutFacilityIdRoute: typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
 }
 
@@ -3300,6 +3313,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/Cinema/'
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/p_/$slug/checkout/cart': {
+      id: '/p_/$slug/checkout/cart'
+      path: '/p/$slug/checkout/cart'
+      fullPath: '/p/$slug/checkout/cart'
+      preLoaderRoute: typeof PSlugCheckoutCartRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/internal/control/admin/users': {
       id: '/internal/control/admin/users'
@@ -4710,6 +4730,7 @@ const rootRouteChildren: RootRouteChildren = {
   StaffEventEventIdRoute: StaffEventEventIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
   AdminWithdrawalsIndexRoute: AdminWithdrawalsIndexRoute,
+  PSlugCheckoutCartRoute: PSlugCheckoutCartRoute,
   VenuesVenueIdFacilitiesCheckoutFacilityIdRoute:
     VenuesVenueIdFacilitiesCheckoutFacilityIdRoute,
 }
