@@ -263,17 +263,21 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           let detailedMessage = "";
           let shortSmsMessage = "";
 
-          if (!firstAtt && confirmedOrders.length > 0) {
-            // Product-only purchase
-            detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${domain}!`;
-            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
-          } else {
+          if (firstAtt) {
             // Ticket purchase
             detailedMessage =
               `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
               `\n\nOrganizer: ${domain}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
               (productsText ? `\nProducts: ${productsText}` : "");
             shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
+          } else if (confirmedOrders.length > 0) {
+            // Product-only purchase
+            detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${domain}!`;
+            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
+          } else {
+            // General page builder payment
+            detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! Thank you for your payment to ${domain}.`;
+            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! Thank you for your payment to ${domain}.`;
           }
 
           if (firstAtt) {

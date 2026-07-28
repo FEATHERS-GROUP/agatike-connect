@@ -164,8 +164,9 @@ export function getWorkspacePageUrl(slug: string): string {
     }
 
     // For production
-    // You could dynamically extract the root domain here, e.g., agatike.com
-    return `${protocol}//${slug}.agatike.com`;
+    const parts = hostname.split(".");
+    const baseDomain = parts.length >= 2 ? parts.slice(-2).join(".") : "agatike.com";
+    return `${protocol}//${slug}.${baseDomain}`;
   }
   return `https://${slug}.agatike.com`;
 }

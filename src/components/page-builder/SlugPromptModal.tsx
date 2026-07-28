@@ -142,9 +142,13 @@ export function SlugPromptModal({
       const hostname = window.location.hostname;
       if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
         const port = window.location.port ? `:${window.location.port}` : "";
-        return `${hostname}${port}`;
+        const baseHost = hostname.includes("localhost") ? "localhost" : "127.0.0.1";
+        return `${baseHost}${port}`;
       }
-      return "agatike.com";
+      const parts = hostname.split(".");
+      if (parts.length >= 2) {
+        return parts.slice(-2).join(".");
+      }
     }
     return "agatike.com";
   };

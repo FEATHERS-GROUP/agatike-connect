@@ -147,7 +147,7 @@ export function RenderedPage({
           phone: paymentDetails!.phone,
           network: paymentDetails!.network,
           currency: paymentDetails?.currency || "RWF",
-          type: "page_builder_payment",
+          type: `page_builder_checkout::${slug}`,
           referenceId: crypto.randomUUID(),
           workspaceId: workspace_id,
           reason: selectedPaymentBlock.label || "Page Payment",

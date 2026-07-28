@@ -36,6 +36,14 @@ export function CartSidebar() {
 
   const handleCheckout = () => {
     closeCart();
+    const pathname = window.location.pathname;
+    if (pathname.startsWith("/p/")) {
+      const parts = pathname.split("/");
+      if (parts[2]) {
+        navigate({ to: `/p/${parts[2]}/checkout/cart` as any });
+        return;
+      }
+    }
     navigate({ to: "/checkout/cart" });
   };
 

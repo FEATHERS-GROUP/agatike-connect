@@ -22,7 +22,7 @@ export const Route = createFileRoute("/checkout/cart")({
   component: CartCheckoutPage,
 });
 
-function CartCheckoutPage() {
+export function CartCheckoutPage() {
   const router = useRouter();
   const { user } = useUserAuth();
   const { items, cartTotal, clearCart } = useCart();
@@ -47,6 +47,15 @@ function CartCheckoutPage() {
       const potentialSlug = parts[0];
       if (potentialSlug !== "www") {
         setSubdomainSlug(potentialSlug);
+      }
+    } else {
+      // Fallback: Check if the path contains /p/$slug
+      const pathname = window.location.pathname;
+      if (pathname.startsWith("/p/")) {
+        const pathParts = pathname.split("/");
+        if (pathParts[2]) {
+          setSubdomainSlug(pathParts[2]);
+        }
       }
     }
   }, []);
