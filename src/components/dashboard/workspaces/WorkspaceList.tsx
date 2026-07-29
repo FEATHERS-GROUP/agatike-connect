@@ -52,74 +52,76 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   };
 
   return (
-    <div className="space-y-8 pb-24 px-4 md:px-12 w-full max-w-[1600px] mx-auto pt-8">
+    <div className="space-y-6 pb-32 px-6 md:px-12 w-full max-w-[1600px] mx-auto pt-10">
       <div className="flex justify-center w-full mb-8">
-        <img src="/agatike-logo.svg" alt="Agatike" className="h-10 w-auto object-contain" />
+        <img src="/agatike-logo.svg" alt="Agatike" className="h-8 w-auto object-contain opacity-90" />
       </div>
-      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 border-b border-border/40 pb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Workspaces</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Each venue, cinema or organizer brand gets its own workspace with separate analytics and
-            payouts.
+          <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
+          <p className="mt-1 text-[13px] text-muted-foreground max-w-md">
+            Each venue, cinema or organizer brand gets its own workspace with separate analytics and payouts.
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {currentUser?.role === "organizer" && (
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate({ to: "/dashboard/analytics" })}
-              className="rounded-full flex-1 sm:flex-none border-primary/20 hover:bg-primary/5"
+              className="rounded-full flex-1 sm:flex-none border-primary/20 hover:bg-primary/5 text-[13px]"
             >
-              <BarChart2 className="h-4 w-4 mr-2 text-primary" />
-              Advanced Analytics
+              <BarChart2 className="h-3.5 w-3.5 mr-1.5 text-primary" />
+              Analytics
             </Button>
           )}
           <Button
             variant="outline"
+            size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing || isLoading}
-            className="rounded-full flex-1 sm:flex-none"
+            className="rounded-full flex-1 sm:flex-none text-[13px]"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           {currentUser?.role === "organizer" && (
             <Button
+              size="sm"
               onClick={handleCreateClick}
-              className="rounded-full shadow-[var(--shadow-glow)] gap-2 flex-1 sm:flex-none"
+              className="rounded-full shadow-[var(--shadow-glow)] gap-1.5 flex-1 sm:flex-none text-[13px]"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <Plus className="h-4 w-4" /> New Workspace
+              <Plus className="h-3.5 w-3.5" /> New Workspace
             </Button>
           )}
         </div>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       ) : workspaces.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center rounded-3xl border border-dashed border-border/60 bg-card/50">
-          <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-bold mb-2">No Workspace Found</h2>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            You haven't created a workspace yet. Create one to start managing your events, venues,
-            and experiences.
+        <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-dashed border-border/60 bg-card/30">
+          <Building2 className="h-10 w-10 text-muted-foreground/60 mb-3" />
+          <h2 className="text-lg font-semibold mb-1">No Workspace Found</h2>
+          <p className="text-[13px] text-muted-foreground mb-6 max-w-sm mx-auto">
+            You haven't created a workspace yet. Create one to start managing your events, venues, and experiences.
           </p>
           {currentUser?.role === "organizer" && (
             <Button
+              size="sm"
               onClick={handleCreateClick}
-              className="rounded-full shadow-[var(--shadow-glow)] gap-2"
+              className="rounded-full shadow-[var(--shadow-glow)] gap-1.5 text-[13px]"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <Plus className="h-4 w-4" /> Create Your First Workspace
+              <Plus className="h-3.5 w-3.5" /> Create Your First Workspace
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {workspaces.map((w) => {
             const t = types.find((x) => x.id === w.type) || types[0];
             const isActive = activeWorkspace?.id === w.id;
@@ -127,43 +129,43 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             return (
               <div
                 key={w.id}
-                className={`flex flex-col rounded-3xl border bg-card p-6 shadow-sm transition-all relative group ${
-                  isActive ? "border-primary ring-1 ring-primary" : "border-border/60"
+                className={`flex flex-col rounded-2xl border bg-card/60 backdrop-blur-sm p-4 hover:shadow-md transition-all relative group ${
+                  isActive ? "border-primary/50 shadow-[0_4px_24px_rgba(var(--primary),0.08)] bg-primary/[0.02]" : "border-border/40 hover:border-border"
                 }`}
               >
-                <div className="absolute top-4 right-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
                   {currentUser?.role === "organizer" && (
                     <>
                       <Button
                         variant="ghost"
                         size="icon"
                         title="Manage Modules"
-                        className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        className="h-7 w-7 rounded-full text-muted-foreground hover:bg-background/80 hover:text-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
                           setModulesModalWorkspace(w);
                         }}
                       >
-                        <LayoutDashboard className="h-4 w-4" />
+                        <LayoutDashboard className="h-3.5 w-3.5" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         title="Workspace Settings"
-                        className="h-8 w-8 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        className="h-7 w-7 rounded-full text-muted-foreground hover:bg-background/80 hover:text-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate({ to: `/dashboard/${w.slug}/settings` });
                         }}
                       >
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-3.5 w-3.5" />
                       </Button>
                     </>
                   )}
                 </div>
-                <div className="flex items-center gap-4 mb-6 pr-10">
+                <div className="flex items-center gap-3 mb-5 pr-12">
                   <div
-                    className={`grid h-12 w-12 place-items-center rounded-2xl text-xl shrink-0 overflow-hidden`}
+                    className={`grid h-10 w-10 place-items-center rounded-[14px] shrink-0 overflow-hidden shadow-sm`}
                     style={{
                       background: isActive ? "var(--gradient-primary)" : "var(--card-muted)",
                       color: isActive ? "white" : "inherit",
@@ -176,28 +178,31 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      w.icon || <t.icon className="h-5 w-5" />
+                      w.icon || <t.icon className="h-4 w-4" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-lg truncate">{w.name}</p>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className={`font-semibold text-[15px] truncate ${isActive ? "text-primary" : ""}`}>{w.name}</p>
+                    <p className="text-xs text-muted-foreground truncate opacity-80">
                       {t.title} · {w.city}
                     </p>
                   </div>
                 </div>
 
                 <Button
+                  size="sm"
                   variant={isActive ? "default" : "outline"}
-                  className={`w-full rounded-xl gap-2 ${isActive && "shadow-[var(--shadow-glow)]"}`}
+                  className={`w-full rounded-xl gap-1.5 h-8 text-xs font-medium transition-all ${
+                    isActive ? "shadow-[var(--shadow-glow)] opacity-100" : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
+                  }`}
                   style={isActive ? { background: "var(--gradient-primary)" } : undefined}
                   onClick={() => {
                     setActiveWorkspace(w);
                     navigate({ to: `/dashboard/${w.slug}` });
                   }}
                 >
-                  {isActive ? "Currently Active" : "Switch to Workspace"}
-                  {!isActive && <ArrowRight className="h-4 w-4" />}
+                  {isActive ? "Currently Active" : "Switch Workspace"}
+                  {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
                 </Button>
               </div>
             );
@@ -205,10 +210,31 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md p-4 border-t border-border/60 z-10 flex items-center justify-between gap-4 md:px-8">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-xl p-2 border border-border/40 shadow-xl shadow-black/5 rounded-full z-10 flex items-center gap-2 max-w-[90vw] overflow-x-auto hide-scrollbar">
+        {currentUser?.role === "organizer" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full gap-2.5 h-10 px-4 text-[14px] font-medium hover:bg-card transition-all flex items-center shrink-0"
+            onClick={() => navigate({ to: "/dashboard/settings" })}
+          >
+            {currentUser?.profile?.image || currentUser?.image ? (
+               <img src={currentUser?.profile?.image || currentUser?.image} alt={currentUser?.name || currentUser?.username || "Organizer"} className="w-6 h-6 rounded-full object-cover shadow-sm ring-1 ring-border/50" />
+            ) : (
+               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold ring-1 ring-primary/20">
+                 {(currentUser?.name || currentUser?.username || "O").charAt(0).toUpperCase()}
+               </div>
+            )}
+            <span className="truncate max-w-[150px]">{currentUser?.name || currentUser?.username || "Organizer Profile"}</span>
+          </Button>
+        )}
+        
+        {currentUser?.role === "organizer" && <div className="w-px h-6 bg-border/40 shrink-0" />}
+
         <Button
           variant="ghost"
-          className="rounded-full gap-2 text-muted-foreground hover:text-foreground"
+          size="sm"
+          className="rounded-full gap-1.5 h-10 px-4 text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-[14px] shrink-0"
           onClick={async () => {
             await logout();
             window.location.href = "/dashboard/login";
@@ -216,16 +242,6 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
         >
           <LogOut className="h-4 w-4" /> Sign out
         </Button>
-
-        {currentUser?.role === "organizer" && (
-          <Button
-            variant="outline"
-            className="rounded-full gap-2"
-            onClick={() => navigate({ to: "/dashboard/settings" })}
-          >
-            <User className="h-4 w-4" /> Organizer Profile
-          </Button>
-        )}
       </div>
 
       <WorkspaceModulesModal
