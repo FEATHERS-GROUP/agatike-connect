@@ -230,65 +230,66 @@ function SettingsPage() {
   const isSaving = updateMutation.isPending || changePasswordMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
-      {/* Header */}
-      <div className="px-6 md:px-10 py-6 max-w-[1400px] mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full shrink-0"
-              onClick={() => window.history.back()}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <img src="/agatike-logo.svg" alt="Agatike" className="h-6" />
-            <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-          </div>
-          <button
-            onClick={handleSaveAll}
-            disabled={isSaving}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 shadow-sm shrink-0"
+    <div className="min-h-screen bg-muted/10 text-foreground font-sans flex flex-col">
+      <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1600px] mx-auto">
+        {/* Left Sidebar */}
+        <div className="w-full md:w-[280px] lg:w-[320px] bg-background border-r border-border/40 shrink-0 px-6 py-8 flex flex-col h-full md:min-h-screen">
+          <Button
+            variant="ghost"
+            className="w-fit mb-8 gap-2 text-muted-foreground hover:text-foreground pl-0 hover:bg-transparent -ml-2"
+            onClick={() => window.history.back()}
           >
-            {isSaving ? "Saving..." : "+ Save Changes"}
-          </button>
-        </div>
+            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+          </Button>
 
-        {/* Tabs */}
-        <div className="flex gap-8 border-b border-border">
-          {[
-            { id: "overview", label: "Overview" },
-            { id: "social", label: "Social Links" },
-            { id: "security", label: "Security" },
-            { id: "account-type", label: "Account Type" },
-            ...(activeWorkspace?.business ? [{ id: "integrations", label: "Integrations" }] : []),
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-3 text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? "border-b-2 border-primary text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-col md:flex-row mt-8">
-          {/* Left Column */}
           <SettingsProfileSidebar
             avatar={avatar}
             setIsAvatarModalOpen={setIsAvatarModalOpen}
             register={register}
             errors={errors}
           />
+        </div>
 
-          {/* Right Column */}
-          <div className="flex-1 md:pl-10 pb-20">
+        {/* Right Content Area */}
+        <div className="flex-1 flex flex-col bg-transparent">
+          {/* Top Bar / Tabs inside right area */}
+          <div className="bg-background border-b border-border/40 px-8 pt-6 flex items-end justify-between sticky top-14 z-10">
+            <div className="flex gap-8 overflow-x-auto hide-scrollbar">
+              {[
+                { id: "overview", label: "Overview" },
+                { id: "social", label: "Social Links" },
+                { id: "security", label: "Security" },
+                { id: "account-type", label: "Account Type" },
+                ...(activeWorkspace?.business ? [{ id: "integrations", label: "Integrations" }] : []),
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`pb-4 text-[14px] font-medium transition-all relative whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full shadow-[0_-2px_10px_rgba(var(--primary),0.5)]" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              onClick={handleSaveAll}
+              disabled={isSaving}
+              className="rounded-full shadow-sm gap-2 px-6 h-9 mb-3"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+
+          <div className="p-8 flex-1">
             {activeTab === "overview" && (
               <SettingsOverviewTab
                 workspaces={workspaces}
