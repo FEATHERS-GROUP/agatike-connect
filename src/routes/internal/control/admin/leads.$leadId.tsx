@@ -214,7 +214,7 @@ function LeadDetailsPage() {
 
   const handleSendEmail = (e: React.FormEvent) => {
     e.preventDefault();
-    const signature = `\n\n<img src="https://www.agatike.rw/agatike-logo.png" width="32" height="32" alt="Agatike Logo" />`;
+    const signature = `\n\n<img src="https://www.agatike.rw/agatike-logo.png" height="32" alt="Agatike Logo" style="height: 32px; width: auto; max-width: 150px; object-fit: contain;" />`;
     sendEmailMutation.mutate({
       leadId,
       subject: emailSubject,
