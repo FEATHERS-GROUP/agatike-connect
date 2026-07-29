@@ -42,6 +42,18 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
       // Allow user to wait longer for large queries, but we log a warning or could throw later.
     }
 
+    let workspaceIds: string[] = [];
+    if (["wallet_transactions", "products", "ticket_tiers", "memberships", "workspace_users"].includes(entity_type)) {
+      const wQ = `query { workspaces(where: { orgnizer_id: { _eq: "${organizer_id}" } }) { id } }`;
+      const wRes = await hasuraRequest<any>(wQ);
+      workspaceIds = (wRes.workspaces || []).map((w: any) => w.id);
+      
+      if (workspaceIds.length === 0) {
+        // If the user has no workspaces, return early to avoid querying with an empty array
+        return { rawData: [], aggregatedData: [] };
+      }
+    }
+
     let query = "";
     let baseWhere: any = {};
     let dataKey = "";
@@ -84,14 +96,14 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         break;
 
       case "ticket_tiers":
-        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "cinema_ticket_tiers_bool_exp";
         dataKey = "cinema_ticket_tiers";
         fields = `id created_at updated_at name price type status currency description is_vip includes_glasses is_3d is_imax is_kids`;
         break;
 
       case "products":
-        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "products_bool_exp";
         dataKey = "products";
         fields = `id created_at updated_at name type price stock_limit description image_url category is_active sold_count`;
@@ -148,24 +160,24 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         break;
 
       case "memberships":
-        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "space_subscriptions_bool_exp";
         dataKey = "space_subscriptions";
         fields = `id created_at status plan_name price billing_cycle start_date next_billing_date booking_type customer_name customer_email customer_phone user { id email username phone country }`;
         break;
 
       case "workspace_users":
-        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "workspace_users_bool_exp";
         dataKey = "workspace_users";
         fields = `id created_at role email status name is_temporary expires_at`;
         break;
 
       case "wallet_transactions":
-        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "wallet_transactions_bool_exp";
         dataKey = "wallet_transactions";
-        fields = `id created_at updated_at amount type status reference_id description net_amount platform_fee`;
+        fields = `id created_at updated_at amount type status reference_id description net_amount platform_fee currency provider_status provider_reference`;
         break;
 
       case "ledger_transactions":

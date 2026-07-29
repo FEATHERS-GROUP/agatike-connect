@@ -141,9 +141,18 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
   ],
   wallet_transactions: [
     { id: "created_at", label: "Created At", type: "date" },
+    { id: "updated_at", label: "Updated At", type: "date" },
     { id: "amount", label: "Amount", type: "number" },
+    { id: "net_amount", label: "Net Amount", type: "number" },
+    { id: "platform_fee", label: "Platform Fee", type: "number" },
+    { id: "currency", label: "Currency", type: "string" },
     { id: "type", label: "Type", type: "string" },
     { id: "status", label: "Status", type: "string" },
+    { id: "provider_status", label: "Provider Status", type: "string" },
+    { id: "description", label: "Description", type: "string" },
+    { id: "reference_id", label: "Reference ID", type: "string" },
+    { id: "provider_reference", label: "Provider Reference", type: "string" },
+    { id: "id", label: "Transaction ID", type: "string" },
   ],
   ledger_transactions: [
     { id: "created_at", label: "Created At", type: "date" },
