@@ -39,6 +39,24 @@ function getStatusLabel(status: string) {
   }
 }
 
+const EMAIL_TEMPLATES = [
+  {
+    label: "Starting Lead",
+    subject: "Introduction - Agatike Connect",
+    message: (name: string) => `Hi ${name},\n\nThanks for reaching out! We'd love to learn more about your needs and how Agatike Connect can help.\n\nCould we schedule a quick call?\n\nBest,\nSales Team`
+  },
+  {
+    label: "Follow-up",
+    subject: "Checking In - Agatike Connect",
+    message: (name: string) => `Hi ${name},\n\nI just wanted to follow up and see if you had any further thoughts or questions since we last spoke.\n\nLet me know if you need any more information.\n\nBest,\nSales Team`
+  },
+  {
+    label: "Closing Deal",
+    subject: "Next Steps - Agatike Connect",
+    message: (name: string) => `Hi ${name},\n\nWe're thrilled to move forward! Please review the agreement and let me know if you have any questions.\n\nBest,\nSales Team`
+  }
+];
+
 function LeadDetailsPage() {
   const { leadId } = Route.useParams();
   const navigate = useNavigate();
@@ -481,6 +499,22 @@ function LeadDetailsPage() {
                     </div>
                   </div>
                   <form onSubmit={handleSendEmail} className="flex flex-col">
+                    <div className="flex border-b border-gray-100 dark:border-[#222] items-center px-5 py-3 gap-2 overflow-x-auto">
+                      <span className="text-xs font-medium text-gray-500 whitespace-nowrap">Templates:</span>
+                      {EMAIL_TEMPLATES.map(t => (
+                        <button
+                          key={t.label}
+                          type="button"
+                          onClick={() => {
+                            setEmailSubject(t.subject);
+                            setEmailMessage(t.message(lead.name || 'there'));
+                          }}
+                          className="text-xs px-2 py-1 bg-gray-100 dark:bg-[#333] hover:bg-gray-200 dark:hover:bg-[#444] rounded-full text-gray-700 dark:text-[#ccc] transition-colors whitespace-nowrap"
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
                     <div className="flex border-b border-gray-100 dark:border-[#222] items-center px-5 py-3 text-sm">
                       <span className="text-gray-500 font-medium mr-2 w-16">To:</span>
                       <span className="text-gray-900 dark:text-white">{lead.email}</span>
