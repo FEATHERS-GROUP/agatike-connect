@@ -7,6 +7,7 @@ import {
   Settings,
   LayoutDashboard,
   RefreshCw,
+  BarChart2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -64,6 +65,16 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          {currentUser?.role === "organizer" && (
+            <Button
+              variant="outline"
+              onClick={() => navigate({ to: "/dashboard/analytics" })}
+              className="rounded-full flex-1 sm:flex-none border-primary/20 hover:bg-primary/5"
+            >
+              <BarChart2 className="h-4 w-4 mr-2 text-primary" />
+              Advanced Analytics
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={handleRefresh}

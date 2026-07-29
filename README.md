@@ -333,12 +333,17 @@ sequenceDiagram
     %% Webhook Background Process
     User->>User: Approves USSD Prompt on Phone
     PP->>Srv: POST Webhook to /api/pawapay/deposits
-    Srv->>DB: Verifies Transaction Signature & Status
-    alt is COMPLETED
-        Srv->>DB: Updates status to "completed"
-        Srv->>DB: Generates Digital Ticket / RSVP
-    else is REJECTED / FAILED
-        Srv->>DB: Updates status to "failed"
+    Srv->>DB: Idempotency Check (Check if already 'completed')
+    alt is ALREADY COMPLETED
+        Srv-->>PP: 200 OK (Skip processing)
+    else is NEW / PENDING
+        Srv->>DB: Verifies Transaction Signature & Status
+        alt is COMPLETED
+            Srv->>DB: Updates status to "completed"
+            Srv->>DB: Generates Digital Ticket / RSVP / Sends SMS
+        else is REJECTED / FAILED
+            Srv->>DB: Updates status to "failed"
+        end
     end
 
     %% Final Poll Success
@@ -347,6 +352,10 @@ sequenceDiagram
     Srv-->>UI: Breaks loop
     UI->>User: Displays Success Screen & Ticket
 ```
+
+#### Webhook Idempotency Check
+Because receipt generation (PDFs) and email sending can occasionally exceed PawaPay's webhook timeout window, PawaPay may aggressively retry sending the `COMPLETED` webhook. To prevent duplicating actions (such as generating multiple receipts, sending looping SMS confirmations, or double-funding workspace wallets), the webhook handler implements a strict **Idempotency Check**. 
+Before processing, the server queries the database to see if the transaction is already marked as `completed`. If it is, the server immediately returns a `200 OK` to satisfy PawaPay and completely skips executing the confirmation logic again.
 
 ### 12.1 Tiered Network Fees & Dynamic Pricing
 

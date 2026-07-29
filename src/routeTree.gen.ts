@@ -51,6 +51,7 @@ import { Route as DashboardPricingRouteImport } from './routes/dashboard/pricing
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
 import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
 import { Route as CheckoutCartRouteImport } from './routes/checkout/cart'
 import { Route as BusesMobileRouteImport } from './routes/buses/mobile'
@@ -430,6 +431,11 @@ const DashboardCreateOrganizerRoute =
     path: '/create-organizer',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const CinemasCinemaIdRoute = CinemasCinemaIdRouteImport.update({
   id: '/cinemas/$cinemaId',
   path: '/cinemas/$cinemaId',
@@ -1452,6 +1458,7 @@ export interface FileRoutesByFullPath {
   '/buses/mobile': typeof BusesMobileRoute
   '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -1663,6 +1670,7 @@ export interface FileRoutesByTo {
   '/buses/mobile': typeof BusesMobileRoute
   '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -1871,6 +1879,7 @@ export interface FileRoutesById {
   '/buses/mobile': typeof BusesMobileRoute
   '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
   '/dashboard/login': typeof DashboardLoginRoute
@@ -2084,6 +2093,7 @@ export interface FileRouteTypes {
     | '/buses/mobile'
     | '/checkout/cart'
     | '/cinemas/$cinemaId'
+    | '/dashboard/analytics'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -2295,6 +2305,7 @@ export interface FileRouteTypes {
     | '/buses/mobile'
     | '/checkout/cart'
     | '/cinemas/$cinemaId'
+    | '/dashboard/analytics'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -2502,6 +2513,7 @@ export interface FileRouteTypes {
     | '/buses/mobile'
     | '/checkout/cart'
     | '/cinemas/$cinemaId'
+    | '/dashboard/analytics'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
     | '/dashboard/login'
@@ -3031,6 +3043,13 @@ declare module '@tanstack/react-router' {
       path: '/create-organizer'
       fullPath: '/dashboard/create-organizer'
       preLoaderRoute: typeof DashboardCreateOrganizerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/cinemas/$cinemaId': {
@@ -4317,6 +4336,7 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren =
   )
 
 interface DashboardRouteChildren {
+  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardCreateOrganizerRoute: typeof DashboardCreateOrganizerRoute
   DashboardForgotPasswordRoute: typeof DashboardForgotPasswordRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
@@ -4410,6 +4430,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardCreateOrganizerRoute: DashboardCreateOrganizerRoute,
   DashboardForgotPasswordRoute: DashboardForgotPasswordRoute,
   DashboardLoginRoute: DashboardLoginRoute,

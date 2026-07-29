@@ -98,6 +98,7 @@ function DashboardLayout() {
     location.pathname === "/dashboard/login" ||
     location.pathname === "/dashboard/forgot-password" ||
     location.pathname === "/dashboard/workspaces" ||
+    location.pathname === "/dashboard/analytics" ||
     location.pathname === "/dashboard/create-organizer" ||
     location.pathname === "/dashboard/settings" ||
     location.pathname === "/dashboard/billing/subscriptions/pricingplans" ||
@@ -155,6 +156,7 @@ function DashboardLayout() {
       location.pathname === "/dashboard/settings" ||
       location.pathname === "/dashboard/workspaces" ||
       location.pathname === "/dashboard/support" ||
+      location.pathname.startsWith("/dashboard/analytics") ||
       location.pathname.match(/^\/dashboard\/workspace-user\/[^/]+\/activate/) ||
       location.pathname.startsWith("/dashboard/billing")
     )
@@ -171,7 +173,8 @@ function DashboardLayout() {
         urlSlug !== "workspace-user" &&
         urlSlug !== "billing" &&
         urlSlug !== "support" &&
-        urlSlug !== "settings"
+        urlSlug !== "settings" &&
+        urlSlug !== "analytics"
       ) {
         const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
         if (workspaceFromUrl) {
@@ -195,6 +198,7 @@ function DashboardLayout() {
         urlSlug !== "billing" &&
         urlSlug !== "support" &&
         urlSlug !== "settings" &&
+        urlSlug !== "analytics" &&
         urlSlug !== activeWorkspace.slug
       ) {
         const workspaceFromUrl = workspaces.find((w: any) => w.slug === urlSlug);
