@@ -373,6 +373,7 @@ function FilterTreeNode({
 
 export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange }: Props) {
   const [localConfig, setLocalConfig] = useState<TabConfig>(config);
+  const [columnSearch, setColumnSearch] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -501,16 +502,16 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border/50">
               <div className="space-y-4">
                 <h3 className="text-lg font-bold">Display Mode</h3>
-                <div className="flex bg-muted p-1 rounded-2xl w-max">
+                <div className="flex bg-muted p-1 rounded-xl w-max">
                   <button
                     onClick={() => setLocalConfig({ ...localConfig, displayMode: "chart" })}
-                    className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${(!localConfig.displayMode || localConfig.displayMode === "chart") ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${(!localConfig.displayMode || localConfig.displayMode === "chart") ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                   >
                     Chart View
                   </button>
                   <button
                     onClick={() => setLocalConfig({ ...localConfig, displayMode: "table" })}
-                    className={`px-6 py-2 rounded-xl text-sm font-medium transition-all ${localConfig.displayMode === "table" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${localConfig.displayMode === "table" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                   >
                     Table View
                   </button>
@@ -569,21 +570,34 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
 
               {localConfig.displayMode === "table" && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-bold">Table Columns</h3>
-                  <div className="flex flex-wrap gap-2 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    {cols.map(c => (
-                      <label key={c.id} className="flex items-center gap-2 bg-background border px-3 py-1.5 rounded-full text-sm cursor-pointer hover:border-primary/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold">Table Columns</h3>
+                    <div className="relative w-64">
+                      <Input 
+                        placeholder="Search columns..." 
+                        value={columnSearch}
+                        onChange={(e) => setColumnSearch(e.target.value)}
+                        className="h-8 bg-background text-sm rounded-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 p-4 bg-muted/20 rounded-xl border border-border/50 max-h-60 overflow-y-auto">
+                    {cols.filter(c => c.label.toLowerCase().includes(columnSearch.toLowerCase())).map(c => (
+                      <label key={c.id} className="flex items-center gap-2 bg-background border px-3 py-1.5 rounded-full text-xs cursor-pointer hover:border-primary/50 transition-colors shadow-sm">
                         <input 
                           type="checkbox"
                           checked={selectedCols.includes(c.id)}
                           onChange={() => toggleColumn(c.id)}
-                          className="rounded border-input text-primary focus:ring-primary h-4 w-4"
+                          className="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5"
                         />
                         {c.label}
                       </label>
                     ))}
                     {selectedCols.length === 0 && (
-                      <span className="text-sm text-muted-foreground italic">Select columns to display. If none, all available data is shown.</span>
+                      <span className="text-sm text-muted-foreground italic w-full">Select columns to display. If none, all available data is shown.</span>
+                    )}
+                    {cols.filter(c => c.label.toLowerCase().includes(columnSearch.toLowerCase())).length === 0 && (
+                      <span className="text-sm text-muted-foreground italic w-full">No columns match your search.</span>
                     )}
                   </div>
                 </div>

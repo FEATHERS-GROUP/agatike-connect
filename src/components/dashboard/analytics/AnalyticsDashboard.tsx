@@ -135,13 +135,14 @@ export function AnalyticsDashboard() {
         <Button 
           onClick={handleSaveToDB} 
           disabled={isSaving}
-          className="rounded-full shadow-[var(--shadow-glow)] gap-2"
+          size="sm"
+          className="rounded-full shadow-[var(--shadow-glow)] gap-2 h-8 px-4 text-xs font-medium"
           style={{ background: "var(--gradient-primary)" }}
         >
           {isSaving ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
-            <Save className="h-4 w-4" />
+            <Save className="h-3 w-3" />
           )}
           Save Queries
         </Button>
@@ -153,14 +154,16 @@ export function AnalyticsDashboard() {
           <div
             key={tab.id}
             onClick={() => setActiveTabId(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-colors border select-none whitespace-nowrap
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full cursor-pointer transition-colors border select-none whitespace-nowrap
               ${activeTabId === tab.id 
                 ? "bg-card border-primary/50 text-primary shadow-sm" 
                 : "bg-transparent border-transparent hover:bg-secondary text-muted-foreground"
               }
             `}
           >
-            <span className="text-sm font-medium">{tab.name}</span>
+            <span className="text-xs font-medium capitalize">
+              {tab.entityType.replace(/_/g, ' ')}
+            </span>
             {tabs.length > 1 && (
               <Button
                 variant="ghost"
@@ -189,7 +192,8 @@ export function AnalyticsDashboard() {
           <div className="flex justify-end mb-4">
             <Button 
               variant="outline" 
-              className="rounded-full shadow-sm gap-2"
+              size="sm"
+              className="rounded-full shadow-sm gap-2 h-8 text-xs px-4"
               onClick={() => setIsModalOpen(true)}
             >
               Configure Query

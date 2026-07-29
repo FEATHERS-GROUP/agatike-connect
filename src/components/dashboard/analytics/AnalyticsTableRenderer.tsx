@@ -183,7 +183,7 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-card border border-border/60 rounded-3xl shadow-sm text-center">
+      <div className="flex flex-col items-center justify-center p-12 bg-card border border-border/40 rounded-2xl shadow-sm text-center min-h-[400px]">
         <h3 className="text-xl font-bold mb-2">No Data Available</h3>
         <p className="text-muted-foreground text-sm max-w-md">
           There is no data matching your current filters and date range.
@@ -193,20 +193,20 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
   }
 
   return (
-    <div className="bg-card border border-border/60 rounded-3xl shadow-sm overflow-hidden">
-      <div className="p-6 border-b border-border/60 flex items-center justify-between bg-muted/10">
+    <div className="bg-card border border-border/40 rounded-2xl shadow-sm overflow-hidden flex flex-col w-full">
+      <div className="px-6 py-4 border-b border-border/40 flex items-center justify-between bg-muted/5">
         <div>
-          <h2 className="text-xl font-bold">Data Table</h2>
-          <p className="text-sm text-muted-foreground">Showing {data.length} records</p>
+          <h2 className="text-lg font-semibold text-foreground/90">Data Table</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Showing {data.length} records</p>
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
+      <div className="overflow-x-auto flex-1 w-full relative">
+        <Table className="w-full text-sm">
+          <TableHeader className="bg-muted/30">
+            <TableRow className="border-b border-border/40 hover:bg-transparent">
               {columns.map(col => (
-                <TableHead key={col.id} className="whitespace-nowrap font-semibold">
+                <TableHead key={col.id} className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground h-auto">
                   {col.label}
                 </TableHead>
               ))}
@@ -214,7 +214,7 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
           </TableHeader>
           <TableBody>
             {data.map((row, rowIndex) => (
-              <TableRow key={row.id || rowIndex}>
+              <TableRow key={row.id || rowIndex} className="border-b border-border/30 hover:bg-muted/20 transition-colors group">
                 {columns.map(col => {
                   const val = resolvePath(row, col.id);
                   let displayVal = val;
@@ -229,7 +229,7 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
                   }
 
                   return (
-                    <TableCell key={`${row.id || rowIndex}-${col.id}`} className="max-w-[200px] truncate">
+                    <TableCell key={`${row.id || rowIndex}-${col.id}`} className="max-w-[250px] truncate px-4 py-3 text-foreground/80 group-hover:text-foreground transition-colors align-middle">
                       {displayVal}
                     </TableCell>
                   );
@@ -250,19 +250,27 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
                     // Compute sum safely
                     const total = data.reduce((acc, row) => {
                       const val = resolvePath(row, col.id);
-                      if (val && !isNaN(Number(val))) {
-                        return acc + Number(val);
+                      if (val) {
+                        if (typeof val === "string" && val.includes(",")) {
+                          const arraySum = val.split(",").reduce((sumAcc, v) => {
+                            const num = Number(v.trim());
+                            return sumAcc + (isNaN(num) ? 0 : num);
+                          }, 0);
+                          return acc + arraySum;
+                        } else if (!isNaN(Number(val))) {
+                          return acc + Number(val);
+                        }
                       }
                       return acc;
                     }, 0);
                     
                     return (
-                      <TableCell key={`footer-${col.id}`} className="font-bold">
+                      <TableCell key={`footer-${col.id}`} className="font-bold px-4 py-3 align-middle">
                         {total.toLocaleString()}
                       </TableCell>
                     );
                   }
-                  return <TableCell key={`footer-${col.id}`} />;
+                  return <TableCell key={`footer-${col.id}`} className="px-4 py-3 align-middle" />;
                 })}
               </TableRow>
             </TableFooter>

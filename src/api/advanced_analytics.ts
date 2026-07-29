@@ -185,6 +185,7 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
       // Backward compatibility for old flat array
       const andClause: any[] = [];
       for (const f of filters) {
+        if (f.type !== "rule") continue;
         if (!f.field || !f.operator || f.value === "") continue;
         let val: any = f.value;
         if (f.operator === "_ilike") {
@@ -255,11 +256,6 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
     `;
 
     let variables: Record<string, any> = { where };
-
-    console.log("=== ADVANCED ANALYTICS QUERY ===");
-    console.log("Query:\n", query);
-    console.log("Variables:\n", JSON.stringify(variables, null, 2));
-    console.log("================================");
 
     const res = await hasuraRequest<any>(query, variables);
     const rawData = res[dataKey] || [];
