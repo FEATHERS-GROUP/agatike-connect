@@ -23,7 +23,8 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : appUrl || "https://agatike.com";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     // Build Social Links HTML if available
     let socialsHtml = "";
@@ -62,7 +63,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       <!-- Header -->
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Event Update</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px; font-weight: 500;">from ${organizerName || "your event organizer"}</p>
@@ -113,7 +114,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
                       : ""
                   }
                   <td align="center">
-                    <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; display: block;" />
+                    <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                 </tr>
               </table>
@@ -183,13 +184,14 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Tickets are Here!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${venueName}</p>
@@ -204,7 +206,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -244,13 +246,14 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Profile Update Verification</h2>
       </div>
@@ -264,7 +267,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -302,13 +305,14 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Booking Confirmed!</h2>
       </div>
@@ -329,7 +333,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -382,13 +386,14 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.PROJECT_PRODUCTION_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Payment Invoice</h2>
       </div>
@@ -429,7 +434,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -491,13 +496,14 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Group Booking Confirmed!</h2>
         <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 15px;">${spaceName}</p>
@@ -517,7 +523,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -614,13 +620,14 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Welcome to ${spaceName}!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">Your membership is ready</p>
@@ -644,7 +651,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -682,13 +689,14 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #e11d48; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Visitor Pass</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${spaceName}</p>
@@ -711,7 +719,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -757,14 +765,15 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
         ? "https://agatike.rw"
         : "http://localhost:3000";
 
-  const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
   const activationLink = `${baseUrl}/dashboard/workspace-user/${encodeURIComponent(to)}/activate`;
 
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">You've Been Invited!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">to manage ${organizerName ? organizerName + "'s" : "a"} workspace</p>
@@ -825,13 +834,14 @@ export const executeSendProjectAccessEmail = async (data: any) => {
         ? "https://agatike.rw"
         : "http://localhost:3000";
 
-  const agatikeIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
   const html = `
   <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
     <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
       <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-        <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
       </div>
       <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Project Access Granted</h2>
       <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">by ${organizerName || "a workspace"}</p>
