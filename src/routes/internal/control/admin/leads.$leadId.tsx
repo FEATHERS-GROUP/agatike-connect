@@ -102,6 +102,7 @@ function LeadDetailsPage() {
   };
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!lead) return;
     if (e.key === "Enter" && newTagInput.trim()) {
       const currentTags = lead.customer_profile?.tags || [];
       if (!currentTags.includes(newTagInput.trim())) {
@@ -125,6 +126,7 @@ function LeadDetailsPage() {
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
+    if (!lead) return;
     const currentTags = lead.customer_profile?.tags || [];
     const updatedTags = currentTags.filter((t: string) => t !== tagToRemove);
     updateProfileMutation.mutate({
@@ -140,6 +142,7 @@ function LeadDetailsPage() {
 
   const handleEditDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!lead) return;
     updateProfileMutation.mutate({
       id: leadId,
       name: editDetailsForm.name,
@@ -159,6 +162,7 @@ function LeadDetailsPage() {
   };
 
   const startEditingDetails = () => {
+    if (!lead) return;
     setEditDetailsForm({
       name: lead.name || "",
       email: lead.email || "",
