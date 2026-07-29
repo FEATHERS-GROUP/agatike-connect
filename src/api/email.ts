@@ -23,7 +23,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : appUrl || "https://agatike.com";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     // Build Social Links HTML if available
     let socialsHtml = "";
@@ -183,7 +183,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -244,7 +244,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -302,7 +302,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -382,7 +382,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.PROJECT_PRODUCTION_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -491,7 +491,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -614,7 +614,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -682,7 +682,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
@@ -757,7 +757,7 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
         ? "https://agatike.rw"
         : "http://localhost:3000";
 
-  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+  const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
   const activationLink = `${baseUrl}/dashboard/workspace-user/${encodeURIComponent(to)}/activate`;
 
   const html = `
@@ -825,7 +825,7 @@ export const executeSendProjectAccessEmail = async (data: any) => {
         ? "https://agatike.rw"
         : "http://localhost:3000";
 
-  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+  const agatikeIconUrl = "https://www.agatike.rw/icon.svg";
 
   const html = `
   <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
