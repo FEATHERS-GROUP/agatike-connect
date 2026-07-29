@@ -7,6 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from "@/components/ui/table";
 
 interface Props {
@@ -14,93 +15,160 @@ interface Props {
   data: any[];
 }
 
-const AVAILABLE_COLUMNS: Record<string, { id: string; label: string }[]> = {
+const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "string" | "number" | "date" | "boolean" }[]> = {
   workspaces: [
-    { id: "name", label: "Workspace Name" },
-    { id: "created_at", label: "Created At" },
-    { id: "city", label: "City" },
-    { id: "logo", label: "Logo URL" },
+    { id: "name", label: "Workspace Name", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "city", label: "City", type: "string" },
+    { id: "type", label: "Type", type: "string" },
   ],
   events: [
-    { id: "title", label: "Event Title" },
-    { id: "created_at", label: "Created At" },
-    { id: "category", label: "Category" },
-    { id: "event_type", label: "Event Type" },
-    { id: "venue_details", label: "Venue Details" },
-    { id: "tour_stops", label: "Tour Stops" },
+    { id: "title", label: "Event Title", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "category", label: "Category", type: "string" },
+    { id: "event_type", label: "Event Type", type: "string" },
+    { id: "tour_stops.city", label: "Tour Stop City", type: "string" },
+    { id: "event_tickets.name", label: "Ticket Name", type: "string" },
+    { id: "event_tickets.cost", label: "Ticket Cost", type: "number" },
+    { id: "event_tickets.sold", label: "Tickets Sold", type: "number" },
+    { id: "workspaces.name", label: "Workspace Name", type: "string" },
   ],
   attendees: [
-    { id: "created_at", label: "Created At" },
-    { id: "status", label: "Status" },
-    { id: "email", label: "Attendee Email" },
-    { id: "names", label: "Attendee Name" },
-    { id: "phone", label: "Phone" },
-    { id: "type", label: "Purchase Type" },
-    { id: "ticket_type", label: "Ticket Type" },
-    { id: "quanity", label: "Quantity" },
-    { id: "qrcode_number", label: "QR Code" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "email", label: "Attendee Email", type: "string" },
+    { id: "names", label: "Attendee Name", type: "string" },
+    { id: "phone", label: "Phone", type: "string" },
+    { id: "type", label: "Purchase Type", type: "string" },
+    { id: "ticket_type", label: "Ticket Type", type: "string" },
+    { id: "quanity", label: "Quantity", type: "number" },
+    { id: "payment_method", label: "Payment Method", type: "string" },
+    { id: "events.title", label: "Event Title", type: "string" },
+    { id: "events.category", label: "Event Category", type: "string" },
+    { id: "event_tickets.name", label: "Ticket Name", type: "string" },
+    { id: "event_tickets.cost", label: "Ticket Cost", type: "number" },
+    { id: "event_tickets.product_orders.amount_paid", label: "Product Order Amount", type: "number" },
+    { id: "user_id", label: "Account ID (Blank = Guest)", type: "string" },
+    { id: "users.username", label: "User Profile Name", type: "string" },
+    { id: "users.country", label: "User Country", type: "string" },
+    { id: "users.gender", label: "User Gender", type: "string" },
+    { id: "users.dateOfBirth", label: "Date of Birth", type: "string" },
+  ],
+  venue_bookings: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "start_time", label: "Start Date", type: "date" },
+    { id: "end_time", label: "End Date", type: "date" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "amount", label: "Amount", type: "number" },
+    { id: "customer_name", label: "Customer Name", type: "string" },
+    { id: "customer_email", label: "Customer Email", type: "string" },
+  ],
+  ticket_tiers: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "name", label: "Tier Name", type: "string" },
+    { id: "price", label: "Price", type: "number" },
+    { id: "type", label: "Type", type: "string" },
+  ],
+  products: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "name", label: "Product Name", type: "string" },
+    { id: "type", label: "Type", type: "string" },
+    { id: "price", label: "Price", type: "number" },
+    { id: "stock_limit", label: "Stock Limit", type: "number" },
   ],
   orders: [
-    { id: "created_at", label: "Created At" },
-    { id: "amount_paid", label: "Amount Paid" },
-    { id: "status", label: "Status" },
-    { id: "qty", label: "Quantity" },
-    { id: "phone", label: "Customer Phone" },
-    { id: "size", label: "Size" },
-    { id: "picked", label: "Picked Up?" },
-    { id: "product.name", label: "Product Name" },
-    { id: "product.type", label: "Product Type" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "amount_paid", label: "Amount Paid", type: "number" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "qty", label: "Quantity", type: "number" },
+    { id: "phone", label: "Customer Phone", type: "string" },
+    { id: "size", label: "Size", type: "string" },
+    { id: "product.name", label: "Product Name", type: "string" },
+    { id: "product.type", label: "Product Type", type: "string" },
+    { id: "product.price", label: "Product Price", type: "number" },
+  ],
+  cinemas: [
+    { id: "name", label: "Cinema Name", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "city", label: "City", type: "string" },
+    { id: "address", label: "Address", type: "string" },
+    { id: "workspaces.name", label: "Workspace Name", type: "string" },
   ],
   movies: [
-    { id: "title", label: "Title" },
-    { id: "created_at", label: "Created At" },
-    { id: "genre", label: "Genre" },
-    { id: "duration", label: "Duration (mins)" },
-    { id: "language", label: "Language" },
-    { id: "release_date", label: "Release Date" },
+    { id: "title", label: "Title", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "genre", label: "Genre", type: "string" },
+    { id: "duration_minutes", label: "Duration (mins)", type: "number" },
   ],
   cinema_bookings: [
-    { id: "total_price", label: "Total Price" },
-    { id: "quantity", label: "Quantity" },
-    { id: "created_at", label: "Created At" },
-    { id: "status", label: "Status" },
-    { id: "customer_email", label: "Customer Email" },
-    { id: "customer_phone", label: "Customer Phone" },
-    { id: "payment_method", label: "Payment Method" },
+    { id: "total_price", label: "Total Price", type: "number" },
+    { id: "quantity", label: "Quantity", type: "number" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "email", label: "Customer Email", type: "string" },
+    { id: "payment_method", label: "Payment Method", type: "string" },
   ],
   reviews: [
-    { id: "rating", label: "Rating" },
-    { id: "reviewer_name", label: "Reviewer Name" },
-    { id: "reviewer_email", label: "Reviewer Email" },
-    { id: "created_at", label: "Created At" },
-    { id: "title", label: "Title" },
-    { id: "body", label: "Body" },
-    { id: "source", label: "Source" },
-    { id: "is_verified", label: "Verified?" },
+    { id: "rating", label: "Rating", type: "number" },
+    { id: "reviewer_name", label: "Reviewer Name", type: "string" },
+    { id: "reviewer_email", label: "Reviewer Email", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "events.title", label: "Event Title", type: "string" },
+    { id: "events.category", label: "Event Category", type: "string" },
   ],
   forms: [
-    { id: "title", label: "Form Title" },
-    { id: "description", label: "Description" },
-    { id: "created_at", label: "Created At" },
+    { id: "title", label: "Form Title", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "workspace.name", label: "Workspace Name", type: "string" },
   ],
   facilities: [
-    { id: "name", label: "Venue Name" },
-    { id: "created_at", label: "Created At" },
-    { id: "price_per_day", label: "Price / Day" },
-    { id: "capacity", label: "Capacity" },
-    { id: "location", label: "Location" },
+    { id: "name", label: "Venue Name", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "capacity", label: "Capacity", type: "number" },
+    { id: "workspace.name", label: "Workspace Name", type: "string" },
+  ],
+  memberships: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "user.email", label: "User Email", type: "string" },
+    { id: "user.username", label: "User Name", type: "string" },
+  ],
+  workspace_users: [
+    { id: "created_at", label: "Joined At", type: "date" },
+    { id: "role", label: "Role", type: "string" },
+    { id: "email", label: "User Email", type: "string" },
+    { id: "status", label: "Status", type: "string" },
+  ],
+  wallet_transactions: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "amount", label: "Amount", type: "number" },
+    { id: "type", label: "Type", type: "string" },
+    { id: "status", label: "Status", type: "string" },
+  ],
+  ledger_transactions: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "amount", label: "Amount", type: "number" },
+    { id: "account_type", label: "Account Type", type: "string" },
   ],
   default: [
-    { id: "created_at", label: "Created At" },
-    { id: "title", label: "Title" },
-    { id: "name", label: "Name" },
-    { id: "status", label: "Status" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "title", label: "Title", type: "string" },
+    { id: "name", label: "Name", type: "string" },
+    { id: "status", label: "Status", type: "string" },
   ],
 };
 
-// Utility to resolve dot-notation paths (e.g., user.email)
+// Utility to resolve dot-notation paths (e.g., user.email or events.title if it's an array)
 function resolvePath(obj: any, path: string) {
-  return path.split(".").reduce((prev, curr) => (prev ? prev[curr] : null), obj);
+  return path.split(".").reduce((prev, curr) => {
+    if (prev === null || prev === undefined) return null;
+    if (Array.isArray(prev)) {
+      // If it's an array, map over it and extract the field, then join or return the first
+      const vals = prev.map(p => p?.[curr]).filter(Boolean);
+      return vals.length > 0 ? vals.join(", ") : null;
+    }
+    return prev[curr];
+  }, obj);
 }
 
 export function AnalyticsTableRenderer({ config, data }: Props) {
@@ -152,7 +220,7 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
                   let displayVal = val;
                   
                   // Simple formatting
-                  if (col.id === "created_at" || col.id === "startDate") {
+                  if (col.type === "date" || col.id === "created_at" || col.id === "startDate") {
                     displayVal = val ? new Date(val).toLocaleDateString() : "-";
                   } else if (typeof val === "object" && val !== null) {
                     displayVal = JSON.stringify(val);
@@ -169,6 +237,36 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
               </TableRow>
             ))}
           </TableBody>
+          
+          {/* Render Footer for Totals */}
+          {columns.some(c => c.type === "number") && (
+            <TableFooter>
+              <TableRow>
+                {columns.map((col, index) => {
+                  if (index === 0 && col.type !== "number") {
+                    return <TableCell key="footer-first" className="font-bold">Total</TableCell>;
+                  }
+                  if (col.type === "number") {
+                    // Compute sum safely
+                    const total = data.reduce((acc, row) => {
+                      const val = resolvePath(row, col.id);
+                      if (val && !isNaN(Number(val))) {
+                        return acc + Number(val);
+                      }
+                      return acc;
+                    }, 0);
+                    
+                    return (
+                      <TableCell key={`footer-${col.id}`} className="font-bold">
+                        {total.toLocaleString()}
+                      </TableCell>
+                    );
+                  }
+                  return <TableCell key={`footer-${col.id}`} />;
+                })}
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       </div>
     </div>

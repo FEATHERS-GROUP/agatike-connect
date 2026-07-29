@@ -1,36 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { TabConfig } from "./AnalyticsDashboard";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { executeAdvancedQuery } from "@/api/advanced_analytics";
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, LayoutTemplate } from "lucide-react";
-
 import { AnalyticsTableRenderer } from "./AnalyticsTableRenderer";
 
 interface Props {
   config: TabConfig;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#8dd1e1", "#a4de6c"];
+// Utility to resolve dot-notation paths
+function resolvePath(obj: any, path: string) {
+  return path.split(".").reduce((prev, curr) => {
+    if (prev === null || prev === undefined) return null;
+    if (Array.isArray(prev)) {
+      const vals = prev.map(p => p?.[curr]).filter(Boolean);
+      return vals.length > 0 ? vals.join(", ") : null;
+    }
+    return prev[curr];
+  }, obj);
+}
+
+const COLORS = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed", "#0891b2", "#be185d"];
 
 export function AnalyticsChartRenderer({ config }: Props) {
   const { currentUser } = useWorkspace();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<{ rawData: any[]; aggregatedData: any[] } | null>(null);
-  const [chartType, setChartType] = useState<"bar" | "pie">("bar");
+  const [rawData, setRawData] = useState<any[] | null>(null);
 
   const fetchData = async () => {
     if (!currentUser?.id) return;
@@ -43,11 +52,10 @@ export function AnalyticsChartRenderer({ config }: Props) {
           entity_type: config.entityType,
           start_date: config.startDate.toISOString(),
           end_date: config.endDate.toISOString(),
-          group_by: config.groupBy || undefined,
           filters: config.filters,
         }
       });
-      setData(res);
+      setRawData(res.rawData || []);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to fetch analytics data");
@@ -60,9 +68,49 @@ export function AnalyticsChartRenderer({ config }: Props) {
     if (config.runTimestamp) {
       fetchData();
     } else {
-      setData(null); // Reset data when tab switches or no run
+      setRawData(null);
     }
   }, [config.runTimestamp, currentUser?.id]);
+
+  // Frontend Aggregation
+  const chartData = useMemo(() => {
+    if (!rawData || !config.groupBy) return [];
+
+    const aggregated = new Map<string, number>();
+
+    rawData.forEach((item: any) => {
+      let key = "Unknown";
+      
+      // Resolve X-Axis Group Key
+      if (config.groupBy === "month") {
+        if (item.created_at) {
+          const d = new Date(item.created_at);
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          key = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+        }
+      } else {
+        const val = resolvePath(item, config.groupBy);
+        if (val !== null && val !== undefined) {
+          key = String(val);
+        }
+      }
+      
+      // Resolve Y-Axis Metric
+      let metric = 1; // Default to Count
+      if (config.chartMetric) {
+        const val = resolvePath(item, config.chartMetric);
+        if (val !== null && !isNaN(Number(val))) {
+          metric = Number(val);
+        } else {
+          metric = 0; // If they asked for a sum, and it's missing, add 0
+        }
+      }
+      
+      aggregated.set(key, (aggregated.get(key) || 0) + metric);
+    });
+
+    return Array.from(aggregated.entries()).map(([name, value]) => ({ name, value }));
+  }, [rawData, config.groupBy, config.chartMetric]);
 
   if (!config.runTimestamp) {
     return (
@@ -70,6 +118,9 @@ export function AnalyticsChartRenderer({ config }: Props) {
         <LayoutTemplate className="h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="text-xl font-bold mb-2">Ready to Query</h3>
         <p className="text-muted-foreground mb-6">Configure your filters above and click "Run Query" to fetch your analytics data.</p>
+        <Button onClick={fetchData} variant="outline" className="rounded-full">
+          <RefreshCw className="h-4 w-4 mr-2" /> Run Query
+        </Button>
       </div>
     );
   }
@@ -79,7 +130,6 @@ export function AnalyticsChartRenderer({ config }: Props) {
       <div className="bg-card border border-border/60 rounded-3xl p-12 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4" />
         <p className="text-muted-foreground font-medium">Running large dataset query...</p>
-        <p className="text-sm text-muted-foreground/70">This may take a moment depending on the date range.</p>
       </div>
     );
   }
@@ -99,7 +149,7 @@ export function AnalyticsChartRenderer({ config }: Props) {
     );
   }
 
-  if (!data || (data.aggregatedData.length === 0 && data.rawData.length === 0)) {
+  if (!rawData || rawData.length === 0) {
     return (
       <div className="bg-card border border-border/60 rounded-3xl p-12 shadow-sm flex flex-col items-center justify-center min-h-[400px] text-center">
         <LayoutTemplate className="h-12 w-12 text-muted-foreground mb-4" />
@@ -110,10 +160,12 @@ export function AnalyticsChartRenderer({ config }: Props) {
   }
 
   if (config.displayMode === "table") {
-    return <AnalyticsTableRenderer config={config} data={data.rawData} />;
+    return <AnalyticsTableRenderer config={config} data={rawData} />;
   }
 
-  const hasAggregations = config.groupBy && data.aggregatedData.length > 0;
+  const hasAggregations = config.groupBy && chartData.length > 0;
+  const isLine = config.chartType === "line";
+  const label = config.chartMetric ? `Sum of ${config.chartMetric}` : "Count";
 
   return (
     <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm min-h-[400px] flex flex-col">
@@ -123,86 +175,80 @@ export function AnalyticsChartRenderer({ config }: Props) {
           <p className="text-sm text-muted-foreground">
             {hasAggregations 
               ? `Grouped by ${config.groupBy}` 
-              : `Showing ${data.rawData.length} raw records (No grouping applied)`}
+              : `Showing ${rawData.length} raw records (Please select a "Group By" in filters to plot data)`}
           </p>
         </div>
-        
-        {hasAggregations && (
-          <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-full border border-border/60">
-            <Button
-              variant={chartType === "bar" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setChartType("bar")}
-              className={`rounded-full h-8 px-4 ${chartType === "bar" ? "shadow-sm" : ""}`}
-            >
-              Bar
-            </Button>
-            <Button
-              variant={chartType === "pie" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setChartType("pie")}
-              className={`rounded-full h-8 px-4 ${chartType === "pie" ? "shadow-sm" : ""}`}
-            >
-              Pie
-            </Button>
-          </div>
-        )}
       </div>
 
-      <div className="flex-1 w-full relative min-h-[400px]">
+      <div className="w-full h-[400px] mt-4">
         {hasAggregations ? (
           <ResponsiveContainer width="100%" height="100%">
-            {chartType === "bar" ? (
-              <BarChart data={data.aggregatedData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
+            {isLine ? (
+              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis 
                   dataKey="name" 
-                  tick={{ fill: 'currentColor', opacity: 0.7 }}
-                  axisLine={{ opacity: 0.2 }}
                   tickLine={false}
-                  angle={-45}
-                  textAnchor="end"
+                  axisLine={false}
+                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  dy={10}
                 />
                 <YAxis 
-                  tick={{ fill: 'currentColor', opacity: 0.7 }}
-                  axisLine={false}
                   tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  dx={-10}
                 />
                 <Tooltip 
-                  cursor={{ fill: 'var(--muted)', opacity: 0.2 }}
-                  contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--card)' }}
+                  cursor={{ fill: "hsl(var(--muted)/0.5)" }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name={label}
+                  stroke={COLORS[0]}
+                  strokeWidth={3}
+                  activeDot={{ r: 8 }}
+                />
+              </LineChart>
+            ) : (
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="name" 
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  dy={10}
+                />
+                <YAxis 
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "hsl(var(--muted-foreground))" }}
+                  dx={-10}
+                />
+                <Tooltip 
+                  cursor={{ fill: "hsl(var(--muted)/0.5)" }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Bar 
                   dataKey="value" 
-                  fill="var(--primary)" 
-                  radius={[6, 6, 0, 0]}
-                  maxBarSize={60}
+                  name={label} 
+                  fill={COLORS[0]} 
+                  radius={[4, 4, 0, 0]}
+                  barSize={40}
                 />
               </BarChart>
-            ) : (
-              <PieChart>
-                <Pie
-                  data={data.aggregatedData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  outerRadius={150}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {data.aggregatedData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--card)' }} />
-              </PieChart>
             )}
           </ResponsiveContainer>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <p>Please select a "Group By" option to view charts.</p>
-            <p className="text-sm mt-2">Currently loaded {data.rawData.length} rows of raw data.</p>
+          <div className="w-full h-full flex flex-col items-center justify-center text-center">
+            <LayoutTemplate className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <h3 className="text-lg font-medium mb-1">Chart Requires Grouping</h3>
+            <p className="text-muted-foreground text-sm max-w-sm">
+              Please open the configuration modal and select a "Group By" attribute to plot a chart.
+            </p>
           </div>
         )}
       </div>

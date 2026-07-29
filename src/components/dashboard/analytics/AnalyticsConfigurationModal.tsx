@@ -25,12 +25,20 @@ const ENTITIES = [
   { id: "workspaces", label: "Workspaces" },
   { id: "events", label: "Events" },
   { id: "attendees", label: "Attendees" },
-  { id: "orders", label: "Orders" },
+  { id: "venue_bookings", label: "Venue Bookings" },
+  { id: "ticket_tiers", label: "Cinema Ticket Tiers" },
+  { id: "products", label: "Products" },
+  { id: "orders", label: "Product Orders" },
+  { id: "cinemas", label: "Cinemas" },
   { id: "movies", label: "Movies (Cinema)" },
   { id: "cinema_bookings", label: "Cinema Bookings" },
   { id: "reviews", label: "Reviews & Feedback" },
   { id: "forms", label: "Forms & Responses" },
   { id: "facilities", label: "Facilities" },
+  { id: "memberships", label: "Space Subscriptions" },
+  { id: "workspace_users", label: "Workspace Team" },
+  { id: "wallet_transactions", label: "Wallet Transactions" },
+  { id: "ledger_transactions", label: "Ledger Transactions" },
 ];
 
 const GROUP_BY_OPTIONS = [
@@ -45,15 +53,18 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
     { id: "name", label: "Workspace Name", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
     { id: "city", label: "City", type: "string" },
-    { id: "logo", label: "Logo URL", type: "string" },
+    { id: "type", label: "Type", type: "string" },
   ],
   events: [
     { id: "title", label: "Event Title", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
     { id: "category", label: "Category", type: "string" },
     { id: "event_type", label: "Event Type", type: "string" },
-    { id: "venue_details", label: "Venue Details", type: "string" },
-    { id: "tour_stops", label: "Tour Stops", type: "string" },
+    { id: "tour_stops.city", label: "Tour Stop City", type: "string" },
+    { id: "event_tickets.name", label: "Ticket Name", type: "string" },
+    { id: "event_tickets.cost", label: "Ticket Cost", type: "number" },
+    { id: "event_tickets.sold", label: "Tickets Sold", type: "number" },
+    { id: "workspaces.name", label: "Workspace Name", type: "string" },
   ],
   attendees: [
     { id: "created_at", label: "Created At", type: "date" },
@@ -64,7 +75,39 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
     { id: "type", label: "Purchase Type", type: "string" },
     { id: "ticket_type", label: "Ticket Type", type: "string" },
     { id: "quanity", label: "Quantity", type: "number" },
-    { id: "qrcode_number", label: "QR Code", type: "string" },
+    { id: "payment_method", label: "Payment Method", type: "string" },
+    { id: "events.title", label: "Event Title", type: "string" },
+    { id: "events.category", label: "Event Category", type: "string" },
+    { id: "event_tickets.name", label: "Ticket Name", type: "string" },
+    { id: "event_tickets.cost", label: "Ticket Cost", type: "number" },
+    { id: "event_tickets.product_orders.amount_paid", label: "Product Order Amount", type: "number" },
+    { id: "user_id", label: "Account ID (Blank = Guest)", type: "string" },
+    { id: "users.username", label: "User Profile Name", type: "string" },
+    { id: "users.country", label: "User Country", type: "string" },
+    { id: "users.gender", label: "User Gender", type: "string" },
+    { id: "users.dateOfBirth", label: "Date of Birth", type: "string" },
+  ],
+  venue_bookings: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "start_time", label: "Start Date", type: "date" },
+    { id: "end_time", label: "End Date", type: "date" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "amount", label: "Amount", type: "number" },
+    { id: "customer_name", label: "Customer Name", type: "string" },
+    { id: "customer_email", label: "Customer Email", type: "string" },
+  ],
+  ticket_tiers: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "name", label: "Tier Name", type: "string" },
+    { id: "price", label: "Price", type: "number" },
+    { id: "type", label: "Type", type: "string" },
+  ],
+  products: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "name", label: "Product Name", type: "string" },
+    { id: "type", label: "Type", type: "string" },
+    { id: "price", label: "Price", type: "number" },
+    { id: "stock_limit", label: "Stock Limit", type: "number" },
   ],
   orders: [
     { id: "created_at", label: "Created At", type: "date" },
@@ -73,25 +116,29 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
     { id: "qty", label: "Quantity", type: "number" },
     { id: "phone", label: "Customer Phone", type: "string" },
     { id: "size", label: "Size", type: "string" },
-    { id: "picked", label: "Picked Up?", type: "boolean" },
     { id: "product.name", label: "Product Name", type: "string" },
     { id: "product.type", label: "Product Type", type: "string" },
+    { id: "product.price", label: "Product Price", type: "number" },
+  ],
+  cinemas: [
+    { id: "name", label: "Cinema Name", type: "string" },
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "city", label: "City", type: "string" },
+    { id: "address", label: "Address", type: "string" },
+    { id: "workspaces.name", label: "Workspace Name", type: "string" },
   ],
   movies: [
     { id: "title", label: "Title", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
     { id: "genre", label: "Genre", type: "string" },
-    { id: "duration", label: "Duration (mins)", type: "number" },
-    { id: "language", label: "Language", type: "string" },
-    { id: "release_date", label: "Release Date", type: "date" },
+    { id: "duration_minutes", label: "Duration (mins)", type: "number" },
   ],
   cinema_bookings: [
     { id: "total_price", label: "Total Price", type: "number" },
     { id: "quantity", label: "Quantity", type: "number" },
     { id: "created_at", label: "Created At", type: "date" },
     { id: "status", label: "Status", type: "string" },
-    { id: "customer_email", label: "Customer Email", type: "string" },
-    { id: "customer_phone", label: "Customer Phone", type: "string" },
+    { id: "email", label: "Customer Email", type: "string" },
     { id: "payment_method", label: "Payment Method", type: "string" },
   ],
   reviews: [
@@ -99,22 +146,42 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
     { id: "reviewer_name", label: "Reviewer Name", type: "string" },
     { id: "reviewer_email", label: "Reviewer Email", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
-    { id: "title", label: "Title", type: "string" },
-    { id: "body", label: "Body", type: "string" },
-    { id: "source", label: "Source", type: "string" },
-    { id: "is_verified", label: "Verified?", type: "boolean" },
+    { id: "events.title", label: "Event Title", type: "string" },
+    { id: "events.category", label: "Event Category", type: "string" },
   ],
   forms: [
     { id: "title", label: "Form Title", type: "string" },
-    { id: "description", label: "Description", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
+    { id: "workspace.name", label: "Workspace Name", type: "string" },
   ],
   facilities: [
     { id: "name", label: "Venue Name", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
-    { id: "price_per_day", label: "Price / Day", type: "number" },
     { id: "capacity", label: "Capacity", type: "number" },
-    { id: "location", label: "Location", type: "string" },
+    { id: "workspace.name", label: "Workspace Name", type: "string" },
+  ],
+  memberships: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "status", label: "Status", type: "string" },
+    { id: "user.email", label: "User Email", type: "string" },
+    { id: "user.username", label: "User Name", type: "string" },
+  ],
+  workspace_users: [
+    { id: "created_at", label: "Joined At", type: "date" },
+    { id: "role", label: "Role", type: "string" },
+    { id: "email", label: "User Email", type: "string" },
+    { id: "status", label: "Status", type: "string" },
+  ],
+  wallet_transactions: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "amount", label: "Amount", type: "number" },
+    { id: "type", label: "Type", type: "string" },
+    { id: "status", label: "Status", type: "string" },
+  ],
+  ledger_transactions: [
+    { id: "created_at", label: "Created At", type: "date" },
+    { id: "amount", label: "Amount", type: "number" },
+    { id: "account_type", label: "Account Type", type: "string" },
   ],
   default: [
     { id: "created_at", label: "Created At", type: "date" },
@@ -449,17 +516,53 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                   </button>
                 </div>
                 {(!localConfig.displayMode || localConfig.displayMode === "chart") && (
-                  <div className="space-y-2 mt-4">
-                    <Label>Group By (for Charts)</Label>
-                    <select
-                      value={localConfig.groupBy}
-                      onChange={(e) => setLocalConfig({ ...localConfig, groupBy: e.target.value })}
-                      className="flex h-10 w-full max-w-xs items-center rounded-xl border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {GROUP_BY_OPTIONS.map(opt => (
-                        <option key={opt.id} value={opt.id}>{opt.label}</option>
-                      ))}
-                    </select>
+                  <div className="space-y-4 mt-4 bg-muted/20 p-4 rounded-xl border border-border/50">
+                    <div className="space-y-2">
+                      <Label>Chart Style</Label>
+                      <div className="flex bg-muted p-1 rounded-xl w-max">
+                        <button
+                          onClick={() => setLocalConfig({ ...localConfig, chartType: "bar" })}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${(!localConfig.chartType || localConfig.chartType === "bar") ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          Bar Chart
+                        </button>
+                        <button
+                          onClick={() => setLocalConfig({ ...localConfig, chartType: "line" })}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${localConfig.chartType === "line" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          Line Chart
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>X-Axis (Group By)</Label>
+                      <select
+                        value={localConfig.groupBy}
+                        onChange={(e) => setLocalConfig({ ...localConfig, groupBy: e.target.value })}
+                        className="flex h-10 w-full items-center rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        {GROUP_BY_OPTIONS.map(opt => (
+                          <option key={opt.id} value={opt.id}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Y-Axis (Metric)</Label>
+                      <select
+                        value={localConfig.chartMetric || ""}
+                        onChange={(e) => setLocalConfig({ ...localConfig, chartMetric: e.target.value })}
+                        className="flex h-10 w-full items-center rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                      >
+                        <option value="">Count (Total Number)</option>
+                        {cols.filter(c => c.type === "number").map(col => (
+                          <option key={`metric-${col.id}`} value={col.id}>
+                            Sum of {col.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 )}
               </div>

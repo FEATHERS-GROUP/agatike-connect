@@ -19,6 +19,8 @@ export interface TabConfig {
   filters?: AnalyticsFilter;
   selectedColumns?: string[];
   displayMode?: "chart" | "table";
+  chartType?: "bar" | "line";
+  chartMetric?: string;
 }
 
 export function AnalyticsDashboard() {

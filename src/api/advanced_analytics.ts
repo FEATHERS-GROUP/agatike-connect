@@ -53,65 +53,128 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         baseWhere = { orgnizer_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "workspaces_bool_exp";
         dataKey = "workspaces";
-        fields = `id name created_at city logo`;
+        fields = `id name created_at city logo type address country currency`;
         break;
 
       case "events":
         baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "events_bool_exp";
         dataKey = "events";
-        fields = `id title created_at category event_type venue_details tour_stops`;
+        fields = `id title category cover created_at deleted description event_type suspended updated_at vipPerks workspace_id 
+          tour_stops
+          event_tickets { id name cost remaining sold type is_consumable }
+          workspaces { id name city logo created_at }`;
         break;
 
       case "attendees":
         baseWhere = { events: { workspaces: { orgnizer_id: { _eq: organizer_id } } }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "event_attendees_bool_exp";
         dataKey = "event_attendees";
-        fields = `id created_at status email phone names type ticket_type quanity qrcode_number`;
+        fields = `id created_at updated_at user_id type ticket_type ticket_id status schedule_id scanned_at scanned quanity qrcode_number phone payment_method names email event_id custom_fields
+          events { id title category cover created_at deleted description event_type suspended updated_at vipPerks workspace_id tour_stops }
+          event_tickets { id name cost remaining sold type is_consumable product_orders { id amount_paid created_at current_balance decrptions picked phone product_id qty size status } }
+          users { id email username phone country dateOfBirth gender handle active banned created_at profile }`;
+        break;
+
+      case "venue_bookings":
+        baseWhere = { created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "venue_bookings_bool_exp";
+        dataKey = "venue_bookings";
+        fields = `id created_at updated_at start_time end_time status amount customer_email customer_phone customer_name payment_status booking_type total_amount`;
+        break;
+
+      case "ticket_tiers":
+        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "cinema_ticket_tiers_bool_exp";
+        dataKey = "cinema_ticket_tiers";
+        fields = `id created_at updated_at name price type status currency description is_vip includes_glasses is_3d is_imax is_kids`;
+        break;
+
+      case "products":
+        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "products_bool_exp";
+        dataKey = "products";
+        fields = `id created_at updated_at name type price stock_limit description image_url category is_active sold_count`;
         break;
 
       case "orders":
         baseWhere = { created_at: { _gte: start_date, _lte: end_date } };
         typeName = "product_orders_bool_exp";
         dataKey = "product_orders";
-        fields = `id created_at amount_paid status qty phone size picked product { name type }`;
+        fields = `id created_at updated_at amount_paid status qty phone size picked product_id ticket_id decrptions current_balance
+          product { id name type price stock_limit description image_url }`;
+        break;
+
+      case "cinemas":
+        baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "cinemas_bool_exp";
+        dataKey = "cinemas";
+        fields = `id name created_at updated_at city country cover_url logo_url address description email phone status workspaces { id name city logo }`;
         break;
 
       case "movies":
         baseWhere = { created_at: { _gte: start_date, _lte: end_date } };
         typeName = "cinema_movies_bool_exp";
         dataKey = "cinema_movies";
-        fields = `id title created_at genre duration language release_date`;
+        fields = `id title created_at updated_at genre duration_minutes language release_date synopsis director distributor rating status cover_url trailer_url`;
         break;
 
       case "cinema_bookings":
         baseWhere = { created_at: { _gte: start_date, _lte: end_date } };
         typeName = "cinema_bookings_bool_exp";
         dataKey = "cinema_bookings";
-        fields = `id total_price quantity created_at status customer_email customer_phone payment_method`;
+        fields = `id total_price quantity created_at updated_at status email phone names payment_method currency`;
         break;
 
       case "reviews":
         baseWhere = { created_at: { _gte: start_date, _lte: end_date } };
         typeName = "event_feedback_bool_exp";
         dataKey = "event_feedback";
-        fields = `id rating reviewer_name reviewer_email created_at title body source is_verified`;
+        fields = `id rating reviewer_name reviewer_email created_at title body source is_verified events { id title category }`;
         break;
 
       case "forms":
         baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "custom_forms_bool_exp";
         dataKey = "custom_forms";
-        fields = `id title description created_at workspace_id`;
+        fields = `id title description created_at updated_at type is_active workspace { id name }`;
         break;
 
       case "facilities":
         baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
         typeName = "rentable_venues_bool_exp";
         dataKey = "rentable_venues";
-        fields = `id name created_at price_per_day capacity location`;
+        fields = `id name created_at updated_at address city country capacity type status description amenities workspace { id name }`;
         break;
-        
+
+      case "memberships":
+        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "space_subscriptions_bool_exp";
+        dataKey = "space_subscriptions";
+        fields = `id created_at status plan_name price billing_cycle start_date next_billing_date booking_type customer_name customer_email customer_phone user { id email username phone country }`;
+        break;
+
+      case "workspace_users":
+        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "workspace_users_bool_exp";
+        dataKey = "workspace_users";
+        fields = `id created_at role email status name is_temporary expires_at`;
+        break;
+
+      case "wallet_transactions":
+        baseWhere = { workspace_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "wallet_transactions_bool_exp";
+        dataKey = "wallet_transactions";
+        fields = `id created_at updated_at amount type status reference_id description net_amount platform_fee`;
+        break;
+
+      case "ledger_transactions":
+        baseWhere = { created_at: { _gte: start_date, _lte: end_date } };
+        typeName = "ledger_transactions_bool_exp";
+        dataKey = "ledger_transactions";
+        fields = `id created_at amount entry_type account_type currency description reference_id`;
+        break;
+
       default:
         throw new Error(`Unsupported entity type: ${entity_type}`);
     }
@@ -201,35 +264,7 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
     const res = await hasuraRequest<any>(query, variables);
     const rawData = res[dataKey] || [];
 
-    if (!group_by) {
-      return { rawData, aggregatedData: [] };
-    }
-
-    const aggregated = new Map<string, number>();
-
-    rawData.forEach((item: any) => {
-      let key = "Unknown";
-      
-      if (group_by === "month") {
-        if (item.created_at) {
-          const d = new Date(item.created_at);
-          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          key = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-        }
-      } else if (group_by === "status") {
-        key = item.status || "Unknown";
-      } else if (group_by === "country") {
-        key = item.user?.country || "Unknown";
-      }
-      
-      const metric = item.amount ? parseFloat(item.amount) : (item.total_price ? parseFloat(item.total_price) : 1);
-      
-      aggregated.set(key, (aggregated.get(key) || 0) + metric);
-    });
-
-    const aggregatedData = Array.from(aggregated.entries()).map(([name, value]) => ({ name, value }));
-
-    return { rawData, aggregatedData };
+    return { rawData, aggregatedData: [] };
   });
 
 export const getSavedQueries = createServerFn({ method: "POST" })
