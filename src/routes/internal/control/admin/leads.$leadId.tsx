@@ -78,6 +78,7 @@ function LeadDetailsPage() {
   const [emailCc, setEmailCc] = useState("");
   const [emailFrom, setEmailFrom] = useState("sales@agatike.rw");
   const [attachments, setAttachments] = useState<{ filename: string; content: string }[]>([]);
+  const [isEmailComposerExpanded, setIsEmailComposerExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Prefill CC if available
@@ -420,85 +421,35 @@ function LeadDetailsPage() {
             {activeTab === "activity" && (
               <div className="space-y-6">
                 
-                {/* Email Timeline */}
-                <div className="space-y-4">
-                  {allCommunications.length === 0 ? (
-                    <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">
-                      No communications recorded yet.
-                    </div>
-                  ) : (
-                    allCommunications.map((msg: any) => (
-                      <div key={msg.id} className="bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl overflow-hidden shadow-sm">
-                        <div className={`px-5 py-3 border-b flex items-center justify-between ${
-                          msg.type === 'sent' 
-                            ? 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/20' 
-                            : 'bg-gray-50/50 dark:bg-[#161616] border-gray-100 dark:border-[#222]'
-                        }`}>
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-[#333] overflow-hidden flex items-center justify-center shrink-0">
-                              {msg.type === 'sent' ? (
-                                <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=AgatikeTeam`} alt="Team" className="h-full w-full object-cover" />
-                              ) : (
-                                <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(lead.email)}&backgroundColor=10b981`} alt={lead.name} className="h-full w-full object-cover" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                {msg.type === 'sent' ? 'Agatike Team' : lead.name}
-                                <span className="text-xs font-normal text-gray-500 dark:text-[#888]">
-                                  {msg.type === 'sent' ? `to ${lead.email}` : `from ${lead.email}`}
-                                </span>
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-[#888]">
-                                {format(new Date(msg.date), "MMM d, yyyy 'at' h:mm a")}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-[#333] text-gray-500 transition-colors">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className="p-5">
-                          {msg.subject && <div className="text-sm font-bold text-gray-900 dark:text-white mb-3 pb-3 border-b border-gray-100 dark:border-[#222]">{msg.subject}</div>}
-                          <div className="text-sm text-gray-800 dark:text-[#ccc] whitespace-pre-wrap font-sans leading-relaxed">
-                            {msg.message}
-                          </div>
-                          
-                          {msg.hasAttachments && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#222] flex items-center gap-2 text-xs text-gray-600 dark:text-[#aaa]">
-                              <Paperclip className="h-3.5 w-3.5" /> Contains attachments
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
                 {/* Email Composer */}
                 <div className="bg-white dark:bg-[#111] border border-[#f97316]/30 dark:border-[#f97316]/20 rounded-xl overflow-hidden shadow-sm relative">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#f97316]"></div>
-                  <div className="px-5 py-3 border-b border-gray-100 dark:border-[#222] bg-orange-50/30 dark:bg-orange-900/10 text-sm font-medium text-gray-900 dark:text-white flex items-center justify-between">
+                  <button 
+                    type="button"
+                    onClick={() => setIsEmailComposerExpanded(!isEmailComposerExpanded)}
+                    className="w-full px-5 py-3 border-b border-gray-100 dark:border-[#222] bg-orange-50/30 dark:bg-orange-900/10 text-sm font-medium text-gray-900 dark:text-white flex items-center justify-between hover:bg-orange-50/50 dark:hover:bg-orange-900/20 transition-colors"
+                  >
                     <div className="flex items-center gap-2">
                       <Send className="h-4 w-4 text-[#f97316]" /> Reply to {lead.name}
                     </div>
-                    <div className="flex items-center gap-2 text-xs font-normal">
-                      <span className="text-gray-500">From:</span>
-                      <select 
-                        value={emailFrom}
-                        onChange={e => setEmailFrom(e.target.value)}
-                        className="bg-transparent border border-gray-200 dark:border-[#333] rounded px-2 py-1 outline-none focus:border-[#f97316] text-gray-700 dark:text-[#ccc]"
-                      >
-                        <option value="sales@agatike.rw">sales@agatike.rw</option>
-                        <option value="hello@agatike.rw">hello@agatike.rw</option>
-                      </select>
+                    <div className="text-xs text-[#f97316]">
+                      {isEmailComposerExpanded ? "Minimize" : "Expand to reply"}
                     </div>
-                  </div>
-                  <form onSubmit={handleSendEmail} className="flex flex-col">
+                  </button>
+                  
+                  {isEmailComposerExpanded && (
+                    <form onSubmit={handleSendEmail} className="flex flex-col">
+                      <div className="flex border-b border-gray-100 dark:border-[#222] items-center px-5 py-3 text-sm">
+                        <span className="text-gray-500 font-medium mr-2 w-16">From:</span>
+                        <select 
+                          value={emailFrom}
+                          onChange={e => setEmailFrom(e.target.value)}
+                          className="bg-transparent border border-gray-200 dark:border-[#333] rounded px-2 py-1 outline-none focus:border-[#f97316] text-gray-700 dark:text-[#ccc]"
+                        >
+                          <option value="sales@agatike.rw">sales@agatike.rw</option>
+                          <option value="hello@agatike.rw">hello@agatike.rw</option>
+                        </select>
+                      </div>
                     <div className="flex border-b border-gray-100 dark:border-[#222] items-center px-5 py-3 gap-2 overflow-x-auto">
                       <span className="text-xs font-medium text-gray-500 whitespace-nowrap">Templates:</span>
                       {EMAIL_TEMPLATES.map(t => (
@@ -588,6 +539,66 @@ function LeadDetailsPage() {
                       </button>
                     </div>
                   </form>
+                  )}
+                </div>
+
+                {/* Email Timeline */}
+                <div className="space-y-4">
+                  {allCommunications.length === 0 ? (
+                    <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">
+                      No communications recorded yet.
+                    </div>
+                  ) : (
+                    allCommunications.map((msg: any) => (
+                      <div key={msg.id} className="bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl overflow-hidden shadow-sm">
+                        <div className={`px-5 py-3 border-b flex items-center justify-between ${
+                          msg.type === 'sent' 
+                            ? 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-900/20' 
+                            : 'bg-gray-50/50 dark:bg-[#161616] border-gray-100 dark:border-[#222]'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-[#333] overflow-hidden flex items-center justify-center shrink-0">
+                              {msg.type === 'sent' ? (
+                                <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=AgatikeTeam`} alt="Team" className="h-full w-full object-cover" />
+                              ) : (
+                                <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(lead.email)}&backgroundColor=10b981`} alt={lead.name} className="h-full w-full object-cover" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                {msg.type === 'sent' ? 'Agatike Team' : lead.name}
+                                <span className="text-xs font-normal text-gray-500 dark:text-[#888]">
+                                  {msg.type === 'sent' ? `to ${lead.email}` : `from ${lead.email}`}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-[#888]">
+                                {format(new Date(msg.date), "MMM d, yyyy 'at' h:mm a")}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-[#333] text-gray-500 transition-colors">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="p-5">
+                          {msg.subject && <div className="text-sm font-bold text-gray-900 dark:text-white mb-3 pb-3 border-b border-gray-100 dark:border-[#222]">{msg.subject}</div>}
+                          <div className="text-sm text-gray-800 dark:text-[#ccc] whitespace-pre-wrap font-sans leading-relaxed">
+                            {msg.message}
+                          </div>
+                          
+                          {msg.hasAttachments && (
+                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#222] flex items-center gap-2 text-xs text-gray-600 dark:text-[#aaa]">
+                              <Paperclip className="h-3.5 w-3.5" /> Contains attachments
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
 
               </div>
