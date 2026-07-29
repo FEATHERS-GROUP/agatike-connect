@@ -101,7 +101,6 @@ import { Route as InternalControlAdminModulesRouteImport } from './routes/intern
 import { Route as InternalControlAdminModerationRouteImport } from './routes/internal/control/admin/moderation'
 import { Route as InternalControlAdminMasterScheduleRouteImport } from './routes/internal/control/admin/master-schedule'
 import { Route as InternalControlAdminLoginRouteImport } from './routes/internal/control/admin/login'
-import { Route as InternalControlAdminLeadsRouteImport } from './routes/internal/control/admin/leads'
 import { Route as InternalControlAdminHealthRouteImport } from './routes/internal/control/admin/health'
 import { Route as InternalControlAdminEarningsRouteImport } from './routes/internal/control/admin/earnings'
 import { Route as InternalControlAdminDashboardRouteImport } from './routes/internal/control/admin/dashboard'
@@ -139,6 +138,7 @@ import { Route as DashboardWorkspaceSlugCinemaCinemaIdRouteImport } from './rout
 import { Route as InternalControlAdminSupportIndexRouteImport } from './routes/internal/control/admin/support/index'
 import { Route as InternalControlAdminPricingIndexRouteImport } from './routes/internal/control/admin/pricing/index'
 import { Route as InternalControlAdminOrganizersIndexRouteImport } from './routes/internal/control/admin/organizers/index'
+import { Route as InternalControlAdminLeadsIndexRouteImport } from './routes/internal/control/admin/leads.index'
 import { Route as InternalControlAdminAgatikeUsersIndexRouteImport } from './routes/internal/control/admin/agatike-users/index'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/index'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/index'
@@ -148,6 +148,7 @@ import { Route as VenuesVenueIdFacilitiesCheckoutFacilityIdRouteImport } from '.
 import { Route as InternalControlAdminSupportTicketIdRouteImport } from './routes/internal/control/admin/support/$ticketId'
 import { Route as InternalControlAdminPricingPlanIdRouteImport } from './routes/internal/control/admin/pricing/$planId'
 import { Route as InternalControlAdminOrganizersOrganizerIdRouteImport } from './routes/internal/control/admin/organizers/$organizerId'
+import { Route as InternalControlAdminLeadsLeadIdRouteImport } from './routes/internal/control/admin/leads.$leadId'
 import { Route as InternalControlAdminAgatikeUsersUserIdRouteImport } from './routes/internal/control/admin/agatike-users/$userId'
 import { Route as DashboardBillingSubscriptionsCheckoutPlanIdRouteImport } from './routes/dashboard/billing/subscriptions/checkout.$planId'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/settings'
@@ -709,12 +710,6 @@ const InternalControlAdminLoginRoute =
     path: '/login',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
-const InternalControlAdminLeadsRoute =
-  InternalControlAdminLeadsRouteImport.update({
-    id: '/leads',
-    path: '/leads',
-    getParentRoute: () => InternalControlAdminRoute,
-  } as any)
 const InternalControlAdminHealthRoute =
   InternalControlAdminHealthRouteImport.update({
     id: '/health',
@@ -937,6 +932,12 @@ const InternalControlAdminOrganizersIndexRoute =
     path: '/organizers/',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
+const InternalControlAdminLeadsIndexRoute =
+  InternalControlAdminLeadsIndexRouteImport.update({
+    id: '/leads/',
+    path: '/leads/',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
 const InternalControlAdminAgatikeUsersIndexRoute =
   InternalControlAdminAgatikeUsersIndexRouteImport.update({
     id: '/agatike-users/',
@@ -989,6 +990,12 @@ const InternalControlAdminOrganizersOrganizerIdRoute =
   InternalControlAdminOrganizersOrganizerIdRouteImport.update({
     id: '/organizers/$organizerId',
     path: '/organizers/$organizerId',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminLeadsLeadIdRoute =
+  InternalControlAdminLeadsLeadIdRouteImport.update({
+    id: '/leads/$leadId',
+    path: '/leads/$leadId',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const InternalControlAdminAgatikeUsersUserIdRoute =
@@ -1515,7 +1522,6 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
-  '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
   '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
@@ -1583,6 +1589,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
+  '/internal/control/admin/leads/$leadId': typeof InternalControlAdminLeadsLeadIdRoute
   '/internal/control/admin/organizers/$organizerId': typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
   '/internal/control/admin/pricing/$planId': typeof InternalControlAdminPricingPlanIdRoute
   '/internal/control/admin/support/$ticketId': typeof InternalControlAdminSupportTicketIdRoute
@@ -1592,6 +1599,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/experiences/$experienceId/': typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
   '/internal/control/admin/agatike-users/': typeof InternalControlAdminAgatikeUsersIndexRoute
+  '/internal/control/admin/leads/': typeof InternalControlAdminLeadsIndexRoute
   '/internal/control/admin/organizers/': typeof InternalControlAdminOrganizersIndexRoute
   '/internal/control/admin/pricing/': typeof InternalControlAdminPricingIndexRoute
   '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
@@ -1722,7 +1730,6 @@ export interface FileRoutesByTo {
   '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
-  '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
   '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
@@ -1790,6 +1797,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
+  '/internal/control/admin/leads/$leadId': typeof InternalControlAdminLeadsLeadIdRoute
   '/internal/control/admin/pricing/$planId': typeof InternalControlAdminPricingPlanIdRoute
   '/internal/control/admin/support/$ticketId': typeof InternalControlAdminSupportTicketIdRoute
   '/venues/$venueId/facilities/checkout/$facilityId': typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
@@ -1798,6 +1806,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/experiences/$experienceId': typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
   '/internal/control/admin/agatike-users': typeof InternalControlAdminAgatikeUsersIndexRoute
+  '/internal/control/admin/leads': typeof InternalControlAdminLeadsIndexRoute
   '/internal/control/admin/organizers': typeof InternalControlAdminOrganizersIndexRoute
   '/internal/control/admin/pricing': typeof InternalControlAdminPricingIndexRoute
   '/internal/control/admin/support': typeof InternalControlAdminSupportIndexRoute
@@ -1932,7 +1941,6 @@ export interface FileRoutesById {
   '/internal/control/admin/dashboard': typeof InternalControlAdminDashboardRoute
   '/internal/control/admin/earnings': typeof InternalControlAdminEarningsRoute
   '/internal/control/admin/health': typeof InternalControlAdminHealthRoute
-  '/internal/control/admin/leads': typeof InternalControlAdminLeadsRoute
   '/internal/control/admin/login': typeof InternalControlAdminLoginRoute
   '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
   '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
@@ -2000,6 +2008,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
+  '/internal/control/admin/leads/$leadId': typeof InternalControlAdminLeadsLeadIdRoute
   '/internal/control/admin/organizers/$organizerId': typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
   '/internal/control/admin/pricing/$planId': typeof InternalControlAdminPricingPlanIdRoute
   '/internal/control/admin/support/$ticketId': typeof InternalControlAdminSupportTicketIdRoute
@@ -2009,6 +2018,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/experiences/$experienceId/': typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/': typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
   '/internal/control/admin/agatike-users/': typeof InternalControlAdminAgatikeUsersIndexRoute
+  '/internal/control/admin/leads/': typeof InternalControlAdminLeadsIndexRoute
   '/internal/control/admin/organizers/': typeof InternalControlAdminOrganizersIndexRoute
   '/internal/control/admin/pricing/': typeof InternalControlAdminPricingIndexRoute
   '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
@@ -2144,7 +2154,6 @@ export interface FileRouteTypes {
     | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
-    | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
     | '/internal/control/admin/master-schedule'
     | '/internal/control/admin/moderation'
@@ -2212,6 +2221,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
     | '/dashboard/billing/subscriptions/checkout/$planId'
     | '/internal/control/admin/agatike-users/$userId'
+    | '/internal/control/admin/leads/$leadId'
     | '/internal/control/admin/organizers/$organizerId'
     | '/internal/control/admin/pricing/$planId'
     | '/internal/control/admin/support/$ticketId'
@@ -2221,6 +2231,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/'
     | '/internal/control/admin/agatike-users/'
+    | '/internal/control/admin/leads/'
     | '/internal/control/admin/organizers/'
     | '/internal/control/admin/pricing/'
     | '/internal/control/admin/support/'
@@ -2351,7 +2362,6 @@ export interface FileRouteTypes {
     | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
-    | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
     | '/internal/control/admin/master-schedule'
     | '/internal/control/admin/moderation'
@@ -2419,6 +2429,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
     | '/dashboard/billing/subscriptions/checkout/$planId'
     | '/internal/control/admin/agatike-users/$userId'
+    | '/internal/control/admin/leads/$leadId'
     | '/internal/control/admin/pricing/$planId'
     | '/internal/control/admin/support/$ticketId'
     | '/venues/$venueId/facilities/checkout/$facilityId'
@@ -2427,6 +2438,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId'
     | '/dashboard/$workspaceSlug/spaces/$spaceId'
     | '/internal/control/admin/agatike-users'
+    | '/internal/control/admin/leads'
     | '/internal/control/admin/organizers'
     | '/internal/control/admin/pricing'
     | '/internal/control/admin/support'
@@ -2560,7 +2572,6 @@ export interface FileRouteTypes {
     | '/internal/control/admin/dashboard'
     | '/internal/control/admin/earnings'
     | '/internal/control/admin/health'
-    | '/internal/control/admin/leads'
     | '/internal/control/admin/login'
     | '/internal/control/admin/master-schedule'
     | '/internal/control/admin/moderation'
@@ -2628,6 +2639,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
     | '/dashboard/billing/subscriptions/checkout/$planId'
     | '/internal/control/admin/agatike-users/$userId'
+    | '/internal/control/admin/leads/$leadId'
     | '/internal/control/admin/organizers/$organizerId'
     | '/internal/control/admin/pricing/$planId'
     | '/internal/control/admin/support/$ticketId'
@@ -2637,6 +2649,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/'
     | '/internal/control/admin/agatike-users/'
+    | '/internal/control/admin/leads/'
     | '/internal/control/admin/organizers/'
     | '/internal/control/admin/pricing/'
     | '/internal/control/admin/support/'
@@ -3370,13 +3383,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminLoginRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
-    '/internal/control/admin/leads': {
-      id: '/internal/control/admin/leads'
-      path: '/leads'
-      fullPath: '/internal/control/admin/leads'
-      preLoaderRoute: typeof InternalControlAdminLeadsRouteImport
-      parentRoute: typeof InternalControlAdminRoute
-    }
     '/internal/control/admin/health': {
       id: '/internal/control/admin/health'
       path: '/health'
@@ -3636,6 +3642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternalControlAdminOrganizersIndexRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
+    '/internal/control/admin/leads/': {
+      id: '/internal/control/admin/leads/'
+      path: '/leads'
+      fullPath: '/internal/control/admin/leads/'
+      preLoaderRoute: typeof InternalControlAdminLeadsIndexRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
     '/internal/control/admin/agatike-users/': {
       id: '/internal/control/admin/agatike-users/'
       path: '/agatike-users'
@@ -3697,6 +3710,13 @@ declare module '@tanstack/react-router' {
       path: '/organizers/$organizerId'
       fullPath: '/internal/control/admin/organizers/$organizerId'
       preLoaderRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/leads/$leadId': {
+      id: '/internal/control/admin/leads/$leadId'
+      path: '/leads/$leadId'
+      fullPath: '/internal/control/admin/leads/$leadId'
+      preLoaderRoute: typeof InternalControlAdminLeadsLeadIdRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/internal/control/admin/agatike-users/$userId': {
@@ -4624,7 +4644,6 @@ interface InternalControlAdminRouteChildren {
   InternalControlAdminDashboardRoute: typeof InternalControlAdminDashboardRoute
   InternalControlAdminEarningsRoute: typeof InternalControlAdminEarningsRoute
   InternalControlAdminHealthRoute: typeof InternalControlAdminHealthRoute
-  InternalControlAdminLeadsRoute: typeof InternalControlAdminLeadsRoute
   InternalControlAdminLoginRoute: typeof InternalControlAdminLoginRoute
   InternalControlAdminMasterScheduleRoute: typeof InternalControlAdminMasterScheduleRoute
   InternalControlAdminModerationRoute: typeof InternalControlAdminModerationRoute
@@ -4634,10 +4653,12 @@ interface InternalControlAdminRouteChildren {
   InternalControlAdminUsersRoute: typeof InternalControlAdminUsersRoute
   InternalControlAdminIndexRoute: typeof InternalControlAdminIndexRoute
   InternalControlAdminAgatikeUsersUserIdRoute: typeof InternalControlAdminAgatikeUsersUserIdRoute
+  InternalControlAdminLeadsLeadIdRoute: typeof InternalControlAdminLeadsLeadIdRoute
   InternalControlAdminOrganizersOrganizerIdRoute: typeof InternalControlAdminOrganizersOrganizerIdRouteWithChildren
   InternalControlAdminPricingPlanIdRoute: typeof InternalControlAdminPricingPlanIdRoute
   InternalControlAdminSupportTicketIdRoute: typeof InternalControlAdminSupportTicketIdRoute
   InternalControlAdminAgatikeUsersIndexRoute: typeof InternalControlAdminAgatikeUsersIndexRoute
+  InternalControlAdminLeadsIndexRoute: typeof InternalControlAdminLeadsIndexRoute
   InternalControlAdminOrganizersIndexRoute: typeof InternalControlAdminOrganizersIndexRoute
   InternalControlAdminPricingIndexRoute: typeof InternalControlAdminPricingIndexRoute
   InternalControlAdminSupportIndexRoute: typeof InternalControlAdminSupportIndexRoute
@@ -4647,7 +4668,6 @@ const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
   InternalControlAdminDashboardRoute: InternalControlAdminDashboardRoute,
   InternalControlAdminEarningsRoute: InternalControlAdminEarningsRoute,
   InternalControlAdminHealthRoute: InternalControlAdminHealthRoute,
-  InternalControlAdminLeadsRoute: InternalControlAdminLeadsRoute,
   InternalControlAdminLoginRoute: InternalControlAdminLoginRoute,
   InternalControlAdminMasterScheduleRoute:
     InternalControlAdminMasterScheduleRoute,
@@ -4659,6 +4679,7 @@ const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
   InternalControlAdminIndexRoute: InternalControlAdminIndexRoute,
   InternalControlAdminAgatikeUsersUserIdRoute:
     InternalControlAdminAgatikeUsersUserIdRoute,
+  InternalControlAdminLeadsLeadIdRoute: InternalControlAdminLeadsLeadIdRoute,
   InternalControlAdminOrganizersOrganizerIdRoute:
     InternalControlAdminOrganizersOrganizerIdRouteWithChildren,
   InternalControlAdminPricingPlanIdRoute:
@@ -4667,6 +4688,7 @@ const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
     InternalControlAdminSupportTicketIdRoute,
   InternalControlAdminAgatikeUsersIndexRoute:
     InternalControlAdminAgatikeUsersIndexRoute,
+  InternalControlAdminLeadsIndexRoute: InternalControlAdminLeadsIndexRoute,
   InternalControlAdminOrganizersIndexRoute:
     InternalControlAdminOrganizersIndexRoute,
   InternalControlAdminPricingIndexRoute: InternalControlAdminPricingIndexRoute,

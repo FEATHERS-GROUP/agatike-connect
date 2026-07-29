@@ -426,8 +426,8 @@ export function CartCheckoutPage() {
                       ? {
                           borderColor: themeColor,
                           backgroundColor: `${themeColor}0A`,
-                          ringColor: themeColor,
-                        }
+                          "--tw-ring-color": themeColor,
+                        } as any
                       : {}
                   }
                 >
@@ -462,8 +462,8 @@ export function CartCheckoutPage() {
                       ? {
                           borderColor: themeColor,
                           backgroundColor: `${themeColor}0A`,
-                          ringColor: themeColor,
-                        }
+                          "--tw-ring-color": themeColor,
+                        } as any
                       : {}
                   }
                 >
