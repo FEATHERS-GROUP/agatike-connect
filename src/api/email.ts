@@ -114,7 +114,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
                       : ""
                   }
                   <td align="center">
-                    <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; display: block;" />
+                    <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
                 </tr>
               </table>
@@ -206,7 +206,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -267,7 +267,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -333,7 +333,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -434,7 +434,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -523,7 +523,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -651,7 +651,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -719,7 +719,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="height: 40px; width: 140px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>

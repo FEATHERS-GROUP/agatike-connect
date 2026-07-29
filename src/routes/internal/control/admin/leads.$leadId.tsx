@@ -22,7 +22,8 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import { format } from "date-fns";
-
+const ReactQuill = React.lazy(() => import("react-quill-new"));
+import "react-quill-new/dist/quill.snow.css";
 export const Route = createFileRoute("/internal/control/admin/leads/$leadId")({
   component: LeadDetailsPage,
 });
@@ -39,23 +40,7 @@ function getStatusLabel(status: string) {
   }
 }
 
-const EMAIL_TEMPLATES = [
-  {
-    label: "Starting Lead",
-    subject: "Introduction - Agatike Connect",
-    message: (name: string) => `Hi ${name},\n\nThanks for reaching out! We'd love to learn more about your needs and how Agatike Connect can help.\n\nCould we schedule a quick call?\n\nBest,\nSales Team`
-  },
-  {
-    label: "Follow-up",
-    subject: "Checking In - Agatike Connect",
-    message: (name: string) => `Hi ${name},\n\nI just wanted to follow up and see if you had any further thoughts or questions since we last spoke.\n\nLet me know if you need any more information.\n\nBest,\nSales Team`
-  },
-  {
-    label: "Closing Deal",
-    subject: "Next Steps - Agatike Connect",
-    message: (name: string) => `Hi ${name},\n\nWe're thrilled to move forward! Please review the agreement and let me know if you have any questions.\n\nBest,\nSales Team`
-  }
-];
+import { EMAIL_TEMPLATES } from "@/lib/emailTemplates";
 
 function LeadDetailsPage() {
   const { leadId } = Route.useParams();
@@ -214,7 +199,7 @@ function LeadDetailsPage() {
 
   const handleSendEmail = (e: React.FormEvent) => {
     e.preventDefault();
-    const signature = `\n\n<img src="https://www.agatike.rw/agatike-logo.png" height="32" alt="Agatike Logo" style="height: 32px; width: auto; max-width: 150px; object-fit: contain;" />`;
+    const signature = `\n\n<img src="https://www.agatike.rw/agatike-logo.png" alt="Agatike Logo" style="width: 150px; height: auto; margin-top: 10px;" />`;
     sendEmailMutation.mutate({
       leadId,
       subject: emailSubject,
@@ -492,14 +477,17 @@ function LeadDetailsPage() {
                         className="w-full bg-transparent text-gray-900 dark:text-white outline-none"
                       />
                     </div>
-                    <textarea
-                      required
-                      rows={5}
-                      placeholder="Type your message here..."
-                      value={emailMessage}
-                      onChange={e => setEmailMessage(e.target.value)}
-                      className="w-full bg-transparent border-none px-5 py-4 text-sm text-gray-900 dark:text-white outline-none resize-y min-h-[120px]"
-                    />
+                    <div className="px-5 py-2">
+                      <React.Suspense fallback={<div className="h-[120px] w-full flex items-center justify-center"><Loader2 className="animate-spin text-[#f97316] h-6 w-6" /></div>}>
+                        <ReactQuill
+                          theme="snow"
+                          value={emailMessage}
+                          onChange={setEmailMessage}
+                          placeholder="Type your message here..."
+                          className="w-full text-gray-900 dark:text-white"
+                        />
+                      </React.Suspense>
+                    </div>
                     
                     {attachments.length > 0 && (
                       <div className="flex flex-wrap gap-2 px-5 pb-3">
@@ -587,9 +575,10 @@ function LeadDetailsPage() {
                         
                         <div className="p-5">
                           {msg.subject && <div className="text-sm font-bold text-gray-900 dark:text-white mb-3 pb-3 border-b border-gray-100 dark:border-[#222]">{msg.subject}</div>}
-                          <div className="text-sm text-gray-800 dark:text-[#ccc] whitespace-pre-wrap font-sans leading-relaxed">
-                            {msg.message}
-                          </div>
+                          <div 
+                            className="text-sm text-gray-800 dark:text-[#ccc] whitespace-pre-wrap font-sans leading-relaxed prose dark:prose-invert max-w-none"
+                            dangerouslySetInnerHTML={{ __html: msg.message }}
+                          />
                           
                           {msg.hasAttachments && (
                             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#222] flex items-center gap-2 text-xs text-gray-600 dark:text-[#aaa]">
