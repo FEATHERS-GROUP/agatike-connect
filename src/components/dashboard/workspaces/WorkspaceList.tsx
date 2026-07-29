@@ -54,13 +54,18 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
   return (
     <div className="space-y-6 pb-32 px-6 md:px-12 w-full max-w-[1600px] mx-auto pt-10">
       <div className="flex justify-center w-full mb-8">
-        <img src="/agatike-logo.svg" alt="Agatike" className="h-8 w-auto object-contain opacity-90" />
+        <img
+          src="/agatike-logo.svg"
+          alt="Agatike"
+          className="h-8 w-auto object-contain opacity-90"
+        />
       </div>
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 border-b border-border/40 pb-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Workspaces</h1>
           <p className="mt-1 text-[13px] text-muted-foreground max-w-md">
-            Each venue, cinema or organizer brand gets its own workspace with separate analytics and payouts.
+            Each venue, cinema or organizer brand gets its own workspace with separate analytics and
+            payouts.
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -107,7 +112,8 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           <Building2 className="h-10 w-10 text-muted-foreground/60 mb-3" />
           <h2 className="text-lg font-semibold mb-1">No Workspace Found</h2>
           <p className="text-[13px] text-muted-foreground mb-6 max-w-sm mx-auto">
-            You haven't created a workspace yet. Create one to start managing your events, venues, and experiences.
+            You haven't created a workspace yet. Create one to start managing your events, venues,
+            and experiences.
           </p>
           {currentUser?.role === "organizer" && (
             <Button
@@ -130,7 +136,9 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
               <div
                 key={w.id}
                 className={`flex flex-col rounded-2xl border bg-card/60 backdrop-blur-sm p-4 hover:shadow-md transition-all relative group ${
-                  isActive ? "border-primary/50 shadow-[0_4px_24px_rgba(var(--primary),0.08)] bg-primary/[0.02]" : "border-border/40 hover:border-border"
+                  isActive
+                    ? "border-primary/50 shadow-[0_4px_24px_rgba(var(--primary),0.08)] bg-primary/[0.02]"
+                    : "border-border/40 hover:border-border"
                 }`}
               >
                 <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -182,7 +190,11 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className={`font-semibold text-[15px] truncate ${isActive ? "text-primary" : ""}`}>{w.name}</p>
+                    <p
+                      className={`font-semibold text-[15px] truncate ${isActive ? "text-primary" : ""}`}
+                    >
+                      {w.name}
+                    </p>
                     <p className="text-xs text-muted-foreground truncate opacity-80">
                       {t.title} · {w.city}
                     </p>
@@ -193,7 +205,9 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   size="sm"
                   variant={isActive ? "default" : "outline"}
                   className={`w-full rounded-xl gap-1.5 h-8 text-xs font-medium transition-all ${
-                    isActive ? "shadow-[var(--shadow-glow)] opacity-100" : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
+                    isActive
+                      ? "shadow-[var(--shadow-glow)] opacity-100"
+                      : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
                   }`}
                   style={isActive ? { background: "var(--gradient-primary)" } : undefined}
                   onClick={() => {
@@ -219,16 +233,22 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             onClick={() => navigate({ to: "/dashboard/settings" })}
           >
             {currentUser?.profile?.image || currentUser?.image ? (
-               <img src={currentUser?.profile?.image || currentUser?.image} alt={currentUser?.name || currentUser?.username || "Organizer"} className="w-6 h-6 rounded-full object-cover shadow-sm ring-1 ring-border/50" />
+              <img
+                src={currentUser?.profile?.image || currentUser?.image}
+                alt={currentUser?.name || currentUser?.username || "Organizer"}
+                className="w-6 h-6 rounded-full object-cover shadow-sm ring-1 ring-border/50"
+              />
             ) : (
-               <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold ring-1 ring-primary/20">
-                 {(currentUser?.name || currentUser?.username || "O").charAt(0).toUpperCase()}
-               </div>
+              <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold ring-1 ring-primary/20">
+                {(currentUser?.name || currentUser?.username || "O").charAt(0).toUpperCase()}
+              </div>
             )}
-            <span className="truncate max-w-[150px]">{currentUser?.name || currentUser?.username || "Organizer Profile"}</span>
+            <span className="truncate max-w-[150px]">
+              {currentUser?.name || currentUser?.username || "Organizer Profile"}
+            </span>
           </Button>
         )}
-        
+
         {currentUser?.role === "organizer" && <div className="w-px h-6 bg-border/40 shrink-0" />}
 
         <Button

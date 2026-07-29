@@ -15,7 +15,10 @@ interface Props {
   data: any[];
 }
 
-const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "string" | "number" | "date" | "boolean" }[]> = {
+const AVAILABLE_COLUMNS: Record<
+  string,
+  { id: string; label: string; type: "string" | "number" | "date" | "boolean" }[]
+> = {
   workspaces: [
     { id: "name", label: "Workspace Name", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
@@ -47,7 +50,11 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
     { id: "events.category", label: "Event Category", type: "string" },
     { id: "event_tickets.name", label: "Ticket Name", type: "string" },
     { id: "event_tickets.cost", label: "Ticket Cost", type: "number" },
-    { id: "event_tickets.product_orders.amount_paid", label: "Product Order Amount", type: "number" },
+    {
+      id: "event_tickets.product_orders.amount_paid",
+      label: "Product Order Amount",
+      type: "number",
+    },
     { id: "user_id", label: "Account ID (Blank = Guest)", type: "string" },
     { id: "users.username", label: "User Profile Name", type: "string" },
     { id: "users.country", label: "User Country", type: "string" },
@@ -173,7 +180,7 @@ function resolvePath(obj: any, path: string) {
     if (prev === null || prev === undefined) return null;
     if (Array.isArray(prev)) {
       // If it's an array, map over it and extract the field, then join or return the first
-      const vals = prev.map(p => p?.[curr]).filter(Boolean);
+      const vals = prev.map((p) => p?.[curr]).filter(Boolean);
       return vals.length > 0 ? vals.join(", ") : null;
     }
     return prev[curr];
@@ -182,13 +189,14 @@ function resolvePath(obj: any, path: string) {
 
 export function AnalyticsTableRenderer({ config, data }: Props) {
   const allCols = AVAILABLE_COLUMNS[config.entityType] || AVAILABLE_COLUMNS.default;
-  
-  // If no columns are selected, show all available columns by default
-  const selectedColIds = config.selectedColumns && config.selectedColumns.length > 0 
-    ? config.selectedColumns 
-    : allCols.map(c => c.id);
 
-  const columns = allCols.filter(c => selectedColIds.includes(c.id));
+  // If no columns are selected, show all available columns by default
+  const selectedColIds =
+    config.selectedColumns && config.selectedColumns.length > 0
+      ? config.selectedColumns
+      : allCols.map((c) => c.id);
+
+  const columns = allCols.filter((c) => selectedColIds.includes(c.id));
 
   if (!data || data.length === 0) {
     return (
@@ -209,13 +217,16 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
           <p className="text-xs text-muted-foreground mt-0.5">Showing {data.length} records</p>
         </div>
       </div>
-      
+
       <div className="overflow-x-auto flex-1 w-full relative">
         <Table className="w-full text-sm">
           <TableHeader className="bg-muted/30">
             <TableRow className="border-b border-border/40 hover:bg-transparent">
-              {columns.map(col => (
-                <TableHead key={col.id} className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground h-auto">
+              {columns.map((col) => (
+                <TableHead
+                  key={col.id}
+                  className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground h-auto"
+                >
                   {col.label}
                 </TableHead>
               ))}
@@ -223,11 +234,14 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
           </TableHeader>
           <TableBody>
             {data.map((row, rowIndex) => (
-              <TableRow key={row.id || rowIndex} className="border-b border-border/30 hover:bg-muted/20 transition-colors group">
-                {columns.map(col => {
+              <TableRow
+                key={row.id || rowIndex}
+                className="border-b border-border/30 hover:bg-muted/20 transition-colors group"
+              >
+                {columns.map((col) => {
                   const val = resolvePath(row, col.id);
                   let displayVal = val;
-                  
+
                   // Simple formatting
                   if (col.type === "date" || col.id === "created_at" || col.id === "startDate") {
                     displayVal = val ? new Date(val).toLocaleDateString() : "-";
@@ -238,7 +252,10 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
                   }
 
                   return (
-                    <TableCell key={`${row.id || rowIndex}-${col.id}`} className="max-w-[250px] truncate px-4 py-3 text-foreground/80 group-hover:text-foreground transition-colors align-middle">
+                    <TableCell
+                      key={`${row.id || rowIndex}-${col.id}`}
+                      className="max-w-[250px] truncate px-4 py-3 text-foreground/80 group-hover:text-foreground transition-colors align-middle"
+                    >
                       {displayVal}
                     </TableCell>
                   );
@@ -246,14 +263,18 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
               </TableRow>
             ))}
           </TableBody>
-          
+
           {/* Render Footer for Totals */}
-          {columns.some(c => c.type === "number") && (
+          {columns.some((c) => c.type === "number") && (
             <TableFooter>
               <TableRow>
                 {columns.map((col, index) => {
                   if (index === 0 && col.type !== "number") {
-                    return <TableCell key="footer-first" className="font-bold">Total</TableCell>;
+                    return (
+                      <TableCell key="footer-first" className="font-bold">
+                        Total
+                      </TableCell>
+                    );
                   }
                   if (col.type === "number") {
                     // Compute sum safely
@@ -272,9 +293,12 @@ export function AnalyticsTableRenderer({ config, data }: Props) {
                       }
                       return acc;
                     }, 0);
-                    
+
                     return (
-                      <TableCell key={`footer-${col.id}`} className="font-bold px-4 py-3 align-middle">
+                      <TableCell
+                        key={`footer-${col.id}`}
+                        className="font-bold px-4 py-3 align-middle"
+                      >
                         {total.toLocaleString()}
                       </TableCell>
                     );

@@ -25,7 +25,7 @@ export const EMAIL_TEMPLATES = [
         <strong>Sales Team</strong><br>
         Agatike Connect
       </p>
-    `
+    `,
   },
 
   {
@@ -55,7 +55,7 @@ export const EMAIL_TEMPLATES = [
         <strong>Sales Team</strong><br>
         Agatike Connect
       </p>
-    `
+    `,
   },
 
   {
@@ -82,7 +82,7 @@ export const EMAIL_TEMPLATES = [
         <strong>Sales Team</strong><br>
         Agatike Connect
       </p>
-    `
+    `,
   },
 
   {
@@ -113,6 +113,6 @@ export const EMAIL_TEMPLATES = [
         <strong>Sales Team</strong><br>
         Agatike Connect
       </p>
-    `
-  }
+    `,
+  },
 ];

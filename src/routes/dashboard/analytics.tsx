@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AnalyticsDashboard } from "@/components/dashboard/analytics/AnalyticsDashboard";
 import { getSession } from "@/api/auth";
 

@@ -34,7 +34,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
       const existingTx = txCheckRes.wallet_transactions?.[0];
 
       if (existingTx && existingTx.status === "completed" && providerStatus === "COMPLETED") {
-        console.log(`[PawaPay Webhook] Transaction ${providerReference} is already completed. Skipping duplicate processing.`);
+        console.log(
+          `[PawaPay Webhook] Transaction ${providerReference} is already completed. Skipping duplicate processing.`,
+        );
         return new Response(JSON.stringify({ received: true, message: "Already completed" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },

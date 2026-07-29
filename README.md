@@ -354,7 +354,8 @@ sequenceDiagram
 ```
 
 #### Webhook Idempotency Check
-Because receipt generation (PDFs) and email sending can occasionally exceed PawaPay's webhook timeout window, PawaPay may aggressively retry sending the `COMPLETED` webhook. To prevent duplicating actions (such as generating multiple receipts, sending looping SMS confirmations, or double-funding workspace wallets), the webhook handler implements a strict **Idempotency Check**. 
+
+Because receipt generation (PDFs) and email sending can occasionally exceed PawaPay's webhook timeout window, PawaPay may aggressively retry sending the `COMPLETED` webhook. To prevent duplicating actions (such as generating multiple receipts, sending looping SMS confirmations, or double-funding workspace wallets), the webhook handler implements a strict **Idempotency Check**.
 Before processing, the server queries the database to see if the transaction is already marked as `completed`. If it is, the server immediately returns a `200 OK` to satisfy PawaPay and completely skips executing the confirmation logic again.
 
 ### 12.1 Tiered Network Fees & Dynamic Pricing
@@ -2619,7 +2620,9 @@ Shows all `product_orders` for this product, with search:
 The **Advanced Analytics** module provides organizers with a powerful, custom-built BI (Business Intelligence) interface. It allows users to query, filter, and visualize complex datasets spanning across all their workspaces—including Wallet Transactions, Attendees, Events, and Orders.
 
 ### Architecture Overview
+
 The module is divided into two primary environments:
+
 1. **Frontend (React/TanStack):** Responsible for state management of query configurations (Tabs), rendering the visual query builder, and dynamically generating charts/tables from raw JSON data.
 2. **Backend (Server Function):** Responsible for translating UI filter configurations into Hasura GraphQL syntax, enforcing tenant isolation (Security), and executing the query via the Admin API.
 
@@ -2628,7 +2631,7 @@ The module is divided into two primary environments:
 ### Frontend Components & Workflow
 
 - **`AnalyticsDashboard.tsx`:** Acts as the primary state container. It manages an array of `TabConfig` objects, allowing users to run multiple independent queries in parallel. It handles saving/loading configurations to the user's profile in the database.
-- **`AnalyticsConfigurationModal.tsx`:** The visual query builder. 
+- **`AnalyticsConfigurationModal.tsx`:** The visual query builder.
   - Uses a recursive UI to build deeply nested **Filter Trees** (e.g., `(Condition A AND Condition B) OR (Condition C AND Condition D)`).
   - Handles the selection of the data entity (e.g., `wallet_transactions`), date ranges, grouping metrics (X/Y axes for charts), and toggleable table columns.
 - **`AnalyticsChartRenderer.tsx`:** The visualization engine. It takes the raw JSON array returned from the backend and performs **in-memory data aggregation**.
@@ -2644,18 +2647,24 @@ The module is divided into two primary environments:
 The server-side execution relies on a robust translation engine that converts the UI's JSON filter state into a highly secure Hasura GraphQL request.
 
 #### 1. Entity Mapping & Schema Definitions
+
 When a user selects an entity (e.g., `wallet_transactions`), the server applies a rigid dictionary lookup:
+
 - **`dataKey`**: Maps the UI selection to the exact Hasura table name (e.g., `wallet_transactions`).
 - **`typeName`**: Maps the UI selection to the Hasura Boolean Expression type (e.g., `wallet_transactions_bool_exp`) for GraphQL typing validation.
 - **`fields`**: A hardcoded GraphQL selection set. This explicitly defines exactly what data is allowed to leave the database, preventing over-fetching or unauthorized access to hidden schema fields.
 
 #### 2. The Nested Tree Parser (Recursive Translation)
+
 The UI sends filters as a nested tree. The server parses this tree recursively into Hasura's `_and` and `_or` syntax:
+
 - If it encounters a `rule` (e.g., Field: `amount`, Operator: `_eq`, Value: `100`), it dynamically splits dot-notation fields (like `product.price`) into nested JSON objects (`{ product: { price: { _eq: 100 } } }`).
 - If it encounters a `group` (e.g., `logicalOperator: "or"`), it recursively parses the children and wraps them in `{ _or: [ ...children ] }`.
 
 #### 3. Security & Data Isolation (The Interceptor)
+
 Because the GraphQL query is executed using the `x-hasura-admin-secret` (to bypass frontend permission overhead), the server **must manually enforce tenant isolation**.
+
 - The API first extracts the `organizer_id` (the authenticated User ID) making the request.
 - **Direct Relations:** For entities like `events`, the base query automatically intercepts and prepends the filter: `{ workspaces: { orgnizer_id: { _eq: organizer_id } } }`.
 - **Workspace Relations:** For entities that do not have a direct join path to the organizer (like `wallet_transactions` or `products`), the system performs a **pre-flight lookup**:
@@ -2679,12 +2688,12 @@ flowchart TD
   subgraph Server [Node Server (advanced_analytics.ts)]
     Render -->|POST Payload| Endpoint["executeAdvancedQuery"]
     Endpoint --> Preflight{"Needs Pre-flight Lookup?"}
-    
+
     Preflight -->|Yes (e.g., Wallet Tx)| Lookup["Fetch Organizer's workspace_ids"]
     Lookup --> InjectIn["Inject: workspace_id IN [...]"]
-    
+
     Preflight -->|No (e.g., Events)| InjectDirect["Inject: workspaces.orgnizer_id == ID"]
-    
+
     InjectIn --> Parser
     InjectDirect --> Parser
 
@@ -2704,7 +2713,7 @@ flowchart TD
     View -->|Chart Mode| Map["resolvePath() extraction"]
     Map --> Agg["Group By Key & Reduce (Sum/Count)"]
     Agg --> Recharts["Recharts Visualization"]
-    
+
     View -->|Table Mode| Table["AnalyticsTableRenderer"]
     Table --> Format["Format Dates & Compute Totals"]
   end

@@ -26,7 +26,7 @@ export interface TabConfig {
 export function AnalyticsDashboard() {
   const { currentUser } = useWorkspace();
   const navigate = useNavigate();
-  
+
   const [tabs, setTabs] = useState<TabConfig[]>([
     {
       id: "default-tab",
@@ -34,8 +34,8 @@ export function AnalyticsDashboard() {
       entityType: "orders",
       startDate: new Date(new Date().setMonth(new Date().getMonth() - 3)),
       endDate: new Date(),
-      groupBy: "month"
-    }
+      groupBy: "month",
+    },
   ]);
   const [activeTabId, setActiveTabId] = useState("default-tab");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,7 +45,7 @@ export function AnalyticsDashboard() {
   // Load saved queries from DB
   useEffect(() => {
     if (!currentUser?.id) return;
-    
+
     async function load() {
       try {
         const saved = await getSavedQueries({ data: { user_id: currentUser.id } });
@@ -54,7 +54,7 @@ export function AnalyticsDashboard() {
           const parsed = saved.map((t: any) => ({
             ...t,
             startDate: new Date(t.startDate),
-            endDate: new Date(t.endDate)
+            endDate: new Date(t.endDate),
           }));
           setTabs(parsed);
           setActiveTabId(parsed[0].id);
@@ -82,10 +82,10 @@ export function AnalyticsDashboard() {
     }
   };
 
-  const activeTab = tabs.find(t => t.id === activeTabId) || tabs[0];
+  const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
 
   const updateActiveTab = (updates: Partial<TabConfig>) => {
-    setTabs(prev => prev.map(t => t.id === activeTabId ? { ...t, ...updates } : t));
+    setTabs((prev) => prev.map((t) => (t.id === activeTabId ? { ...t, ...updates } : t)));
   };
 
   const addNewTab = () => {
@@ -99,8 +99,8 @@ export function AnalyticsDashboard() {
       filters: {
         type: "group",
         logicalOperator: "and",
-        conditions: []
-      }
+        conditions: [],
+      },
     };
     setTabs([...tabs, newTab]);
     setActiveTabId(newTab.id);
@@ -109,7 +109,7 @@ export function AnalyticsDashboard() {
   const removeTab = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (tabs.length === 1) return;
-    const newTabs = tabs.filter(t => t.id !== id);
+    const newTabs = tabs.filter((t) => t.id !== id);
     setTabs(newTabs);
     if (activeTabId === id) setActiveTabId(newTabs[0].id);
   };
@@ -127,13 +127,17 @@ export function AnalyticsDashboard() {
       {/* Header */}
       <div className="border-b border-border/60 p-4 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/dashboard/workspaces" })}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate({ to: "/dashboard/workspaces" })}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-xl font-bold">Advanced Analytics</h1>
         </div>
-        <Button 
-          onClick={handleSaveToDB} 
+        <Button
+          onClick={handleSaveToDB}
           disabled={isSaving}
           size="sm"
           className="rounded-full shadow-[var(--shadow-glow)] gap-2 h-8 px-4 text-xs font-medium"
@@ -155,14 +159,15 @@ export function AnalyticsDashboard() {
             key={tab.id}
             onClick={() => setActiveTabId(tab.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full cursor-pointer transition-colors border select-none whitespace-nowrap
-              ${activeTabId === tab.id 
-                ? "bg-card border-primary/50 text-primary shadow-sm" 
-                : "bg-transparent border-transparent hover:bg-secondary text-muted-foreground"
+              ${
+                activeTabId === tab.id
+                  ? "bg-card border-primary/50 text-primary shadow-sm"
+                  : "bg-transparent border-transparent hover:bg-secondary text-muted-foreground"
               }
             `}
           >
             <span className="text-xs font-medium capitalize">
-              {tab.entityType.replace(/_/g, ' ')}
+              {tab.entityType.replace(/_/g, " ")}
             </span>
             {tabs.length > 1 && (
               <Button
@@ -190,8 +195,8 @@ export function AnalyticsDashboard() {
       <div className="flex-1 overflow-auto p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-8 relative">
           <div className="flex justify-end mb-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               className="rounded-full shadow-sm gap-2 h-8 text-xs px-4"
               onClick={() => setIsModalOpen(true)}
@@ -199,11 +204,11 @@ export function AnalyticsDashboard() {
               Configure Query
             </Button>
           </div>
-          
+
           <AnalyticsChartRenderer config={activeTab} />
         </div>
       </div>
-      
+
       {activeTab && (
         <AnalyticsConfigurationModal
           isOpen={isModalOpen}

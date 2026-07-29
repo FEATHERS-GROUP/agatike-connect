@@ -6,7 +6,7 @@ export const APIRoute = createAPIFileRoute("/api/resend/inbound")({
   POST: async ({ request }) => {
     try {
       const payloadString = await request.text();
-      
+
       // Verification
       const svixId = request.headers.get("svix-id");
       const svixTimestamp = request.headers.get("svix-timestamp");
@@ -17,13 +17,13 @@ export const APIRoute = createAPIFileRoute("/api/resend/inbound")({
         // The signature is an HMAC-SHA256 of `svix-id.svix-timestamp.payload`
         const secretBytes = Buffer.from(secret.replace("whsec_", ""), "base64");
         const signedContent = `${svixId}.${svixTimestamp}.${payloadString}`;
-        
+
         const hmac = crypto.createHmac("sha256", secretBytes);
         hmac.update(signedContent);
         const expectedSignature = hmac.digest("base64");
 
         // The svix-signature header contains a list of space-separated signatures in the format 'v1,SIGNATURE'
-        const signatures = svixSignature.split(" ").map(s => s.split(",")[1]);
+        const signatures = svixSignature.split(" ").map((s) => s.split(",")[1]);
         if (!signatures.includes(expectedSignature)) {
           console.error("Invalid Resend Webhook Signature");
           return new Response("Invalid signature", { status: 400 });
@@ -61,7 +61,7 @@ export const APIRoute = createAPIFileRoute("/api/resend/inbound")({
             subject: subject,
             message: text || html || "No content",
             date: new Date().toISOString(),
-            hasAttachments: !!(attachments && attachments.length > 0)
+            hasAttachments: !!(attachments && attachments.length > 0),
           });
 
           const updateQuery = `
@@ -71,8 +71,11 @@ export const APIRoute = createAPIFileRoute("/api/resend/inbound")({
               }
             }
           `;
-          
-          await hasuraRequest(updateQuery, { id: lead.id, profile: { ...profile, communications } });
+
+          await hasuraRequest(updateQuery, {
+            id: lead.id,
+            profile: { ...profile, communications },
+          });
           console.log(`Successfully logged incoming email from ${senderEmail} for lead ${lead.id}`);
         } else {
           console.log(`Incoming email from ${senderEmail} ignored: No matching lead found.`);

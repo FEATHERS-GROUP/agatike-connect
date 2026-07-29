@@ -423,11 +423,11 @@ function CartCheckoutPage() {
                   onClick={() => setSelectedPaymentGroup("momo")}
                   style={
                     selectedPaymentGroup === "momo" && themeColor
-                      ? {
+                      ? ({
                           borderColor: themeColor,
                           backgroundColor: `${themeColor}0A`,
                           "--tw-ring-color": themeColor,
-                        } as any
+                        } as any)
                       : {}
                   }
                 >
@@ -459,11 +459,11 @@ function CartCheckoutPage() {
                   onClick={() => setSelectedPaymentGroup("card")}
                   style={
                     selectedPaymentGroup === "card" && themeColor
-                      ? {
+                      ? ({
                           borderColor: themeColor,
                           backgroundColor: `${themeColor}0A`,
                           "--tw-ring-color": themeColor,
-                        } as any
+                        } as any)
                       : {}
                   }
                 >

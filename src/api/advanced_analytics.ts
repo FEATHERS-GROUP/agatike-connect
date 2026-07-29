@@ -37,17 +37,25 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
     const start = new Date(start_date);
     const end = new Date(end_date);
     const monthDiff = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30);
-    
+
     if (monthDiff > 3.5) {
       // Allow user to wait longer for large queries, but we log a warning or could throw later.
     }
 
     let workspaceIds: string[] = [];
-    if (["wallet_transactions", "products", "ticket_tiers", "memberships", "workspace_users"].includes(entity_type)) {
+    if (
+      [
+        "wallet_transactions",
+        "products",
+        "ticket_tiers",
+        "memberships",
+        "workspace_users",
+      ].includes(entity_type)
+    ) {
       const wQ = `query { workspaces(where: { orgnizer_id: { _eq: "${organizer_id}" } }) { id } }`;
       const wRes = await hasuraRequest<any>(wQ);
       workspaceIds = (wRes.workspaces || []).map((w: any) => w.id);
-      
+
       if (workspaceIds.length === 0) {
         // If the user has no workspaces, return early to avoid querying with an empty array
         return { rawData: [], aggregatedData: [] };
@@ -62,14 +70,20 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
 
     switch (entity_type) {
       case "workspaces":
-        baseWhere = { orgnizer_id: { _eq: organizer_id }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          orgnizer_id: { _eq: organizer_id },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "workspaces_bool_exp";
         dataKey = "workspaces";
         fields = `id name created_at city logo type address country currency`;
         break;
 
       case "events":
-        baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspaces: { orgnizer_id: { _eq: organizer_id } },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "events_bool_exp";
         dataKey = "events";
         fields = `id title category cover created_at deleted description event_type suspended updated_at vipPerks workspace_id 
@@ -79,7 +93,10 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         break;
 
       case "attendees":
-        baseWhere = { events: { workspaces: { orgnizer_id: { _eq: organizer_id } } }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          events: { workspaces: { orgnizer_id: { _eq: organizer_id } } },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "event_attendees_bool_exp";
         dataKey = "event_attendees";
         fields = `id created_at updated_at user_id type ticket_type ticket_id status schedule_id scanned_at scanned quanity qrcode_number phone payment_method names email event_id custom_fields
@@ -96,14 +113,20 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         break;
 
       case "ticket_tiers":
-        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspace_id: { _in: workspaceIds },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "cinema_ticket_tiers_bool_exp";
         dataKey = "cinema_ticket_tiers";
         fields = `id created_at updated_at name price type status currency description is_vip includes_glasses is_3d is_imax is_kids`;
         break;
 
       case "products":
-        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspace_id: { _in: workspaceIds },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "products_bool_exp";
         dataKey = "products";
         fields = `id created_at updated_at name type price stock_limit description image_url category is_active sold_count`;
@@ -118,7 +141,10 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         break;
 
       case "cinemas":
-        baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspaces: { orgnizer_id: { _eq: organizer_id } },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "cinemas_bool_exp";
         dataKey = "cinemas";
         fields = `id name created_at updated_at city country cover_url logo_url address description email phone status workspaces { id name city logo }`;
@@ -146,35 +172,50 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         break;
 
       case "forms":
-        baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspaces: { orgnizer_id: { _eq: organizer_id } },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "custom_forms_bool_exp";
         dataKey = "custom_forms";
         fields = `id title description created_at updated_at type is_active workspace { id name }`;
         break;
 
       case "facilities":
-        baseWhere = { workspaces: { orgnizer_id: { _eq: organizer_id } }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspaces: { orgnizer_id: { _eq: organizer_id } },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "rentable_venues_bool_exp";
         dataKey = "rentable_venues";
         fields = `id name created_at updated_at address city country capacity type status description amenities workspace { id name }`;
         break;
 
       case "memberships":
-        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspace_id: { _in: workspaceIds },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "space_subscriptions_bool_exp";
         dataKey = "space_subscriptions";
         fields = `id created_at status plan_name price billing_cycle start_date next_billing_date booking_type customer_name customer_email customer_phone user { id email username phone country }`;
         break;
 
       case "workspace_users":
-        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspace_id: { _in: workspaceIds },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "workspace_users_bool_exp";
         dataKey = "workspace_users";
         fields = `id created_at role email status name is_temporary expires_at`;
         break;
 
       case "wallet_transactions":
-        baseWhere = { workspace_id: { _in: workspaceIds }, created_at: { _gte: start_date, _lte: end_date } };
+        baseWhere = {
+          workspace_id: { _in: workspaceIds },
+          created_at: { _gte: start_date, _lte: end_date },
+        };
         typeName = "wallet_transactions_bool_exp";
         dataKey = "wallet_transactions";
         fields = `id created_at updated_at amount type status reference_id description net_amount platform_fee currency provider_status provider_reference`;
@@ -192,7 +233,7 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
     }
 
     const where = { ...baseWhere };
-    
+
     if (filters && Array.isArray(filters)) {
       // Backward compatibility for old flat array
       const andClause: any[] = [];
@@ -205,7 +246,7 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         } else if (!isNaN(Number(f.value))) {
           val = Number(f.value);
         }
-        
+
         const parts = f.field.split(".");
         let current: any = {};
         let temp = current;
@@ -248,7 +289,7 @@ export const executeAdvancedQuery = createServerFn({ method: "POST" })
         }
         return null;
       };
-      
+
       const parsedFilters = parseNode(filters);
       if (parsedFilters) {
         if (where._and) {
@@ -308,7 +349,7 @@ export const saveQueries = createServerFn({ method: "POST" })
     `;
     const res = await hasuraRequest<{ users_by_pk: { profile: any } }>(fetchQ, { user_id });
     const currentProfile = res.users_by_pk?.profile || {};
-    
+
     currentProfile.saved_analytics_queries = queries;
 
     const mutation = `
@@ -318,7 +359,7 @@ export const saveQueries = createServerFn({ method: "POST" })
         }
       }
     `;
-    
+
     await hasuraRequest(mutation, { user_id, profile: currentProfile });
     return { success: true };
   });

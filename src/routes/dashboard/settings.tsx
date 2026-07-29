@@ -260,7 +260,9 @@ function SettingsPage() {
                 { id: "social", label: "Social Links" },
                 { id: "security", label: "Security" },
                 { id: "account-type", label: "Account Type" },
-                ...(activeWorkspace?.business ? [{ id: "integrations", label: "Integrations" }] : []),
+                ...(activeWorkspace?.business
+                  ? [{ id: "integrations", label: "Integrations" }]
+                  : []),
               ].map((tab) => (
                 <button
                   key={tab.id}

@@ -26,7 +26,7 @@ function resolvePath(obj: any, path: string) {
   return path.split(".").reduce((prev, curr) => {
     if (prev === null || prev === undefined) return null;
     if (Array.isArray(prev)) {
-      const vals = prev.map(p => p?.[curr]).filter(Boolean);
+      const vals = prev.map((p) => p?.[curr]).filter(Boolean);
       return vals.length > 0 ? vals.join(", ") : null;
     }
     return prev[curr];
@@ -53,7 +53,7 @@ export function AnalyticsChartRenderer({ config }: Props) {
           start_date: config.startDate.toISOString(),
           end_date: config.endDate.toISOString(),
           filters: config.filters,
-        }
+        },
       });
       setRawData(res.rawData || []);
     } catch (err: any) {
@@ -80,12 +80,25 @@ export function AnalyticsChartRenderer({ config }: Props) {
 
     rawData.forEach((item: any) => {
       let key = "Unknown";
-      
+
       // Resolve X-Axis Group Key
       if (config.groupBy === "month") {
         if (item.created_at) {
           const d = new Date(item.created_at);
-          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const monthNames = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ];
           key = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
         }
       } else {
@@ -94,7 +107,7 @@ export function AnalyticsChartRenderer({ config }: Props) {
           key = String(val);
         }
       }
-      
+
       // Resolve Y-Axis Metric
       let metric = 1; // Default to Count
       if (config.chartMetric) {
@@ -105,7 +118,7 @@ export function AnalyticsChartRenderer({ config }: Props) {
           metric = 0; // If they asked for a sum, and it's missing, add 0
         }
       }
-      
+
       aggregated.set(key, (aggregated.get(key) || 0) + metric);
     });
 
@@ -117,7 +130,9 @@ export function AnalyticsChartRenderer({ config }: Props) {
       <div className="bg-card border border-border/60 rounded-3xl p-12 shadow-sm flex flex-col items-center justify-center min-h-[400px] text-center">
         <LayoutTemplate className="h-12 w-12 text-muted-foreground mb-4" />
         <h3 className="text-xl font-bold mb-2">Ready to Query</h3>
-        <p className="text-muted-foreground mb-6">Configure your filters above and click "Run Query" to fetch your analytics data.</p>
+        <p className="text-muted-foreground mb-6">
+          Configure your filters above and click "Run Query" to fetch your analytics data.
+        </p>
         <Button onClick={fetchData} variant="outline" className="rounded-full">
           <RefreshCw className="h-4 w-4 mr-2" /> Run Query
         </Button>
@@ -173,8 +188,8 @@ export function AnalyticsChartRenderer({ config }: Props) {
         <div>
           <h2 className="text-xl font-bold mb-1">Visualization</h2>
           <p className="text-sm text-muted-foreground">
-            {hasAggregations 
-              ? `Grouped by ${config.groupBy}` 
+            {hasAggregations
+              ? `Grouped by ${config.groupBy}`
               : `Showing ${rawData.length} raw records (Please select a "Group By" in filters to plot data)`}
           </p>
         </div>
@@ -186,22 +201,26 @@ export function AnalyticsChartRenderer({ config }: Props) {
             {isLine ? (
               <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="name" 
+                <XAxis
+                  dataKey="name"
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: "hsl(var(--muted-foreground))" }}
                   dy={10}
                 />
-                <YAxis 
+                <YAxis
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: "hsl(var(--muted-foreground))" }}
                   dx={-10}
                 />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: "hsl(var(--muted)/0.5)" }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  }}
                 />
                 <Line
                   type="monotone"
@@ -215,27 +234,31 @@ export function AnalyticsChartRenderer({ config }: Props) {
             ) : (
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="name" 
+                <XAxis
+                  dataKey="name"
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: "hsl(var(--muted-foreground))" }}
                   dy={10}
                 />
-                <YAxis 
+                <YAxis
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: "hsl(var(--muted-foreground))" }}
                   dx={-10}
                 />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: "hsl(var(--muted)/0.5)" }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  }}
                 />
-                <Bar 
-                  dataKey="value" 
-                  name={label} 
-                  fill={COLORS[0]} 
+                <Bar
+                  dataKey="value"
+                  name={label}
+                  fill={COLORS[0]}
                   radius={[4, 4, 0, 0]}
                   barSize={40}
                 />

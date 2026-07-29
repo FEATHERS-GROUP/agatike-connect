@@ -169,7 +169,16 @@ export const getAdminLeadById = createServerFn({ method: "POST" })
   });
 
 export const createAdminLead = createServerFn({ method: "POST" })
-  .validator((d: { name: string; email: string; phone?: string; company?: string; country?: string; notes?: string }) => d)
+  .validator(
+    (d: {
+      name: string;
+      email: string;
+      phone?: string;
+      company?: string;
+      country?: string;
+      notes?: string;
+    }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
@@ -195,14 +204,29 @@ export const createAdminLead = createServerFn({ method: "POST" })
     `;
 
     const res = await hasuraRequest<{ insert_leads_one: { id: string } }>(mutation, {
-      name, email, phone, company, country, notes
+      name,
+      email,
+      phone,
+      company,
+      country,
+      notes,
     });
-    
+
     return { success: true, id: res.insert_leads_one?.id };
   });
 
 export const updateAdminLeadProfile = createServerFn({ method: "POST" })
-  .validator((d: { id: string; profile: any; name: string; email: string; phone?: string; company?: string; status: string }) => d)
+  .validator(
+    (d: {
+      id: string;
+      profile: any;
+      name: string;
+      email: string;
+      phone?: string;
+      company?: string;
+      status: string;
+    }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
@@ -227,7 +251,16 @@ export const updateAdminLeadProfile = createServerFn({ method: "POST" })
   });
 
 export const sendEmailToLead = createServerFn({ method: "POST" })
-  .validator((d: { leadId: string, subject: string, message: string, attachments?: any[], cc?: string, from_email?: string }) => d)
+  .validator(
+    (d: {
+      leadId: string;
+      subject: string;
+      message: string;
+      attachments?: any[];
+      cc?: string;
+      from_email?: string;
+    }) => d,
+  )
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
@@ -260,13 +293,16 @@ export const sendEmailToLead = createServerFn({ method: "POST" })
     };
 
     if (cc && cc.trim()) {
-      resendPayload.cc = cc.split(',').map((email: string) => email.trim()).filter(Boolean);
+      resendPayload.cc = cc
+        .split(",")
+        .map((email: string) => email.trim())
+        .filter(Boolean);
     }
 
     if (attachments && attachments.length > 0) {
       resendPayload.attachments = attachments.map((a: any) => ({
         filename: a.filename,
-        content: a.content, 
+        content: a.content,
       }));
     }
 
@@ -295,7 +331,7 @@ export const sendEmailToLead = createServerFn({ method: "POST" })
       date: new Date().toISOString(),
       hasAttachments: !!(attachments && attachments.length > 0),
     });
-    
+
     const updateQuery = `
       mutation UpdateLeadProfile($id: uuid!, $profile: jsonb) {
         update_leads_by_pk(pk_columns: { id: $id }, _set: { customer_profile: $profile }) {

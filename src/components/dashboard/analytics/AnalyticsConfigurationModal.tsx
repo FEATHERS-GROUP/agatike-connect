@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { TabConfig } from "./AnalyticsDashboard";
-import { AnalyticsFilter, FilterGroup, FilterRule, LogicalOperator } from "@/api/advanced_analytics";
+import {
+  AnalyticsFilter,
+  FilterGroup,
+  FilterRule,
+  LogicalOperator,
+} from "@/api/advanced_analytics";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +53,10 @@ const GROUP_BY_OPTIONS = [
   { id: "country", label: "By Country" },
 ];
 
-const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "string" | "number" | "date" | "boolean" }[]> = {
+const AVAILABLE_COLUMNS: Record<
+  string,
+  { id: string; label: string; type: "string" | "number" | "date" | "boolean" }[]
+> = {
   workspaces: [
     { id: "name", label: "Workspace Name", type: "string" },
     { id: "created_at", label: "Created At", type: "date" },
@@ -80,7 +88,11 @@ const AVAILABLE_COLUMNS: Record<string, { id: string; label: string; type: "stri
     { id: "events.category", label: "Event Category", type: "string" },
     { id: "event_tickets.name", label: "Ticket Name", type: "string" },
     { id: "event_tickets.cost", label: "Ticket Cost", type: "number" },
-    { id: "event_tickets.product_orders.amount_paid", label: "Product Order Amount", type: "number" },
+    {
+      id: "event_tickets.product_orders.amount_paid",
+      label: "Product Order Amount",
+      type: "number",
+    },
     { id: "user_id", label: "Account ID (Blank = Guest)", type: "string" },
     { id: "users.username", label: "User Profile Name", type: "string" },
     { id: "users.country", label: "User Country", type: "string" },
@@ -221,32 +233,35 @@ const OPERATORS = {
     { id: "_gt", label: "Is after" },
     { id: "_lt", label: "Is before" },
   ],
-  boolean: [
-    { id: "_eq", label: "Is" },
-  ],
+  boolean: [{ id: "_eq", label: "Is" }],
 };
 
 function getFieldIcon(type: string) {
   switch (type) {
-    case "string": return <Type className="h-4 w-4 text-muted-foreground mr-2" />;
-    case "number": return <Hash className="h-4 w-4 text-muted-foreground mr-2" />;
-    case "date": return <Calendar className="h-4 w-4 text-muted-foreground mr-2" />;
-    case "boolean": return <ToggleLeft className="h-4 w-4 text-muted-foreground mr-2" />;
-    default: return <Type className="h-4 w-4 text-muted-foreground mr-2" />;
+    case "string":
+      return <Type className="h-4 w-4 text-muted-foreground mr-2" />;
+    case "number":
+      return <Hash className="h-4 w-4 text-muted-foreground mr-2" />;
+    case "date":
+      return <Calendar className="h-4 w-4 text-muted-foreground mr-2" />;
+    case "boolean":
+      return <ToggleLeft className="h-4 w-4 text-muted-foreground mr-2" />;
+    default:
+      return <Type className="h-4 w-4 text-muted-foreground mr-2" />;
   }
 }
 
 // Tree Node Component
-function FilterTreeNode({ 
-  node, 
+function FilterTreeNode({
+  node,
   cols,
   isRoot,
   isFirstChild,
   parentLogicalOperator,
-  onChange, 
-  onRemove 
-}: { 
-  node: AnalyticsFilter; 
+  onChange,
+  onRemove,
+}: {
+  node: AnalyticsFilter;
   cols: any[];
   isRoot: boolean;
   isFirstChild: boolean;
@@ -255,25 +270,35 @@ function FilterTreeNode({
   onRemove: () => void;
 }) {
   if (node.type === "rule") {
-    const selectedCol = cols.find(c => c.id === node.field);
+    const selectedCol = cols.find((c) => c.id === node.field);
     const colType = selectedCol ? selectedCol.type : "string";
     const ops = OPERATORS[colType] || OPERATORS.string;
 
     return (
       <div className="flex flex-wrap md:flex-nowrap items-center gap-3 w-full">
         <div className="w-24 shrink-0 text-sm font-medium text-muted-foreground flex items-center justify-end pr-2">
-          {isRoot && isFirstChild ? "Where" : (isFirstChild ? "-" : parentLogicalOperator?.toUpperCase() || "AND")}
+          {isRoot && isFirstChild
+            ? "Where"
+            : isFirstChild
+              ? "-"
+              : parentLogicalOperator?.toUpperCase() || "AND"}
         </div>
-        
+
         <div className="flex h-10 flex-1 min-w-[200px] items-center rounded-xl border border-input bg-background px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-ring">
           {getFieldIcon(colType)}
           <select
             value={node.field}
-            onChange={(e) => onChange({ ...node, field: e.target.value, operator: "_eq", value: "" })}
+            onChange={(e) =>
+              onChange({ ...node, field: e.target.value, operator: "_eq", value: "" })
+            }
             className="flex-1 bg-transparent focus:outline-none w-full"
           >
             <option value="">Select Column...</option>
-            {cols.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+            {cols.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -283,12 +308,16 @@ function FilterTreeNode({
             onChange={(e) => onChange({ ...node, operator: e.target.value })}
             className="flex-1 bg-transparent focus:outline-none w-full"
           >
-            {ops.map((o: any) => <option key={o.id} value={o.id}>{o.label}</option>)}
+            {ops.map((o: any) => (
+              <option key={o.id} value={o.id}>
+                {o.label}
+              </option>
+            ))}
           </select>
         </div>
 
         {node.operator !== "_is_null" && (
-          <Input 
+          <Input
             type={colType === "date" ? "date" : colType === "number" ? "number" : "text"}
             value={node.value}
             onChange={(e) => onChange({ ...node, value: e.target.value })}
@@ -296,9 +325,14 @@ function FilterTreeNode({
             className="w-full md:flex-1 min-w-[150px] bg-background"
           />
         )}
-        
+
         {!isRoot && (
-          <Button variant="ghost" size="icon" onClick={onRemove} className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onRemove}
+            className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl"
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
@@ -308,11 +342,11 @@ function FilterTreeNode({
 
   // It's a group
   return (
-    <div className={`flex flex-col w-full ${!isRoot ? "border-l-2 border-border/50 ml-6 pl-6 pt-2 pb-2 relative" : ""}`}>
-      {!isRoot && (
-        <div className="absolute -left-[2px] top-4 w-6 border-t-2 border-border/50" />
-      )}
-      
+    <div
+      className={`flex flex-col w-full ${!isRoot ? "border-l-2 border-border/50 ml-6 pl-6 pt-2 pb-2 relative" : ""}`}
+    >
+      {!isRoot && <div className="absolute -left-[2px] top-4 w-6 border-t-2 border-border/50" />}
+
       {!isRoot && (
         <div className="flex items-center gap-3 mb-3">
           <div className="w-24 shrink-0 text-sm font-medium text-muted-foreground flex items-center justify-end pr-2">
@@ -321,14 +355,21 @@ function FilterTreeNode({
           <div className="flex h-10 w-24 items-center rounded-xl border border-input bg-background px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-ring">
             <select
               value={node.logicalOperator}
-              onChange={(e) => onChange({ ...node, logicalOperator: e.target.value as LogicalOperator })}
+              onChange={(e) =>
+                onChange({ ...node, logicalOperator: e.target.value as LogicalOperator })
+              }
               className="flex-1 bg-transparent focus:outline-none w-full font-semibold"
             >
               <option value="and">AND</option>
               <option value="or">OR</option>
             </select>
           </div>
-          <Button variant="ghost" size="icon" onClick={onRemove} className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl ml-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onRemove}
+            className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl ml-auto"
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -358,18 +399,38 @@ function FilterTreeNode({
       </div>
 
       <div className="flex items-center gap-4 mt-4 ml-[108px]">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => onChange({ ...node, conditions: [...node.conditions, { type: "rule", field: "", operator: "_eq", value: "" }] })} 
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            onChange({
+              ...node,
+              conditions: [
+                ...node.conditions,
+                { type: "rule", field: "", operator: "_eq", value: "" },
+              ],
+            })
+          }
           className="text-primary hover:bg-primary/10 rounded-full h-8"
         >
           <Plus className="h-4 w-4 mr-2" /> Add Condition
         </Button>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => onChange({ ...node, conditions: [...node.conditions, { type: "group", logicalOperator: "and", conditions: [{ type: "rule", field: "", operator: "_eq", value: "" }] }] })} 
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            onChange({
+              ...node,
+              conditions: [
+                ...node.conditions,
+                {
+                  type: "group",
+                  logicalOperator: "and",
+                  conditions: [{ type: "rule", field: "", operator: "_eq", value: "" }],
+                },
+              ],
+            })
+          }
           className="text-primary hover:bg-primary/10 rounded-full h-8"
         >
           <Plus className="h-4 w-4 mr-2" /> Add Condition Group
@@ -378,7 +439,6 @@ function FilterTreeNode({
     </div>
   );
 }
-
 
 export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange }: Props) {
   const [localConfig, setLocalConfig] = useState<TabConfig>(config);
@@ -392,7 +452,9 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
         c.filters = {
           type: "group",
           logicalOperator: "and",
-          conditions: Array.isArray(c.filters) ? c.filters.map(f => ({ type: "rule", ...f })) : []
+          conditions: Array.isArray(c.filters)
+            ? c.filters.map((f) => ({ type: "rule", ...f }))
+            : [],
         };
       }
       setLocalConfig(c);
@@ -404,9 +466,9 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
   };
 
   const handleApply = () => {
-    onChange({ 
+    onChange({
       ...localConfig,
-      runTimestamp: Date.now() 
+      runTimestamp: Date.now(),
     });
     onClose();
   };
@@ -414,7 +476,7 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
   const toggleColumn = (colId: string) => {
     const cols = localConfig.selectedColumns || [];
     if (cols.includes(colId)) {
-      setLocalConfig({ ...localConfig, selectedColumns: cols.filter(c => c !== colId) });
+      setLocalConfig({ ...localConfig, selectedColumns: cols.filter((c) => c !== colId) });
     } else {
       setLocalConfig({ ...localConfig, selectedColumns: [...cols, colId] });
     }
@@ -445,8 +507,8 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-muted/20 p-5 rounded-2xl border border-border/50">
               <div className="space-y-2">
                 <Label>Tab Name</Label>
-                <Input 
-                  value={localConfig.name} 
+                <Input
+                  value={localConfig.name}
                   onChange={(e) => setLocalConfig({ ...localConfig, name: e.target.value })}
                   className="bg-background"
                 />
@@ -455,11 +517,19 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                 <Label>Data Source</Label>
                 <select
                   value={localConfig.entityType}
-                  onChange={(e) => setLocalConfig({ ...localConfig, entityType: e.target.value, selectedColumns: [] })}
+                  onChange={(e) =>
+                    setLocalConfig({
+                      ...localConfig,
+                      entityType: e.target.value,
+                      selectedColumns: [],
+                    })
+                  }
                   className="flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 >
-                  {ENTITIES.map(ent => (
-                    <option key={ent.id} value={ent.id}>{ent.label}</option>
+                  {ENTITIES.map((ent) => (
+                    <option key={ent.id} value={ent.id}>
+                      {ent.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -493,12 +563,12 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold">Advanced Filters</h3>
               </div>
-              
+
               <div className="bg-muted/10 p-5 rounded-2xl border border-border/50">
                 {localConfig.filters && localConfig.filters.type === "group" && (
-                  <FilterTreeNode 
-                    node={localConfig.filters} 
-                    cols={cols} 
+                  <FilterTreeNode
+                    node={localConfig.filters}
+                    cols={cols}
                     isRoot={true}
                     isFirstChild={true}
                     onChange={(n) => setLocalConfig({ ...localConfig, filters: n })}
@@ -514,7 +584,7 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                 <div className="flex bg-muted p-1 rounded-xl w-max">
                   <button
                     onClick={() => setLocalConfig({ ...localConfig, displayMode: "chart" })}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${(!localConfig.displayMode || localConfig.displayMode === "chart") ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${!localConfig.displayMode || localConfig.displayMode === "chart" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                   >
                     Chart View
                   </button>
@@ -532,7 +602,7 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                       <div className="flex bg-muted p-1 rounded-xl w-max">
                         <button
                           onClick={() => setLocalConfig({ ...localConfig, chartType: "bar" })}
-                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${(!localConfig.chartType || localConfig.chartType === "bar") ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${!localConfig.chartType || localConfig.chartType === "bar" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                         >
                           Bar Chart
                         </button>
@@ -544,16 +614,20 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>X-Axis (Group By)</Label>
                       <select
                         value={localConfig.groupBy}
-                        onChange={(e) => setLocalConfig({ ...localConfig, groupBy: e.target.value })}
+                        onChange={(e) =>
+                          setLocalConfig({ ...localConfig, groupBy: e.target.value })
+                        }
                         className="flex h-10 w-full items-center rounded-xl border border-input bg-background px-3 py-2 text-sm"
                       >
-                        {GROUP_BY_OPTIONS.map(opt => (
-                          <option key={opt.id} value={opt.id}>{opt.label}</option>
+                        {GROUP_BY_OPTIONS.map((opt) => (
+                          <option key={opt.id} value={opt.id}>
+                            {opt.label}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -562,15 +636,19 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                       <Label>Y-Axis (Metric)</Label>
                       <select
                         value={localConfig.chartMetric || ""}
-                        onChange={(e) => setLocalConfig({ ...localConfig, chartMetric: e.target.value })}
+                        onChange={(e) =>
+                          setLocalConfig({ ...localConfig, chartMetric: e.target.value })
+                        }
                         className="flex h-10 w-full items-center rounded-xl border border-input bg-background px-3 py-2 text-sm"
                       >
                         <option value="">Count (Total Number)</option>
-                        {cols.filter(c => c.type === "number").map(col => (
-                          <option key={`metric-${col.id}`} value={col.id}>
-                            Sum of {col.label}
-                          </option>
-                        ))}
+                        {cols
+                          .filter((c) => c.type === "number")
+                          .map((col) => (
+                            <option key={`metric-${col.id}`} value={col.id}>
+                              Sum of {col.label}
+                            </option>
+                          ))}
                       </select>
                     </div>
                   </div>
@@ -582,8 +660,8 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold">Table Columns</h3>
                     <div className="relative w-64">
-                      <Input 
-                        placeholder="Search columns..." 
+                      <Input
+                        placeholder="Search columns..."
                         value={columnSearch}
                         onChange={(e) => setColumnSearch(e.target.value)}
                         className="h-8 bg-background text-sm rounded-full"
@@ -591,22 +669,32 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 p-4 bg-muted/20 rounded-xl border border-border/50 max-h-60 overflow-y-auto">
-                    {cols.filter(c => c.label.toLowerCase().includes(columnSearch.toLowerCase())).map(c => (
-                      <label key={c.id} className="flex items-center gap-2 bg-background border px-3 py-1.5 rounded-full text-xs cursor-pointer hover:border-primary/50 transition-colors shadow-sm">
-                        <input 
-                          type="checkbox"
-                          checked={selectedCols.includes(c.id)}
-                          onChange={() => toggleColumn(c.id)}
-                          className="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5"
-                        />
-                        {c.label}
-                      </label>
-                    ))}
+                    {cols
+                      .filter((c) => c.label.toLowerCase().includes(columnSearch.toLowerCase()))
+                      .map((c) => (
+                        <label
+                          key={c.id}
+                          className="flex items-center gap-2 bg-background border px-3 py-1.5 rounded-full text-xs cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCols.includes(c.id)}
+                            onChange={() => toggleColumn(c.id)}
+                            className="rounded border-input text-primary focus:ring-primary h-3.5 w-3.5"
+                          />
+                          {c.label}
+                        </label>
+                      ))}
                     {selectedCols.length === 0 && (
-                      <span className="text-sm text-muted-foreground italic w-full">Select columns to display. If none, all available data is shown.</span>
+                      <span className="text-sm text-muted-foreground italic w-full">
+                        Select columns to display. If none, all available data is shown.
+                      </span>
                     )}
-                    {cols.filter(c => c.label.toLowerCase().includes(columnSearch.toLowerCase())).length === 0 && (
-                      <span className="text-sm text-muted-foreground italic w-full">No columns match your search.</span>
+                    {cols.filter((c) => c.label.toLowerCase().includes(columnSearch.toLowerCase()))
+                      .length === 0 && (
+                      <span className="text-sm text-muted-foreground italic w-full">
+                        No columns match your search.
+                      </span>
                     )}
                   </div>
                 </div>
@@ -616,8 +704,14 @@ export function AnalyticsConfigurationModal({ isOpen, onClose, config, onChange 
         </div>
 
         <DialogFooter className="p-6 border-t bg-muted/10">
-          <Button variant="ghost" onClick={onClose} className="rounded-full">Cancel</Button>
-          <Button onClick={handleApply} className="rounded-full shadow-[var(--shadow-glow)] gap-2 px-8" style={{ background: "var(--gradient-primary)" }}>
+          <Button variant="ghost" onClick={onClose} className="rounded-full">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleApply}
+            className="rounded-full shadow-[var(--shadow-glow)] gap-2 px-8"
+            style={{ background: "var(--gradient-primary)" }}
+          >
             Apply & Fetch
           </Button>
         </DialogFooter>
