@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+
 
 export const generateFallbackReceipt = async (options: {
   entityName: string;
@@ -25,6 +25,7 @@ export const generateFallbackReceipt = async (options: {
     quantity = 1,
   } = options;
 
+  const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "px",

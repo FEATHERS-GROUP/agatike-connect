@@ -13,6 +13,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       badgeLink,
       appUrl,
       pdfBase64,
+      attachments,
     } = ctx.data as any;
 
     const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -74,17 +75,16 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ""}
         <div style="margin: 0;">${message}</div>
         
-        ${
-          badgeLink
-            ? `
+        ${badgeLink
+        ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
           <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
           <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
           <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
-            : ""
-        }
+        : ""
+      }
 
         ${socialsHtml}
       </div>
@@ -101,18 +101,17 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${
-                    organizerLogo &&
-                    !organizerLogo.includes("localhost") &&
-                    organizerLogo.startsWith("http")
-                      ? `
+                  ${organizerLogo &&
+        !organizerLogo.includes("localhost") &&
+        organizerLogo.startsWith("http")
+        ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   `
-                      : ""
-                  }
+        : ""
+      }
                   <td align="center">
                     <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
@@ -140,7 +139,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       html: html,
     };
 
-    if (pdfBase64) {
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      payload.attachments = attachments;
+    } else if (pdfBase64) {
       payload.attachments = [
         {
           filename: `Receipt.pdf`,
@@ -174,25 +175,148 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       venueName,
       attachments, // Array of { filename: string, content: string (base64) }
       hasMerch,
+      workspaceId,
+      phone,
+      isVenue,
+      totalPaid,
+      ticketCodes,
+      bookingRef
     } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const emailAttachments = [...(attachments || [])];
+
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NODE_ENV === "production"
           ? "https://agatike.rw"
-          : "https://agatike.rw";
+          : "https://agatike.com";
 
     const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
     const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
+    let organizerName = "Agatike Connect";
+    let organizerLogo = "";
+    let organizerSocials: any = null;
+    let themeColor = "#F2571D";
+    let wsSlug = "";
+
+    if (workspaceId) {
+      try {
+        const { hasuraRequest } = await import("./graphql.server");
+        const wsData = await hasuraRequest<{
+          workspaces_by_pk: { name: string; orgnizer_id: string };
+          workspace_pages: { slug: string; theme_color: string; components: any }[];
+        }>(`
+          query GetWS($id: uuid!) { 
+            workspaces_by_pk(id: $id) { name orgnizer_id } 
+            workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { slug theme_color components }
+          }
+        `, { id: workspaceId });
+
+        if (wsData?.workspaces_by_pk) {
+          organizerName = wsData.workspaces_by_pk.name;
+          if (wsData.workspaces_by_pk.orgnizer_id) {
+            const orgData = await hasuraRequest<{
+              organizers_by_pk: { name: string; socials: any };
+            }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name socials } }`, { id: wsData.workspaces_by_pk.orgnizer_id });
+            if (orgData?.organizers_by_pk) {
+              if (orgData.organizers_by_pk.socials) organizerSocials = orgData.organizers_by_pk.socials;
+            }
+          }
+        }
+        if (wsData?.workspace_pages?.length) {
+          wsSlug = wsData.workspace_pages[0].slug;
+          let dbTheme = wsData.workspace_pages[0].theme_color;
+          const components = wsData.workspace_pages[0].components;
+          if (components && Array.isArray(components)) {
+            const settingsBlock = components.find((b: any) => b.type === "settings");
+            if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
+          }
+          if (dbTheme) themeColor = dbTheme;
+        }
+      } catch (e) {
+        console.error("Failed to fetch workspace for email", e);
+      }
+    }
+
+    let socialsHtml = "";
+    if (bookingRef) {
+      try {
+        const { hasuraRequest } = await import("./graphql.server");
+        const ordersData = await hasuraRequest<{ product_orders: any[] }>(`
+          query GetOrders($ref: String!) {
+            product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
+              product_id qty size amount_paid qr_code_string phone current_balance
+              product { name type }
+            }
+          }
+        `, { ref: bookingRef });
+        
+        const confirmedOrders = ordersData?.product_orders || [];
+        if (confirmedOrders.length > 0) {
+          const { generateProductReceiptPdf, generateVoucherPdf } = await import("./receipts");
+          const orgDetails = { name: organizerName, themeColor: themeColor };
+          const customerDetails = { name: customerName, email: to, phone: phone || "" };
+          const pdfBuffer = await generateProductReceiptPdf(confirmedOrders, orgDetails, customerDetails, 0);
+          if (pdfBuffer) {
+            emailAttachments.push({
+              filename: `Receipt-${bookingRef}.pdf`,
+              content: pdfBuffer.toString("base64"),
+              contentType: "application/pdf"
+            });
+          }
+          for (const order of confirmedOrders) {
+            if (order.product?.type === "voucher") {
+              const vBuffer = await generateVoucherPdf(order, orgDetails);
+              emailAttachments.push({
+                filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
+                content: vBuffer.toString("base64"),
+                contentType: "application/pdf"
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to generate product receipts for email", e);
+      }
+    }
+
+    if (organizerSocials && typeof organizerSocials === "object") {
+      const socialLinks = Object.entries(organizerSocials)
+        .filter(([_, url]) => url)
+        .map(([platform, url]) => {
+          let iconUrl = "https://img.icons8.com/ios-filled/24/666666/link--v1.png";
+          if (platform.toLowerCase().includes("twitter") || platform.toLowerCase().includes("x"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/twitter.png";
+          else if (platform.toLowerCase().includes("instagram"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/instagram-new.png";
+          else if (platform.toLowerCase().includes("facebook"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/facebook-new.png";
+          else if (platform.toLowerCase().includes("linkedin"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/linkedin.png";
+
+          return `<a href="${url as string}" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+                  <img src="${iconUrl}" alt="${platform}" style="width: 24px; height: 24px;" />
+                </a>`;
+        })
+        .join("");
+
+      if (socialLinks) {
+        socialsHtml = `
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #eaeaea; text-align: center;">
+          <p style="font-size: 14px; color: #666; margin-bottom: 12px; font-weight: 500;">Follow ${organizerName} on Social Media</p>
+          <div>${socialLinks}</div>
+        </div>
+      `;
+      }
+    }
+
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
-        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
+      <div style="background-color: ${themeColor}; padding: 40px 24px; text-align: center;">
+        ${organizerLogo ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; margin-bottom: 16px; display: inline-block; object-fit: contain;" />` : `<div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;"><img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`}
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Tickets are Here!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${venueName}</p>
       </div>
@@ -201,6 +325,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         <p>Thank you for your booking! Your tickets are attached to this email as PDF documents.</p>
         <p>Please keep them handy as you will need the OTP printed on them for verification upon entry.</p>
         ${hasMerch ? `<div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e8f0;"><p style="margin:0; font-weight: 600;">📦 Merchandise Included</p><p style="margin: 8px 0 0 0; font-size: 14px;">You also purchased merchandise! You can pick it up at the event by showing this email, your ticket QR code, or your phone number.</p></div>` : ""}
+        ${socialsHtml}
         <br/>
         <p>Enjoy your visit!</p>
       </div>
@@ -218,13 +343,31 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
+        from: "Agatike <planetevents@agatike.rw>",
         to: [to],
-        subject: `Your Tickets for ${venueName}`,
+        subject: `Your Tickets for ${venueName} are Confirmed!`,
         html: html,
-        attachments: attachments,
+        attachments: emailAttachments,
       }),
     });
+
+    if (phone) {
+      let smsMsg = "";
+      if (isVenue) {
+         smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed. Visit: https://agatike.com/dashboard`;
+      } else {
+         const appUrl = wsSlug ? `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}` : "https://agatike.com";
+         smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
+      }
+      
+      if (process.env.PINDO_API_KEY) {
+        await fetch("https://api.pindo.io/v1/sms/", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + process.env.PINDO_API_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ to: phone.replace("+", ""), text: smsMsg, sender: "Agatike" }),
+        }).catch(e => console.error("Pindo SMS Error:", e));
+      }
+    }
 
     const data = await res.json();
     if (!res.ok) {
@@ -415,15 +558,14 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
             <span>${planName} (${billingCycle})</span>
             <strong>${price}</strong>
           </p>
-          ${
-            startDate
-              ? `
+          ${startDate
+        ? `
           <p style="margin: 8px 0; display: flex; justify-content: space-between; font-size: 14px; color: #64748b;">
             <span>Start Date</span>
             <span>${startDate}</span>
           </p>`
-              : ""
-          }
+        : ""
+      }
           <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;">
             <span>Total Paid</span>
             <span>${price}</span>
@@ -551,8 +693,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
             </thead>
             <tbody>
               ${members
-                .map(
-                  (m: any, i: number) => `
+            .map(
+              (m: any, i: number) => `
                 <tr>
                   <td>${i + 1}</td>
                   <td>${m.name || ""}</td>
@@ -561,8 +703,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
                   <td style="font-family: monospace;">${m.membership_id || ""}</td>
                 </tr>
               `,
-                )
-                .join("")}
+            )
+            .join("")}
             </tbody>
           </table>
         </body>

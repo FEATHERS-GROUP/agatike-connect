@@ -83,6 +83,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [pawapayError, setPawapayError] = useState<string | null>(null);
+  const [checkoutContext, setCheckoutContext] = useState<any>(null);
 
   // State for attendees dynamic form
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -438,28 +439,21 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             baseCurrency: currency,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
-            currency: paymentDetails?.currency || currency,
-            type: "event_ticket",
+            currency: paymentDetails?.currency || "RWF",
+            type: "portal_event_ticket",
             referenceId: booking_ref,
             workspaceId: event?.workspace_id,
             reason: event?.title || "Event Ticket",
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId };
+        return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId, paymentDetails, booking_ref };
       }
 
-      return { res, attendeesPayload, isPawaPay: false };
+      return { res, attendeesPayload, isPawaPay: false, paymentDetails, booking_ref };
     },
     onSuccess: (data: any) => {
-      if (data.isPawaPay) {
-        setPawapayDepositId(data.depositId);
-        setIsPollingPawaPay(true);
-        setIsPaymentModalOpen(false);
-        return;
-      }
-
-      const { res, attendeesPayload } = data;
+      const { res, attendeesPayload, paymentDetails } = data;
       const returned = res?.insert_event_attendees?.returning || [];
       const ticketsToIssue = attendees.map((a, idx) => {
         const tier = getTierDetails(a.tierId);
@@ -482,9 +476,24 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         };
       });
 
+      setCheckoutContext({
+        paymentDetails: data.paymentDetails,
+        bookingRef: data.booking_ref
+      });
+
+      if (ticketsToIssue.length > 0) {
+        setIssuedTickets(ticketsToIssue);
+      }
+
+      if (data.isPawaPay) {
+        setPawapayDepositId(data.depositId);
+        setIsPollingPawaPay(true);
+        setIsPaymentModalOpen(false);
+        return;
+      }
+
       if (ticketsToIssue.length > 0) {
         setIsGenerating(true);
-        setIssuedTickets(ticketsToIssue);
       } else {
         localStorage.removeItem(storageKey);
         setIsSuccess(true);
@@ -506,8 +515,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           if (status?.status === "completed") {
             setIsPollingPawaPay(false);
             toast.success("Payment completed successfully!");
-            localStorage.removeItem(storageKey);
-            setIsSuccess(true);
+            if (issuedTickets.length > 0) {
+              setIsGenerating(true);
+            } else {
+              localStorage.removeItem(storageKey);
+              setIsSuccess(true);
+            }
           } else if (status?.status === "failed") {
             setIsPollingPawaPay(false);
             setPawapayError("Payment failed or was cancelled.");
@@ -557,8 +570,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   };
 
   useEffect(() => {
-    if (isGenerating && issuedTickets.length > 0) {
+    if (isGenerating && issuedTickets.length > 0 && checkoutContext) {
       const generatePDFs = async () => {
+        const { paymentDetails, bookingRef } = checkoutContext;
         try {
           await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
           const attachments = [];
@@ -572,35 +586,47 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
               await new Promise((r) => setTimeout(r, 100));
 
-              const imgData = await htmlToImage.toJpeg(el, {
-                pixelRatio: 1.5,
-                quality: 0.8,
-                backgroundColor: "#ffffff",
-                width: 720,
-                height: 260,
-              });
+              try {
+                const imgData = await htmlToImage.toJpeg(el, {
+                  pixelRatio: 1.5,
+                  quality: 0.8,
+                  backgroundColor: "#ffffff",
+                  width: 720,
+                  height: 260,
+                  imagePlaceholder: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                });
 
-              if (!imgData || imgData === "data:,") {
-                throw new Error(
-                  "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-                );
+                if (!imgData || imgData === "data:,") {
+                  throw new Error(
+                    "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
+                  );
+                }
+
+                const width = 720;
+                const height = 260;
+
+                const pdf = new jsPDF({
+                  orientation: "landscape",
+                  unit: "px",
+                  format: [width, height],
+                });
+                pdf.addImage(imgData, "JPEG", 0, 0, width, height);
+                const base64 = pdf.output("datauristring").split(",")[1];
+
+                attachments.push({
+                  filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                  content: base64,
+                });
+              } catch (e) {
+                console.warn(`[Ticket ${ticket.id}] Custom PDF failed (likely image load error), falling back to default...`, e);
+                const fallbackPdf = await generateFallbackReceipt({
+                  entityName: event?.title || "Event",
+                  ticket,
+                  bookingRef: ticket.otp,
+                  customerName: ticket.attendee?.firstName || "Guest",
+                });
+                attachments.push(fallbackPdf);
               }
-
-              const width = 720;
-              const height = 260;
-
-              const pdf = new jsPDF({
-                orientation: "landscape",
-                unit: "px",
-                format: [width, height],
-              });
-              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-              const base64 = pdf.output("datauristring").split(",")[1];
-
-              attachments.push({
-                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                content: base64,
-              });
             }
           } else {
             for (const ticket of issuedTickets) {
@@ -615,18 +641,22 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           }
 
           if (attachments.length > 0) {
-            const emailGroups: Record<string, { name: string; attachments: any[] }> = {};
+            const emailGroups: Record<string, { name: string; attachments: any[]; phone: string; ticketCodes: string[] }> = {};
 
             for (let i = 0; i < issuedTickets.length; i++) {
               const email = issuedTickets[i].attendee.email || attendees[0]?.email;
+              const phone = issuedTickets[i].attendee.phone || attendees[0]?.phone;
               const name =
                 `${issuedTickets[i].attendee.firstName} ${issuedTickets[i].attendee.lastName}`.trim() ||
                 "Guest";
 
               if (!emailGroups[email]) {
-                emailGroups[email] = { name, attachments: [] };
+                emailGroups[email] = { name, attachments: [], phone, ticketCodes: [] };
               }
               emailGroups[email].attachments.push(attachments[i]);
+              if (issuedTickets[i].otp) {
+                emailGroups[email].ticketCodes.push(issuedTickets[i].otp);
+              }
             }
 
             for (const [email, group] of Object.entries(emailGroups)) {
@@ -637,6 +667,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   venueName: event.title,
                   attachments: group.attachments,
                   hasMerch: hasMerchInCart,
+                  workspaceId: event?.workspace_id,
+                  phone: group.phone,
+                  isVenue: false,
+                  totalPaid: Number(paymentDetails?.convertedAmount || paymentDetails?.amount || (hasMerchInCart ? Number(event.cost || 0) : Number(event.cost || 0))),
+                  ticketCodes: group.ticketCodes.join(", "),
+                  bookingRef: bookingRef,
                 },
               } as any).catch((e) => {
                 console.error("Failed to email", email, e);
@@ -659,13 +695,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   }, [isGenerating, issuedTickets, eventProject, event?.title, attendees, storageKey]);
 
   useEffect(() => {
+    let tm: any;
     if (isSuccess) {
-      toast.success("Ticket purchase successful!");
-      const timer = setTimeout(() => {
-        navigate({ to: "/events/$eventId", params: { eventId }, replace: true });
-      }, 3000);
-      return () => clearTimeout(timer);
+      tm = setTimeout(() => {
+        navigate({ to: "/events/$eventId", params: { eventId } });
+      }, 5000);
     }
+    return () => clearTimeout(tm);
   }, [isSuccess, navigate, eventId]);
 
   if (!event || attendees.length === 0) {
@@ -827,10 +863,22 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             </div>
           </div>
         )}
-
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Redirecting to event details...
-        </p>
+        <div className="mt-8 space-y-4">
+          <button
+            onClick={() => {
+              setIsSuccess(false);
+              setPawapayDepositId(null);
+              setIssuedTickets([]);
+              setCart({});
+              setSelectedSeats([]);
+              setAttendees([]);
+            }}
+            className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            Buy Another Ticket
+          </button>
+          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+        </div>
       </div>
     );
   }

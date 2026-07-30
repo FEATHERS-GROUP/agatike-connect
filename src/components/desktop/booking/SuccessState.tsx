@@ -4,9 +4,10 @@ interface SuccessStateProps {
   eventTitle: string;
   recipientEmail?: string;
   hasMerch?: boolean;
+  onReset?: () => void;
 }
 
-export function SuccessState({ eventTitle, recipientEmail, hasMerch }: SuccessStateProps) {
+export function SuccessState({ eventTitle, recipientEmail, hasMerch, onReset }: SuccessStateProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
       <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
@@ -56,7 +57,19 @@ export function SuccessState({ eventTitle, recipientEmail, hasMerch }: SuccessSt
         </div>
       )}
 
-      <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
+      {onReset ? (
+        <div className="mt-8 space-y-4">
+          <button
+            onClick={onReset}
+            className="w-full sm:w-auto px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+          >
+            Buy Another Ticket
+          </button>
+          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
+      )}
     </div>
   );
 }

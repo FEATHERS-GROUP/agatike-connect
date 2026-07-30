@@ -337,7 +337,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || venue.currency,
-            type: "venue_booking",
+            type: "portal_venue_booking",
             referenceId: res.id,
             workspaceId: venue.workspace_id,
             reason: venue?.name || "Venue Booking",
@@ -487,6 +487,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 venueName: venue.name || "the Venue",
                 booking_date: date,
                 attachments,
+                workspaceId: venue.workspace_id,
+                phone: phone,
+                isVenue: true,
+                totalPaid: Number(paymentDetails?.convertedAmount || paymentDetails?.amount || total),
               } as any,
             });
             toast.success("Booking confirmed and tickets emailed!");
@@ -533,12 +537,13 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   };
 
   useEffect(() => {
+    let tm: any;
     if (isSuccess) {
-      const timer = setTimeout(() => {
+      tm = setTimeout(() => {
         navigate({ to: "/venues" });
-      }, 3000);
-      return () => clearTimeout(timer);
+      }, 5000);
     }
+    return () => clearTimeout(tm);
   }, [isSuccess, navigate]);
 
   if (isPollingPawaPay) {
@@ -593,7 +598,21 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               {Math.random().toString(36).substring(2, 10).toUpperCase()}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">Redirecting to venues...</p>
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => {
+                setIsSuccess(false);
+                setPawapayDepositId(null);
+                setIssuedTickets([]);
+                setCart({});
+                setAttendees([{ name: "", id_document: "" }]);
+              }}
+              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Buy Another Ticket
+            </button>
+            <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+          </div>
         </div>
       </div>
     );
