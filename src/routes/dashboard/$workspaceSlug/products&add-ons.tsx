@@ -492,6 +492,11 @@ function WorkspaceProductsView() {
                           to: `/dashboard/$workspaceSlug/vouchers/$batchId`,
                           params: { workspaceSlug: activeWorkspace?.slug as string, batchId: m.id }
                         });
+                      } else if (m.type === "voucher") {
+                        navigate({
+                          to: `/dashboard/$workspaceSlug/products/$productId`,
+                          params: { workspaceSlug: activeWorkspace?.slug as string, productId: m.id }
+                        });
                       } else {
                         setSelectedItem(m);
                       }

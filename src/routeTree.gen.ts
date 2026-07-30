@@ -119,6 +119,7 @@ import { Route as DashboardWorkspaceSlugSpacesSpaceIdRouteImport } from './route
 import { Route as DashboardWorkspaceSlugRsvpsCreateRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/create'
 import { Route as DashboardWorkspaceSlugRsvpsFormIdRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/$formId'
 import { Route as DashboardWorkspaceSlugProductsCreateRouteImport } from './routes/dashboard/$workspaceSlug/products/create'
+import { Route as DashboardWorkspaceSlugProductsProductIdRouteImport } from './routes/dashboard/$workspaceSlug/products/$productId'
 import { Route as DashboardWorkspaceSlugPageBuilderEditorRouteImport } from './routes/dashboard/$workspaceSlug/page-builder/editor'
 import { Route as DashboardWorkspaceSlugExperiencesCreateExperienceRouteImport } from './routes/dashboard/$workspaceSlug/experiences/create-experience'
 import { Route as DashboardWorkspaceSlugEventsCreateEventRouteImport } from './routes/dashboard/$workspaceSlug/events/create-event'
@@ -817,6 +818,12 @@ const DashboardWorkspaceSlugProductsCreateRoute =
   DashboardWorkspaceSlugProductsCreateRouteImport.update({
     id: '/$workspaceSlug/products/create',
     path: '/$workspaceSlug/products/create',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugProductsProductIdRoute =
+  DashboardWorkspaceSlugProductsProductIdRouteImport.update({
+    id: '/$workspaceSlug/products/$productId',
+    path: '/$workspaceSlug/products/$productId',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugPageBuilderEditorRoute =
@@ -1520,6 +1527,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   '/dashboard/$workspaceSlug/page-builder/editor': typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  '/dashboard/$workspaceSlug/products/$productId': typeof DashboardWorkspaceSlugProductsProductIdRoute
   '/dashboard/$workspaceSlug/products/create': typeof DashboardWorkspaceSlugProductsCreateRoute
   '/dashboard/$workspaceSlug/rsvps/$formId': typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   '/dashboard/$workspaceSlug/rsvps/create': typeof DashboardWorkspaceSlugRsvpsCreateRoute
@@ -1731,6 +1739,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   '/dashboard/$workspaceSlug/page-builder/editor': typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  '/dashboard/$workspaceSlug/products/$productId': typeof DashboardWorkspaceSlugProductsProductIdRoute
   '/dashboard/$workspaceSlug/products/create': typeof DashboardWorkspaceSlugProductsCreateRoute
   '/dashboard/$workspaceSlug/rsvps/$formId': typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   '/dashboard/$workspaceSlug/rsvps/create': typeof DashboardWorkspaceSlugRsvpsCreateRoute
@@ -1943,6 +1952,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/events/create-event': typeof DashboardWorkspaceSlugEventsCreateEventRoute
   '/dashboard/$workspaceSlug/experiences/create-experience': typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   '/dashboard/$workspaceSlug/page-builder/editor': typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  '/dashboard/$workspaceSlug/products/$productId': typeof DashboardWorkspaceSlugProductsProductIdRoute
   '/dashboard/$workspaceSlug/products/create': typeof DashboardWorkspaceSlugProductsCreateRoute
   '/dashboard/$workspaceSlug/rsvps/$formId': typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   '/dashboard/$workspaceSlug/rsvps/create': typeof DashboardWorkspaceSlugRsvpsCreateRoute
@@ -2158,6 +2168,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
     | '/dashboard/$workspaceSlug/page-builder/editor'
+    | '/dashboard/$workspaceSlug/products/$productId'
     | '/dashboard/$workspaceSlug/products/create'
     | '/dashboard/$workspaceSlug/rsvps/$formId'
     | '/dashboard/$workspaceSlug/rsvps/create'
@@ -2369,6 +2380,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
     | '/dashboard/$workspaceSlug/page-builder/editor'
+    | '/dashboard/$workspaceSlug/products/$productId'
     | '/dashboard/$workspaceSlug/products/create'
     | '/dashboard/$workspaceSlug/rsvps/$formId'
     | '/dashboard/$workspaceSlug/rsvps/create'
@@ -2580,6 +2592,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/events/create-event'
     | '/dashboard/$workspaceSlug/experiences/create-experience'
     | '/dashboard/$workspaceSlug/page-builder/editor'
+    | '/dashboard/$workspaceSlug/products/$productId'
     | '/dashboard/$workspaceSlug/products/create'
     | '/dashboard/$workspaceSlug/rsvps/$formId'
     | '/dashboard/$workspaceSlug/rsvps/create'
@@ -3534,6 +3547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugProductsCreateRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/products/$productId': {
+      id: '/dashboard/$workspaceSlug/products/$productId'
+      path: '/$workspaceSlug/products/$productId'
+      fullPath: '/dashboard/$workspaceSlug/products/$productId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugProductsProductIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/page-builder/editor': {
       id: '/dashboard/$workspaceSlug/page-builder/editor'
       path: '/$workspaceSlug/page-builder/editor'
@@ -4392,6 +4412,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugEventsCreateEventRoute: typeof DashboardWorkspaceSlugEventsCreateEventRoute
   DashboardWorkspaceSlugExperiencesCreateExperienceRoute: typeof DashboardWorkspaceSlugExperiencesCreateExperienceRoute
   DashboardWorkspaceSlugPageBuilderEditorRoute: typeof DashboardWorkspaceSlugPageBuilderEditorRoute
+  DashboardWorkspaceSlugProductsProductIdRoute: typeof DashboardWorkspaceSlugProductsProductIdRoute
   DashboardWorkspaceSlugProductsCreateRoute: typeof DashboardWorkspaceSlugProductsCreateRoute
   DashboardWorkspaceSlugRsvpsFormIdRoute: typeof DashboardWorkspaceSlugRsvpsFormIdRoute
   DashboardWorkspaceSlugRsvpsCreateRoute: typeof DashboardWorkspaceSlugRsvpsCreateRoute
@@ -4503,6 +4524,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugExperiencesCreateExperienceRoute,
   DashboardWorkspaceSlugPageBuilderEditorRoute:
     DashboardWorkspaceSlugPageBuilderEditorRoute,
+  DashboardWorkspaceSlugProductsProductIdRoute:
+    DashboardWorkspaceSlugProductsProductIdRoute,
   DashboardWorkspaceSlugProductsCreateRoute:
     DashboardWorkspaceSlugProductsCreateRoute,
   DashboardWorkspaceSlugRsvpsFormIdRoute:
