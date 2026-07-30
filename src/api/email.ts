@@ -78,9 +78,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
           badgeLink
             ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
-          <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Digital Badge</h4>
-          <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your digital badge. You can use it to check in at the event!</p>
-          <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Badge</a>
+          <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
+          <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
+          <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
             : ""
