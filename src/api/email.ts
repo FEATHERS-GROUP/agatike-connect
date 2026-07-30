@@ -180,7 +180,8 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       isVenue,
       totalPaid,
       ticketCodes,
-      bookingRef
+      bookingRef,
+      isPortal,
     } = ctx.data as any;
 
     const emailAttachments = [...(attachments || [])];
@@ -356,7 +357,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       if (isVenue) {
          smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed. Visit: https://agatike.com/dashboard`;
       } else {
-         const appUrl = wsSlug ? `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}` : "https://agatike.com";
+         const appUrl = (wsSlug && !isPortal) ? `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}` : "https://agatike.com/dashboard";
          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
       }
       

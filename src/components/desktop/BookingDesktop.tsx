@@ -701,6 +701,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   totalPaid: Number(paymentDetails?.convertedAmount || paymentDetails?.amount || (hasMerchInCart ? Number(event.cost || 0) : Number(event.cost || 0))),
                   ticketCodes: group.ticketCodes.join(", "),
                   bookingRef: bookingRef,
+                  isPortal: !isSubdomain,
                 },
               } as any).catch((e) => {
                 console.error("Failed to email", email, e);
