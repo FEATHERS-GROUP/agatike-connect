@@ -390,3 +390,58 @@ export const getWorkspaceSponsoredVoucherBatches = createServerFn({ method: "POS
     return data.sponsored_voucher_batches || [];
   },
 );
+
+const GET_SPONSORED_VOUCHER_BATCH = `
+  query GetSponsoredVoucherBatch($id: uuid!) {
+    sponsored_voucher_batches_by_pk(id: $id) {
+      id
+      name
+      value_per_voucher
+      generation_type
+      value_type
+      linked_ticket_ids
+      created_at
+      vouchers(order_by: { created_at: desc }) {
+        id
+        qr_code_string
+        current_balance
+        is_active
+        created_at
+        voucher_transactions_aggregate {
+          aggregate {
+            sum {
+              amount
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const getSponsoredVoucherBatch = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ sponsored_voucher_batches_by_pk: any }>(GET_SPONSORED_VOUCHER_BATCH, {
+    id,
+  });
+  return data.sponsored_voucher_batches_by_pk || null;
+});
+
+const UPDATE_VOUCHER_BALANCE = `
+  mutation UpdateVoucherBalance($id: uuid!, $balance: numeric!, $is_active: Boolean!) {
+    update_sponsored_vouchers_by_pk(pk_columns: { id: $id }, _set: { current_balance: $balance, is_active: $is_active }) {
+      id
+      current_balance
+      is_active
+    }
+  }
+`;
+
+export const updateVoucherBalance = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { id, balance, is_active } = ctx.data as any;
+  const res = await hasuraRequest(UPDATE_VOUCHER_BALANCE, { id, balance, is_active });
+  return res;
+});

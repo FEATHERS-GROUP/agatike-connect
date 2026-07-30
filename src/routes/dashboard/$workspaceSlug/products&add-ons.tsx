@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { getWorkspaceProducts, getWorkspaceRecentOrders } from "@/api/products";
@@ -304,6 +304,7 @@ function WorkspaceProductsView() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [searchProduct, setSearchProduct] = useState("");
   const { activeWorkspace } = useWorkspace();
+  const navigate = useNavigate();
 
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ["workspace-products", activeWorkspace?.id],
@@ -452,7 +453,16 @@ function WorkspaceProductsView() {
                   <tr
                     key={m.id}
                     className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                    onClick={() => setSelectedItem(m)}
+                    onClick={() => {
+                      if (m.type === "voucher_batch" || m.type === "voucher") {
+                        navigate({
+                          to: `/dashboard/$workspaceSlug/vouchers/$batchId`,
+                          params: { workspaceSlug: activeWorkspace?.slug as string, batchId: m.id }
+                        });
+                      } else {
+                        setSelectedItem(m);
+                      }
+                    }}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -701,6 +711,16 @@ function WorkspaceProductsView() {
                         {formatCurrency(selectedItem.value_amount || 0, activeWorkspace?.currency)}
                       </span>
                     </div>
+
+                    {selectedItem.type === "voucher_batch" && (
+                      <div className="mt-4">
+                        <Link to={`/dashboard/${activeWorkspace?.slug}/vouchers/${selectedItem.id}`}>
+                          <Button className="rounded-full shadow-lg text-blue-600 bg-white hover:bg-white/90">
+                            View All Vouchers
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -759,21 +779,38 @@ function WorkspaceProductsView() {
                       {selectedItem.stock}
                     </p>
                   </div>
-                  <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center">
-                    <Link
-                      to="/dashboard/$workspaceSlug/products/edit/$productId"
-                      params={{
-                        workspaceSlug: activeWorkspace?.slug as string,
-                        productId: selectedItem.id,
-                      }}
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                  <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center gap-2">
+                    {selectedItem.type === "voucher_batch" ? (
+                      <Link
+                        to="/dashboard/$workspaceSlug/vouchers/$batchId"
+                        params={{
+                          workspaceSlug: activeWorkspace?.slug as string,
+                          batchId: selectedItem.id,
+                        }}
                       >
-                        Edit Item
-                      </Button>
-                    </Link>
+                        <Button
+                          variant="outline"
+                          className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                        >
+                          Manage Vouchers
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/dashboard/$workspaceSlug/products/edit/$productId"
+                        params={{
+                          workspaceSlug: activeWorkspace?.slug as string,
+                          productId: selectedItem.id,
+                        }}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                        >
+                          Edit Item
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

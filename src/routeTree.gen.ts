@@ -108,6 +108,7 @@ import { Route as InternalControlAdminDashboardRouteImport } from './routes/inte
 import { Route as DashboardWorkspaceUserEmailActivateRouteImport } from './routes/dashboard/workspace-user/$email.activate'
 import { Route as DashboardBillingSubscriptionsPricingplansRouteImport } from './routes/dashboard/billing/subscriptions/pricingplans'
 import { Route as DashboardWorkspaceSlugWithdrawalsRequestRouteImport } from './routes/dashboard/$workspaceSlug/withdrawals/request'
+import { Route as DashboardWorkspaceSlugVouchersBatchIdRouteImport } from './routes/dashboard/$workspaceSlug/vouchers/$batchId'
 import { Route as DashboardWorkspaceSlugVenuesCreateVenueRouteImport } from './routes/dashboard/$workspaceSlug/venues/create-venue'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId'
 import { Route as DashboardWorkspaceSlugVenueDesignerProjectIdRouteImport } from './routes/dashboard/$workspaceSlug/venue-designer/$projectId'
@@ -750,6 +751,12 @@ const DashboardWorkspaceSlugWithdrawalsRequestRoute =
   DashboardWorkspaceSlugWithdrawalsRequestRouteImport.update({
     id: '/$workspaceSlug/withdrawals/request',
     path: '/$workspaceSlug/withdrawals/request',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugVouchersBatchIdRoute =
+  DashboardWorkspaceSlugVouchersBatchIdRouteImport.update({
+    id: '/$workspaceSlug/vouchers/$batchId',
+    path: '/$workspaceSlug/vouchers/$batchId',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardWorkspaceSlugVenuesCreateVenueRoute =
@@ -1523,6 +1530,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/venue-designer/$projectId': typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/venues/create-venue': typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  '/dashboard/$workspaceSlug/vouchers/$batchId': typeof DashboardWorkspaceSlugVouchersBatchIdRoute
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
@@ -1732,6 +1740,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/venue-designer/$projectId': typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/venues/create-venue': typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  '/dashboard/$workspaceSlug/vouchers/$batchId': typeof DashboardWorkspaceSlugVouchersBatchIdRoute
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
@@ -1944,6 +1953,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/venue-designer/$projectId': typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   '/dashboard/$workspaceSlug/venues/$venueId': typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   '/dashboard/$workspaceSlug/venues/create-venue': typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  '/dashboard/$workspaceSlug/vouchers/$batchId': typeof DashboardWorkspaceSlugVouchersBatchIdRoute
   '/dashboard/$workspaceSlug/withdrawals/request': typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   '/dashboard/billing/subscriptions/pricingplans': typeof DashboardBillingSubscriptionsPricingplansRoute
   '/dashboard/workspace-user/$email/activate': typeof DashboardWorkspaceUserEmailActivateRoute
@@ -2158,6 +2168,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/venues/create-venue'
+    | '/dashboard/$workspaceSlug/vouchers/$batchId'
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
@@ -2367,6 +2378,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/venues/create-venue'
+    | '/dashboard/$workspaceSlug/vouchers/$batchId'
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
@@ -2578,6 +2590,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venue-designer/$projectId'
     | '/dashboard/$workspaceSlug/venues/$venueId'
     | '/dashboard/$workspaceSlug/venues/create-venue'
+    | '/dashboard/$workspaceSlug/vouchers/$batchId'
     | '/dashboard/$workspaceSlug/withdrawals/request'
     | '/dashboard/billing/subscriptions/pricingplans'
     | '/dashboard/workspace-user/$email/activate'
@@ -3442,6 +3455,13 @@ declare module '@tanstack/react-router' {
       path: '/$workspaceSlug/withdrawals/request'
       fullPath: '/dashboard/$workspaceSlug/withdrawals/request'
       preLoaderRoute: typeof DashboardWorkspaceSlugWithdrawalsRequestRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/vouchers/$batchId': {
+      id: '/dashboard/$workspaceSlug/vouchers/$batchId'
+      path: '/$workspaceSlug/vouchers/$batchId'
+      fullPath: '/dashboard/$workspaceSlug/vouchers/$batchId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVouchersBatchIdRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/$workspaceSlug/venues/create-venue': {
@@ -4382,6 +4402,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugVenueDesignerProjectIdRoute: typeof DashboardWorkspaceSlugVenueDesignerProjectIdRoute
   DashboardWorkspaceSlugVenuesVenueIdRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren
   DashboardWorkspaceSlugVenuesCreateVenueRoute: typeof DashboardWorkspaceSlugVenuesCreateVenueRoute
+  DashboardWorkspaceSlugVouchersBatchIdRoute: typeof DashboardWorkspaceSlugVouchersBatchIdRoute
   DashboardWorkspaceSlugWithdrawalsRequestRoute: typeof DashboardWorkspaceSlugWithdrawalsRequestRoute
   DashboardBillingSubscriptionsPricingplansRoute: typeof DashboardBillingSubscriptionsPricingplansRoute
   DashboardWorkspaceUserEmailActivateRoute: typeof DashboardWorkspaceUserEmailActivateRoute
@@ -4502,6 +4523,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugVenuesVenueIdRouteWithChildren,
   DashboardWorkspaceSlugVenuesCreateVenueRoute:
     DashboardWorkspaceSlugVenuesCreateVenueRoute,
+  DashboardWorkspaceSlugVouchersBatchIdRoute:
+    DashboardWorkspaceSlugVouchersBatchIdRoute,
   DashboardWorkspaceSlugWithdrawalsRequestRoute:
     DashboardWorkspaceSlugWithdrawalsRequestRoute,
   DashboardBillingSubscriptionsPricingplansRoute:
