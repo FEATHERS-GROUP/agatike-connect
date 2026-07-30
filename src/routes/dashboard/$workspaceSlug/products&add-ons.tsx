@@ -487,7 +487,7 @@ function WorkspaceProductsView() {
                     key={m.id}
                     className="hover:bg-secondary/40 transition-colors cursor-pointer group"
                     onClick={() => {
-                      if (m.type === "voucher_batch" || m.type === "voucher") {
+                      if (m.type === "voucher_batch") {
                         navigate({
                           to: `/dashboard/$workspaceSlug/vouchers/$batchId`,
                           params: { workspaceSlug: activeWorkspace?.slug as string, batchId: m.id }
