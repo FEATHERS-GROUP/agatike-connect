@@ -25,7 +25,7 @@ export interface AdvancedQueryInput {
   start_date: string;
   end_date: string;
   group_by?: string;
-  filters?: AnalyticsFilter[];
+  filters?: AnalyticsFilter[] | AnalyticsFilter;
 }
 
 export const executeAdvancedQuery = createServerFn({ method: "POST" })
