@@ -250,7 +250,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
           query GetOrders($ref: String!) {
             product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
               product_id qty size amount_paid qr_code_string phone current_balance
-              product { name type }
+              product { name type price value_amount }
             }
           }
         `, { ref: bookingRef });
@@ -355,10 +355,14 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
     if (phone) {
       let smsMsg = "";
       if (isVenue) {
-         smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed. Visit: https://agatike.com/dashboard`;
+         smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed.`;
       } else {
-         const appUrl = (wsSlug && !isPortal) ? `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}` : "https://agatike.com/dashboard";
-         smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
+         if (wsSlug && !isPortal) {
+           const appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+           smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
+         } else {
+           smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}.`;
+         }
       }
       
       try {

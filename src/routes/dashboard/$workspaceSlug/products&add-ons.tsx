@@ -176,6 +176,7 @@ function WorkspaceOrdersTable() {
   });
 
   const filteredOrders = orders.filter((order: any) => {
+    if (order.product?.type === "voucher") return false;
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     const orderId = order.id.split("-")[0].toLowerCase();

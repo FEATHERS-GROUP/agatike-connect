@@ -223,6 +223,7 @@ const GET_WORKSPACE_RECENT_ORDERS = `
       limit: 250
     ) {
       id
+      product_id
       amount_paid
       status
       picked
@@ -231,6 +232,7 @@ const GET_WORKSPACE_RECENT_ORDERS = `
       size
       phone
       qr_code_string
+      current_balance
       decrptions
       buyer_id
       product {

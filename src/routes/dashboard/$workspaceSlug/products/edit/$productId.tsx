@@ -138,7 +138,8 @@ function EditProductView() {
             ...linkedEvents.map(id => ({ type: "event", id })),
             ...linkedVenues.map(id => ({ type: "venue", id }))
           ]
-        }
+        },
+        event_id: linkedEvents.length > 0 ? linkedEvents[0] : null,
       };
 
       if (imageFile) {

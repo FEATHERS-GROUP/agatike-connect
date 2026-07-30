@@ -90,7 +90,7 @@ function CreateProductView() {
     mutationFn: async () => {
       const payload: any = {
         workspace_id: activeWorkspace?.id,
-        event_id: null,
+        event_id: linkedEvents.length > 0 ? linkedEvents[0] : null,
         type: formData.type,
         name: formData.name,
         description: formData.description,

@@ -245,7 +245,12 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
 
   // Add Value
   const productName = order.product?.name || "Gift Card";
-  const value = order.current_balance || order.amount_paid || 0;
+  const qty = Math.max(1, parseInt(order.qty || "1"));
+  
+  // The database holds the actual gift card balance in value_amount
+  // If it's missing, fallback to price or the divided amount_paid
+  const unitPrice = parseFloat(order.product?.value_amount || "0") || parseFloat(order.product?.price || "0") || (parseFloat(order.amount_paid || "0") / qty);
+  const value = order.current_balance || unitPrice || 0;
   
   doc.setFontSize(48);
   doc.text(`RWF ${value.toLocaleString()}`, 150, 110, { align: "center" });
