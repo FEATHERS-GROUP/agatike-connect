@@ -141,7 +141,7 @@ function CreateProductView() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto w-full">
+    <div className="space-y-6 max-w-[1400px] mx-auto w-full">
       <header className="flex flex-col gap-2">
         <Button
           variant="ghost"

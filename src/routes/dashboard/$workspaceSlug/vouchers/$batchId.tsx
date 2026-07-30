@@ -103,7 +103,7 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
                     {isActive ? 'Active' : 'Disabled'}
                   </div>
                 </div>
-                
+
                 <div className="bg-white p-5 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1)] w-56 h-56 flex items-center justify-center mb-8 relative group transform transition-transform hover:scale-105 duration-500 border border-border">
                   <QRCode value={voucher.qr_code_string} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
                   {!isActive && (
@@ -124,7 +124,7 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
                       <span className="text-sm font-medium text-green-600 dark:text-green-400">{formatCurrency(totalUsed, currency)}</span>
                     </div>
                   </div>
-                  
+
                   <div className="text-center pt-2">
                     <p className="font-mono text-xs text-muted-foreground tracking-widest break-all bg-secondary/80 py-3 px-4 rounded-xl border border-border shadow-inner">
                       {voucher.qr_code_string}
@@ -194,11 +194,11 @@ function VoucherBatchDetailsView() {
   }
 
   const vouchers = batch.vouchers || [];
-  
-  const filteredVouchers = vouchers.filter((v: any) => 
+
+  const filteredVouchers = vouchers.filter((v: any) =>
     v.qr_code_string?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   const totalPages = Math.ceil(filteredVouchers.length / itemsPerPage);
   const paginatedVouchers = filteredVouchers.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
@@ -230,7 +230,7 @@ function VoucherBatchDetailsView() {
       ];
     });
 
-    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const csvContent = [headers.join(","), ...rows.map((e: any[]) => e.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -272,7 +272,7 @@ function VoucherBatchDetailsView() {
           </p>
           <p className="text-sm text-muted-foreground mt-2">{activeVouchers.length} Active Vouchers</p>
         </div>
-        
+
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Total Used</p>
@@ -281,7 +281,7 @@ function VoucherBatchDetailsView() {
           </p>
           <p className="text-sm text-green-500/70 mt-2">Spent across vendors</p>
         </div>
-        
+
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
           <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Remaining Balance</p>
@@ -300,8 +300,8 @@ function VoucherBatchDetailsView() {
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by QR code..." 
+            <Input
+              placeholder="Search by QR code..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -325,10 +325,10 @@ function VoucherBatchDetailsView() {
             </thead>
             <tbody className="divide-y divide-border/60">
               {paginatedVouchers.map((voucher: any) => (
-                <VoucherRow 
-                  key={voucher.id} 
-                  voucher={voucher} 
-                  currency={activeWorkspace?.currency || "RWF"} 
+                <VoucherRow
+                  key={voucher.id}
+                  voucher={voucher}
+                  currency={activeWorkspace?.currency || "RWF"}
                 />
               ))}
               {vouchers.length === 0 && (

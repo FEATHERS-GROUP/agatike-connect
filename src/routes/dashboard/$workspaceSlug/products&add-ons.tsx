@@ -165,6 +165,8 @@ function BatchGenerateModal() {
 function WorkspaceOrdersTable() {
   const { activeWorkspace } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 15;
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["workspace-recent-orders", activeWorkspace?.id],
@@ -195,6 +197,9 @@ function WorkspaceOrdersTable() {
     );
   });
 
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
   return (
     <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-4 gap-4">
@@ -205,7 +210,10 @@ function WorkspaceOrdersTable() {
             type="text"
             placeholder="Search orders..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
             className="w-full pl-9 pr-4 py-2 bg-secondary/30 border border-border/40 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
           />
         </div>
@@ -237,7 +245,7 @@ function WorkspaceOrdersTable() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {filteredOrders.map((order: any) => (
+                {paginatedOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-secondary/10 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-muted-foreground">
                       {order.id.split("-")[0]}
@@ -293,6 +301,31 @@ function WorkspaceOrdersTable() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {!isLoading && totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-secondary/10">
+            <span className="text-sm text-muted-foreground">
+              Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to {Math.min(page * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
       </div>
