@@ -172,7 +172,18 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       const maxAllowedSubsidy = isSubsidyEnabled ? basePrice * (finalSubsidyPct / 100) : 0;
 
       let decision = "approved";
-      let structuredError = null;
+      let structuredError: {
+        title: string;
+        description: string;
+        details?: {
+          customerServiceFee: number;
+          organizerContribution: number;
+          totalCost: number;
+          message: string;
+          shortfall: number;
+        };
+        recommendation?: string[];
+      } | null = null;
       let failureClassification = "OK";
 
       const expectedMargin = guaranteedRevenue + optionalRevenue - providerCost;
@@ -248,6 +259,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         structuredError: {
           title: "❌ Simulation Error",
           description: "Simulation engine encountered an error.",
+          recommendation: undefined,
         },
         transactionId,
       };

@@ -20,6 +20,7 @@ import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { getVenueProducts, createProductOrders } from "@/api/products";
@@ -71,6 +72,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -342,13 +344,25 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, isPawaPay: true, depositId: pawaRes.depositId };
+        return { 
+          res, 
+          isPawaPay: true, 
+          depositId: pawaRes.depositId, 
+          totalPaid: paymentDetails?.convertedAmount || total 
+        };
       }
 
-      return { res, isPawaPay: false };
+      return { 
+        res, 
+        isPawaPay: false, 
+        totalPaid: paymentDetails?.convertedAmount || total 
+      };
     },
     onSuccess: (data: any) => {
       const res = data.res;
+      if (data.totalPaid) {
+        setFinalTotalPaid(data.totalPaid);
+      }
       const td = res?.tickets_data;
       if (td?.issued) {
         setIssuedTickets(td.issued);
@@ -488,9 +502,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 workspaceId: venue.workspace_id,
                 phone: phone,
                 isVenue: true,
-                totalPaid: Number(
-                  paymentDetails?.convertedAmount || paymentDetails?.amount || total,
-                ),
+                totalPaid: finalTotalPaid || total,
               } as any,
             });
             toast.success("Booking confirmed and tickets emailed!");

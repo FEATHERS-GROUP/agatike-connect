@@ -26,6 +26,7 @@ interface PaymentModalProps {
     network?: string;
     currency?: string;
     convertedAmount?: number;
+    shortfall?: number;
   }) => void;
   isProcessing: boolean;
   isGenerating: boolean;
@@ -470,7 +471,7 @@ export function PaymentModal({
                           </div>
                           <p>{simulation.structuredError.description}</p>
 
-                          {simulation.structuredError.details && (
+                          {'details' in simulation.structuredError && simulation.structuredError.details && (
                             <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
                               <div>
                                 Customer Fee:{" "}
@@ -492,7 +493,7 @@ export function PaymentModal({
                             </div>
                           )}
 
-                          {simulation.structuredError.recommendation && (
+                          {'recommendation' in simulation.structuredError && simulation.structuredError.recommendation && (
                             <div className="mt-2 pt-2 border-t border-red-200">
                               <div className="font-bold text-red-700 mb-1">
                                 System Recommendation
