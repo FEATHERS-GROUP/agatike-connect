@@ -344,18 +344,18 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { 
-          res, 
-          isPawaPay: true, 
-          depositId: pawaRes.depositId, 
-          totalPaid: paymentDetails?.convertedAmount || total 
+        return {
+          res,
+          isPawaPay: true,
+          depositId: pawaRes.depositId,
+          totalPaid: paymentDetails?.convertedAmount || total,
         };
       }
 
-      return { 
-        res, 
-        isPawaPay: false, 
-        totalPaid: paymentDetails?.convertedAmount || total 
+      return {
+        res,
+        isPawaPay: false,
+        totalPaid: paymentDetails?.convertedAmount || total,
       };
     },
     onSuccess: (data: any) => {
