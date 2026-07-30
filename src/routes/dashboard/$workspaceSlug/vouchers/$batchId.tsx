@@ -10,6 +10,8 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import QRCode from "react-qr-code";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/vouchers/$batchId")({
   component: VoucherBatchDetailsView,
@@ -77,7 +79,63 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
           </span>
         )}
       </td>
-      <td className="px-6 py-4 text-right space-x-2">
+      <td className="px-6 py-4 text-right flex justify-end items-center gap-2">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary">
+              View
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] bg-transparent border-none shadow-none p-0">
+            <div className="relative overflow-hidden rounded-3xl bg-card text-foreground p-8 shadow-2xl border border-border w-full max-w-sm mx-auto transition-colors">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <Ticket className="w-64 h-64 rotate-12 -translate-y-16 translate-x-16 text-foreground" />
+              </div>
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="w-full flex justify-between items-start mb-8">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">Gift Card</p>
+                    <p className="text-3xl font-bold tracking-tight">
+                      {formatCurrency(voucher.current_balance, currency)}
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner ${isActive ? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-500/20'}`}>
+                    {isActive ? 'Active' : 'Disabled'}
+                  </div>
+                </div>
+                
+                <div className="bg-white p-5 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1)] w-56 h-56 flex items-center justify-center mb-8 relative group transform transition-transform hover:scale-105 duration-500 border border-border">
+                  <QRCode value={voucher.qr_code_string} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+                  {!isActive && (
+                    <div className="absolute inset-0 bg-background/60 rounded-3xl flex items-center justify-center backdrop-blur-[2px]">
+                      <Ban className="w-16 h-16 text-red-500 opacity-80" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-full space-y-4">
+                  <div className="bg-secondary/50 rounded-2xl p-4 border border-border/50 backdrop-blur-md">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-muted-foreground">Initial Value</span>
+                      <span className="text-sm font-medium">{formatCurrency(initialValue, currency)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total Used</span>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">{formatCurrency(totalUsed, currency)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center pt-2">
+                    <p className="font-mono text-xs text-muted-foreground tracking-widest break-all bg-secondary/80 py-3 px-4 rounded-xl border border-border shadow-inner">
+                      {voucher.qr_code_string}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {isEditing ? (
           <>
             <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
