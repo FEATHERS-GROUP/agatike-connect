@@ -378,9 +378,7 @@ export function PaymentModal({
             </div>
           </div>
 
-          <div
-            className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-primary border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-primary-foreground relative overflow-hidden"
-          >
+          <div className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-primary border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-primary-foreground relative overflow-hidden">
             {/* Subtle Gradient Overlay on Desktop */}
             <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay pointer-events-none"></div>
 
@@ -402,7 +400,9 @@ export function PaymentModal({
                   </div>
                 )}
                 <div className="flex justify-between text-sm pt-4 border-t border-border/40 md:border-primary-foreground/20">
-                  <span className="text-muted-foreground md:text-primary-foreground/70">Base Price</span>
+                  <span className="text-muted-foreground md:text-primary-foreground/70">
+                    Base Price
+                  </span>
                   <span className="font-semibold">
                     {baseCurrency} {baseAmount.toLocaleString()}
                   </span>

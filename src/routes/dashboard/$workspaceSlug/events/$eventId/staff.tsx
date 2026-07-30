@@ -268,7 +268,15 @@ function GenerateVendorFormModal({
   );
 }
 
-function EditAccessModal({ staff, sections, eventId }: { staff: any; sections: any[]; eventId: string }) {
+function EditAccessModal({
+  staff,
+  sections,
+  eventId,
+}: {
+  staff: any;
+  sections: any[];
+  eventId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [allowedSections, setAllowedSections] = useState<string[]>(staff.allowed_sections || []);
   const [vendorId, setVendorId] = useState<string | null>(staff.vendor_id || null);

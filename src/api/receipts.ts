@@ -219,7 +219,7 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
 
   // Create a 300x400 gift card shape
   const doc = new jsPDF({ unit: "px", format: [300, 400], orientation: "portrait" });
-  
+
   // Theme color or default orange
   let primaryColor: [number, number, number] = [242, 127, 33]; // #F27F21
   if (orgDetails?.themeColor && orgDetails.themeColor.startsWith("#")) {
@@ -241,23 +241,31 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text((orgDetails?.name || "VOUCHER").toUpperCase(), 150, 50, { align: "center", charSpace: 3 });
+  doc.text((orgDetails?.name || "VOUCHER").toUpperCase(), 150, 50, {
+    align: "center",
+    charSpace: 3,
+  });
 
   // Add Value
-  const productName = order.product?.name || order.batch?.name || "Gift Card";
+  const isSponsored = !!order.batch_id || !!order.batch;
+  const productName =
+    order.product?.name || order.batch?.name || (isSponsored ? "Sponsored Voucher" : "Gift Card");
   const qty = Math.max(1, parseInt(order.qty || "1"));
-  
+
   // The database holds the actual gift card balance in value_amount
   // If it's missing, fallback to price or the divided amount_paid
-  const unitPrice = parseFloat(order.product?.value_amount || "0") || parseFloat(order.product?.price || "0") || (parseFloat(order.amount_paid || "0") / qty);
+  const unitPrice =
+    parseFloat(order.product?.value_amount || "0") ||
+    parseFloat(order.product?.price || "0") ||
+    parseFloat(order.amount_paid || "0") / qty;
   const value = order.current_balance || unitPrice || 0;
-  
+
   doc.setFontSize(48);
   doc.text(`RWF ${value.toLocaleString()}`, 150, 110, { align: "center" });
-  
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(22);
-  doc.text("GIFT CARD", 150, 140, { align: "center" });
+  doc.text(isSponsored ? "VOUCHER" : "GIFT CARD", 150, 140, { align: "center" });
 
   // Draw cutouts and dashed line
   doc.setFillColor(255, 255, 255);
@@ -273,11 +281,11 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
   // Logo / Circle in the middle
   doc.setFillColor(255, 255, 255);
   doc.circle(150, 240, 25, "F");
-  
+
   // Try to load QR Code
   try {
     const qrRes = await fetch(
-      `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${order.qr_code_string || "REF"}&margin=0&color=${primaryColor[0]}-${primaryColor[1]}-${primaryColor[2]}`
+      `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${order.qr_code_string || "REF"}&margin=0&color=${primaryColor[0]}-${primaryColor[1]}-${primaryColor[2]}`,
     );
     if (qrRes.ok) {
       const arrayBuffer = await qrRes.arrayBuffer();
@@ -291,7 +299,7 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
   // QR Code Text
   doc.setFontSize(10);
   doc.text(order.qr_code_string || "N/A", 150, 280, { align: "center" });
-  
+
   // Product Name
   doc.setFontSize(14);
   doc.text(productName, 150, 310, { align: "center" });
@@ -299,7 +307,7 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
   // Redeem Button
   doc.setFillColor(255, 255, 255);
   doc.roundedRect(80, 330, 140, 40, 20, 20, "F");
-  
+
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);

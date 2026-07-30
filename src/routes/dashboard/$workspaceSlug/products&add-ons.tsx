@@ -307,7 +307,8 @@ function WorkspaceOrdersTable() {
         {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-secondary/10">
             <span className="text-sm text-muted-foreground">
-              Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to {Math.min(page * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
+              Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to{" "}
+              {Math.min(page * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
             </span>
             <div className="flex gap-2">
               <Button
@@ -491,12 +492,15 @@ function WorkspaceProductsView() {
                       if (m.type === "voucher_batch") {
                         navigate({
                           to: `/dashboard/$workspaceSlug/vouchers/$batchId`,
-                          params: { workspaceSlug: activeWorkspace?.slug as string, batchId: m.id }
+                          params: { workspaceSlug: activeWorkspace?.slug as string, batchId: m.id },
                         });
                       } else if (m.type === "voucher") {
                         navigate({
                           to: `/dashboard/$workspaceSlug/products/$productId`,
-                          params: { workspaceSlug: activeWorkspace?.slug as string, productId: m.id }
+                          params: {
+                            workspaceSlug: activeWorkspace?.slug as string,
+                            productId: m.id,
+                          },
                         });
                       } else {
                         setSelectedItem(m);
@@ -753,7 +757,9 @@ function WorkspaceProductsView() {
 
                     {selectedItem.type === "voucher_batch" && (
                       <div className="mt-4">
-                        <Link to={`/dashboard/${activeWorkspace?.slug}/vouchers/${selectedItem.id}`}>
+                        <Link
+                          to={`/dashboard/${activeWorkspace?.slug}/vouchers/${selectedItem.id}`}
+                        >
                           <Button className="rounded-full shadow-lg text-blue-600 bg-white hover:bg-white/90">
                             View All Vouchers
                           </Button>

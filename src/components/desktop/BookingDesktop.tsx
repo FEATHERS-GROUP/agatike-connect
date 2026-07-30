@@ -457,7 +457,14 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, attendeesPayload, isPawaPay: true, depositId: pawaRes.depositId, paymentDetails, booking_ref };
+        return {
+          res,
+          attendeesPayload,
+          isPawaPay: true,
+          depositId: pawaRes.depositId,
+          paymentDetails,
+          booking_ref,
+        };
       }
 
       return { res, attendeesPayload, isPawaPay: false, paymentDetails, booking_ref };
@@ -489,7 +496,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
       setCheckoutContext({
         paymentDetails: data.paymentDetails,
-        bookingRef: data.booking_ref
+        bookingRef: data.booking_ref,
       });
 
       if (ticketsToIssue.length > 0) {
@@ -605,7 +612,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   backgroundColor: "#ffffff",
                   width: 720,
                   height: 260,
-                  imagePlaceholder: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                  imagePlaceholder:
+                    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
                 });
 
                 if (!imgData || imgData === "data:,") {
@@ -630,8 +638,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   content: base64,
                 });
               } catch (e) {
-                console.warn(`[Ticket ${ticket.id}] Custom PDF failed (likely image load error), falling back to default...`, e);
-                const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                console.warn(
+                  `[Ticket ${ticket.id}] Custom PDF failed (likely image load error), falling back to default...`,
+                  e,
+                );
+                const stop =
+                  event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
                 const fallbackPdf = await generateFallbackReceipt({
                   entityName: event?.title || "Event",
                   ticket,
@@ -668,7 +680,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
           if (attachments.length > 0) {
             // Group tickets by email address so each friend gets their own tickets if changed!
-            const emailGroups: Record<string, { name: string; attachments: any[]; phone: string; ticketCodes: string[] }> = {};
+            const emailGroups: Record<
+              string,
+              { name: string; attachments: any[]; phone: string; ticketCodes: string[] }
+            > = {};
 
             for (let i = 0; i < issuedTickets.length; i++) {
               const email = issuedTickets[i].attendee.email || attendees[0]?.email;
@@ -698,7 +713,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   workspaceId: event.workspace_id,
                   phone: group.phone,
                   isVenue: false,
-                  totalPaid: Number(paymentDetails?.convertedAmount || paymentDetails?.amount || (hasMerchInCart ? Number(event.cost || 0) : Number(event.cost || 0))),
+                  totalPaid: Number(
+                    paymentDetails?.convertedAmount ||
+                      paymentDetails?.amount ||
+                      (hasMerchInCart ? Number(event.cost || 0) : Number(event.cost || 0)),
+                  ),
                   ticketCodes: group.ticketCodes.join(", "),
                   bookingRef: bookingRef,
                   isPortal: !isSubdomain,

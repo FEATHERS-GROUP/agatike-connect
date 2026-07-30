@@ -5,14 +5,21 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
-export function TicketVoucherLink({ ticketId, workspaceId }: { ticketId: string; workspaceId: string }) {
+export function TicketVoucherLink({
+  ticketId,
+  workspaceId,
+}: {
+  ticketId: string;
+  workspaceId: string;
+}) {
   const queryClient = useQueryClient();
 
   const { data: batches, isLoading } = useQuery({
     queryKey: ["workspace-voucher-batches", workspaceId],
     queryFn: async () => {
       const { hasuraRequest } = await import("@/api/graphql.server");
-      const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(`
+      const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
+        `
         query GetBatches($ws: uuid!) {
           sponsored_voucher_batches(where: { workspace_id: { _eq: $ws }, generation_type: { _eq: "ticket_linked" }, is_active: { _eq: true } }) {
             id
@@ -20,7 +27,9 @@ export function TicketVoucherLink({ ticketId, workspaceId }: { ticketId: string;
             linked_ticket_ids
           }
         }
-      `, { ws: workspaceId });
+      `,
+        { ws: workspaceId },
+      );
       return data?.sponsored_voucher_batches || [];
     },
     enabled: !!workspaceId,
@@ -28,7 +37,9 @@ export function TicketVoucherLink({ ticketId, workspaceId }: { ticketId: string;
 
   const mutation = useMutation({
     mutationFn: async (batchId: string) => {
-      return await setTicketLinkedBatch({ data: { ticket_id: ticketId, batch_id: batchId, workspace_id: workspaceId } } as any);
+      return await setTicketLinkedBatch({
+        data: { ticket_id: ticketId, batch_id: batchId, workspace_id: workspaceId },
+      } as any);
     },
     onSuccess: () => {
       toast.success("Linked voucher batch updated");
@@ -37,7 +48,12 @@ export function TicketVoucherLink({ ticketId, workspaceId }: { ticketId: string;
     onError: () => toast.error("Failed to update linked voucher batch"),
   });
 
-  if (isLoading) return <div className="text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline" /> Loading batches...</div>;
+  if (isLoading)
+    return (
+      <div className="text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin inline" /> Loading batches...
+      </div>
+    );
   if (!batches || batches.length === 0) return null;
 
   const currentBatch = batches.find((b) => {
@@ -59,10 +75,15 @@ export function TicketVoucherLink({ ticketId, workspaceId }: { ticketId: string;
       >
         <option value="">None</option>
         {batches.map((b) => (
-          <option key={b.id} value={b.id}>{b.name}</option>
+          <option key={b.id} value={b.id}>
+            {b.name}
+          </option>
         ))}
       </select>
-      <p className="text-xs text-muted-foreground">When customers buy this ticket, they will automatically receive a voucher from the selected batch.</p>
+      <p className="text-xs text-muted-foreground">
+        When customers buy this ticket, they will automatically receive a voucher from the selected
+        batch.
+      </p>
     </div>
   );
 }

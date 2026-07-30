@@ -318,15 +318,17 @@ export function ScannerMobile({
       } else {
         const activeEvent = events?.find((e: any) => e.id === selectedEventId);
         const isActive = activeEvent?.schedules?.some((s: any) => {
-           const now = new Date();
-           return new Date(s.start_date) <= now && new Date(s.end_date) >= now;
+          const now = new Date();
+          return new Date(s.start_date) <= now && new Date(s.end_date) >= now;
         });
 
         // 1. Try to resolve as a voucher first (only if vendorId is present, or just general)
         if (vendorId) {
-          const vRes = await resolveVoucher({ data: { qr_code_string: qr, current_event_id: selectedEventId } } as any);
+          const vRes = await resolveVoucher({
+            data: { qr_code_string: qr, current_event_id: selectedEventId },
+          } as any);
           if (vRes.success) {
-             return { type: "voucher" as const, data: vRes.data };
+            return { type: "voucher" as const, data: vRes.data };
           }
         }
 
@@ -450,16 +452,16 @@ export function ScannerMobile({
   const handleProcessTransaction = async () => {
     if (!scannedVoucher || !vendorId) return;
     setProcessingTx(true);
-    
+
     try {
       await chargeVoucher({
         data: {
-           id: scannedVoucher.id,
-           type: scannedVoucher.type,
-           vendor_id: vendorId,
-           amount: transactionAmount,
-           description: "Charged at event"
-        }
+          id: scannedVoucher.id,
+          type: scannedVoucher.type,
+          vendor_id: vendorId,
+          amount: transactionAmount,
+          description: "Charged at event",
+        },
       } as any);
 
       toast.success(
@@ -621,9 +623,14 @@ export function ScannerMobile({
             <div className="bg-slate-900 border border-blue-500/30 rounded-[2rem] p-6 shadow-[0_10px_30px_rgba(59,130,246,0.15)]">
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight">{scannedVoucher?.name || "Wallet"}</h3>
+                  <h3 className="text-2xl font-black tracking-tight">
+                    {scannedVoucher?.name || "Wallet"}
+                  </h3>
                   <p className="text-white/50 text-sm font-medium mt-1">
-                    Remaining: {result === "voucher" ? `$${scannedVoucher?.current_balance?.toFixed(2) || '0.00'}` : "8 Punches"}
+                    Remaining:{" "}
+                    {result === "voucher"
+                      ? `$${scannedVoucher?.current_balance?.toFixed(2) || "0.00"}`
+                      : "8 Punches"}
                   </p>
                 </div>
                 <div className="h-14 w-14 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">

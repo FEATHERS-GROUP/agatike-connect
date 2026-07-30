@@ -35,7 +35,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
         setIsSubdomain(true);
       }
     }
-    
+
     // Load existing cart if any
     if (venue?.id) {
       const savedCart = localStorage.getItem(`venue_checkout_products_${venue.id}`);

@@ -278,7 +278,6 @@ export function EventMerch({
                   </div>
                 ) : (
                   <div className="mt-auto flex items-center justify-end pt-3 border-t border-border/50">
-
                     {setCart ? (
                       qty > 0 ? (
                         <div className="flex items-center justify-between w-full bg-background rounded-full border px-1 py-1 shadow-sm">

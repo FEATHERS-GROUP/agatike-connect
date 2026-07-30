@@ -47,8 +47,9 @@ export const resolveVoucher = createServerFn({ method: "POST" }).handler(async (
   }
 
   // Linkage check
-  const voucherEventId = type === "product_order" ? voucherData.product?.event_id : voucherData.batch?.event_id;
-  
+  const voucherEventId =
+    type === "product_order" ? voucherData.product?.event_id : voucherData.batch?.event_id;
+
   if (voucherEventId && current_event_id && voucherEventId !== current_event_id) {
     return { success: false, message: "VOUCHER NOT FOR THIS EVENT" };
   }
@@ -124,17 +125,19 @@ export const chargeVoucher = createServerFn({ method: "POST" }).handler(async (c
 
   const { id, type, vendor_id, amount, description } = ctx.data as any;
 
-  // Since Hasura executes mutations sequentially, if the first update_... fails 
+  // Since Hasura executes mutations sequentially, if the first update_... fails
   // (affected_rows = 0 due to insufficient balance), we ideally shouldn't run the rest.
   // To ensure absolute integrity without custom Postgres functions, we fetch the balance first.
-  const query = type === "product_order" 
-    ? `query { product_orders_by_pk(id: "${id}") { current_balance } }`
-    : `query { vouchers_by_pk(id: "${id}") { current_balance } }`;
+  const query =
+    type === "product_order"
+      ? `query { product_orders_by_pk(id: "${id}") { current_balance } }`
+      : `query { vouchers_by_pk(id: "${id}") { current_balance } }`;
 
   const balanceRes = await hasuraRequest<any>(query, {});
-  const current_balance = type === "product_order" 
-    ? balanceRes.product_orders_by_pk?.current_balance 
-    : balanceRes.vouchers_by_pk?.current_balance;
+  const current_balance =
+    type === "product_order"
+      ? balanceRes.product_orders_by_pk?.current_balance
+      : balanceRes.vouchers_by_pk?.current_balance;
 
   if (current_balance === undefined || current_balance === null) {
     throw new Error("Invalid voucher");
@@ -145,13 +148,14 @@ export const chargeVoucher = createServerFn({ method: "POST" }).handler(async (c
   }
 
   // Execute the charge
-  const mutation = type === "product_order" ? CHARGE_PRODUCT_ORDER_VOUCHER : CHARGE_SPONSORED_VOUCHER;
-  
+  const mutation =
+    type === "product_order" ? CHARGE_PRODUCT_ORDER_VOUCHER : CHARGE_SPONSORED_VOUCHER;
+
   const res = await hasuraRequest<any>(mutation, { id, vendor_id, amount, description });
-  
+
   const updateKey = type === "product_order" ? "update_product_orders" : "update_vouchers";
   if (res[updateKey]?.affected_rows === 0) {
-     throw new Error("INSUFFICIENT FUNDS OR CONCURRENCY ERROR");
+    throw new Error("INSUFFICIENT FUNDS OR CONCURRENCY ERROR");
   }
 
   return res.insert_voucher_transactions_one;
@@ -502,22 +506,25 @@ const GET_SPONSORED_VOUCHER_BATCH = `
 
 export const getSponsoredVoucherBatch = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id } = ctx.data as unknown as { id: string };
-  const data = await hasuraRequest<{ sponsored_voucher_batches_by_pk: any }>(GET_SPONSORED_VOUCHER_BATCH, {
-    id,
-  });
+  const data = await hasuraRequest<{ sponsored_voucher_batches_by_pk: any }>(
+    GET_SPONSORED_VOUCHER_BATCH,
+    {
+      id,
+    },
+  );
   return data.sponsored_voucher_batches_by_pk || null;
 });
 
-
-
 export const linkSponsoredVoucherBatch = createServerFn({ method: "POST" })
-  .validator((d: {
-    batch_id: string;
-    event_id?: string | null;
-    rentable_venue_id?: string | null;
-    cinema_id?: string | null;
-    linked_ticket_ids: string[];
-  }) => d)
+  .validator(
+    (d: {
+      batch_id: string;
+      event_id?: string | null;
+      rentable_venue_id?: string | null;
+      cinema_id?: string | null;
+      linked_ticket_ids: string[];
+    }) => d,
+  )
   .handler(async (ctx) => {
     const { batch_id, event_id, rentable_venue_id, cinema_id, linked_ticket_ids } = ctx.data;
 
@@ -587,7 +594,7 @@ export const setTicketLinkedBatch = createServerFn({ method: "POST" }).handler(a
   if (!session || !session.sub) throw new Error("unauthenticated");
 
   const { ticket_id, batch_id, workspace_id } = ctx.data as any;
-  
+
   // 1. Fetch all batches for the workspace that are ticket_linked
   const GET_BATCHES = `
     query GetBatches($ws: uuid!) {
@@ -597,7 +604,9 @@ export const setTicketLinkedBatch = createServerFn({ method: "POST" }).handler(a
       }
     }
   `;
-  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_BATCHES, { ws: workspace_id });
+  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_BATCHES, {
+    ws: workspace_id,
+  });
   const batches = data?.sponsored_voucher_batches || [];
 
   // 2. We need to prepare mutations to remove the ticket_id from batches that shouldn't have it,
@@ -683,6 +692,9 @@ export const getWorkspaceTicketTiers = createServerFn({ method: "POST" }).handle
     }
   `;
 
-  const data = await hasuraRequest<{ events: any[]; cinema_movies: any[]; venue_projects: any[] }>(QUERY, { ws: workspace_id });
+  const data = await hasuraRequest<{ events: any[]; cinema_movies: any[]; venue_projects: any[] }>(
+    QUERY,
+    { ws: workspace_id },
+  );
   return data;
 });

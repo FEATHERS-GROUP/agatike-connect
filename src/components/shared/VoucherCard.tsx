@@ -41,15 +41,11 @@ export function VoucherCard({
           {voucher.category || "Voucher"}
         </span>
         <h3 className="text-2xl font-bold tracking-tight mb-1">
-          {voucher.value_amount ? (
-            voucher.value_amount.includes("%") ? (
-              voucher.value_amount
-            ) : (
-              formatCurrency(voucher.value_amount, currencyCode)
-            )
-          ) : (
-            voucher.name
-          )}
+          {voucher.value_amount
+            ? voucher.value_amount.includes("%")
+              ? voucher.value_amount
+              : formatCurrency(voucher.value_amount, currencyCode)
+            : voucher.name}
         </h3>
         {voucher.value_amount && (
           <p className="text-xs font-medium tracking-tight opacity-90">{voucher.name}</p>

@@ -497,7 +497,9 @@ function CinemaOverview() {
         <SponsoredVouchersPanel
           entityId={cinemaId}
           entityType="cinema"
-          fetchBatches={() => getCinemaSponsoredVoucherBatches({ data: { cinema_id: cinemaId } } as any)}
+          fetchBatches={() =>
+            getCinemaSponsoredVoucherBatches({ data: { cinema_id: cinemaId } } as any)
+          }
           queryKey={["cinema-sponsored-voucher-batches", cinemaId]}
           entityTickets={ticketTiers.map((t: any) => ({
             id: t.id,

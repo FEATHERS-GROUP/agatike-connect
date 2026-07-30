@@ -82,7 +82,10 @@ export function EventDetailsDesktop({
 
           <EventAttendees attendeesList={d.attendeesList} attendeesCount={d.attendeesCount} />
 
-          <EventLineup staffList={d.isExperience ? d.staffList : d.lineup} isExperience={d.isExperience} />
+          <EventLineup
+            staffList={d.isExperience ? d.staffList : d.lineup}
+            isExperience={d.isExperience}
+          />
 
           <EventMerch
             activeMerch={d.activeMerch}

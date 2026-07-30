@@ -68,7 +68,9 @@ export function SuccessState({ eventTitle, recipientEmail, hasMerch, onReset }: 
           <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to event details...</p>
+        <p className="text-sm text-muted-foreground animate-pulse">
+          Redirecting to event details...
+        </p>
       )}
     </div>
   );

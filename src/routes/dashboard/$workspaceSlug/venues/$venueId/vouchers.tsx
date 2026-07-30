@@ -37,9 +37,7 @@ function VenueVouchersPage() {
       <SponsoredVouchersPanel
         entityId={venueId}
         entityType="venue"
-        fetchBatches={() =>
-          getVenueSponsoredVoucherBatches({ data: { venue_id: venueId } } as any)
-        }
+        fetchBatches={() => getVenueSponsoredVoucherBatches({ data: { venue_id: venueId } } as any)}
         queryKey={["venue-sponsored-voucher-batches", venueId]}
         entityTickets={entityTickets}
       />

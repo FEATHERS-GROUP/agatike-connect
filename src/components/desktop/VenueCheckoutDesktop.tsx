@@ -141,9 +141,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     } catch {
       setTicketsData({ "Standard Entry": 1 });
     }
-      setTicketsData({ "Standard Entry": 1 });
-    }
-    
+
     // Load products cart
     try {
       const savedCart = localStorage.getItem(`venue_checkout_products_${venue?.id}`);
@@ -151,7 +149,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
         setCart(JSON.parse(savedCart));
       }
     } catch {}
-    
+
     setIsHydrated(true);
   }, [storageKey, venue]);
 
@@ -490,7 +488,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 workspaceId: venue.workspace_id,
                 phone: phone,
                 isVenue: true,
-                totalPaid: Number(paymentDetails?.convertedAmount || paymentDetails?.amount || total),
+                totalPaid: Number(
+                  paymentDetails?.convertedAmount || paymentDetails?.amount || total,
+                ),
               } as any,
             });
             toast.success("Booking confirmed and tickets emailed!");
@@ -611,7 +611,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             >
               Buy Another Ticket
             </button>
-            <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Or wait to be redirected...
+            </p>
           </div>
         </div>
       </div>
@@ -726,10 +728,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   {productTotal > 0 && (
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-muted-foreground">Products & Gift Cards</span>
-                      <span>{venue.currency || "RWF"} {productTotal.toLocaleString()}</span>
+                      <span>
+                        {venue.currency || "RWF"} {productTotal.toLocaleString()}
+                      </span>
                     </div>
                   )}
-                  
+
                   <div className="border-t border-border/40 my-3" />
 
                   <div className="border-t border-border/40 pt-6">

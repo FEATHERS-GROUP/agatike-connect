@@ -433,7 +433,9 @@ function VenueOverviewPage() {
         <SponsoredVouchersPanel
           entityId={venueId}
           entityType="venue"
-          fetchBatches={() => getVenueSponsoredVoucherBatches({ data: { venue_id: venueId } } as any)}
+          fetchBatches={() =>
+            getVenueSponsoredVoucherBatches({ data: { venue_id: venueId } } as any)
+          }
           queryKey={["venue-sponsored-voucher-batches", venueId]}
           entityTickets={(venue?.pricing_tiers || []).map((t: any) => ({
             id: t.id || t.name,

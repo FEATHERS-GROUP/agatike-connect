@@ -1,5 +1,3 @@
-
-
 export const generateFallbackReceipt = async (options: {
   entityName: string;
   ticket: any;

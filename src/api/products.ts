@@ -123,13 +123,13 @@ export const getEventProducts = createServerFn({ method: "POST" }).handler(async
   const payload = (ctx.data as any).data || ctx.data;
   const { event_id } = payload as { event_id: string };
   try {
-    const payloadVars = { 
+    const payloadVars = {
       event_id,
-      contains_obj: { linked_assets: [{ type: "event", id: event_id }] }
+      contains_obj: { linked_assets: [{ type: "event", id: event_id }] },
     };
-    
+
     const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, payloadVars);
-    
+
     return data.products || [];
   } catch (err) {
     console.error("GET_EVENT_PRODUCTS Error:", err);
@@ -176,8 +176,8 @@ export const getVenueProducts = createServerFn({ method: "POST" }).handler(async
   const payload = (ctx.data as any).data || ctx.data;
   const { venue_id } = payload as { venue_id: string };
   try {
-    const data = await hasuraRequest<{ products: any[] }>(GET_VENUE_PRODUCTS, { 
-      contains_obj: { linked_assets: [{ type: "venue", id: venue_id }] }
+    const data = await hasuraRequest<{ products: any[] }>(GET_VENUE_PRODUCTS, {
+      contains_obj: { linked_assets: [{ type: "venue", id: venue_id }] },
     });
     return data.products || [];
   } catch (err) {
@@ -310,7 +310,7 @@ export const createProductOrders = createServerFn({ method: "POST" }).handler(as
 
   if (Array.isArray(objects) && objects.length > 0) {
     const productIds = [...new Set(objects.map((o: any) => o.product_id).filter(Boolean))];
-    
+
     if (productIds.length > 0) {
       const query = `
         query GetProductsForOrders($ids: [uuid!]!) {
@@ -327,7 +327,7 @@ export const createProductOrders = createServerFn({ method: "POST" }).handler(as
 
       objects = objects.map((obj: any) => {
         let newObj = { ...obj };
-        
+
         // Ensure size is set for products without variants to satisfy NOT NULL constraint
         if (!newObj.size) newObj.size = "N/A";
 

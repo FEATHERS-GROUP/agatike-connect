@@ -22,11 +22,18 @@ export function EventAttendees({
                   />
                 );
               } else {
-                const initial = (att.names || "Guest").charAt(0).toUpperCase();
+                const nameStr = att.names || "Guest";
+                const parts = nameStr.trim().split(/\s+/);
+                let initial = "";
+                if (parts.length >= 2) {
+                  initial = (parts[0][0] + parts[1][0]).toUpperCase();
+                } else {
+                  initial = nameStr.charAt(0).toUpperCase();
+                }
                 return (
                   <div
                     key={att.id || i}
-                    className="h-10 w-10 rounded-full border-2 border-background bg-primary/20 text-primary flex items-center justify-center font-bold text-lg"
+                    className="h-10 w-10 rounded-full border-2 border-background bg-primary/20 text-primary flex items-center justify-center font-bold text-sm"
                   >
                     {initial}
                   </div>

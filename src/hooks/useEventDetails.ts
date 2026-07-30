@@ -247,11 +247,10 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
       image: m.image_url || ev.cover,
     }));
 
-    const newMerch = (eventProducts || [])
-      .map((m: any) => ({
-        ...m,
-        image: m.image_url || ev.cover,
-      }));
+    const newMerch = (eventProducts || []).map((m: any) => ({
+      ...m,
+      image: m.image_url || ev.cover,
+    }));
 
     const merged = [...legacyMerch, ...newMerch];
     return Array.from(new Map(merged.map((m) => [m.id, m])).values());

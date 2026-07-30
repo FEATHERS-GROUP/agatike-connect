@@ -32,7 +32,7 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
       if (savedCart) {
         try {
           setCart(JSON.parse(savedCart));
-        } catch (e) { }
+        } catch (e) {}
       }
     }
   }, [venue?.id]);

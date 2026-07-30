@@ -33,7 +33,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
 
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("workspaceViewMode");
@@ -98,7 +98,9 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           <div className="flex bg-card border border-border/40 rounded-full p-0.5 ml-2 mr-2">
             <button
               className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
-                viewMode === "grid" ? "bg-primary/10 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                viewMode === "grid"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setViewMode("grid")}
               title="Grid View"
@@ -107,7 +109,9 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             </button>
             <button
               className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
-                viewMode === "list" ? "bg-primary/10 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                viewMode === "list"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setViewMode("list")}
               title="List View"
@@ -162,9 +166,13 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           )}
         </div>
       ) : (
-        <div className={viewMode === "grid" 
-          ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" 
-          : "flex flex-col gap-4 mx-auto w-full"}>
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              : "flex flex-col gap-4 mx-auto w-full"
+          }
+        >
           {workspaces.map((w) => {
             const t = types.find((x) => x.id === w.type) || types[0];
             const isActive = activeWorkspace?.id === w.id;
@@ -212,8 +220,10 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                     {currentUser?.role === "organizer" && <ActionButtons />}
                   </div>
                 )}
-                
-                <div className={`flex items-center gap-3 ${viewMode === "grid" ? "mb-5 pr-12" : "flex-1 mb-4 sm:mb-0"}`}>
+
+                <div
+                  className={`flex items-center gap-3 ${viewMode === "grid" ? "mb-5 pr-12" : "flex-1 mb-4 sm:mb-0"}`}
+                >
                   <div
                     className={`grid ${viewMode === "grid" ? "h-10 w-10 rounded-[14px]" : "h-12 w-12 rounded-xl"} place-items-center shrink-0 overflow-hidden shadow-sm`}
                     style={{
@@ -243,7 +253,9 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   </div>
                 </div>
 
-                <div className={`flex items-center justify-between sm:justify-end gap-2 ${viewMode === "grid" ? "w-full" : "sm:ml-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-border/40 sm:border-t-0"}`}>
+                <div
+                  className={`flex items-center justify-between sm:justify-end gap-2 ${viewMode === "grid" ? "w-full" : "sm:ml-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-border/40 sm:border-t-0"}`}
+                >
                   {viewMode === "list" && currentUser?.role === "organizer" && (
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <ActionButtons />

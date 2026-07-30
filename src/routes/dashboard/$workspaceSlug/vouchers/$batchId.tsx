@@ -23,8 +23,7 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
   const [isActive, setIsActive] = useState(voucher.is_active !== false);
   const queryClient = useQueryClient();
 
-  const totalUsed =
-    voucher.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0;
+  const totalUsed = voucher.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0;
   const initialValue = Number(voucher.current_balance) + Number(totalUsed);
 
   const mutation = useMutation({
@@ -61,7 +60,9 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
             className="w-24 h-8 text-sm"
           />
         ) : (
-          <span className="font-bold text-blue-500">{formatCurrency(voucher.current_balance, currency)}</span>
+          <span className="font-bold text-blue-500">
+            {formatCurrency(voucher.current_balance, currency)}
+          </span>
         )}
       </td>
       <td className="px-6 py-4">
@@ -82,7 +83,11 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
       <td className="px-6 py-4 text-right flex justify-end items-center gap-2">
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+            >
               View
             </Button>
           </DialogTrigger>
@@ -94,18 +99,26 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
               <div className="relative z-10 flex flex-col items-center">
                 <div className="w-full flex justify-between items-start mb-8">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">Gift Card</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
+                      Gift Card
+                    </p>
                     <p className="text-3xl font-bold tracking-tight">
                       {formatCurrency(voucher.current_balance, currency)}
                     </p>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner ${isActive ? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-500/20'}`}>
-                    {isActive ? 'Active' : 'Disabled'}
+                  <div
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner ${isActive ? "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-500/20"}`}
+                  >
+                    {isActive ? "Active" : "Disabled"}
                   </div>
                 </div>
 
                 <div className="bg-white p-5 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1)] w-56 h-56 flex items-center justify-center mb-8 relative group transform transition-transform hover:scale-105 duration-500 border border-border">
-                  <QRCode value={voucher.qr_code_string} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+                  <QRCode
+                    value={voucher.qr_code_string}
+                    size={180}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                  />
                   {!isActive && (
                     <div className="absolute inset-0 bg-background/60 rounded-3xl flex items-center justify-center backdrop-blur-[2px]">
                       <Ban className="w-16 h-16 text-red-500 opacity-80" />
@@ -117,11 +130,15 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
                   <div className="bg-secondary/50 rounded-2xl p-4 border border-border/50 backdrop-blur-md">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-sm text-muted-foreground">Initial Value</span>
-                      <span className="text-sm font-medium">{formatCurrency(initialValue, currency)}</span>
+                      <span className="text-sm font-medium">
+                        {formatCurrency(initialValue, currency)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Total Used</span>
-                      <span className="text-sm font-medium text-green-600 dark:text-green-400">{formatCurrency(totalUsed, currency)}</span>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                        {formatCurrency(totalUsed, currency)}
+                      </span>
                     </div>
                   </div>
 
@@ -147,7 +164,11 @@ function VoucherRow({ voucher, currency }: { voucher: any; currency: string }) {
               disabled={mutation.isPending}
               style={{ background: "var(--gradient-primary)", color: "white" }}
             >
-              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {mutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
             </Button>
           </>
         ) : (
@@ -186,7 +207,10 @@ function VoucherBatchDetailsView() {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-4">
         <p>Voucher batch not found.</p>
-        <Button variant="outline" onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/products&add-ons` })}>
+        <Button
+          variant="outline"
+          onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/products&add-ons` })}
+        >
           Go Back
         </Button>
       </div>
@@ -196,7 +220,7 @@ function VoucherBatchDetailsView() {
   const vouchers = batch.vouchers || [];
 
   const filteredVouchers = vouchers.filter((v: any) =>
-    v.qr_code_string?.toLowerCase().includes(searchQuery.toLowerCase())
+    v.qr_code_string?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredVouchers.length / itemsPerPage);
@@ -213,10 +237,20 @@ function VoucherBatchDetailsView() {
     return sum + Number(v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0);
   }, 0);
 
-  const totalRemaining = activeVouchers.reduce((sum: number, v: any) => sum + Number(v.current_balance), 0);
+  const totalRemaining = activeVouchers.reduce(
+    (sum: number, v: any) => sum + Number(v.current_balance),
+    0,
+  );
 
   const exportCsv = () => {
-    const headers = ["QR Code", "Initial Value", "Used Amount", "Current Balance", "Status", "Generated On"];
+    const headers = [
+      "QR Code",
+      "Initial Value",
+      "Used Amount",
+      "Current Balance",
+      "Status",
+      "Generated On",
+    ];
     const rows = vouchers.map((v: any) => {
       const used = v.voucher_transactions_aggregate?.aggregate?.sum?.amount || 0;
       const initial = Number(v.current_balance) + Number(used);
@@ -231,11 +265,11 @@ function VoucherBatchDetailsView() {
     });
 
     const csvContent = [headers.join(","), ...rows.map((e: any[]) => e.join(","))].join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `${batch.name.replace(/\s+/g, '_')}_vouchers.csv`);
+    link.setAttribute("download", `${batch.name.replace(/\s+/g, "_")}_vouchers.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -246,7 +280,11 @@ function VoucherBatchDetailsView() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link to={`/dashboard/${workspaceSlug}/products&add-ons`}>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-secondary/50 hover:bg-secondary">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full bg-secondary/50 hover:bg-secondary"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
@@ -266,16 +304,22 @@ function VoucherBatchDetailsView() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Total Value</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            Total Value
+          </p>
           <p className="text-3xl font-bold tracking-tight">
             {formatCurrency(totalValue, activeWorkspace?.currency || "RWF")}
           </p>
-          <p className="text-sm text-muted-foreground mt-2">{activeVouchers.length} Active Vouchers</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            {activeVouchers.length} Active Vouchers
+          </p>
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Total Used</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            Total Used
+          </p>
           <p className="text-3xl font-bold tracking-tight text-green-500">
             {formatCurrency(totalUsed, activeWorkspace?.currency || "RWF")}
           </p>
@@ -284,7 +328,9 @@ function VoucherBatchDetailsView() {
 
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Remaining Balance</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            Remaining Balance
+          </p>
           <p className="text-3xl font-bold tracking-tight text-blue-500">
             {formatCurrency(totalRemaining, activeWorkspace?.currency || "RWF")}
           </p>
@@ -296,7 +342,9 @@ function VoucherBatchDetailsView() {
         <div className="p-5 border-b border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">Generated Vouchers</h2>
-            <p className="text-sm text-muted-foreground">Manage individual voucher balances and statuses.</p>
+            <p className="text-sm text-muted-foreground">
+              Manage individual voucher balances and statuses.
+            </p>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -344,7 +392,8 @@ function VoucherBatchDetailsView() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-border/40">
             <span className="text-sm text-muted-foreground">
-              Showing {(page - 1) * itemsPerPage + (filteredVouchers.length > 0 ? 1 : 0)} to {Math.min(page * itemsPerPage, filteredVouchers.length)} of {filteredVouchers.length}
+              Showing {(page - 1) * itemsPerPage + (filteredVouchers.length > 0 ? 1 : 0)} to{" "}
+              {Math.min(page * itemsPerPage, filteredVouchers.length)} of {filteredVouchers.length}
             </span>
             <div className="flex gap-2">
               <Button

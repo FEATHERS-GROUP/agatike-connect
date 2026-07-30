@@ -1,7 +1,17 @@
 import { createFileRoute, useParams, useNavigate, Link } from "@tanstack/react-router";
 import { getProduct, getWorkspaceRecentOrders } from "@/api/products";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Ticket, Loader2, Save, Ban, CheckCircle, Search, Wallet, Edit } from "lucide-react";
+import {
+  ArrowLeft,
+  Ticket,
+  Loader2,
+  Save,
+  Ban,
+  CheckCircle,
+  Search,
+  Wallet,
+  Edit,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -17,8 +27,16 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/products/$produc
   component: ProductDetailsView,
 });
 
-function GiftCardRow({ order, currency, initialValue }: { order: any; currency: string; initialValue: number }) {
-  const [isActive, setIsActive] = useState(order.status !== 'disabled');
+function GiftCardRow({
+  order,
+  currency,
+  initialValue,
+}: {
+  order: any;
+  currency: string;
+  initialValue: number;
+}) {
+  const [isActive, setIsActive] = useState(order.status !== "disabled");
   const queryClient = useQueryClient();
 
   const currentBalance = Number(order.current_balance || 0);
@@ -37,7 +55,9 @@ function GiftCardRow({ order, currency, initialValue }: { order: any; currency: 
         </span>
       </td>
       <td className="px-6 py-4 text-muted-foreground">{formatCurrency(initialValue, currency)}</td>
-      <td className="px-6 py-4 font-bold text-green-500">{formatCurrency(totalUsed > 0 ? totalUsed : 0, currency)}</td>
+      <td className="px-6 py-4 font-bold text-green-500">
+        {formatCurrency(totalUsed > 0 ? totalUsed : 0, currency)}
+      </td>
       <td className="px-6 py-4">
         <span className="font-bold text-blue-500">{formatCurrency(currentBalance, currency)}</span>
       </td>
@@ -52,7 +72,11 @@ function GiftCardRow({ order, currency, initialValue }: { order: any; currency: 
       <td className="px-6 py-4 text-right flex justify-end items-center gap-2">
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary"
+            >
               View
             </Button>
           </DialogTrigger>
@@ -64,18 +88,26 @@ function GiftCardRow({ order, currency, initialValue }: { order: any; currency: 
               <div className="relative z-10 flex flex-col items-center">
                 <div className="w-full flex justify-between items-start mb-8">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">Gift Card</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
+                      Gift Card
+                    </p>
                     <p className="text-3xl font-bold tracking-tight">
                       {formatCurrency(currentBalance, currency)}
                     </p>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner ${isActive ? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-500/20'}`}>
-                    {isActive ? 'Active' : 'Disabled'}
+                  <div
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-inner ${isActive ? "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-500/20"}`}
+                  >
+                    {isActive ? "Active" : "Disabled"}
                   </div>
                 </div>
 
                 <div className="bg-white p-5 rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(255,255,255,0.1)] w-56 h-56 flex items-center justify-center mb-8 relative group transform transition-transform hover:scale-105 duration-500 border border-border">
-                  <QRCode value={order.qr_code_string || "N/A"} size={180} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />
+                  <QRCode
+                    value={order.qr_code_string || "N/A"}
+                    size={180}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                  />
                   {!isActive && (
                     <div className="absolute inset-0 bg-background/60 rounded-3xl flex items-center justify-center backdrop-blur-[2px]">
                       <Ban className="w-16 h-16 text-red-500 opacity-80" />
@@ -87,11 +119,15 @@ function GiftCardRow({ order, currency, initialValue }: { order: any; currency: 
                   <div className="bg-secondary/50 rounded-2xl p-4 border border-border/50 backdrop-blur-md">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-sm text-muted-foreground">Initial Value</span>
-                      <span className="text-sm font-medium">{formatCurrency(initialValue, currency)}</span>
+                      <span className="text-sm font-medium">
+                        {formatCurrency(initialValue, currency)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Total Used</span>
-                      <span className="text-sm font-medium text-green-600 dark:text-green-400">{formatCurrency(totalUsed > 0 ? totalUsed : 0, currency)}</span>
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                        {formatCurrency(totalUsed > 0 ? totalUsed : 0, currency)}
+                      </span>
                     </div>
                   </div>
 
@@ -125,7 +161,8 @@ function ProductDetailsView() {
 
   const { data: allOrders = [], isLoading: isLoadingOrders } = useQuery({
     queryKey: ["workspace-recent-orders", activeWorkspace?.id],
-    queryFn: () => getWorkspaceRecentOrders({ data: { workspace_id: activeWorkspace?.id! } } as any),
+    queryFn: () =>
+      getWorkspaceRecentOrders({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
 
@@ -152,13 +189,13 @@ function ProductDetailsView() {
   const productOrders = allOrders.filter((o: any) => o.product_id === product.id);
 
   const initialValue = Number(product.value_amount || 0);
-  
+
   // Calculate stats
   let totalValue = 0;
   let remainingBalance = 0;
-  
+
   productOrders.forEach((order: any) => {
-    if (order.status !== 'disabled') {
+    if (order.status !== "disabled") {
       totalValue += initialValue;
       remainingBalance += Number(order.current_balance || 0);
     }
@@ -166,10 +203,11 @@ function ProductDetailsView() {
 
   const totalUsed = totalValue - remainingBalance;
 
-  const filteredOrders = productOrders.filter((o: any) => 
-    o.qr_code_string?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    o.user?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    o.guest_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredOrders = productOrders.filter(
+    (o: any) =>
+      o.qr_code_string?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.user?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.guest_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
@@ -180,7 +218,11 @@ function ProductDetailsView() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link to="/dashboard/$workspaceSlug/products&add-ons" params={{ workspaceSlug }}>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-secondary/50 hover:bg-secondary">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full bg-secondary/50 hover:bg-secondary"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
@@ -193,8 +235,14 @@ function ProductDetailsView() {
           </div>
         </div>
         <div className="flex items-center gap-3 mt-4 sm:mt-0">
-          <Link to="/dashboard/$workspaceSlug/products/edit/$productId" params={{ workspaceSlug, productId }}>
-            <Button variant="outline" className="gap-2 bg-card border-border/60 shadow-[var(--shadow-card)]">
+          <Link
+            to="/dashboard/$workspaceSlug/products/edit/$productId"
+            params={{ workspaceSlug, productId }}
+          >
+            <Button
+              variant="outline"
+              className="gap-2 bg-card border-border/60 shadow-[var(--shadow-card)]"
+            >
               <Edit className="h-4 w-4" />
               Edit Gift Card
             </Button>
@@ -205,7 +253,9 @@ function ProductDetailsView() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Total Value</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            Total Value
+          </p>
           <p className="text-3xl font-bold tracking-tight">
             {formatCurrency(totalValue, activeWorkspace?.currency || "RWF")}
           </p>
@@ -214,7 +264,9 @@ function ProductDetailsView() {
 
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Total Used</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            Total Used
+          </p>
           <p className="text-3xl font-bold tracking-tight text-green-500">
             {formatCurrency(totalUsed > 0 ? totalUsed : 0, activeWorkspace?.currency || "RWF")}
           </p>
@@ -223,7 +275,9 @@ function ProductDetailsView() {
 
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">Remaining Balance</p>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+            Remaining Balance
+          </p>
           <p className="text-3xl font-bold tracking-tight text-blue-500">
             {formatCurrency(remainingBalance, activeWorkspace?.currency || "RWF")}
           </p>
@@ -235,7 +289,9 @@ function ProductDetailsView() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-4 gap-4">
           <div>
             <h3 className="font-semibold text-lg">Sold Gift Cards</h3>
-            <p className="text-sm text-muted-foreground">Manage and track all sold instances of this gift card.</p>
+            <p className="text-sm text-muted-foreground">
+              Manage and track all sold instances of this gift card.
+            </p>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -286,11 +342,12 @@ function ProductDetailsView() {
             </tbody>
           </table>
         </div>
-        
+
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-secondary/10">
             <span className="text-sm text-muted-foreground">
-              Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to {Math.min(page * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
+              Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to{" "}
+              {Math.min(page * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
             </span>
             <div className="flex gap-2">
               <Button

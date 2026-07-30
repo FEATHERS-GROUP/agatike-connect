@@ -75,16 +75,17 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ""}
         <div style="margin: 0;">${message}</div>
         
-        ${badgeLink
-        ? `
+        ${
+          badgeLink
+            ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
           <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
           <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
           <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
-        : ""
-      }
+            : ""
+        }
 
         ${socialsHtml}
       </div>
@@ -101,17 +102,18 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${organizerLogo &&
-        !organizerLogo.includes("localhost") &&
-        organizerLogo.startsWith("http")
-        ? `
+                  ${
+                    organizerLogo &&
+                    !organizerLogo.includes("localhost") &&
+                    organizerLogo.startsWith("http")
+                      ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   `
-        : ""
-      }
+                      : ""
+                  }
                   <td align="center">
                     <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
@@ -209,21 +211,27 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         const wsData = await hasuraRequest<{
           workspaces_by_pk: { name: string; orgnizer_id: string };
           workspace_pages: { slug: string; theme_color: string; components: any }[];
-        }>(`
+        }>(
+          `
           query GetWS($id: uuid!) { 
             workspaces_by_pk(id: $id) { name orgnizer_id } 
             workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { slug theme_color components }
           }
-        `, { id: workspaceId });
+        `,
+          { id: workspaceId },
+        );
 
         if (wsData?.workspaces_by_pk) {
           organizerName = wsData.workspaces_by_pk.name;
           if (wsData.workspaces_by_pk.orgnizer_id) {
             const orgData = await hasuraRequest<{
               organizers_by_pk: { name: string; socials: any };
-            }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name socials } }`, { id: wsData.workspaces_by_pk.orgnizer_id });
+            }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name socials } }`, {
+              id: wsData.workspaces_by_pk.orgnizer_id,
+            });
             if (orgData?.organizers_by_pk) {
-              if (orgData.organizers_by_pk.socials) organizerSocials = orgData.organizers_by_pk.socials;
+              if (orgData.organizers_by_pk.socials)
+                organizerSocials = orgData.organizers_by_pk.socials;
             }
           }
         }
@@ -246,7 +254,11 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
     if (bookingRef) {
       try {
         const { hasuraRequest } = await import("./graphql.server");
-        const ordersData = await hasuraRequest<{ product_orders: any[]; sponsored_vouchers: any[] }>(`
+        const ordersData = await hasuraRequest<{
+          product_orders: any[];
+          sponsored_vouchers: any[];
+        }>(
+          `
           query GetOrdersAndVouchers($ref: String!) {
             product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
               product_id qty size amount_paid qr_code_string phone current_balance
@@ -257,19 +269,26 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
               batch { name }
             }
           }
-        `, { ref: bookingRef });
-        
+        `,
+          { ref: bookingRef },
+        );
+
         const confirmedOrders = ordersData?.product_orders || [];
         if (confirmedOrders.length > 0) {
           const { generateProductReceiptPdf, generateVoucherPdf } = await import("./receipts");
-          const orgDetails = { name: organizerName, themeColor: themeColor };
+          const orgDetails = { name: eventName || organizerName, themeColor: themeColor };
           const customerDetails = { name: customerName, email: to, phone: phone || "" };
-          const pdfBuffer = await generateProductReceiptPdf(confirmedOrders, orgDetails, customerDetails, 0);
+          const pdfBuffer = await generateProductReceiptPdf(
+            confirmedOrders,
+            orgDetails,
+            customerDetails,
+            0,
+          );
           if (pdfBuffer) {
             emailAttachments.push({
               filename: `Receipt-${bookingRef}.pdf`,
               content: pdfBuffer.toString("base64"),
-              contentType: "application/pdf"
+              contentType: "application/pdf",
             });
           }
           for (const order of confirmedOrders) {
@@ -278,16 +297,16 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
               emailAttachments.push({
                 filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
                 content: vBuffer.toString("base64"),
-                contentType: "application/pdf"
+                contentType: "application/pdf",
               });
             }
           }
         }
-        
+
         const sponsoredVouchers = ordersData?.sponsored_vouchers || [];
         if (sponsoredVouchers.length > 0) {
           const { generateVoucherPdf } = await import("./receipts");
-          const orgDetails = { name: organizerName, themeColor: themeColor };
+          const orgDetails = { name: eventName || organizerName, themeColor: themeColor };
           for (const voucher of sponsoredVouchers) {
             // We coerce the voucher into the structure generateVoucherPdf expects:
             // order.batch?.name is natively supported, current_balance is natively supported.
@@ -295,7 +314,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
             emailAttachments.push({
               filename: `Voucher-${voucher.qr_code_string || "Promo"}.pdf`,
               content: vBuffer.toString("base64"),
-              contentType: "application/pdf"
+              contentType: "application/pdf",
             });
           }
         }
@@ -375,16 +394,16 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
     if (phone) {
       let smsMsg = "";
       if (isVenue) {
-         smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed.`;
+        smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed.`;
       } else {
-         if (wsSlug && !isPortal) {
-           const appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
-           smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
-         } else {
-           smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}.`;
-         }
+        if (wsSlug && !isPortal) {
+          const appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
+        } else {
+          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}.`;
+        }
       }
-      
+
       try {
         const { sendSMS } = await import("./pindo.server");
         await sendSMS(phone, smsMsg);
@@ -582,14 +601,15 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
             <span>${planName} (${billingCycle})</span>
             <strong>${price}</strong>
           </p>
-          ${startDate
-        ? `
+          ${
+            startDate
+              ? `
           <p style="margin: 8px 0; display: flex; justify-content: space-between; font-size: 14px; color: #64748b;">
             <span>Start Date</span>
             <span>${startDate}</span>
           </p>`
-        : ""
-      }
+              : ""
+          }
           <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;">
             <span>Total Paid</span>
             <span>${price}</span>
@@ -717,8 +737,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
             </thead>
             <tbody>
               ${members
-            .map(
-              (m: any, i: number) => `
+                .map(
+                  (m: any, i: number) => `
                 <tr>
                   <td>${i + 1}</td>
                   <td>${m.name || ""}</td>
@@ -727,8 +747,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
                   <td style="font-family: monospace;">${m.membership_id || ""}</td>
                 </tr>
               `,
-            )
-            .join("")}
+                )
+                .join("")}
             </tbody>
           </table>
         </body>

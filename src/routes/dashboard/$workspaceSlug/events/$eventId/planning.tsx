@@ -451,7 +451,9 @@ function VouchersTab({ eventId }: { eventId: string }) {
     queryKey: ["workspace-sponsored-voucher-batches", activeWorkspace?.id],
     queryFn: async () => {
       const { getWorkspaceSponsoredVoucherBatches } = await import("@/api/vouchers");
-      return getWorkspaceSponsoredVoucherBatches({ data: { workspace_id: activeWorkspace?.id } } as any);
+      return getWorkspaceSponsoredVoucherBatches({
+        data: { workspace_id: activeWorkspace?.id },
+      } as any);
     },
     enabled: !!activeWorkspace?.id,
   });
@@ -472,7 +474,7 @@ function VouchersTab({ eventId }: { eventId: string }) {
             batch_id: formData.existing_batch_id,
             event_id: eventId,
             linked_ticket_ids: formData.linked_ticket_ids,
-          }
+          },
         } as any);
       }
       return await batchGenerateSponsoredVouchers({
@@ -490,7 +492,11 @@ function VouchersTab({ eventId }: { eventId: string }) {
       } as any);
     },
     onSuccess: () => {
-      toast.success(formData.generation_type === "link_existing" ? "Campaign linked successfully!" : "Campaign created successfully!");
+      toast.success(
+        formData.generation_type === "link_existing"
+          ? "Campaign linked successfully!"
+          : "Campaign created successfully!",
+      );
       setOpen(false);
       setFormData({
         batch_name: "",
@@ -502,7 +508,9 @@ function VouchersTab({ eventId }: { eventId: string }) {
         existing_batch_id: "",
       });
       queryClient.invalidateQueries({ queryKey: ["sponsored-vouchers", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["workspace-sponsored-voucher-batches", activeWorkspace?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-sponsored-voucher-batches", activeWorkspace?.id],
+      });
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to generate vouchers");
@@ -629,11 +637,15 @@ function VouchersTab({ eventId }: { eventId: string }) {
                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                     required
                     value={formData.existing_batch_id}
-                    onChange={(e) => setFormData({ ...formData, existing_batch_id: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, existing_batch_id: e.target.value })
+                    }
                   >
                     <option value="">Select a batch</option>
                     {unlinkedBatches.map((b: any) => (
-                      <option key={b.id} value={b.id}>{b.name} ({b.value_per_voucher} RWF/voucher)</option>
+                      <option key={b.id} value={b.id}>
+                        {b.name} ({b.value_per_voucher} RWF/voucher)
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -651,7 +663,8 @@ function VouchersTab({ eventId }: { eventId: string }) {
                 </div>
               )}
 
-              {(formData.generation_type === "ticket_linked" || formData.generation_type === "link_existing") && (
+              {(formData.generation_type === "ticket_linked" ||
+                formData.generation_type === "link_existing") && (
                 <>
                   <div className="space-y-2">
                     <Label>Select Trigger Tickets (by Tour Stop)</Label>
@@ -728,7 +741,9 @@ function VouchersTab({ eventId }: { eventId: string }) {
                 </div>
               )}
 
-              {(formData.generation_type === "manual" || (formData.generation_type === "ticket_linked" && formData.value_type === "fixed")) && (
+              {(formData.generation_type === "manual" ||
+                (formData.generation_type === "ticket_linked" &&
+                  formData.value_type === "fixed")) && (
                 <div className="space-y-2">
                   <Label>Value per Voucher (RWF)</Label>
                   <Input
