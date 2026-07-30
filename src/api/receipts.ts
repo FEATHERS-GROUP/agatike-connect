@@ -244,7 +244,7 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
   doc.text((orgDetails?.name || "VOUCHER").toUpperCase(), 150, 50, { align: "center", charSpace: 3 });
 
   // Add Value
-  const productName = order.product?.name || "Gift Card";
+  const productName = order.product?.name || order.batch?.name || "Gift Card";
   const qty = Math.max(1, parseInt(order.qty || "1"));
   
   // The database holds the actual gift card balance in value_amount

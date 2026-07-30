@@ -427,6 +427,35 @@ export const getSponsoredVoucherBatch = createServerFn({ method: "POST" }).handl
   return data.sponsored_voucher_batches_by_pk || null;
 });
 
+
+
+export const linkSponsoredVoucherBatch = createServerFn({ method: "POST" })
+  .validator((d: { batch_id: string; event_id: string; linked_ticket_ids: string[] }) => d)
+  .handler(async (ctx) => {
+    const { batch_id, event_id, linked_ticket_ids } = ctx.data;
+    
+    const UPDATE_BATCH = `
+      mutation LinkBatch($id: uuid!, $event_id: uuid!, $tickets: jsonb!) {
+        update_sponsored_voucher_batches_by_pk(
+          pk_columns: { id: $id },
+          _set: { 
+            event_id: $event_id, 
+            linked_ticket_ids: $tickets,
+            generation_type: "ticket_linked"
+          }
+        ) {
+          id
+        }
+      }
+    `;
+
+    return await hasuraRequest(UPDATE_BATCH, {
+      id: batch_id,
+      event_id,
+      tickets: linked_ticket_ids,
+    });
+  });
+
 const UPDATE_VOUCHER_BALANCE = `
   mutation UpdateVoucherBalance($id: uuid!, $balance: numeric!, $is_active: Boolean!) {
     update_sponsored_vouchers_by_pk(pk_columns: { id: $id }, _set: { current_balance: $balance, is_active: $is_active }) {
@@ -444,4 +473,125 @@ export const updateVoucherBalance = createServerFn({ method: "POST" }).handler(a
   const { id, balance, is_active } = ctx.data as any;
   const res = await hasuraRequest(UPDATE_VOUCHER_BALANCE, { id, balance, is_active });
   return res;
+});
+
+export const updateBatchLinkedTickets = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { id, linked_ticket_ids } = ctx.data as any;
+  const UPDATE_BATCH = `
+    mutation UpdateBatch($id: uuid!, $linked: jsonb) {
+      update_sponsored_voucher_batches_by_pk(pk_columns: { id: $id }, _set: { linked_ticket_ids: $linked }) {
+        id
+      }
+    }
+  `;
+  const res = await hasuraRequest(UPDATE_BATCH, { id, linked: linked_ticket_ids });
+  return res;
+});
+
+export const setTicketLinkedBatch = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+
+  const { ticket_id, batch_id, workspace_id } = ctx.data as any;
+  
+  // 1. Fetch all batches for the workspace that are ticket_linked
+  const GET_BATCHES = `
+    query GetBatches($ws: uuid!) {
+      sponsored_voucher_batches(where: { workspace_id: { _eq: $ws }, generation_type: { _eq: "ticket_linked" } }) {
+        id
+        linked_ticket_ids
+      }
+    }
+  `;
+  const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(GET_BATCHES, { ws: workspace_id });
+  const batches = data?.sponsored_voucher_batches || [];
+
+  // 2. We need to prepare mutations to remove the ticket_id from batches that shouldn't have it,
+  // and add it to the one that should.
+  let mutationStr = `mutation UpdateLinks {\n`;
+  let hasUpdates = false;
+
+  batches.forEach((b: any, idx: number) => {
+    let linked = Array.isArray(b.linked_ticket_ids) ? [...b.linked_ticket_ids] : [];
+    let needsUpdate = false;
+
+    if (b.id === batch_id) {
+      // Add if missing
+      if (!linked.includes(ticket_id)) {
+        linked.push(ticket_id);
+        needsUpdate = true;
+      }
+    } else {
+      // Remove if present
+      if (linked.includes(ticket_id)) {
+        linked = linked.filter((id) => id !== ticket_id);
+        needsUpdate = true;
+      }
+    }
+
+    if (needsUpdate) {
+      hasUpdates = true;
+      // We stringify the JSON array for the GraphQL mutation alias
+      mutationStr += `
+        update_${idx}: update_sponsored_voucher_batches_by_pk(
+          pk_columns: { id: "${b.id}" },
+          _set: { linked_ticket_ids: ${JSON.stringify(linked)} }
+        ) {
+          id
+        }
+      `;
+    }
+  });
+
+  mutationStr += `\n}`;
+
+  if (hasUpdates) {
+    return await hasuraRequest(mutationStr, {});
+  }
+  return { success: true };
+});
+
+export const getWorkspaceTicketTiers = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const session = await getSession();
+  if (!session || !session.sub) throw new Error("unauthenticated");
+  const { workspace_id } = ctx.data as any;
+
+  const QUERY = `
+    query GetTiers($ws: uuid!) {
+      events(where: { workspace_id: { _eq: $ws } }) {
+        id
+        title
+        event_tickets {
+          id
+          name
+          type
+          cost
+        }
+      }
+      cinema_movies(where: { workspace_id: { _eq: $ws } }) {
+        id
+        title
+        cinema_ticket_tiers {
+          id
+          name
+          price
+        }
+      }
+      venue_projects(where: { workspace_id: { _eq: $ws } }) {
+        id
+        title
+        venue_project_sections {
+          id
+          name
+          price
+        }
+      }
+    }
+  `;
+
+  const data = await hasuraRequest<{ events: any[]; cinema_movies: any[]; venue_projects: any[] }>(QUERY, { ws: workspace_id });
+  return data;
 });

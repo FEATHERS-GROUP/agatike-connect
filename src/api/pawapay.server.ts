@@ -176,6 +176,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   phone
                   names
                   qrcode_number
+                  ticket_id
+                  custom_fields
                   events {
                     id
                     title
@@ -193,6 +195,15 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             { booking_ref: tx.reference_id },
           );
           const confirmedAttendees = attendeeRes.update_event_attendees?.returning || [];
+
+          if (confirmedAttendees.length > 0) {
+            try {
+              const { processSponsoredVouchersForAttendees } = await import("./sponsored_vouchers");
+              await processSponsoredVouchersForAttendees(confirmedAttendees);
+            } catch (e) {
+              console.error("[PawaPay] Failed to process sponsored vouchers:", e);
+            }
+          }
 
           // Also confirm any product_orders that are pending payment linked to tickets in this booking
           const confirmProductOrdersQuery = `

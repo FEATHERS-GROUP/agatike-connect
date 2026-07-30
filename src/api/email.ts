@@ -246,11 +246,15 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
     if (bookingRef) {
       try {
         const { hasuraRequest } = await import("./graphql.server");
-        const ordersData = await hasuraRequest<{ product_orders: any[] }>(`
-          query GetOrders($ref: String!) {
+        const ordersData = await hasuraRequest<{ product_orders: any[]; sponsored_vouchers: any[] }>(`
+          query GetOrdersAndVouchers($ref: String!) {
             product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
               product_id qty size amount_paid qr_code_string phone current_balance
               product { name type price value_amount }
+            }
+            sponsored_vouchers(where: { booking_ref: { _eq: $ref } }) {
+              qr_code_string current_balance
+              batch { name }
             }
           }
         `, { ref: bookingRef });
@@ -277,6 +281,22 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
                 contentType: "application/pdf"
               });
             }
+          }
+        }
+        
+        const sponsoredVouchers = ordersData?.sponsored_vouchers || [];
+        if (sponsoredVouchers.length > 0) {
+          const { generateVoucherPdf } = await import("./receipts");
+          const orgDetails = { name: organizerName, themeColor: themeColor };
+          for (const voucher of sponsoredVouchers) {
+            // We coerce the voucher into the structure generateVoucherPdf expects:
+            // order.batch?.name is natively supported, current_balance is natively supported.
+            const vBuffer = await generateVoucherPdf(voucher, orgDetails);
+            emailAttachments.push({
+              filename: `Voucher-${voucher.qr_code_string || "Promo"}.pdf`,
+              content: vBuffer.toString("base64"),
+              contentType: "application/pdf"
+            });
           }
         }
       } catch (e) {
