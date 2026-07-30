@@ -8,6 +8,7 @@ import {
   Sparkles,
   Banknote,
   DoorOpen,
+  CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
@@ -68,6 +69,11 @@ export function VenueSidebar() {
       icon: Banknote,
     },
     {
+      label: "Sponsored Vouchers",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/vouchers`,
+      icon: CreditCard,
+    },
+    {
       label: "Settings",
       href: `/dashboard/${workspaceSlug}/venues/${venueId}/settings`,
       icon: Settings,
@@ -119,56 +125,56 @@ export function VenueSidebar() {
       <nav className="space-y-0.5 text-sm flex-1">
         {isCreateVenue
           ? steps.map((s, i) => {
-              const isCompleted = i < currentStep;
-              const isCurrent = i === currentStep;
-              return (
-                <button
-                  key={s}
-                  onClick={() => navigate({ to: location.pathname, search: { step: i } })}
-                  disabled={i > currentStep && !isCompleted}
+            const isCompleted = i < currentStep;
+            const isCurrent = i === currentStep;
+            return (
+              <button
+                key={s}
+                onClick={() => navigate({ to: location.pathname, search: { step: i } })}
+                disabled={i > currentStep && !isCompleted}
+                className={cn(
+                  "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-all",
+                  isCurrent
+                    ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                    : isCompleted
+                      ? "text-foreground hover:bg-secondary/80"
+                      : "text-muted-foreground opacity-50 cursor-not-allowed",
+                )}
+              >
+                <div
                   className={cn(
-                    "w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg text-sm font-medium transition-all",
+                    "h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 transition-colors",
                     isCurrent
-                      ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                      ? "bg-primary text-primary-foreground"
                       : isCompleted
-                        ? "text-foreground hover:bg-secondary/80"
-                        : "text-muted-foreground opacity-50 cursor-not-allowed",
+                        ? "bg-foreground text-background"
+                        : "bg-secondary text-muted-foreground border border-border",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "h-6 w-6 rounded-full flex items-center justify-center text-xs shrink-0 transition-colors",
-                      isCurrent
-                        ? "bg-primary text-primary-foreground"
-                        : isCompleted
-                          ? "bg-foreground text-background"
-                          : "bg-secondary text-muted-foreground border border-border",
-                    )}
-                  >
-                    {isCompleted ? <Check className="h-3 w-3" /> : i + 1}
-                  </div>
-                  <span className="truncate">{s}</span>
-                </button>
-              );
-            })
+                  {isCompleted ? <Check className="h-3 w-3" /> : i + 1}
+                </div>
+                <span className="truncate">{s}</span>
+              </button>
+            );
+          })
           : nav.map((n) => {
-              const isActive = location.pathname.includes(n.href);
-              return (
-                <Link
-                  key={n.label}
-                  to={n.href}
-                  className={cn(
-                    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
-                    isActive
-                      ? "bg-accent text-accent-foreground font-medium"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                  )}
-                >
-                  <n.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{n.label}</span>
-                </Link>
-              );
-            })}
+            const isActive = location.pathname.includes(n.href);
+            return (
+              <Link
+                key={n.label}
+                to={n.href}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
+                  isActive
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )}
+              >
+                <n.icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{n.label}</span>
+              </Link>
+            );
+          })}
       </nav>
     </aside>
   );

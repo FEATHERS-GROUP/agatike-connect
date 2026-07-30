@@ -154,6 +154,7 @@ import { Route as InternalControlAdminOrganizersOrganizerIdRouteImport } from '.
 import { Route as InternalControlAdminLeadsLeadIdRouteImport } from './routes/internal/control/admin/leads.$leadId'
 import { Route as InternalControlAdminAgatikeUsersUserIdRouteImport } from './routes/internal/control/admin/agatike-users/$userId'
 import { Route as DashboardBillingSubscriptionsCheckoutPlanIdRouteImport } from './routes/dashboard/billing/subscriptions/checkout.$planId'
+import { Route as DashboardWorkspaceSlugVenuesVenueIdVouchersRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/vouchers'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/settings'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdPricingRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/pricing'
 import { Route as DashboardWorkspaceSlugVenuesVenueIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/overview'
@@ -187,6 +188,7 @@ import { Route as DashboardWorkspaceSlugEventsEventIdAttendeesRouteImport } from
 import { Route as DashboardWorkspaceSlugBookProcurementCreateRouteImport } from './routes/dashboard/$workspaceSlug/book/procurement_.create'
 import { Route as DashboardWorkspaceSlugBookProcurementIdRouteImport } from './routes/dashboard/$workspaceSlug/book/procurement_.$id'
 import { Route as DashboardWorkspaceSlugBookNotesNoteIdRouteImport } from './routes/dashboard/$workspaceSlug/book/notes_.$noteId'
+import { Route as DashboardWorkspaceSlugCinemaCinemaIdVouchersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdScreensRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
@@ -1030,6 +1032,12 @@ const DashboardBillingSubscriptionsCheckoutPlanIdRoute =
     path: '/billing/subscriptions/checkout/$planId',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugVenuesVenueIdVouchersRoute =
+  DashboardWorkspaceSlugVenuesVenueIdVouchersRouteImport.update({
+    id: '/vouchers',
+    path: '/vouchers',
+    getParentRoute: () => DashboardWorkspaceSlugVenuesVenueIdRoute,
+  } as any)
 const DashboardWorkspaceSlugVenuesVenueIdSettingsRoute =
   DashboardWorkspaceSlugVenuesVenueIdSettingsRouteImport.update({
     id: '/settings',
@@ -1229,6 +1237,12 @@ const DashboardWorkspaceSlugBookNotesNoteIdRoute =
     id: '/$workspaceSlug/book/notes_/$noteId',
     path: '/$workspaceSlug/book/notes/$noteId',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute =
+  DashboardWorkspaceSlugCinemaCinemaIdVouchersRouteImport.update({
+    id: '/vouchers',
+    path: '/vouchers',
+    getParentRoute: () => DashboardWorkspaceSlugCinemaCinemaIdRoute,
   } as any)
 const DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute =
   DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRouteImport.update({
@@ -1577,6 +1591,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens': typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers': typeof DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute
   '/dashboard/$workspaceSlug/book/notes/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   '/dashboard/$workspaceSlug/book/procurement/$id': typeof DashboardWorkspaceSlugBookProcurementIdRoute
   '/dashboard/$workspaceSlug/book/procurement/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
@@ -1610,6 +1625,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   '/dashboard/$workspaceSlug/venues/$venueId/pricing': typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/vouchers': typeof DashboardWorkspaceSlugVenuesVenueIdVouchersRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
   '/internal/control/admin/leads/$leadId': typeof InternalControlAdminLeadsLeadIdRoute
@@ -1788,6 +1804,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens': typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers': typeof DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute
   '/dashboard/$workspaceSlug/book/notes/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   '/dashboard/$workspaceSlug/book/procurement/$id': typeof DashboardWorkspaceSlugBookProcurementIdRoute
   '/dashboard/$workspaceSlug/book/procurement/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
@@ -1821,6 +1838,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   '/dashboard/$workspaceSlug/venues/$venueId/pricing': typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/vouchers': typeof DashboardWorkspaceSlugVenuesVenueIdVouchersRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
   '/internal/control/admin/leads/$leadId': typeof InternalControlAdminLeadsLeadIdRoute
@@ -2002,6 +2020,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens': typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings': typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers': typeof DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute
   '/dashboard/$workspaceSlug/book/notes_/$noteId': typeof DashboardWorkspaceSlugBookNotesNoteIdRoute
   '/dashboard/$workspaceSlug/book/procurement_/$id': typeof DashboardWorkspaceSlugBookProcurementIdRoute
   '/dashboard/$workspaceSlug/book/procurement_/create': typeof DashboardWorkspaceSlugBookProcurementCreateRoute
@@ -2035,6 +2054,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/venues/$venueId/overview': typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   '/dashboard/$workspaceSlug/venues/$venueId/pricing': typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   '/dashboard/$workspaceSlug/venues/$venueId/settings': typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  '/dashboard/$workspaceSlug/venues/$venueId/vouchers': typeof DashboardWorkspaceSlugVenuesVenueIdVouchersRoute
   '/dashboard/billing/subscriptions/checkout/$planId': typeof DashboardBillingSubscriptionsCheckoutPlanIdRoute
   '/internal/control/admin/agatike-users/$userId': typeof InternalControlAdminAgatikeUsersUserIdRoute
   '/internal/control/admin/leads/$leadId': typeof InternalControlAdminLeadsLeadIdRoute
@@ -2218,6 +2238,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
+    | '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers'
     | '/dashboard/$workspaceSlug/book/notes/$noteId'
     | '/dashboard/$workspaceSlug/book/procurement/$id'
     | '/dashboard/$workspaceSlug/book/procurement/create'
@@ -2251,6 +2272,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
     | '/dashboard/$workspaceSlug/venues/$venueId/pricing'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/vouchers'
     | '/dashboard/billing/subscriptions/checkout/$planId'
     | '/internal/control/admin/agatike-users/$userId'
     | '/internal/control/admin/leads/$leadId'
@@ -2429,6 +2451,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
+    | '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers'
     | '/dashboard/$workspaceSlug/book/notes/$noteId'
     | '/dashboard/$workspaceSlug/book/procurement/$id'
     | '/dashboard/$workspaceSlug/book/procurement/create'
@@ -2462,6 +2485,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
     | '/dashboard/$workspaceSlug/venues/$venueId/pricing'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/vouchers'
     | '/dashboard/billing/subscriptions/checkout/$planId'
     | '/internal/control/admin/agatike-users/$userId'
     | '/internal/control/admin/leads/$leadId'
@@ -2642,6 +2666,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/screens'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/settings'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
+    | '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers'
     | '/dashboard/$workspaceSlug/book/notes_/$noteId'
     | '/dashboard/$workspaceSlug/book/procurement_/$id'
     | '/dashboard/$workspaceSlug/book/procurement_/create'
@@ -2675,6 +2700,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/venues/$venueId/overview'
     | '/dashboard/$workspaceSlug/venues/$venueId/pricing'
     | '/dashboard/$workspaceSlug/venues/$venueId/settings'
+    | '/dashboard/$workspaceSlug/venues/$venueId/vouchers'
     | '/dashboard/billing/subscriptions/checkout/$planId'
     | '/internal/control/admin/agatike-users/$userId'
     | '/internal/control/admin/leads/$leadId'
@@ -3792,6 +3818,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingSubscriptionsCheckoutPlanIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/venues/$venueId/vouchers': {
+      id: '/dashboard/$workspaceSlug/venues/$venueId/vouchers'
+      path: '/vouchers'
+      fullPath: '/dashboard/$workspaceSlug/venues/$venueId/vouchers'
+      preLoaderRoute: typeof DashboardWorkspaceSlugVenuesVenueIdVouchersRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugVenuesVenueIdRoute
+    }
     '/dashboard/$workspaceSlug/venues/$venueId/settings': {
       id: '/dashboard/$workspaceSlug/venues/$venueId/settings'
       path: '/settings'
@@ -4022,6 +4055,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/book/notes/$noteId'
       preLoaderRoute: typeof DashboardWorkspaceSlugBookNotesNoteIdRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers': {
+      id: '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers'
+      path: '/vouchers'
+      fullPath: '/dashboard/$workspaceSlug/Cinema/$cinemaId/vouchers'
+      preLoaderRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdVouchersRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdRoute
     }
     '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers': {
       id: '/dashboard/$workspaceSlug/Cinema/$cinemaId/ticket-tiers'
@@ -4275,6 +4315,7 @@ interface DashboardWorkspaceSlugCinemaCinemaIdRouteChildren {
   DashboardWorkspaceSlugCinemaCinemaIdScreensRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdScreensRoute
   DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute
   DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute
+  DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute
   DashboardWorkspaceSlugCinemaCinemaIdIndexRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdIndexRoute
   DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute: typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
 }
@@ -4301,6 +4342,8 @@ const DashboardWorkspaceSlugCinemaCinemaIdRouteChildren: DashboardWorkspaceSlugC
       DashboardWorkspaceSlugCinemaCinemaIdSettingsRoute,
     DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute:
       DashboardWorkspaceSlugCinemaCinemaIdTicketTiersRoute,
+    DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute:
+      DashboardWorkspaceSlugCinemaCinemaIdVouchersRoute,
     DashboardWorkspaceSlugCinemaCinemaIdIndexRoute:
       DashboardWorkspaceSlugCinemaCinemaIdIndexRoute,
     DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute:
@@ -4351,6 +4394,7 @@ interface DashboardWorkspaceSlugVenuesVenueIdRouteChildren {
   DashboardWorkspaceSlugVenuesVenueIdOverviewRoute: typeof DashboardWorkspaceSlugVenuesVenueIdOverviewRoute
   DashboardWorkspaceSlugVenuesVenueIdPricingRoute: typeof DashboardWorkspaceSlugVenuesVenueIdPricingRoute
   DashboardWorkspaceSlugVenuesVenueIdSettingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdSettingsRoute
+  DashboardWorkspaceSlugVenuesVenueIdVouchersRoute: typeof DashboardWorkspaceSlugVenuesVenueIdVouchersRoute
   DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute: typeof DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute
 }
 
@@ -4366,6 +4410,8 @@ const DashboardWorkspaceSlugVenuesVenueIdRouteChildren: DashboardWorkspaceSlugVe
       DashboardWorkspaceSlugVenuesVenueIdPricingRoute,
     DashboardWorkspaceSlugVenuesVenueIdSettingsRoute:
       DashboardWorkspaceSlugVenuesVenueIdSettingsRoute,
+    DashboardWorkspaceSlugVenuesVenueIdVouchersRoute:
+      DashboardWorkspaceSlugVenuesVenueIdVouchersRoute,
     DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute:
       DashboardWorkspaceSlugVenuesVenueIdFacilitiesFacilityIdBookingsRoute,
   }

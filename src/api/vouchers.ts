@@ -216,6 +216,8 @@ export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" })
 
     const {
       event_id,
+      rentable_venue_id,
+      cinema_id,
       workspace_id,
       batch_name,
       value_per_person,
@@ -235,9 +237,9 @@ export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" })
       value_type,
     };
 
-    if (event_id) {
-      batchInput.event_id = event_id;
-    }
+    if (event_id) batchInput.event_id = event_id;
+    if (rentable_venue_id) batchInput.rentable_venue_id = rentable_venue_id;
+    if (cinema_id) batchInput.cinema_id = cinema_id;
 
     // Only pre-generate the actual voucher records if this is a manual batch
     if (generation_type === "manual" && quantity > 0) {
@@ -356,13 +358,24 @@ export const getSponsoredVoucherBatches = createServerFn({ method: "POST" }).han
 
 const GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES = `
   query GetWorkspaceSponsoredVoucherBatches($workspace_id: uuid!) {
-    sponsored_voucher_batches(where: { workspace_id: { _eq: $workspace_id }, event_id: { _is_null: true } }, order_by: { created_at: desc }) {
+    sponsored_voucher_batches(
+      where: {
+        workspace_id: { _eq: $workspace_id },
+        event_id: { _is_null: true },
+        rentable_venue_id: { _is_null: true },
+        cinema_id: { _is_null: true }
+      },
+      order_by: { created_at: desc }
+    ) {
       id
       name
       value_per_voucher
       generation_type
       value_type
       linked_ticket_ids
+      event_id
+      rentable_venue_id
+      cinema_id
       vouchers {
         id
         current_balance
@@ -379,6 +392,50 @@ const GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES = `
   }
 `;
 
+const GET_VENUE_SPONSORED_VOUCHER_BATCHES = `
+  query GetVenueSponsoredVoucherBatches($venue_id: uuid!) {
+    sponsored_voucher_batches(where: { rentable_venue_id: { _eq: $venue_id } }, order_by: { created_at: desc }) {
+      id
+      name
+      value_per_voucher
+      generation_type
+      value_type
+      linked_ticket_ids
+      rentable_venue_id
+      vouchers {
+        id
+        current_balance
+        is_active
+        voucher_transactions_aggregate {
+          aggregate { sum { amount } }
+        }
+      }
+    }
+  }
+`;
+
+const GET_CINEMA_SPONSORED_VOUCHER_BATCHES = `
+  query GetCinemaSponsoredVoucherBatches($cinema_id: uuid!) {
+    sponsored_voucher_batches(where: { cinema_id: { _eq: $cinema_id } }, order_by: { created_at: desc }) {
+      id
+      name
+      value_per_voucher
+      generation_type
+      value_type
+      linked_ticket_ids
+      cinema_id
+      vouchers {
+        id
+        current_balance
+        is_active
+        voucher_transactions_aggregate {
+          aggregate { sum { amount } }
+        }
+      }
+    }
+  }
+`;
+
 export const getWorkspaceSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
   async (ctx) => {
     const payload = (ctx.data as any).data || ctx.data;
@@ -386,6 +443,30 @@ export const getWorkspaceSponsoredVoucherBatches = createServerFn({ method: "POS
     const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
       GET_WORKSPACE_SPONSORED_VOUCHER_BATCHES,
       { workspace_id },
+    ).catch(() => ({ sponsored_voucher_batches: [] }));
+    return data.sponsored_voucher_batches || [];
+  },
+);
+
+export const getVenueSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const payload = (ctx.data as any).data || ctx.data;
+    const { venue_id } = payload as { venue_id: string };
+    const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
+      GET_VENUE_SPONSORED_VOUCHER_BATCHES,
+      { venue_id },
+    ).catch(() => ({ sponsored_voucher_batches: [] }));
+    return data.sponsored_voucher_batches || [];
+  },
+);
+
+export const getCinemaSponsoredVoucherBatches = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const payload = (ctx.data as any).data || ctx.data;
+    const { cinema_id } = payload as { cinema_id: string };
+    const data = await hasuraRequest<{ sponsored_voucher_batches: any[] }>(
+      GET_CINEMA_SPONSORED_VOUCHER_BATCHES,
+      { cinema_id },
     ).catch(() => ({ sponsored_voucher_batches: [] }));
     return data.sponsored_voucher_batches || [];
   },
@@ -430,16 +511,24 @@ export const getSponsoredVoucherBatch = createServerFn({ method: "POST" }).handl
 
 
 export const linkSponsoredVoucherBatch = createServerFn({ method: "POST" })
-  .validator((d: { batch_id: string; event_id: string; linked_ticket_ids: string[] }) => d)
+  .validator((d: {
+    batch_id: string;
+    event_id?: string | null;
+    rentable_venue_id?: string | null;
+    cinema_id?: string | null;
+    linked_ticket_ids: string[];
+  }) => d)
   .handler(async (ctx) => {
-    const { batch_id, event_id, linked_ticket_ids } = ctx.data;
-    
+    const { batch_id, event_id, rentable_venue_id, cinema_id, linked_ticket_ids } = ctx.data;
+
     const UPDATE_BATCH = `
-      mutation LinkBatch($id: uuid!, $event_id: uuid!, $tickets: jsonb!) {
+      mutation LinkBatch($id: uuid!, $event_id: uuid, $venue_id: uuid, $cinema_id: uuid, $tickets: jsonb!) {
         update_sponsored_voucher_batches_by_pk(
           pk_columns: { id: $id },
-          _set: { 
-            event_id: $event_id, 
+          _set: {
+            event_id: $event_id,
+            rentable_venue_id: $venue_id,
+            cinema_id: $cinema_id,
             linked_ticket_ids: $tickets,
             generation_type: "ticket_linked"
           }
@@ -451,7 +540,9 @@ export const linkSponsoredVoucherBatch = createServerFn({ method: "POST" })
 
     return await hasuraRequest(UPDATE_BATCH, {
       id: batch_id,
-      event_id,
+      event_id: event_id || null,
+      venue_id: rentable_venue_id || null,
+      cinema_id: cinema_id || null,
       tickets: linked_ticket_ids,
     });
   });
