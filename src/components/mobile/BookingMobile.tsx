@@ -619,22 +619,36 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 });
               } catch (e) {
                 console.warn(`[Ticket ${ticket.id}] Custom PDF failed (likely image load error), falling back to default...`, e);
+                const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
                 const fallbackPdf = await generateFallbackReceipt({
                   entityName: event?.title || "Event",
                   ticket,
                   bookingRef: ticket.otp,
                   customerName: ticket.attendee?.firstName || "Guest",
+                  dateStr: stop?.date || "TBD",
+                  timeStr: stop?.time || "TBD",
+                  locationStr: stop?.city || "TBD",
+                  durationStr: event?.duration || "",
+                  tierName: ticket.tier,
+                  quantity: 1,
                 });
                 attachments.push(fallbackPdf);
               }
             }
           } else {
             for (const ticket of issuedTickets) {
+              const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
               const fallbackPdf = await generateFallbackReceipt({
                 entityName: event?.title || "Event/Venue",
                 ticket,
                 bookingRef: ticket.otp,
                 customerName: ticket.attendee?.firstName || "Guest",
+                dateStr: stop?.date || "TBD",
+                timeStr: stop?.time || "TBD",
+                locationStr: stop?.city || "TBD",
+                durationStr: event?.duration || "",
+                tierName: ticket.tier,
+                quantity: 1,
               });
               attachments.push(fallbackPdf);
             }

@@ -360,12 +360,11 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
       }
       
-      if (process.env.PINDO_API_KEY) {
-        await fetch("https://api.pindo.io/v1/sms/", {
-          method: "POST",
-          headers: { Authorization: "Bearer " + process.env.PINDO_API_KEY, "Content-Type": "application/json" },
-          body: JSON.stringify({ to: phone.replace("+", ""), text: smsMsg, sender: "Agatike" }),
-        }).catch(e => console.error("Pindo SMS Error:", e));
+      try {
+        const { sendSMS } = await import("./pindo.server");
+        await sendSMS(phone, smsMsg);
+      } catch (e) {
+        console.error("Failed to send SMS alongside tickets email", e);
       }
     }
 
