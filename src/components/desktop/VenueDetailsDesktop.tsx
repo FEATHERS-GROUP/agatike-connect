@@ -6,13 +6,15 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { getEventFeedbackPublic } from "@/api/feedback";
+import { getVenueProducts } from "@/api/products";
+import { EventMerch } from "@/components/shared/event-details/EventMerch";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function VenueDetailsDesktop({ venue }: { venue: any }) {
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
   const [isSubdomain, setIsSubdomain] = useState(false);
+  const [cart, setCart] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -23,7 +25,25 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
         setIsSubdomain(true);
       }
     }
-  }, []);
+
+    // Load existing cart if any
+    if (venue?.id) {
+      const savedCart = localStorage.getItem(`venue_checkout_products_${venue.id}`);
+      if (savedCart) {
+        try {
+          setCart(JSON.parse(savedCart));
+        } catch (e) { }
+      }
+    }
+  }, [venue?.id]);
+
+  useEffect(() => {
+    if (venue?.id && Object.keys(cart).length > 0) {
+      localStorage.setItem(`venue_checkout_products_${venue.id}`, JSON.stringify(cart));
+    } else if (venue?.id) {
+      localStorage.removeItem(`venue_checkout_products_${venue.id}`);
+    }
+  }, [cart, venue?.id]);
 
   if (!venue) return null;
 
@@ -39,6 +59,14 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
     queryFn: () => getEventFeedbackPublic({ data: { event_id: venue.id } } as any),
     enabled: !!venue.id,
   });
+
+  const { data: venueProducts } = useQuery({
+    queryKey: ["venueProducts", venue.id],
+    queryFn: () => getVenueProducts({ data: { venue_id: venue.id } } as any),
+    enabled: !!venue.id,
+  });
+
+  const activeProducts = venueProducts?.filter((p: any) => p.is_active !== false) || [];
 
   const reviews = feedbackData?.reviews || [];
   const avgRating = feedbackData?.aggregate?.avg?.rating
@@ -116,6 +144,13 @@ export function VenueDetailsDesktop({ venue }: { venue: any }) {
               </div>
             </div>
           )}
+
+          <EventMerch
+            activeMerch={activeProducts}
+            currencyCode={venue.currency || "RWF"}
+            cart={cart}
+            setCart={setCart}
+          />
 
           {venue.facilities_data && venue.facilities_data.length > 0 && (
             <div>

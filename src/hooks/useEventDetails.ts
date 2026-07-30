@@ -248,7 +248,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     }));
 
     const newMerch = (eventProducts || [])
-      .filter((p: any) => p.type === "physical")
       .map((m: any) => ({
         ...m,
         image: m.image_url || ev.cover,

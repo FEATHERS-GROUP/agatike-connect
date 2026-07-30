@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { MerchVariantModal } from "./MerchVariantModal";
+import { VoucherCard } from "../VoucherCard";
 import { formatCurrency } from "@/lib/currency";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -205,75 +206,95 @@ export function EventMerch({
             globalQty >= globalLimit || sizeQty >= sizeLimit || colorQty >= colorLimit;
           const canAdd = !needsSize && !needsColor && !isStockExceeded;
 
+          if (m.type === "voucher") {
+            return (
+              <VoucherCard
+                key={m.id}
+                voucher={m}
+                currencyCode={currencyCode}
+                qty={qty}
+                onAdd={() => handleAdd(m)}
+                onRemove={() => handleRemove(m)}
+                disabled={isStockExceeded}
+                canAdd={canAdd}
+                showCartControls={!!setCart}
+                availableStock={globalLimit !== Number.POSITIVE_INFINITY ? globalLimit : undefined}
+              />
+            );
+          }
+
           return (
             <div
               key={m.id}
               className="overflow-hidden rounded-2xl border border-border/60 bg-card flex flex-col"
             >
-              {m.image ? (
-                <img
-                  src={m.image}
-                  alt={m.name}
-                  className="aspect-square w-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="aspect-square w-full bg-secondary/40 flex items-center justify-center">
-                  <ShoppingBag className="h-10 w-10 text-muted-foreground/30" />
+              <div className="relative">
+                {m.image ? (
+                  <img
+                    src={m.image}
+                    alt={m.name}
+                    className="aspect-[4/3] w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="aspect-[4/3] w-full bg-secondary/40 flex items-center justify-center">
+                    <ShoppingBag className="h-10 w-10 text-muted-foreground/30" />
+                  </div>
+                )}
+                <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-md">
+                  {Number(m.price) === 0 ? "FREE" : formatCurrency(m.price, currencyCode)}
                 </div>
-              )}
+              </div>
 
-              <div className="p-3 flex flex-col flex-1 gap-2">
-                <p className="text-sm font-medium leading-snug">{m.name}</p>
-
+              <div className="p-3.5 flex flex-col flex-1">
                 {m.category && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary/40 px-2 py-0.5 rounded-full self-start">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 self-start">
                     {CATEGORY_LABELS[m.category] || m.category}
                   </span>
                 )}
+                <p className="text-sm font-semibold leading-tight line-clamp-2 mb-2">{m.name}</p>
 
                 {sizesArr.length > 0 ? (
-                  <MerchVariantModal
-                    m={m}
-                    sizesArr={sizesArr}
-                    hideSizeSelection={hideSizeSelection}
-                    effectiveSize={effectiveSize}
-                    selColor={sel.color}
-                    availableColors={availableColors}
-                    currencyCode={currencyCode || "USD"}
-                    qty={qty}
-                    globalQty={globalQty}
-                    isStockExceeded={isStockExceeded}
-                    canAdd={canAdd}
-                    needsSize={needsSize}
-                    needsColor={needsColor}
-                    handleAdd={handleAdd}
-                    handleRemove={handleRemove}
-                    setSelection={setSelection}
-                    setCart={setCart}
-                  />
+                  <div className="mt-auto flex items-center justify-end pt-3 border-t border-border/50">
+                    <MerchVariantModal
+                      m={m}
+                      sizesArr={sizesArr}
+                      hideSizeSelection={hideSizeSelection}
+                      effectiveSize={effectiveSize}
+                      selColor={sel.color}
+                      availableColors={availableColors}
+                      currencyCode={currencyCode || "USD"}
+                      qty={qty}
+                      globalQty={globalQty}
+                      isStockExceeded={isStockExceeded}
+                      canAdd={canAdd}
+                      needsSize={needsSize}
+                      needsColor={needsColor}
+                      handleAdd={handleAdd}
+                      handleRemove={handleRemove}
+                      setSelection={setSelection}
+                      setCart={setCart}
+                    />
+                  </div>
                 ) : (
-                  <div className="mt-auto flex items-center justify-between pt-1">
-                    <span className="text-sm font-semibold">
-                      {formatCurrency(m.price, currencyCode)}
-                    </span>
+                  <div className="mt-auto flex items-center justify-end pt-3 border-t border-border/50">
 
                     {setCart ? (
                       qty > 0 ? (
-                        <div className="flex items-center gap-1.5 bg-background rounded-full border px-1 shadow-sm">
+                        <div className="flex items-center justify-between w-full bg-background rounded-full border px-1 py-1 shadow-sm">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 rounded-full"
+                            className="h-6 w-6 rounded-full hover:bg-muted"
                             onClick={() => handleRemove(m)}
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="text-xs font-semibold w-4 text-center">{qty}</span>
+                          <span className="text-xs font-bold w-4 text-center">{qty}</span>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 rounded-full"
+                            className="h-6 w-6 rounded-full hover:bg-muted"
                             onClick={() => handleAdd(m)}
                             disabled={isStockExceeded}
                           >
@@ -282,9 +303,7 @@ export function EventMerch({
                         </div>
                       ) : (
                         <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full h-7 text-xs"
+                          className="w-full rounded-full h-8 text-xs font-bold bg-[#F97316] text-white hover:bg-[#EA580C] shadow-sm transition-transform active:scale-95"
                           onClick={() => handleAdd(m)}
                           disabled={!canAdd}
                           title={isStockExceeded ? "Out of stock" : undefined}
@@ -293,7 +312,7 @@ export function EventMerch({
                         </Button>
                       )
                     ) : (
-                      <Button size="sm" variant="outline" className="rounded-full h-7 text-xs">
+                      <Button className="w-full rounded-full h-8 text-xs font-bold bg-[#F97316] text-white hover:bg-[#EA580C] shadow-sm">
                         Add
                       </Button>
                     )}

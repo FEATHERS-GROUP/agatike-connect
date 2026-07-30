@@ -82,8 +82,16 @@ export const getWorkspaceProducts = createServerFn({ method: "POST" }).handler(a
 });
 
 const GET_EVENT_PRODUCTS = `
-  query GetEventProducts($event_id: uuid!) {
-    products(where: { event_id: { _eq: $event_id } }, order_by: { created_at: desc }) {
+  query GetEventProducts($event_id: uuid!, $contains_obj: jsonb) {
+    products(
+      where: {
+        _or: [
+          { event_id: { _eq: $event_id } },
+          { specs: { _contains: $contains_obj } }
+        ]
+      }
+      order_by: { created_at: desc }
+    ) {
       id
       name
       type
@@ -114,8 +122,68 @@ const GET_EVENT_PRODUCTS = `
 export const getEventProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = (ctx.data as any).data || ctx.data;
   const { event_id } = payload as { event_id: string };
-  const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, { event_id });
-  return data.products || [];
+  try {
+    const payloadVars = { 
+      event_id,
+      contains_obj: { linked_assets: [{ type: "event", id: event_id }] }
+    };
+    
+    const data = await hasuraRequest<{ products: any[] }>(GET_EVENT_PRODUCTS, payloadVars);
+    
+    return data.products || [];
+  } catch (err) {
+    console.error("GET_EVENT_PRODUCTS Error:", err);
+    return [];
+  }
+});
+
+const GET_VENUE_PRODUCTS = `
+  query GetVenueProducts($contains_obj: jsonb) {
+    products(
+      where: {
+        specs: { _contains: $contains_obj }
+      }
+      order_by: { created_at: desc }
+    ) {
+      id
+      name
+      type
+      description
+      price
+      value_amount
+      stock_limit
+      sold_count
+      punch_count
+      reward_description
+      image_url
+      is_active
+      category
+      available_sizes
+      available_colors
+      specs
+      product_orders_aggregate {
+        aggregate {
+          sum {
+            current_balance
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const getVenueProducts = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const payload = (ctx.data as any).data || ctx.data;
+  const { venue_id } = payload as { venue_id: string };
+  try {
+    const data = await hasuraRequest<{ products: any[] }>(GET_VENUE_PRODUCTS, { 
+      contains_obj: { linked_assets: [{ type: "venue", id: venue_id }] }
+    });
+    return data.products || [];
+  } catch (err) {
+    console.error("GET_VENUE_PRODUCTS Error:", err);
+    return [];
+  }
 });
 
 const GET_PRODUCT = `
@@ -256,14 +324,19 @@ export const createProductOrders = createServerFn({ method: "POST" }).handler(as
       productsData.products?.forEach((p) => productMap.set(p.id, p));
 
       objects = objects.map((obj: any) => {
-        if (obj.product_id) {
-          const product = productMap.get(obj.product_id);
+        let newObj = { ...obj };
+        
+        // Ensure size is set for products without variants to satisfy NOT NULL constraint
+        if (!newObj.size) newObj.size = "N/A";
+
+        if (newObj.product_id) {
+          const product = productMap.get(newObj.product_id);
           if (product && product.type === "voucher" && product.value_amount) {
-            const qty = obj.qty || 1;
-            return { ...obj, current_balance: Number(product.value_amount) * qty };
+            const qty = newObj.qty || 1;
+            return { ...newObj, current_balance: Number(product.value_amount) * qty };
           }
         }
-        return obj;
+        return newObj;
       });
     }
   }

@@ -315,18 +315,18 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             let fallbackPdfBase64: string | undefined = undefined;
             if (firstAtt.events?.id) {
               try {
-                const projRes = await hasuraRequest<{ workspace_ticket_projects: any[] }>(
+                const projRes = await hasuraRequest<{ ticket_projects: any[] }>(
                   `
                   query GetTicketProject($eventId: uuid!) {
-                    workspace_ticket_projects(where: { event_id: { _eq: $eventId } }, limit: 1) { id }
+                    ticket_projects(where: { eventId: { _eq: $eventId } }, limit: 1) { id }
                   }
                 `,
                   { eventId: firstAtt.events.id },
                 );
 
                 if (
-                  !projRes.workspace_ticket_projects ||
-                  projRes.workspace_ticket_projects.length === 0
+                  !projRes.ticket_projects ||
+                  projRes.ticket_projects.length === 0
                 ) {
                   const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
 

@@ -53,10 +53,9 @@ export function MerchVariantModal({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          variant={globalQty > 0 ? "secondary" : "outline"}
-          className={`rounded-full h-7 text-xs w-full mt-2 ${globalQty > 0 ? "border-primary/30" : ""}`}
+          className="w-full rounded-full h-8 text-xs font-bold bg-[#F97316] text-white hover:bg-[#EA580C] shadow-sm transition-transform active:scale-95"
         >
-          {globalQty > 0 ? `Selected (${globalQty})` : "Select Options"}
+          {globalQty > 0 ? `Selected (${globalQty})` : "Options"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] w-[95vw] max-h-[90vh] overflow-y-auto rounded-xl p-0 gap-0">
