@@ -346,10 +346,10 @@ function VendorsTab({ eventId }: { eventId: string }) {
             </div>
             <div className="mt-4 pt-4 border-t border-border/50">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                Total Voucher Revenue
+                Wallet Balance (Owed)
               </p>
               <p className="text-xl font-bold text-green-500 mt-1">
-                {vendor.total_revenue || 0} RWF
+                {vendor.wallet_balance || 0} RWF
               </p>
             </div>
           </div>
@@ -409,9 +409,9 @@ function VendorsTab({ eventId }: { eventId: string }) {
             )}
           </div>
           <div className="mt-4 pt-4 border-t flex justify-between items-center text-lg">
-            <span className="font-semibold text-muted-foreground">Total Revenue</span>
+            <span className="font-semibold text-muted-foreground">Wallet Balance</span>
             <span className="font-bold text-green-500">
-              {selectedVendor?.total_revenue || 0} RWF
+              {selectedVendor?.wallet_balance || 0} RWF
             </span>
           </div>
         </DialogContent>

@@ -8,12 +8,14 @@ import {
   LayoutDashboard,
   RefreshCw,
   BarChart2,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNavigate } from "@tanstack/react-router";
 import { logout } from "@/api/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WorkspaceModulesModal } from "./WorkspaceModulesModal";
 import { Workspace } from "@/contexts/WorkspaceContext";
 import { types } from "./constants";
@@ -31,6 +33,18 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
 
   const [modulesModalWorkspace, setModulesModalWorkspace] = useState<Workspace | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const [viewMode, setViewMode] = useState<"grid" | "list">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("workspaceViewMode");
+      return (saved as "grid" | "list") || "grid";
+    }
+    return "grid";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("workspaceViewMode", viewMode);
+  }, [viewMode]);
 
   const { canCreateWorkspace } = useSubscriptionLimits(currentUser?.id);
 
@@ -80,6 +94,27 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
               Analytics
             </Button>
           )}
+
+          <div className="flex bg-card border border-border/40 rounded-full p-0.5 ml-2 mr-2">
+            <button
+              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
+                viewMode === "grid" ? "bg-primary/10 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
+                viewMode === "list" ? "bg-primary/10 text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setViewMode("list")}
+              title="List View"
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -127,53 +162,60 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={viewMode === "grid" 
+          ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" 
+          : "flex flex-col gap-4 mx-auto w-full"}>
           {workspaces.map((w) => {
             const t = types.find((x) => x.id === w.type) || types[0];
             const isActive = activeWorkspace?.id === w.id;
 
+            const ActionButtons = () => (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Manage Modules"
+                  className="h-7 w-7 rounded-full text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setModulesModalWorkspace(w);
+                  }}
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Workspace Settings"
+                  className="h-7 w-7 rounded-full text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate({ to: `/dashboard/${w.slug}/settings` });
+                  }}
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                </Button>
+              </>
+            );
+
             return (
               <div
                 key={w.id}
-                className={`flex flex-col rounded-2xl border bg-card/60 backdrop-blur-sm p-4 hover:shadow-md transition-all relative group ${
+                className={`flex ${viewMode === "grid" ? "flex-col" : "flex-col sm:flex-row sm:items-center"} rounded-2xl border bg-card/60 backdrop-blur-sm p-4 hover:shadow-md transition-all relative group ${
                   isActive
                     ? "border-primary/50 shadow-[0_4px_24px_rgba(var(--primary),0.08)] bg-primary/[0.02]"
                     : "border-border/40 hover:border-border"
                 }`}
               >
-                <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                  {currentUser?.role === "organizer" && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Manage Modules"
-                        className="h-7 w-7 rounded-full text-muted-foreground hover:bg-background/80 hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setModulesModalWorkspace(w);
-                        }}
-                      >
-                        <LayoutDashboard className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Workspace Settings"
-                        className="h-7 w-7 rounded-full text-muted-foreground hover:bg-background/80 hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate({ to: `/dashboard/${w.slug}/settings` });
-                        }}
-                      >
-                        <Settings className="h-3.5 w-3.5" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 mb-5 pr-12">
+                {viewMode === "grid" && (
+                  <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                    {currentUser?.role === "organizer" && <ActionButtons />}
+                  </div>
+                )}
+                
+                <div className={`flex items-center gap-3 ${viewMode === "grid" ? "mb-5 pr-12" : "flex-1 mb-4 sm:mb-0"}`}>
                   <div
-                    className={`grid h-10 w-10 place-items-center rounded-[14px] shrink-0 overflow-hidden shadow-sm`}
+                    className={`grid ${viewMode === "grid" ? "h-10 w-10 rounded-[14px]" : "h-12 w-12 rounded-xl"} place-items-center shrink-0 overflow-hidden shadow-sm`}
                     style={{
                       background: isActive ? "var(--gradient-primary)" : "var(--card-muted)",
                       color: isActive ? "white" : "inherit",
@@ -191,7 +233,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`font-semibold text-[15px] truncate ${isActive ? "text-primary" : ""}`}
+                      className={`font-semibold ${viewMode === "grid" ? "text-[15px]" : "text-base"} truncate ${isActive ? "text-primary" : ""}`}
                     >
                       {w.name}
                     </p>
@@ -201,23 +243,30 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   </div>
                 </div>
 
-                <Button
-                  size="sm"
-                  variant={isActive ? "default" : "outline"}
-                  className={`w-full rounded-xl gap-1.5 h-8 text-xs font-medium transition-all ${
-                    isActive
-                      ? "shadow-[var(--shadow-glow)] opacity-100"
-                      : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
-                  }`}
-                  style={isActive ? { background: "var(--gradient-primary)" } : undefined}
-                  onClick={() => {
-                    setActiveWorkspace(w);
-                    navigate({ to: `/dashboard/${w.slug}` });
-                  }}
-                >
-                  {isActive ? "Currently Active" : "Switch Workspace"}
-                  {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
-                </Button>
+                <div className={`flex items-center justify-between sm:justify-end gap-2 ${viewMode === "grid" ? "w-full" : "sm:ml-4 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-border/40 sm:border-t-0"}`}>
+                  {viewMode === "list" && currentUser?.role === "organizer" && (
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <ActionButtons />
+                    </div>
+                  )}
+                  <Button
+                    size="sm"
+                    variant={isActive ? "default" : "outline"}
+                    className={`${viewMode === "grid" ? "w-full" : "w-auto px-4"} rounded-xl gap-1.5 h-8 text-xs font-medium transition-all ${
+                      isActive
+                        ? "shadow-[var(--shadow-glow)] opacity-100"
+                        : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
+                    }`}
+                    style={isActive ? { background: "var(--gradient-primary)" } : undefined}
+                    onClick={() => {
+                      setActiveWorkspace(w);
+                      navigate({ to: `/dashboard/${w.slug}` });
+                    }}
+                  >
+                    {isActive ? "Currently Active" : "Switch Workspace"}
+                    {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
               </div>
             );
           })}

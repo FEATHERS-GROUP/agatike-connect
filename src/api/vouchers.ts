@@ -2,10 +2,78 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";
 
-const CHARGE_VOUCHER = `
-  mutation ChargeVoucher($product_order_id: uuid!, $vendor_id: uuid!, $amount: numeric!, $description: String!) {
+const RESOLVE_VOUCHER = `
+  query ResolveVoucher($qr: String!) {
+    product_orders(where: { qr_code_string: { _eq: $qr }, product: { type: { _eq: "voucher" } } }, limit: 1) {
+      id
+      current_balance
+      product {
+        name
+        event_id
+      }
+      # If linked to a specific booking/ticket, that might be tracked elsewhere, 
+      # but generally event_id tells us if it's event specific.
+    }
+    vouchers(where: { qr_code_string: { _eq: $qr } }, limit: 1) {
+      id
+      current_balance
+      batch {
+        name
+        event_id
+      }
+    }
+  }
+`;
+
+export const resolveVoucher = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { qr_code_string, current_event_id } = ctx.data as any;
+  const data = await hasuraRequest<{ product_orders: any[]; vouchers: any[] }>(RESOLVE_VOUCHER, {
+    qr: qr_code_string,
+  });
+
+  let voucherData = null;
+  let type = "";
+
+  if (data.product_orders && data.product_orders.length > 0) {
+    voucherData = data.product_orders[0];
+    type = "product_order";
+  } else if (data.vouchers && data.vouchers.length > 0) {
+    voucherData = data.vouchers[0];
+    type = "sponsored_voucher";
+  }
+
+  if (!voucherData) {
+    return { success: false, message: "INVALID VOUCHER CODE" };
+  }
+
+  // Linkage check
+  const voucherEventId = type === "product_order" ? voucherData.product?.event_id : voucherData.batch?.event_id;
+  
+  if (voucherEventId && current_event_id && voucherEventId !== current_event_id) {
+    return { success: false, message: "VOUCHER NOT FOR THIS EVENT" };
+  }
+
+  return {
+    success: true,
+    data: {
+      id: voucherData.id,
+      type,
+      current_balance: Number(voucherData.current_balance || 0),
+      name: type === "product_order" ? voucherData.product?.name : voucherData.batch?.name,
+    },
+  };
+});
+
+const CHARGE_PRODUCT_ORDER_VOUCHER = `
+  mutation ChargeProductOrderVoucher($id: uuid!, $vendor_id: uuid!, $amount: numeric!, $description: String!) {
+    update_product_orders(
+      where: { id: { _eq: $id }, current_balance: { _gte: $amount } },
+      _inc: { current_balance: -$amount }
+    ) {
+      affected_rows
+    }
     insert_voucher_transactions_one(object: {
-      product_order_id: $product_order_id,
+      product_order_id: $id,
       vendor_id: $vendor_id,
       amount: $amount,
       description: $description
@@ -14,6 +82,39 @@ const CHARGE_VOUCHER = `
       amount
       created_at
     }
+    update_event_vendors(
+      where: { id: { _eq: $vendor_id } },
+      _inc: { wallet_balance: $amount }
+    ) {
+      affected_rows
+    }
+  }
+`;
+
+const CHARGE_SPONSORED_VOUCHER = `
+  mutation ChargeSponsoredVoucher($id: uuid!, $vendor_id: uuid!, $amount: numeric!, $description: String!) {
+    update_vouchers(
+      where: { id: { _eq: $id }, current_balance: { _gte: $amount } },
+      _inc: { current_balance: -$amount }
+    ) {
+      affected_rows
+    }
+    insert_voucher_transactions_one(object: {
+      voucher_id: $id,
+      vendor_id: $vendor_id,
+      amount: $amount,
+      description: $description
+    }) {
+      id
+      amount
+      created_at
+    }
+    update_event_vendors(
+      where: { id: { _eq: $vendor_id } },
+      _inc: { wallet_balance: $amount }
+    ) {
+      affected_rows
+    }
   }
 `;
 
@@ -21,12 +122,39 @@ export const chargeVoucher = createServerFn({ method: "POST" }).handler(async (c
   const session = await getSession();
   if (!session || !session.sub) throw new Error("unauthenticated");
 
-  const { product_order_id, vendor_id, amount, description } = ctx.data as any;
+  const { id, type, vendor_id, amount, description } = ctx.data as any;
 
-  // Here we would also typically decrement the current_balance on product_orders
-  // and ensure they have enough balance. For now, we record the transaction.
+  // Since Hasura executes mutations sequentially, if the first update_... fails 
+  // (affected_rows = 0 due to insufficient balance), we ideally shouldn't run the rest.
+  // To ensure absolute integrity without custom Postgres functions, we fetch the balance first.
+  const query = type === "product_order" 
+    ? `query { product_orders_by_pk(id: "${id}") { current_balance } }`
+    : `query { vouchers_by_pk(id: "${id}") { current_balance } }`;
 
-  return hasuraRequest(CHARGE_VOUCHER, { product_order_id, vendor_id, amount, description });
+  const balanceRes = await hasuraRequest<any>(query, {});
+  const current_balance = type === "product_order" 
+    ? balanceRes.product_orders_by_pk?.current_balance 
+    : balanceRes.vouchers_by_pk?.current_balance;
+
+  if (current_balance === undefined || current_balance === null) {
+    throw new Error("Invalid voucher");
+  }
+
+  if (Number(current_balance) < Number(amount)) {
+    throw new Error("INSUFFICIENT FUNDS");
+  }
+
+  // Execute the charge
+  const mutation = type === "product_order" ? CHARGE_PRODUCT_ORDER_VOUCHER : CHARGE_SPONSORED_VOUCHER;
+  
+  const res = await hasuraRequest<any>(mutation, { id, vendor_id, amount, description });
+  
+  const updateKey = type === "product_order" ? "update_product_orders" : "update_vouchers";
+  if (res[updateKey]?.affected_rows === 0) {
+     throw new Error("INSUFFICIENT FUNDS OR CONCURRENCY ERROR");
+  }
+
+  return res.insert_voucher_transactions_one;
 });
 
 const GET_VOUCHER_TRANSACTIONS = `
@@ -98,7 +226,6 @@ export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" })
     } = ctx.data as any;
 
     const batchInput: any = {
-      event_id,
       workspace_id,
       organizer_id: session.sub,
       name: batch_name,
@@ -107,6 +234,10 @@ export const batchGenerateSponsoredVouchers = createServerFn({ method: "POST" })
       linked_ticket_ids: linked_ticket_ids || [],
       value_type,
     };
+
+    if (event_id) {
+      batchInput.event_id = event_id;
+    }
 
     // Only pre-generate the actual voucher records if this is a manual batch
     if (generation_type === "manual" && quantity > 0) {

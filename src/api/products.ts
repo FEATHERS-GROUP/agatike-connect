@@ -100,6 +100,13 @@ const GET_EVENT_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      product_orders_aggregate {
+        aggregate {
+          sum {
+            current_balance
+          }
+        }
+      }
     }
   }
 `;
@@ -229,7 +236,39 @@ const CREATE_PRODUCT_ORDER = `
 
 export const createProductOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const payload = (ctx.data as any).data || ctx.data;
-  return hasuraRequest(CREATE_PRODUCT_ORDER, { objects: payload.objects || payload });
+  let objects = payload.objects || payload;
+
+  if (Array.isArray(objects) && objects.length > 0) {
+    const productIds = [...new Set(objects.map((o: any) => o.product_id).filter(Boolean))];
+    
+    if (productIds.length > 0) {
+      const query = `
+        query GetProductsForOrders($ids: [uuid!]!) {
+          products(where: { id: { _in: $ids } }) {
+            id
+            type
+            value_amount
+          }
+        }
+      `;
+      const productsData = await hasuraRequest<{ products: any[] }>(query, { ids: productIds });
+      const productMap = new Map();
+      productsData.products?.forEach((p) => productMap.set(p.id, p));
+
+      objects = objects.map((obj: any) => {
+        if (obj.product_id) {
+          const product = productMap.get(obj.product_id);
+          if (product && product.type === "voucher" && product.value_amount) {
+            const qty = obj.qty || 1;
+            return { ...obj, current_balance: Number(product.value_amount) * qty };
+          }
+        }
+        return obj;
+      });
+    }
+  }
+
+  return hasuraRequest(CREATE_PRODUCT_ORDER, { objects });
 });
 
 const GET_BOOKING_PRODUCT_ORDERS = `
