@@ -25,7 +25,7 @@ import { scanAndVerifyTicket } from "@/api/attendees";
 import { scanVenueBooking } from "@/api/venue_bookings";
 import { resolveVoucher, chargeVoucher } from "@/api/vouchers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { useUser } from "@/contexts/UserAuthContext";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { lazy, Suspense } from "react";
 
 // Dynamically import QRScanner to prevent SSR crashes and OOM during build
@@ -284,7 +284,7 @@ export function ScannerMobile({
   const [scannedVoucher, setScannedVoucher] = useState<any>(null);
 
   const { activeWorkspace } = useWorkspace();
-  const { user } = useUser();
+  const { user } = useUserAuth();
   const [selectedEventId, setSelectedEventId] = useState<string>(eventId || "");
   const [currentSectionId, setCurrentSectionId] = useState<string>("none");
 
