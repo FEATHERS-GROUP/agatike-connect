@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { getWorkspaceProducts, getWorkspaceRecentOrders } from "@/api/products";
@@ -165,6 +165,8 @@ function BatchGenerateModal() {
 function WorkspaceOrdersTable() {
   const { activeWorkspace } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 15;
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["workspace-recent-orders", activeWorkspace?.id],
@@ -174,6 +176,7 @@ function WorkspaceOrdersTable() {
   });
 
   const filteredOrders = orders.filter((order: any) => {
+    if (order.product?.type === "voucher") return false;
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     const orderId = order.id.split("-")[0].toLowerCase();
@@ -195,6 +198,9 @@ function WorkspaceOrdersTable() {
     );
   });
 
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
   return (
     <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-4 gap-4">
@@ -205,7 +211,10 @@ function WorkspaceOrdersTable() {
             type="text"
             placeholder="Search orders..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
             className="w-full pl-9 pr-4 py-2 bg-secondary/30 border border-border/40 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground"
           />
         </div>
@@ -237,7 +246,7 @@ function WorkspaceOrdersTable() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {filteredOrders.map((order: any) => (
+                {paginatedOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-secondary/10 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-muted-foreground">
                       {order.id.split("-")[0]}
@@ -295,6 +304,32 @@ function WorkspaceOrdersTable() {
             </table>
           </div>
         )}
+        {!isLoading && totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-secondary/10">
+            <span className="text-sm text-muted-foreground">
+              Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to{" "}
+              {Math.min(page * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -304,6 +339,7 @@ function WorkspaceProductsView() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [searchProduct, setSearchProduct] = useState("");
   const { activeWorkspace } = useWorkspace();
+  const navigate = useNavigate();
 
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ["workspace-products", activeWorkspace?.id],
@@ -452,7 +488,24 @@ function WorkspaceProductsView() {
                   <tr
                     key={m.id}
                     className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                    onClick={() => setSelectedItem(m)}
+                    onClick={() => {
+                      if (m.type === "voucher_batch") {
+                        navigate({
+                          to: `/dashboard/$workspaceSlug/vouchers/$batchId`,
+                          params: { workspaceSlug: activeWorkspace?.slug as string, batchId: m.id },
+                        });
+                      } else if (m.type === "voucher") {
+                        navigate({
+                          to: `/dashboard/$workspaceSlug/products/$productId`,
+                          params: {
+                            workspaceSlug: activeWorkspace?.slug as string,
+                            productId: m.id,
+                          },
+                        });
+                      } else {
+                        setSelectedItem(m);
+                      }
+                    }}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -701,6 +754,18 @@ function WorkspaceProductsView() {
                         {formatCurrency(selectedItem.value_amount || 0, activeWorkspace?.currency)}
                       </span>
                     </div>
+
+                    {selectedItem.type === "voucher_batch" && (
+                      <div className="mt-4">
+                        <Link
+                          to={`/dashboard/${activeWorkspace?.slug}/vouchers/${selectedItem.id}`}
+                        >
+                          <Button className="rounded-full shadow-lg text-blue-600 bg-white hover:bg-white/90">
+                            View All Vouchers
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -759,21 +824,38 @@ function WorkspaceProductsView() {
                       {selectedItem.stock}
                     </p>
                   </div>
-                  <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center">
-                    <Link
-                      to="/dashboard/$workspaceSlug/products/edit/$productId"
-                      params={{
-                        workspaceSlug: activeWorkspace?.slug as string,
-                        productId: selectedItem.id,
-                      }}
-                    >
-                      <Button
-                        variant="outline"
-                        className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                  <div className="bg-card border border-border/60 rounded-xl p-4 shadow-sm flex flex-col justify-center gap-2">
+                    {selectedItem.type === "voucher_batch" ? (
+                      <Link
+                        to="/dashboard/$workspaceSlug/vouchers/$batchId"
+                        params={{
+                          workspaceSlug: activeWorkspace?.slug as string,
+                          batchId: selectedItem.id,
+                        }}
                       >
-                        Edit Item
-                      </Button>
-                    </Link>
+                        <Button
+                          variant="outline"
+                          className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                        >
+                          Manage Vouchers
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/dashboard/$workspaceSlug/products/edit/$productId"
+                        params={{
+                          workspaceSlug: activeWorkspace?.slug as string,
+                          productId: selectedItem.id,
+                        }}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full h-10 shadow-sm border-primary/20 hover:bg-primary/5 text-primary"
+                        >
+                          Edit Item
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

@@ -26,6 +26,7 @@ interface PaymentModalProps {
     network?: string;
     currency?: string;
     convertedAmount?: number;
+    shortfall?: number;
   }) => void;
   isProcessing: boolean;
   isGenerating: boolean;
@@ -378,14 +379,11 @@ export function PaymentModal({
             </div>
           </div>
 
-          <div
-            className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-[var(--panel-bg)] border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-background relative overflow-hidden"
-            style={{ "--panel-bg": "var(--foreground)" } as React.CSSProperties}
-          >
+          <div className="md:w-96 lg:w-[420px] bg-secondary/30 md:bg-primary border-t md:border-t-0 md:border-l border-border/60 p-6 md:p-10 lg:p-12 flex flex-col md:text-primary-foreground relative overflow-hidden">
             {/* Subtle Gradient Overlay on Desktop */}
             <div className="hidden md:block absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent mix-blend-overlay pointer-events-none"></div>
 
-            <h3 className="font-bold text-lg md:text-xl mb-6 md:mb-8 relative z-10 md:text-background/90">
+            <h3 className="font-bold text-lg md:text-xl mb-6 md:mb-8 relative z-10 md:text-primary-foreground/90">
               Order Summary
             </h3>
 
@@ -402,8 +400,10 @@ export function PaymentModal({
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm pt-4 border-t border-border/40 md:border-background/20">
-                  <span className="text-muted-foreground md:text-background/70">Base Price</span>
+                <div className="flex justify-between text-sm pt-4 border-t border-border/40 md:border-primary-foreground/20">
+                  <span className="text-muted-foreground md:text-primary-foreground/70">
+                    Base Price
+                  </span>
                   <span className="font-semibold">
                     {baseCurrency} {baseAmount.toLocaleString()}
                   </span>
@@ -441,72 +441,74 @@ export function PaymentModal({
                 <span className="font-bold">Total to Pay</span>
                 <div className="text-right">
                   {isSimulating ? (
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground md:text-background/70">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground md:text-primary-foreground/70">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Calculating exact fees...</span>
                     </div>
                   ) : simulation && paymentMethod === "momo" ? (
                     <div className="space-y-1 w-full text-sm">
-                      <div className="flex justify-between text-muted-foreground md:text-background/70">
+                      <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Base Ticket</span>
                         <span>
                           {baseAmount} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between text-muted-foreground md:text-background/70">
+                      <div className="flex justify-between text-primary-foreground/70">
                         <span>Service Fee</span>
                         <span>
                           {simulation.serviceFee.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-end font-medium text-foreground md:text-background border-t border-border/40 md:border-background/20 pt-1">
+                      <div className="flex justify-end font-medium text-primary-foreground border-t border-primary-foreground/20 pt-1">
                         <span>
                           {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
                       {isBlocked && simulation.structuredError ? (
-                        <div className="mt-4 p-3 bg-red-50 text-red-900 text-xs rounded border border-red-200 space-y-2">
-                          <div className="font-bold text-red-700">
+                        <div className="mt-4 p-3 bg-red-500/20 text-white text-xs rounded border border-red-500/30 space-y-2">
+                          <div className="font-bold text-red-100">
                             {simulation.structuredError.title}
                           </div>
                           <p>{simulation.structuredError.description}</p>
 
-                          {simulation.structuredError.details && (
-                            <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
-                              <div>
-                                Customer Fee:{" "}
-                                {simulation.structuredError.details.customerServiceFee}
+                          {"details" in simulation.structuredError &&
+                            simulation.structuredError.details && (
+                              <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
+                                <div>
+                                  Customer Fee:{" "}
+                                  {simulation.structuredError.details.customerServiceFee}
+                                </div>
+                                <div>
+                                  Organizer Contribution:{" "}
+                                  {simulation.structuredError.details.organizerContribution}
+                                </div>
+                                <div>
+                                  Total Network Cost: {simulation.structuredError.details.totalCost}
+                                </div>
+                                <div className="mt-1 text-red-600 font-semibold">
+                                  {simulation.structuredError.details.message}
+                                </div>
+                                <div className="mt-1">
+                                  Shortfall: {simulation.structuredError.details.shortfall}
+                                </div>
                               </div>
-                              <div>
-                                Organizer Contribution:{" "}
-                                {simulation.structuredError.details.organizerContribution}
-                              </div>
-                              <div>
-                                Total Network Cost: {simulation.structuredError.details.totalCost}
-                              </div>
-                              <div className="mt-1 text-red-600 font-semibold">
-                                {simulation.structuredError.details.message}
-                              </div>
-                              <div className="mt-1">
-                                Shortfall: {simulation.structuredError.details.shortfall}
-                              </div>
-                            </div>
-                          )}
+                            )}
 
-                          {simulation.structuredError.recommendation && (
-                            <div className="mt-2 pt-2 border-t border-red-200">
-                              <div className="font-bold text-red-700 mb-1">
-                                System Recommendation
+                          {"recommendation" in simulation.structuredError &&
+                            simulation.structuredError.recommendation && (
+                              <div className="mt-2 pt-2 border-t border-red-200">
+                                <div className="font-bold text-red-700 mb-1">
+                                  System Recommendation
+                                </div>
+                                <ul className="list-disc pl-4 space-y-1">
+                                  {simulation.structuredError.recommendation.map(
+                                    (rec: string, i: number) => (
+                                      <li key={i}>{rec}</li>
+                                    ),
+                                  )}
+                                </ul>
                               </div>
-                              <ul className="list-disc pl-4 space-y-1">
-                                {simulation.structuredError.recommendation.map(
-                                  (rec: string, i: number) => (
-                                    <li key={i}>{rec}</li>
-                                  ),
-                                )}
-                              </ul>
-                            </div>
-                          )}
+                            )}
                         </div>
                       ) : (
                         isBlocked && (
@@ -518,7 +520,7 @@ export function PaymentModal({
                       )}
                     </div>
                   ) : (
-                    <span className="font-semibold text-lg text-foreground md:text-background">
+                    <span className="font-semibold text-lg text-foreground md:text-primary-foreground">
                       Total: {convertedAmount.toLocaleString()} {targetCurrency}
                     </span>
                   )}
@@ -536,7 +538,7 @@ export function PaymentModal({
                   (paymentMethod === "momo" &&
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
-                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
+                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide md:!bg-background md:!text-primary hover:md:!bg-background/90 md:!shadow-xl"
                 style={{ background: themeColor || "var(--gradient-primary)", color: "#fff" }}
               >
                 {isGenerating

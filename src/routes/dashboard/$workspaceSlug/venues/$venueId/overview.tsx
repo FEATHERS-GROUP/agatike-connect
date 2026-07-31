@@ -12,6 +12,8 @@ import { getRentableVenueById } from "@/api/rentable_venues";
 import { getVenueBookings } from "@/api/venue_bookings";
 import { ManualBookingDialog } from "@/components/desktop/dashboard/ManualBookingDialog";
 import { BlockDateDialog } from "@/components/desktop/dashboard/BlockDateDialog";
+import { SponsoredVouchersPanel } from "@/components/shared/SponsoredVouchersPanel";
+import { getVenueSponsoredVoucherBatches } from "@/api/vouchers";
 import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -426,6 +428,22 @@ function VenueOverviewPage() {
         venue={venue}
       />
       <BlockDateDialog open={isBlockDateOpen} onOpenChange={setIsBlockDateOpen} venue={venue} />
+
+      <div className="mt-6">
+        <SponsoredVouchersPanel
+          entityId={venueId}
+          entityType="venue"
+          fetchBatches={() =>
+            getVenueSponsoredVoucherBatches({ data: { venue_id: venueId } } as any)
+          }
+          queryKey={["venue-sponsored-voucher-batches", venueId]}
+          entityTickets={(venue?.pricing_tiers || []).map((t: any) => ({
+            id: t.id || t.name,
+            name: t.name || t.label,
+            cost: t.price || t.amount || 0,
+          }))}
+        />
+      </div>
     </div>
   );
 }

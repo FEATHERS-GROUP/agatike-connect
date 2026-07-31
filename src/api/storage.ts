@@ -1,7 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
-const BUCKET = "Agatike";
-const SUPABASE_URL = "https://mrcsteggkqkpeyrjnxcb.supabase.co";
+const BUCKET = process.env.SUPABASE_BUCKET || "Agatike";
+const isProd = process.env.NODE_ENV === "production";
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ||
+  (isProd
+    ? "https://iegxkcmfhqmhhrtoacmg.supabase.co"
+    : "https://mrcsteggkqkpeyrjnxcb.supabase.co");
 
 /**
  * Server-side file upload to Supabase Storage using the REST API directly.

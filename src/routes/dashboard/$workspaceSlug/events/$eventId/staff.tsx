@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getBadgeProjectByEventId } from "@/api/badges";
 import { BadgePreview } from "@/components/badge-designer/BadgePreview";
+import { getEventVendors } from "@/api/vendors";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { Lock } from "lucide-react";
 
@@ -267,23 +268,38 @@ function GenerateVendorFormModal({
   );
 }
 
-function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
+function EditAccessModal({
+  staff,
+  sections,
+  eventId,
+}: {
+  staff: any;
+  sections: any[];
+  eventId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [allowedSections, setAllowedSections] = useState<string[]>(staff.allowed_sections || []);
+  const [vendorId, setVendorId] = useState<string | null>(staff.vendor_id || null);
   const queryClient = useQueryClient();
+
+  const { data: vendors = [] } = useQuery({
+    queryKey: ["event-vendors", eventId],
+    queryFn: () => getEventVendors({ data: { event_id: eventId } } as any),
+    enabled: open,
+  });
 
   const mutation = useMutation({
     mutationFn: async () => {
       return await updateEventStaff({
-        data: { id: staff.id, allowed_sections: allowedSections },
+        data: { id: staff.id, allowed_sections: allowedSections, vendor_id: vendorId },
       } as any);
     },
     onSuccess: () => {
-      toast.success("Access updated successfully");
+      toast.success("Staff updated successfully");
       queryClient.invalidateQueries({ queryKey: ["event-staff"] });
       setOpen(false);
     },
-    onError: () => toast.error("Failed to update access"),
+    onError: () => toast.error("Failed to update staff"),
   });
 
   return (
@@ -291,7 +307,10 @@ function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
       open={open}
       onOpenChange={(val) => {
         setOpen(val);
-        if (val) setAllowedSections(staff.allowed_sections || []);
+        if (val) {
+          setAllowedSections(staff.allowed_sections || []);
+          setVendorId(staff.vendor_id || null);
+        }
       }}
     >
       <DialogTrigger asChild>
@@ -338,6 +357,23 @@ function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
               </label>
             ))}
           </div>
+
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <Label className="text-sm font-semibold">Assign to Vendor (Optional)</Label>
+            <select
+              className="w-full flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={vendorId || ""}
+              onChange={(e) => setVendorId(e.target.value || null)}
+            >
+              <option value="">No Vendor Assigned</option>
+              {vendors.map((v: any) => (
+                <option key={v.id} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <Button
             className="w-full mt-4"
             style={{ background: "var(--gradient-primary)", color: "white" }}
@@ -345,7 +381,7 @@ function EditAccessModal({ staff, sections }: { staff: any; sections: any[] }) {
             disabled={mutation.isPending}
           >
             {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Access Changes
+            Save Changes
           </Button>
         </div>
       </DialogContent>
@@ -540,7 +576,7 @@ function StaffView() {
                               No Access
                             </span>
                           )}
-                          <EditAccessModal staff={s} sections={sections} />
+                          <EditAccessModal staff={s} sections={sections} eventId={eventId} />
                         </div>
                       </td>
                       <td className="px-6 py-4">

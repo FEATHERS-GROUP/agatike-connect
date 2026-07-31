@@ -8,6 +8,7 @@ import {
   Sparkles,
   Banknote,
   DoorOpen,
+  CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getRentableVenueById } from "@/api/rentable_venues";
@@ -66,6 +67,11 @@ export function VenueSidebar() {
       label: "Pricing",
       href: `/dashboard/${workspaceSlug}/venues/${venueId}/pricing`,
       icon: Banknote,
+    },
+    {
+      label: "Sponsored Vouchers",
+      href: `/dashboard/${workspaceSlug}/venues/${venueId}/vouchers`,
+      icon: CreditCard,
     },
     {
       label: "Settings",

@@ -19,6 +19,30 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     const providerStatus = body.status;
 
     if (providerReference) {
+      // 0. Idempotency Check: Prevent processing already completed transactions multiple times
+      const txCheckQuery = `
+        query CheckWalletTransaction($provider_reference: String!) {
+          wallet_transactions(where: { provider_reference: { _eq: $provider_reference } }) {
+            id
+            status
+          }
+        }
+      `;
+      const txCheckRes = await hasuraRequest<{ wallet_transactions: any[] }>(txCheckQuery, {
+        provider_reference: providerReference,
+      });
+      const existingTx = txCheckRes.wallet_transactions?.[0];
+
+      if (existingTx && existingTx.status === "completed" && providerStatus === "COMPLETED") {
+        console.log(
+          `[PawaPay Webhook] Transaction ${providerReference} is already completed. Skipping duplicate processing.`,
+        );
+        return new Response(JSON.stringify({ received: true, message: "Already completed" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       // 1. Update the wallet transaction status
       const updateQuery = `
         mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
@@ -137,9 +161,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         customerFee = earnRes.update_earnings?.returning?.[0]?.customer_fee || 0;
       }
 
-      // 2. If it's a completed deposit, activate the associated ticket/subscription
       if (tx && tx.status === "completed") {
-        if (tx.type === "event_ticket" || tx.type?.startsWith("page_builder_checkout")) {
+        if (
+          tx.type === "event_ticket" ||
+          tx.type === "portal_event_ticket" ||
+          tx.type?.startsWith("page_builder_checkout")
+        ) {
           // Update event_attendees status to "Confirmed" based on a unique custom group ID (reference_id)
           const confirmQuery = `
             mutation ConfirmEventAttendees($booking_ref: String!) {
@@ -153,6 +180,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   phone
                   names
                   qrcode_number
+                  ticket_id
+                  custom_fields
                   events {
                     id
                     title
@@ -170,6 +199,15 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             { booking_ref: tx.reference_id },
           );
           const confirmedAttendees = attendeeRes.update_event_attendees?.returning || [];
+
+          if (confirmedAttendees.length > 0) {
+            try {
+              const { processSponsoredVouchersForAttendees } = await import("./sponsored_vouchers");
+              await processSponsoredVouchersForAttendees(confirmedAttendees);
+            } catch (e) {
+              console.error("[PawaPay] Failed to process sponsored vouchers:", e);
+            }
+          }
 
           // Also confirm any product_orders that are pending payment linked to tickets in this booking
           const confirmProductOrdersQuery = `
@@ -208,9 +246,13 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           }
 
           const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
-          const appUrl = process.env.PROJECT_PRODUCTION_URL
+          let appUrl = process.env.PROJECT_PRODUCTION_URL
             ? `https://${process.env.PROJECT_PRODUCTION_URL}`
             : "https://agatike.com";
+
+          if (wsSlug) {
+            appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+          }
 
           let eventName = "Your Event";
           let dateStr = "TBD";
@@ -259,51 +301,44 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           const baseDomain = process.env.PROJECT_PRODUCTION_URL || "agatike.com";
           const domain = wsSlug ? `${wsSlug}.${baseDomain}` : baseDomain;
+          // ── NOTIFICATIONS (Skipped for Web Portal Checkouts) ──
+          if (!tx.type?.startsWith("portal_")) {
+            const orgName = firstAtt?.events?.workspaces?.name || wsName || domain;
 
-          let detailedMessage = "";
-          let shortSmsMessage = "";
+            const totalPaidStr = body?.depositedAmount
+              ? body.depositedAmount
+              : (parseFloat(tx.amount) + customerFee).toString();
 
-          if (firstAtt) {
-            // Ticket purchase
-            detailedMessage =
-              `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
-              `\n\nOrganizer: ${domain}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
-              (productsText ? `\nProducts: ${productsText}` : "");
-            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
-          } else if (confirmedOrders.length > 0) {
-            // Product-only purchase
-            detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${domain}!`;
-            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
-          } else {
-            // General page builder payment
-            detailedMessage = `Payment of ${tx.amount} ${body?.currency || ""} ${feeText} confirmed! Thank you for your payment to ${domain}.`;
-            shortSmsMessage = `Payment of ${tx.amount} ${body?.currency || ""} confirmed! Thank you for your payment to ${domain}.`;
-          }
+            let detailedMessage = "";
+            let shortSmsMessage = "";
 
-          if (firstAtt) {
-            const { sendAttendeeEmail } = await import("./email");
-            const orgName = firstAtt.events?.workspaces?.name || "The Organizer";
+            if (firstAtt) {
+              // Ticket purchase
+              detailedMessage =
+                `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
+                `\n\nOrganizer: ${orgName}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
+                (productsText ? `\nProducts: ${productsText}` : "");
+              shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
+            } else if (confirmedOrders.length > 0) {
+              // Product-only purchase
+              detailedMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${orgName}!`;
+              shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
+            } else {
+              // General page builder payment
+              detailedMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! Thank you for your payment to ${domain}.`;
+              shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Thank you for your payment to ${domain}.`;
+            }
 
-            const emailAddresses = [
-              ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
-            ];
+            if (firstAtt) {
+              const { sendAttendeeEmail } = await import("./email");
 
-            let fallbackPdfBase64: string | undefined = undefined;
-            if (firstAtt.events?.id) {
-              try {
-                const projRes = await hasuraRequest<{ workspace_ticket_projects: any[] }>(
-                  `
-                  query GetTicketProject($eventId: uuid!) {
-                    workspace_ticket_projects(where: { event_id: { _eq: $eventId } }, limit: 1) { id }
-                  }
-                `,
-                  { eventId: firstAtt.events.id },
-                );
+              const emailAddresses = [
+                ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
+              ];
 
-                if (
-                  !projRes.workspace_ticket_projects ||
-                  projRes.workspace_ticket_projects.length === 0
-                ) {
+              let fallbackPdfBase64: string | undefined = undefined;
+              if (firstAtt.events?.id) {
+                try {
                   const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
 
                   // Extract time separately for layout
@@ -324,93 +359,165 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     bookingRef: tx.reference_id,
                   });
                   fallbackPdfBase64 = fallbackRes.content;
+                } catch (e) {
+                  console.error("Failed to generate fallback ticket", e);
+                }
+              }
+
+              const attachments: any[] = [];
+              if (fallbackPdfBase64) {
+                attachments.push({
+                  filename: `Ticket-${firstAtt.qrcode_number}.pdf`,
+                  content: fallbackPdfBase64,
+                  contentType: "application/pdf",
+                });
+              }
+
+              let productPdfBase64: string | undefined = undefined;
+              if (confirmedOrders.length > 0) {
+                try {
+                  const { generateProductReceiptPdf, generateVoucherPdf } =
+                    await import("./receipts");
+                  const orgDetails = {
+                    name: eventName || wsName || domain,
+                    email: orgEmail,
+                    phone: orgPhone,
+                    city: wsCity,
+                    address: wsAddress,
+                    themeColor: wsThemeColor,
+                  };
+                  let customerDetails = {
+                    name: firstAtt?.names || "",
+                    email: guestEmail,
+                    phone: body?.payer?.address?.value || "",
+                  };
+                  const pdfBuffer = await generateProductReceiptPdf(
+                    confirmedOrders,
+                    orgDetails,
+                    customerDetails,
+                    customerFee,
+                  );
+                  productPdfBase64 = pdfBuffer.toString("base64");
+                  if (productPdfBase64) {
+                    attachments.push({
+                      filename: `Receipt-${productQrCode || "Order"}.pdf`,
+                      content: productPdfBase64,
+                      contentType: "application/pdf",
+                    });
+                  }
+
+                  for (const order of confirmedOrders) {
+                    if (order.product?.type === "voucher") {
+                      const vBuffer = await generateVoucherPdf(order, orgDetails);
+                      attachments.push({
+                        filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
+                        content: vBuffer.toString("base64"),
+                        contentType: "application/pdf",
+                      });
+                    }
+                  }
+                } catch (e) {
+                  console.error("Failed to generate product receipt PDF", e);
+                }
+              }
+
+              for (const email of emailAddresses) {
+                await sendAttendeeEmail({
+                  data: {
+                    to: email,
+                    subject: `Your purchase for ${eventName} is confirmed!`,
+                    message: detailedMessage,
+                    eventName: eventName,
+                    organizerName: orgName,
+                    appUrl,
+                    badgeLink: `${appUrl}/ticket/${firstAtt.id}`,
+                    attachments,
+                  },
+                } as any).catch((e) => console.error("Failed to send attendee email", e));
+              }
+            } else if (confirmedOrders.length > 0 && guestEmail) {
+              // Product-only purchase email receipt
+              const { sendAttendeeEmail } = await import("./email");
+
+              const attachments: any[] = [];
+              let productPdfBase64: string | undefined = undefined;
+              try {
+                const { generateProductReceiptPdf, generateVoucherPdf } =
+                  await import("./receipts");
+                const orgDetails = {
+                  name: eventName || wsName || domain,
+                  email: orgEmail,
+                  phone: orgPhone,
+                  city: wsCity,
+                  address: wsAddress,
+                  themeColor: wsThemeColor,
+                };
+                let phoneToNotify = body?.payer?.address?.value;
+                if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
+                if (!phoneToNotify && confirmedOrders.length > 0)
+                  phoneToNotify = confirmedOrders[0].phone;
+                let customerDetails = {
+                  name: firstAtt?.names || "Guest",
+                  email: guestEmail || firstAtt?.email || "",
+                  phone: phoneToNotify || "",
+                };
+                const pdfBuffer = await generateProductReceiptPdf(
+                  confirmedOrders,
+                  orgDetails,
+                  customerDetails,
+                  customerFee,
+                );
+                productPdfBase64 = pdfBuffer.toString("base64");
+                if (productPdfBase64) {
+                  attachments.push({
+                    filename: `Receipt-${productQrCode || "Order"}.pdf`,
+                    content: productPdfBase64,
+                    contentType: "application/pdf",
+                  });
+                }
+
+                for (const order of confirmedOrders) {
+                  if (order.product?.type === "voucher") {
+                    const vBuffer = await generateVoucherPdf(order, orgDetails);
+                    attachments.push({
+                      filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
+                      content: vBuffer.toString("base64"),
+                      contentType: "application/pdf",
+                    });
+                  }
                 }
               } catch (e) {
-                console.error("Failed to generate fallback ticket", e);
+                console.error("Failed to generate product receipt PDF", e);
               }
-            }
 
-            for (const email of emailAddresses) {
               await sendAttendeeEmail({
                 data: {
-                  to: email,
-                  subject: `Your purchase for ${eventName} is confirmed!`,
+                  to: guestEmail,
+                  subject: `Your purchase from ${orgName} is confirmed!`,
                   message: detailedMessage,
-                  eventName: eventName,
+                  eventName: "Product Store",
                   organizerName: orgName,
                   appUrl,
-                  badgeLink: `${appUrl}/ticket/${firstAtt.id}`,
-                  pdfBase64: fallbackPdfBase64,
+                  attachments,
                 },
-              } as any).catch((e) => console.error("Failed to send attendee email", e));
-            }
-          } else if (confirmedOrders.length > 0 && guestEmail) {
-            // Product-only purchase email receipt
-            const { sendAttendeeEmail } = await import("./email");
-            const { generateProductReceiptPdf } = await import("./receipts");
-            const orgName = wsName || domain;
-
-            let pdfBase64;
-            try {
-              const orgDetails = {
-                name: wsName || domain,
-                email: orgEmail,
-                phone: orgPhone,
-                city: wsCity,
-                address: wsAddress,
-                themeColor: wsThemeColor,
-              };
-              let phoneToNotify = body?.payer?.address?.value;
-              if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
-              if (!phoneToNotify && confirmedOrders.length > 0)
-                phoneToNotify = confirmedOrders[0].phone;
-
-              const customerDetails = {
-                name: firstAtt?.names || "Guest",
-                email: guestEmail || firstAtt?.email || "",
-                phone: phoneToNotify || "",
-              };
-
-              const pdfBuffer = await generateProductReceiptPdf(
-                confirmedOrders,
-                orgDetails,
-                customerDetails,
-                customerFee,
-              );
-              pdfBase64 = pdfBuffer.toString("base64");
-            } catch (e) {
-              console.error("Failed to generate product receipt PDF", e);
+              } as any).catch((e) => console.error("Failed to send product email", e));
             }
 
-            await sendAttendeeEmail({
-              data: {
-                to: guestEmail,
-                subject: `Your purchase from ${orgName} is confirmed!`,
-                message:
-                  detailedMessage +
-                  `<br/><br/><i>Your purchase receipt is attached to this email.</i>`,
-                eventName: "Product Store",
-                organizerName: orgName,
-                appUrl,
-                pdfBase64,
-              },
-            } as any).catch((e) => console.error("Failed to send product email", e));
-          }
+            // Send Event SMS with direct ticket links and products
+            let phoneToNotify = body?.payer?.address?.value;
+            if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
+            if (!phoneToNotify && confirmedOrders.length > 0)
+              phoneToNotify = confirmedOrders[0].phone;
 
-          // Send Event SMS with direct ticket links and products
-          let phoneToNotify = body?.payer?.address?.value;
-          if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
-          if (!phoneToNotify && confirmedOrders.length > 0)
-            phoneToNotify = confirmedOrders[0].phone;
-
-          if (phoneToNotify) {
-            const { sendSMS } = await import("./pindo.server");
-            try {
-              await sendSMS(phoneToNotify, shortSmsMessage);
-            } catch (e) {
-              console.error("[Pindo SMS] Failed to send payment confirmation:", e);
+            if (phoneToNotify) {
+              const { sendSMS } = await import("./pindo.server");
+              try {
+                await sendSMS(phoneToNotify, shortSmsMessage);
+              } catch (e) {
+                console.error("[Pindo SMS] Failed to send payment confirmation:", e);
+              }
             }
-          }
+          } // End of Notifications block
         } else if (tx.type === "space_subscription") {
           const activateSubQuery = `
             mutation ActivateSpaceSubscription($id: uuid!) {
@@ -423,7 +530,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             }
           `;
           await hasuraRequest(activateSubQuery, { id: tx.reference_id });
-        } else if (tx.type === "venue_booking") {
+        } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
             tx.reference_id,
           );
@@ -471,7 +578,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         // Send general SMS Confirmation via Pindo for other types
         if (
           tx.type !== "event_ticket" &&
+          tx.type !== "portal_event_ticket" &&
           !tx.type?.startsWith("page_builder_checkout") &&
+          !tx.type?.startsWith("portal_") &&
           body?.payer?.address?.value
         ) {
           const phone = body.payer.address.value;

@@ -51,6 +51,7 @@ const GET_EVENT_STAFF = `
       profile_image
       pin_code
       app_permissions
+      vendor_id
     }
   }
 `;
@@ -78,6 +79,7 @@ const GET_STAFF_BY_BADGE = `
       event_id
       pin_code
       app_permissions
+      vendor_id
     }
   }
 `;
@@ -101,6 +103,7 @@ const ADD_EVENT_STAFF = `
       profile_image
       pin_code
       app_permissions
+      vendor_id
     }
   }
 `;
@@ -124,6 +127,7 @@ const ADD_MULTIPLE_EVENT_STAFF = `
         profile_image
         pin_code
         app_permissions
+        vendor_id
       }
     }
   }
@@ -135,17 +139,18 @@ export const addMultipleEventStaff = createServerFn({ method: "POST" }).handler(
 });
 
 const UPDATE_EVENT_STAFF = `
-  mutation UpdateEventStaff($id: uuid!, $allowed_sections: jsonb) {
-    update_event_staff_by_pk(pk_columns: { id: $id }, _set: { allowed_sections: $allowed_sections }) {
+  mutation UpdateEventStaff($id: uuid!, $allowed_sections: jsonb, $vendor_id: uuid) {
+    update_event_staff_by_pk(pk_columns: { id: $id }, _set: { allowed_sections: $allowed_sections, vendor_id: $vendor_id }) {
       id
       allowed_sections
+      vendor_id
     }
   }
 `;
 
 export const updateEventStaff = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { id, allowed_sections } = ctx.data as any;
-  return hasuraRequest(UPDATE_EVENT_STAFF, { id, allowed_sections });
+  const { id, allowed_sections, vendor_id } = ctx.data as any;
+  return hasuraRequest(UPDATE_EVENT_STAFF, { id, allowed_sections, vendor_id });
 });
 
 const UPDATE_STAFF_STATUS = `
@@ -186,6 +191,7 @@ const GET_USER_STAFF_ASSIGNMENTS = `
       badge_qr_string
       allowed_sections
       app_permissions
+      vendor_id
       event {
         id
         title

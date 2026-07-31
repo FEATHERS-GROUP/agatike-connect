@@ -194,6 +194,7 @@ function DashboardLoginPage() {
                   <Input
                     {...register("email")}
                     type="email"
+                    autoComplete="username"
                     className="pl-12 h-14 rounded-xl bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary transition-all"
                     placeholder="hello@example.com"
                   />
@@ -218,6 +219,7 @@ function DashboardLoginPage() {
                   <Input
                     {...register("password")}
                     type="password"
+                    autoComplete="current-password"
                     className="pl-12 h-14 rounded-xl bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus-visible:ring-primary focus-visible:border-primary transition-all"
                     placeholder="••••••••"
                   />

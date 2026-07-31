@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/currency";
 
@@ -55,6 +56,7 @@ export function MerchVariantModal({
           size="sm"
           variant={globalQty > 0 ? "secondary" : "outline"}
           className={`rounded-full h-7 text-xs w-full mt-2 ${globalQty > 0 ? "border-primary/30" : ""}`}
+          onClick={() => console.log(`MerchVariantModal opened for item:`, m.name)}
         >
           {globalQty > 0 ? `Selected (${globalQty})` : "Select Options"}
         </Button>
@@ -70,6 +72,9 @@ export function MerchVariantModal({
           <div className="p-5 flex flex-col gap-4">
             <DialogHeader className="p-0 text-left">
               <DialogTitle className="text-xl md:text-2xl">{m.name}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Choose your variant options.
+              </DialogDescription>
               {m.description && (
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   {m.description}
@@ -151,13 +156,14 @@ export function MerchVariantModal({
                 </div>
 
                 {setCart ? (
-                  qty > 0 ? (
-                    <div className="flex items-center gap-3 bg-background rounded-full border px-2 py-1 shadow-sm">
+                  <div className="flex flex-col gap-2 items-end">
+                    <div className="flex items-center gap-3 bg-background rounded-full border px-2 py-1 shadow-sm h-12 w-[140px] justify-between">
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-10 w-10 rounded-full hover:bg-secondary"
                         onClick={() => handleRemove(m)}
+                        disabled={qty <= 0}
                       >
                         <Minus className="h-5 w-5" />
                       </Button>
@@ -166,30 +172,21 @@ export function MerchVariantModal({
                         variant="ghost"
                         size="icon"
                         className="h-10 w-10 rounded-full hover:bg-secondary"
-                        onClick={() => handleAdd(m)}
-                        disabled={isStockExceeded}
+                        onClick={() => {
+                          console.log("MerchVariantModal Plus clicked", { m });
+                          handleAdd(m);
+                        }}
+                        disabled={!canAdd}
                       >
                         <Plus className="h-5 w-5" />
                       </Button>
                     </div>
-                  ) : (
-                    <Button
-                      onClick={() => handleAdd(m)}
-                      disabled={!canAdd}
-                      className="rounded-full px-8 py-6 text-base font-semibold shadow-md"
-                      title={
-                        needsSize
-                          ? "Select a variant first"
-                          : needsColor
-                            ? "Select a sub-variant first"
-                            : isStockExceeded
-                              ? "Out of stock"
-                              : undefined
-                      }
-                    >
-                      {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add to Cart"}
-                    </Button>
-                  )
+                    {!canAdd && (needsSize || needsColor) && (
+                      <span className="text-xs text-destructive font-medium pr-2">
+                        {needsSize ? "Please select a variant" : "Please select a sub-variant"}
+                      </span>
+                    )}
+                  </div>
                 ) : null}
               </div>
             </div>

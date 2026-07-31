@@ -13,6 +13,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       badgeLink,
       appUrl,
       pdfBase64,
+      attachments,
     } = ctx.data as any;
 
     const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -23,7 +24,8 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : appUrl || "https://agatike.com";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     // Build Social Links HTML if available
     let socialsHtml = "";
@@ -62,7 +64,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       <!-- Header -->
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Event Update</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px; font-weight: 500;">from ${organizerName || "your event organizer"}</p>
@@ -77,9 +79,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
           badgeLink
             ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
-          <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Digital Badge</h4>
-          <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your digital badge. You can use it to check in at the event!</p>
-          <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Badge</a>
+          <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
+          <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
+          <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
             : ""
@@ -113,7 +115,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
                       : ""
                   }
                   <td align="center">
-                    <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; display: block;" />
+                    <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
                 </tr>
               </table>
@@ -139,7 +141,9 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
       html: html,
     };
 
-    if (pdfBase64) {
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      payload.attachments = attachments;
+    } else if (pdfBase64) {
       payload.attachments = [
         {
           filename: `Receipt.pdf`,
@@ -171,26 +175,195 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
       to,
       customerName,
       venueName,
+      eventName,
       attachments, // Array of { filename: string, content: string (base64) }
       hasMerch,
+      workspaceId,
+      phone,
+      isVenue,
+      totalPaid,
+      ticketCodes,
+      bookingRef,
+      isPortal,
     } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const emailAttachments = [...(attachments || [])];
+
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NODE_ENV === "production"
           ? "https://agatike.rw"
-          : "https://agatike.rw";
+          : "https://agatike.com";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+
+    let organizerName = "Agatike Connect";
+    let organizerLogo = "";
+    let organizerSocials: any = null;
+    let themeColor = "#F2571D";
+    let wsSlug = "";
+
+    if (workspaceId) {
+      try {
+        const { hasuraRequest } = await import("./graphql.server");
+        const wsData = await hasuraRequest<{
+          workspaces_by_pk: { name: string; orgnizer_id: string };
+          workspace_pages: { slug: string; theme_color: string; components: any }[];
+        }>(
+          `
+          query GetWS($id: uuid!) { 
+            workspaces_by_pk(id: $id) { name orgnizer_id } 
+            workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { slug theme_color components }
+          }
+        `,
+          { id: workspaceId },
+        );
+
+        if (wsData?.workspaces_by_pk) {
+          organizerName = wsData.workspaces_by_pk.name;
+          if (wsData.workspaces_by_pk.orgnizer_id) {
+            const orgData = await hasuraRequest<{
+              organizers_by_pk: { name: string; socials: any };
+            }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name socials } }`, {
+              id: wsData.workspaces_by_pk.orgnizer_id,
+            });
+            if (orgData?.organizers_by_pk) {
+              if (orgData.organizers_by_pk.socials)
+                organizerSocials = orgData.organizers_by_pk.socials;
+            }
+          }
+        }
+        if (wsData?.workspace_pages?.length) {
+          wsSlug = wsData.workspace_pages[0].slug;
+          let dbTheme = wsData.workspace_pages[0].theme_color;
+          const components = wsData.workspace_pages[0].components;
+          if (components && Array.isArray(components)) {
+            const settingsBlock = components.find((b: any) => b.type === "settings");
+            if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
+          }
+          if (dbTheme) themeColor = dbTheme;
+        }
+      } catch (e) {
+        console.error("Failed to fetch workspace for email", e);
+      }
+    }
+
+    let socialsHtml = "";
+    if (bookingRef) {
+      try {
+        const { hasuraRequest } = await import("./graphql.server");
+        const ordersData = await hasuraRequest<{
+          product_orders: any[];
+          sponsored_vouchers: any[];
+        }>(
+          `
+          query GetOrdersAndVouchers($ref: String!) {
+            product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
+              product_id qty size amount_paid qr_code_string phone current_balance
+              product { name type price value_amount }
+            }
+            sponsored_vouchers(where: { booking_ref: { _eq: $ref } }) {
+              qr_code_string current_balance
+              batch { name }
+            }
+          }
+        `,
+          { ref: bookingRef },
+        );
+
+        const confirmedOrders = ordersData?.product_orders || [];
+        if (confirmedOrders.length > 0) {
+          const { generateProductReceiptPdf, generateVoucherPdf } = await import("./receipts");
+          const orgDetails = {
+            name: eventName || venueName || organizerName,
+            themeColor: themeColor,
+          };
+          const customerDetails = { name: customerName, email: to, phone: phone || "" };
+          const pdfBuffer = await generateProductReceiptPdf(
+            confirmedOrders,
+            orgDetails,
+            customerDetails,
+            0,
+          );
+          if (pdfBuffer) {
+            emailAttachments.push({
+              filename: `Receipt-${bookingRef}.pdf`,
+              content: pdfBuffer.toString("base64"),
+              contentType: "application/pdf",
+            });
+          }
+          for (const order of confirmedOrders) {
+            if (order.product?.type === "voucher") {
+              const vBuffer = await generateVoucherPdf(order, orgDetails);
+              emailAttachments.push({
+                filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
+                content: vBuffer.toString("base64"),
+                contentType: "application/pdf",
+              });
+            }
+          }
+        }
+
+        const sponsoredVouchers = ordersData?.sponsored_vouchers || [];
+        if (sponsoredVouchers.length > 0) {
+          const { generateVoucherPdf } = await import("./receipts");
+          const orgDetails = {
+            name: eventName || venueName || organizerName,
+            themeColor: themeColor,
+          };
+          for (const voucher of sponsoredVouchers) {
+            // We coerce the voucher into the structure generateVoucherPdf expects:
+            // order.batch?.name is natively supported, current_balance is natively supported.
+            const vBuffer = await generateVoucherPdf(voucher, orgDetails);
+            emailAttachments.push({
+              filename: `Voucher-${voucher.qr_code_string || "Promo"}.pdf`,
+              content: vBuffer.toString("base64"),
+              contentType: "application/pdf",
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to generate product receipts for email", e);
+      }
+    }
+
+    if (organizerSocials && typeof organizerSocials === "object") {
+      const socialLinks = Object.entries(organizerSocials)
+        .filter(([_, url]) => url)
+        .map(([platform, url]) => {
+          let iconUrl = "https://img.icons8.com/ios-filled/24/666666/link--v1.png";
+          if (platform.toLowerCase().includes("twitter") || platform.toLowerCase().includes("x"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/twitter.png";
+          else if (platform.toLowerCase().includes("instagram"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/instagram-new.png";
+          else if (platform.toLowerCase().includes("facebook"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/facebook-new.png";
+          else if (platform.toLowerCase().includes("linkedin"))
+            iconUrl = "https://img.icons8.com/ios-filled/24/666666/linkedin.png";
+
+          return `<a href="${url as string}" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+                  <img src="${iconUrl}" alt="${platform}" style="width: 24px; height: 24px;" />
+                </a>`;
+        })
+        .join("");
+
+      if (socialLinks) {
+        socialsHtml = `
+        <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #eaeaea; text-align: center;">
+          <p style="font-size: 14px; color: #666; margin-bottom: 12px; font-weight: 500;">Follow ${organizerName} on Social Media</p>
+          <div>${socialLinks}</div>
+        </div>
+      `;
+      }
+    }
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
-        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
-        </div>
+      <div style="background-color: ${themeColor}; padding: 40px 24px; text-align: center;">
+        ${organizerLogo ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; margin-bottom: 16px; display: inline-block; object-fit: contain;" />` : `<div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;"><img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`}
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Tickets are Here!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${venueName}</p>
       </div>
@@ -199,12 +372,13 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         <p>Thank you for your booking! Your tickets are attached to this email as PDF documents.</p>
         <p>Please keep them handy as you will need the OTP printed on them for verification upon entry.</p>
         ${hasMerch ? `<div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #e2e8f0;"><p style="margin:0; font-weight: 600;">📦 Merchandise Included</p><p style="margin: 8px 0 0 0; font-size: 14px;">You also purchased merchandise! You can pick it up at the event by showing this email, your ticket QR code, or your phone number.</p></div>` : ""}
+        ${socialsHtml}
         <br/>
         <p>Enjoy your visit!</p>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -216,13 +390,34 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
       body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
+        from: "Agatike <planetevents@agatike.rw>",
         to: [to],
-        subject: `Your Tickets for ${venueName}`,
+        subject: `Your Tickets for ${venueName} are Confirmed!`,
         html: html,
-        attachments: attachments,
+        attachments: emailAttachments,
       }),
     });
+
+    if (phone) {
+      let smsMsg = "";
+      if (isVenue) {
+        smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed.`;
+      } else {
+        if (wsSlug && !isPortal) {
+          const appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
+        } else {
+          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}.`;
+        }
+      }
+
+      try {
+        const { sendSMS } = await import("./pindo.server");
+        await sendSMS(phone, smsMsg);
+      } catch (e) {
+        console.error("Failed to send SMS alongside tickets email", e);
+      }
+    }
 
     const data = await res.json();
     if (!res.ok) {
@@ -244,13 +439,14 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
           ? "https://agatike.rw"
           : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Profile Update Verification</h2>
       </div>
@@ -264,7 +460,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -302,13 +498,14 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Booking Confirmed!</h2>
       </div>
@@ -329,7 +526,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -382,13 +579,14 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.PROJECT_PRODUCTION_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Payment Invoice</h2>
       </div>
@@ -429,7 +627,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
       </div>
     </div>
   `;
@@ -491,13 +689,14 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Group Booking Confirmed!</h2>
         <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0 0; font-size: 15px;">${spaceName}</p>
@@ -517,7 +716,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -614,13 +813,14 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Welcome to ${spaceName}!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">Your membership is ready</p>
@@ -644,7 +844,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -682,13 +882,14 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
 
-    const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #e11d48; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Your Visitor Pass</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">for ${spaceName}</p>
@@ -711,7 +912,7 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
-        <img src="${agatikeIconUrl}" alt="Agatike Icon" style="height: 40px; width: 40px; border-radius: 8px; object-fit: contain; margin: 0 auto; display: block;" />
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
         <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
       </div>
     </div>
@@ -757,14 +958,15 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
         ? "https://agatike.rw"
         : "http://localhost:3000";
 
-  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
   const activationLink = `${baseUrl}/dashboard/workspace-user/${encodeURIComponent(to)}/activate`;
 
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-          <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">You've Been Invited!</h2>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">to manage ${organizerName ? organizerName + "'s" : "a"} workspace</p>
@@ -825,13 +1027,14 @@ export const executeSendProjectAccessEmail = async (data: any) => {
         ? "https://agatike.rw"
         : "http://localhost:3000";
 
-  const agatikeIconUrl = `${baseUrl}/agatike-icon.png`;
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
   const html = `
   <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
     <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
       <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
-        <img src="${agatikeIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
       </div>
       <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Project Access Granted</h2>
       <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 15px;">by ${organizerName || "a workspace"}</p>

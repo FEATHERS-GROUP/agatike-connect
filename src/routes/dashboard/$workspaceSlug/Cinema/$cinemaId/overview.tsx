@@ -17,6 +17,9 @@ import { getCinemaById } from "@/api/cinemas";
 import { getCinemaStats, getCinemaBookings, getCinemaChartData } from "@/api/cinema_bookings";
 import { formatCurrency } from "@/lib/currency";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { SponsoredVouchersPanel } from "@/components/shared/SponsoredVouchersPanel";
+import { getCinemaSponsoredVoucherBatches } from "@/api/vouchers";
+import { getCinemaTicketTiers } from "@/api/cinema_ticket_tiers";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/$cinemaId/overview")({
   component: CinemaOverview,
@@ -52,6 +55,12 @@ function CinemaOverview() {
     queryKey: ["cinema_all_bookings", cinemaId],
     queryFn: () => getCinemaChartData({ data: { cinema_id: cinemaId } }),
     enabled: !!cinemaId,
+  });
+
+  const { data: ticketTiers = [] } = useQuery({
+    queryKey: ["cinema_ticket_tiers", activeWorkspace?.id],
+    queryFn: () => getCinemaTicketTiers({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
   });
 
   // Chart Logic
@@ -481,6 +490,23 @@ function CinemaOverview() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Sponsored Vouchers */}
+      <div className="mt-2">
+        <SponsoredVouchersPanel
+          entityId={cinemaId}
+          entityType="cinema"
+          fetchBatches={() =>
+            getCinemaSponsoredVoucherBatches({ data: { cinema_id: cinemaId } } as any)
+          }
+          queryKey={["cinema-sponsored-voucher-batches", cinemaId]}
+          entityTickets={ticketTiers.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            cost: t.price || 0,
+          }))}
+        />
       </div>
     </div>
   );

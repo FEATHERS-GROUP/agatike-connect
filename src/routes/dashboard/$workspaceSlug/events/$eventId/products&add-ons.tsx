@@ -38,6 +38,7 @@ function ProductsAndAddonsView() {
     let sold = 0;
     let lowStock = 0;
     let voucherIssued = 0;
+    let totalVoucherRemaining = 0;
     let punchesIssued = 0;
 
     products.forEach((p: any) => {
@@ -51,15 +52,16 @@ function ProductsAndAddonsView() {
       if (p.type === "voucher") {
         const valAmount = Number(p.value_amount || 0);
         voucherIssued += valAmount * pSold;
+        const remaining = Number(p.product_orders_aggregate?.aggregate?.sum?.current_balance || 0);
+        totalVoucherRemaining += remaining;
       } else if (p.type === "punch_card" || p.type === "loyalty_card") {
         const punchCount = Number(p.punch_count || 0);
         punchesIssued += punchCount * pSold;
       }
     });
 
-    const totalVoucherUsed = Math.round(voucherIssued * 0.68 * 100) / 100;
-    const totalVoucherRemaining = Math.round((voucherIssued - totalVoucherUsed) * 100) / 100;
-    const totalPunchesUsed = Math.round(punchesIssued * 0.58);
+    const totalVoucherUsed = voucherIssued - totalVoucherRemaining;
+    const totalPunchesUsed = Math.round(punchesIssued * 0.58); // Still mocked for now
     const totalPunchesRemaining = punchesIssued - totalPunchesUsed;
 
     return {

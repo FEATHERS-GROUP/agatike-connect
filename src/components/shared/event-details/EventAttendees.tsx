@@ -10,41 +10,40 @@ export function EventAttendees({
       <h2 className="text-xl font-semibold">Who's going</h2>
       {attendeesList.length > 0 ? (
         <div className="mt-4">
-          <div className="flex items-center -space-x-3 mb-3">
+          <div className="flex items-center -space-x-3 mt-1">
             {attendeesList.slice(0, 8).map((att: any, i: number) => {
-              const avatarUrl = att.users?.profile || `https://i.pravatar.cc/100?img=${i + 20}`;
-              return (
-                <img
-                  key={att.id || i}
-                  src={avatarUrl}
-                  className="h-10 w-10 rounded-full border-2 border-background object-cover"
-                  alt={att.names || "Attendee"}
-                />
-              );
+              if (att.users?.profile) {
+                return (
+                  <img
+                    key={att.id || i}
+                    src={att.users.profile}
+                    className="h-10 w-10 rounded-full border-2 border-background object-cover bg-secondary"
+                    alt="Attendee"
+                  />
+                );
+              } else {
+                const nameStr = att.names || "Guest";
+                const parts = nameStr.trim().split(/\s+/);
+                let initial = "";
+                if (parts.length >= 2) {
+                  initial = (parts[0][0] + parts[1][0]).toUpperCase();
+                } else {
+                  initial = nameStr.charAt(0).toUpperCase();
+                }
+                return (
+                  <div
+                    key={att.id || i}
+                    className="h-10 w-10 rounded-full border-2 border-background bg-primary/20 text-primary flex items-center justify-center font-bold text-sm"
+                  >
+                    {initial}
+                  </div>
+                );
+              }
             })}
             {attendeesList.length > 8 && (
               <div className="ml-4 flex items-center justify-center h-10 w-10 rounded-full bg-secondary text-xs font-bold border-2 border-background">
                 +{attendeesList.length - 8}
               </div>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {attendeesList.slice(0, 8).map((att: any, i: number) => {
-              const name = att.users?.handle ? `@${att.users.handle}` : att.names;
-              if (!name) return null;
-              return (
-                <span
-                  key={att.id || i}
-                  className="text-xs bg-secondary/50 text-muted-foreground px-2.5 py-1 rounded-full border border-border/30 font-medium"
-                >
-                  {name}
-                </span>
-              );
-            })}
-            {attendeesList.length > 8 && (
-              <span className="text-xs text-muted-foreground self-center ml-1">
-                & {attendeesList.length - 8} more
-              </span>
             )}
           </div>
         </div>

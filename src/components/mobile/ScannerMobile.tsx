@@ -19,11 +19,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getStaffByBadgeId, getEventSections } from "@/api/staff";
+import { getStaffByBadgeId, getEventSections, getUserStaffAssignments } from "@/api/staff";
 import { getWorkspaceEvents } from "@/api/events";
 import { scanAndVerifyTicket } from "@/api/attendees";
 import { scanVenueBooking } from "@/api/venue_bookings";
+import { resolveVoucher, chargeVoucher } from "@/api/vouchers";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useUserAuth } from "@/contexts/UserAuthContext";
 import { lazy, Suspense } from "react";
 
 // Dynamically import QRScanner to prevent SSR crashes and OOM during build
@@ -279,10 +281,21 @@ export function ScannerMobile({
   const [failReason, setFailReason] = useState("");
   const [scannedStaff, setScannedStaff] = useState<any>(null);
   const [scannedTicket, setScannedTicket] = useState<any>(null);
+  const [scannedVoucher, setScannedVoucher] = useState<any>(null);
 
   const { activeWorkspace } = useWorkspace();
+  const { user } = useUserAuth();
   const [selectedEventId, setSelectedEventId] = useState<string>(eventId || "");
   const [currentSectionId, setCurrentSectionId] = useState<string>("none");
+
+  const { data: staffAssignments = [] } = useQuery({
+    queryKey: ["user-staff-assignments", user?.id],
+    queryFn: async () => getUserStaffAssignments({ data: { user_id: user?.id } } as any),
+    enabled: !!user?.id,
+  });
+
+  const currentStaff = staffAssignments.find((s: any) => s.event_id === selectedEventId);
+  const vendorId = currentStaff?.vendor_id;
 
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
@@ -298,11 +311,27 @@ export function ScannerMobile({
 
   const scanMutation = useMutation({
     mutationFn: async (qr: string) => {
-      // If it starts with STAFF-, it's a staff badge. Otherwise, ticket.
+      // If it starts with STAFF-, it's a staff badge. Otherwise, ticket or voucher.
       if (qr.startsWith("STAFF-")) {
         const staff = await getStaffByBadgeId({ data: { badge_qr_string: qr } } as any);
         return { type: "staff" as const, data: staff };
       } else {
+        const activeEvent = events?.find((e: any) => e.id === selectedEventId);
+        const isActive = activeEvent?.schedules?.some((s: any) => {
+          const now = new Date();
+          return new Date(s.start_date) <= now && new Date(s.end_date) >= now;
+        });
+
+        // 1. Try to resolve as a voucher first (only if vendorId is present, or just general)
+        if (vendorId) {
+          const vRes = await resolveVoucher({
+            data: { qr_code_string: qr, current_event_id: selectedEventId },
+          } as any);
+          if (vRes.success) {
+            return { type: "voucher" as const, data: vRes.data };
+          }
+        }
+
         const res = await scanAndVerifyTicket({ data: { qrcode_number: qr } } as any);
         if (!res.success && res.message === "Invalid ticket QR code.") {
           const venueRes = await scanVenueBooking({ data: { otp: qr } } as any);
@@ -310,7 +339,7 @@ export function ScannerMobile({
             return { type: "venue" as const, data: venueRes };
           }
         }
-        return { type: "ticket" as const, data: res };
+        return { type: "ticket" as const, data: res, isActive };
       }
     },
     onSuccess: (resultData) => {
@@ -369,6 +398,20 @@ export function ScannerMobile({
         });
         setResult("success");
         onScanSuccess?.();
+      } else if (resultData.type === "voucher") {
+        const voucher = resultData.data;
+        if (!voucher) {
+          setResult("fail");
+          setFailReason("INVALID VOUCHER");
+          return;
+        }
+        if (voucher.current_balance <= 0) {
+          setResult("fail");
+          setFailReason("ZERO BALANCE");
+          return;
+        }
+        setScannedVoucher(voucher);
+        setResult("voucher");
       }
     },
     onError: () => {
@@ -406,10 +449,21 @@ export function ScannerMobile({
     }
   }, []);
 
-  const handleProcessTransaction = () => {
+  const handleProcessTransaction = async () => {
+    if (!scannedVoucher || !vendorId) return;
     setProcessingTx(true);
-    setTimeout(() => {
-      setProcessingTx(false);
+
+    try {
+      await chargeVoucher({
+        data: {
+          id: scannedVoucher.id,
+          type: scannedVoucher.type,
+          vendor_id: vendorId,
+          amount: transactionAmount,
+          description: "Charged at event",
+        },
+      } as any);
+
       toast.success(
         result === "voucher"
           ? `$${transactionAmount} deducted`
@@ -417,7 +471,11 @@ export function ScannerMobile({
       );
       setResult("idle");
       setTransactionAmount(1);
-    }, 800);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to process transaction");
+    } finally {
+      setProcessingTx(false);
+    }
   };
 
   return (
@@ -565,9 +623,14 @@ export function ScannerMobile({
             <div className="bg-slate-900 border border-blue-500/30 rounded-[2rem] p-6 shadow-[0_10px_30px_rgba(59,130,246,0.15)]">
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight">Amaka Okafor</h3>
+                  <h3 className="text-2xl font-black tracking-tight">
+                    {scannedVoucher?.name || "Wallet"}
+                  </h3>
                   <p className="text-white/50 text-sm font-medium mt-1">
-                    Remaining: {result === "voucher" ? "$50.00" : "8 Punches"}
+                    Remaining:{" "}
+                    {result === "voucher"
+                      ? `$${scannedVoucher?.current_balance?.toFixed(2) || "0.00"}`
+                      : "8 Punches"}
                   </p>
                 </div>
                 <div className="h-14 w-14 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
@@ -586,9 +649,14 @@ export function ScannerMobile({
                 >
                   <Minus className="h-8 w-8" />
                 </button>
-                <div className="text-5xl font-black w-32 text-center tabular-nums tracking-tighter">
-                  {result === "voucher" ? `$${transactionAmount}` : transactionAmount}
-                </div>
+                <input
+                  type="number"
+                  value={transactionAmount}
+                  onChange={(e) => setTransactionAmount(Number(e.target.value))}
+                  className="bg-transparent border-none outline-none text-5xl font-black w-32 text-center tabular-nums tracking-tighter text-white"
+                  min={1}
+                  max={scannedVoucher?.current_balance || 1}
+                />
                 <button
                   onClick={() =>
                     setTransactionAmount(transactionAmount + (result === "voucher" ? 5 : 1))

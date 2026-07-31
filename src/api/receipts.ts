@@ -212,3 +212,108 @@ export async function generateProductReceiptPdf(
   const pdfBuffer = Buffer.from(pdfArrayBuffer);
   return pdfBuffer;
 }
+
+export async function generateVoucherPdf(order: any, orgDetails: any): Promise<any> {
+  const { jsPDF } = await import("jspdf");
+  const { Buffer } = await import("buffer");
+
+  // Create a 300x400 gift card shape
+  const doc = new jsPDF({ unit: "px", format: [300, 400], orientation: "portrait" });
+
+  // Theme color or default orange
+  let primaryColor: [number, number, number] = [242, 127, 33]; // #F27F21
+  if (orgDetails?.themeColor && orgDetails.themeColor.startsWith("#")) {
+    const hex = orgDetails.themeColor.replace("#", "");
+    if (hex.length === 6) {
+      primaryColor = [
+        parseInt(hex.substring(0, 2), 16),
+        parseInt(hex.substring(2, 4), 16),
+        parseInt(hex.substring(4, 6), 16),
+      ];
+    }
+  }
+
+  // Draw background
+  doc.setFillColor(...primaryColor);
+  doc.roundedRect(10, 10, 280, 380, 20, 20, "F");
+
+  // Add brand name
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text((orgDetails?.name || "VOUCHER").toUpperCase(), 150, 50, {
+    align: "center",
+    charSpace: 3,
+  });
+
+  // Add Value
+  const isSponsored = !!order.batch_id || !!order.batch;
+  const productName =
+    order.product?.name || order.batch?.name || (isSponsored ? "Sponsored Voucher" : "Gift Card");
+  const qty = Math.max(1, parseInt(order.qty || "1"));
+
+  // The database holds the actual gift card balance in value_amount
+  // If it's missing, fallback to price or the divided amount_paid
+  const unitPrice =
+    parseFloat(order.product?.value_amount || "0") ||
+    parseFloat(order.product?.price || "0") ||
+    parseFloat(order.amount_paid || "0") / qty;
+  const value = order.current_balance || unitPrice || 0;
+
+  doc.setFontSize(48);
+  doc.text(`RWF ${value.toLocaleString()}`, 150, 110, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(22);
+  doc.text(isSponsored ? "VOUCHER" : "GIFT CARD", 150, 140, { align: "center" });
+
+  // Draw cutouts and dashed line
+  doc.setFillColor(255, 255, 255);
+  doc.circle(10, 240, 15, "F"); // Left cutout
+  doc.circle(290, 240, 15, "F"); // Right cutout
+
+  // Dashed line
+  doc.setDrawColor(255, 255, 255);
+  doc.setLineWidth(1.5);
+  doc.setLineDashPattern([5, 5], 0);
+  doc.line(35, 240, 265, 240);
+
+  // Logo / Circle in the middle
+  doc.setFillColor(255, 255, 255);
+  doc.circle(150, 240, 25, "F");
+
+  // Try to load QR Code
+  try {
+    const qrRes = await fetch(
+      `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${order.qr_code_string || "REF"}&margin=0&color=${primaryColor[0]}-${primaryColor[1]}-${primaryColor[2]}`,
+    );
+    if (qrRes.ok) {
+      const arrayBuffer = await qrRes.arrayBuffer();
+      const base64Str = Buffer.from(arrayBuffer).toString("base64");
+      doc.addImage(base64Str, "PNG", 130, 220, 40, 40);
+    }
+  } catch (e) {
+    console.error("Failed to fetch QR Code for voucher", e);
+  }
+
+  // QR Code Text
+  doc.setFontSize(10);
+  doc.text(order.qr_code_string || "N/A", 150, 280, { align: "center" });
+
+  // Product Name
+  doc.setFontSize(14);
+  doc.text(productName, 150, 310, { align: "center" });
+
+  // Redeem Button
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(80, 330, 140, 40, 20, 20, "F");
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("REDEEM", 150, 356, { align: "center" });
+
+  const pdfArrayBuffer = doc.output("arraybuffer");
+  const pdfBuffer = Buffer.from(pdfArrayBuffer);
+  return pdfBuffer;
+}

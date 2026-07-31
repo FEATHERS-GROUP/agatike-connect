@@ -12,6 +12,7 @@ import {
   Archive,
   Tag,
   Puzzle,
+  CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getCinemaById } from "@/api/cinemas";
@@ -83,6 +84,11 @@ export function CinemaSidebar() {
       label: "Past & Finished",
       href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/archive`,
       icon: Archive,
+    },
+    {
+      label: "Sponsored Vouchers",
+      href: `/dashboard/${workspaceSlug}/Cinema/${cinemaId}/vouchers`,
+      icon: CreditCard,
     },
     {
       label: "Settings",

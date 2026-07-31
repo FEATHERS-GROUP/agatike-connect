@@ -47,6 +47,7 @@ import {
   getSponsoredVouchers,
   getSponsoredVoucherBatches,
 } from "@/api/vouchers";
+import { SponsoredVouchersPanel } from "@/components/shared/SponsoredVouchersPanel";
 import { getEventById } from "@/api/events";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
@@ -103,6 +104,13 @@ function PlanningView() {
             <Wallet className="h-4 w-4 mr-2" /> Overview
           </TabsTrigger>
 
+          <TabsTrigger
+            value="vouchers"
+            className="rounded-xl h-10 px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            <CreditCard className="h-4 w-4 mr-2" /> Vouchers
+          </TabsTrigger>
+
           {isBusiness && (
             <TabsTrigger
               value="book"
@@ -115,6 +123,15 @@ function PlanningView() {
 
         <TabsContent value="overview" className="mt-0">
           <OverviewTab eventId={eventId} />
+        </TabsContent>
+
+        <TabsContent value="vouchers" className="mt-0">
+          <SponsoredVouchersPanel
+            entityId={eventId}
+            entityType="experience"
+            fetchBatches={() => getSponsoredVoucherBatches({ data: { event_id: eventId } } as any)}
+            queryKey={["sponsored-voucher-batches-exp", eventId]}
+          />
         </TabsContent>
 
         {isBusiness && (

@@ -219,7 +219,27 @@ export const addEventAttendees = createServerFn({ method: "POST" })
         }
       }
 
-      const res = await hasuraRequest(mutationStr, { objects });
+      const res = await hasuraRequest<{ insert_event_attendees: { returning: any[] } }>(
+        mutationStr,
+        { objects },
+      );
+
+      const inserted = res.insert_event_attendees?.returning || [];
+      const confirmedObjects = objects
+        .map((obj: any, idx: number) => ({
+          ...obj,
+          id: inserted[idx]?.id,
+        }))
+        .filter((obj: any) => obj.status === "Confirmed");
+
+      if (confirmedObjects.length > 0) {
+        try {
+          const { processSponsoredVouchersForAttendees } = await import("./sponsored_vouchers");
+          await processSponsoredVouchersForAttendees(confirmedObjects);
+        } catch (e) {
+          console.error("Failed to process sponsored vouchers:", e);
+        }
+      }
 
       if (totalCost > 0 && eventId) {
         try {
@@ -253,7 +273,28 @@ export const addEventAttendees = createServerFn({ method: "POST" })
     }
 
     // Fallback for "ga" or free events without specific DB ticket ids
-    return hasuraRequest(ADD_EVENT_ATTENDEES, { objects });
+    const gaRes = await hasuraRequest<{ insert_event_attendees: { returning: any[] } }>(
+      ADD_EVENT_ATTENDEES,
+      { objects },
+    );
+    const gaInserted = gaRes.insert_event_attendees?.returning || [];
+    const gaConfirmedObjects = objects
+      .map((obj: any, idx: number) => ({
+        ...obj,
+        id: gaInserted[idx]?.id,
+      }))
+      .filter((obj: any) => obj.status === "Confirmed");
+
+    if (gaConfirmedObjects.length > 0) {
+      try {
+        const { processSponsoredVouchersForAttendees } = await import("./sponsored_vouchers");
+        await processSponsoredVouchersForAttendees(gaConfirmedObjects);
+      } catch (e) {
+        console.error("Failed to process sponsored vouchers for GA:", e);
+      }
+    }
+
+    return gaRes;
   });
 
 export const checkUserAttendance = createServerFn({ method: "POST" })

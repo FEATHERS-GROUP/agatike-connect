@@ -39,7 +39,8 @@ export async function deductInventoryFromOrders(orders: any[]) {
         newSoldCount += qty;
 
         if (newStockLimit !== null) {
-          newStockLimit = Math.max(0, newStockLimit - qty);
+          // Do not decrease stock_limit as it represents total capacity.
+          // sold_count already tracks what's been sold.
         }
 
         let parsedSize = order.size;
@@ -87,14 +88,12 @@ export async function deductInventoryFromOrders(orders: any[]) {
         mutation UpdateProductInventory(
           $id: uuid!, 
           $sold_count: String, 
-          $stock_limit: String, 
           $available_sizes: jsonb
         ) {
           update_products_by_pk(
             pk_columns: { id: $id },
             _set: {
               sold_count: $sold_count,
-              stock_limit: $stock_limit,
               available_sizes: $available_sizes
             }
           ) {
@@ -106,7 +105,6 @@ export async function deductInventoryFromOrders(orders: any[]) {
       await hasuraRequest(updateQuery, {
         id: productId,
         sold_count: String(newSoldCount),
-        stock_limit: newStockLimit !== null ? String(newStockLimit) : null,
         available_sizes: sizes.length > 0 ? sizes : null,
       });
 

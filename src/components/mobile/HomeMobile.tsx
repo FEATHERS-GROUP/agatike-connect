@@ -148,7 +148,12 @@ export function HomeMobile() {
 
     // Process Events
     dbEvents.forEach((e: any) => {
-      const firstStopWithCoords = e.tour_stops?.find((s: any) => s.latitude && s.longitude);
+      const tourStops = Array.isArray(e.tour_stops)
+        ? e.tour_stops
+        : e.tour_stops
+          ? [e.tour_stops]
+          : [];
+      const firstStopWithCoords = tourStops.find((s: any) => s.latitude && s.longitude);
       if (e.allowed_public && !e.deleted && firstStopWithCoords) {
         markers.push({
           id: `event-${e.id}`,

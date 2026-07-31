@@ -6,13 +6,13 @@ import { COUNTRIES } from "@/lib/countries";
 function EditableInput({ icon: Icon, ...props }: any) {
   return (
     <div className="flex items-start gap-3 group">
-      {Icon && <Icon className="h-4 w-4 text-muted-foreground mt-2 shrink-0" />}
-      <div className="flex-1">
+      {Icon && <Icon className="h-4 w-4 text-muted-foreground/60 mt-2.5 shrink-0" />}
+      <div className="flex-1 min-w-0">
         <input
           {...props}
-          className={`w-full bg-transparent border border-transparent hover:bg-muted focus:bg-background focus:border-input focus:ring-2 focus:ring-ring px-2 py-1.5 -ml-2 rounded-md transition-all text-sm text-foreground font-medium placeholder:text-muted-foreground focus:outline-none ${props.className || ""}`}
+          className={`w-full bg-transparent border border-transparent hover:border-border focus:bg-background focus:border-primary/30 focus:ring-2 focus:ring-primary/10 px-3 py-2 -ml-3 rounded-lg transition-all text-[14px] text-foreground font-medium placeholder:text-muted-foreground/50 focus:outline-none ${props.className || ""}`}
         />
-        {props.error && <p className="text-[10px] text-destructive ml-1">{props.error}</p>}
+        {props.error && <p className="text-[11px] text-destructive ml-1 mt-1">{props.error}</p>}
       </div>
     </div>
   );
@@ -32,45 +32,40 @@ export function SettingsProfileSidebar({
   errors,
 }: SettingsProfileSidebarProps) {
   return (
-    <div className="w-full md:w-[320px] md:pr-8 md:border-r border-border flex-shrink-0">
+    <div className="w-full shrink-0 flex flex-col">
       {/* Identity Card */}
-      <div className="flex items-start justify-between mb-8 group">
-        <div className="flex items-center gap-4">
-          <div
-            className="relative h-[72px] w-[72px] rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-border bg-muted flex items-center justify-center"
-            onClick={() => setIsAvatarModalOpen(true)}
-          >
-            {avatar ? (
-              <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <User className="h-8 w-8 text-muted-foreground" />
-            )}
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="h-5 w-5 text-white" />
-            </div>
-          </div>
-          <div>
-            <input
-              {...register("name")}
-              className="font-bold text-lg text-foreground bg-transparent border-transparent hover:border-border focus:border-input focus:bg-muted px-1 py-0.5 -ml-1 rounded w-full outline-none transition-colors"
-              placeholder="Organizer Name"
-            />
-            <div className="flex items-center text-sm text-muted-foreground font-medium px-1 mt-0.5">
-              #
-              <input
-                {...register("handle")}
-                className="bg-transparent border-transparent hover:border-border focus:border-input focus:bg-muted rounded outline-none w-[120px] transition-colors"
-                placeholder="handle"
-              />
-            </div>
+      <div className="flex flex-col items-center text-center gap-4 mb-8 group">
+        <div
+          className="relative h-24 w-24 shrink-0 rounded-full overflow-hidden cursor-pointer shadow-sm ring-2 ring-border bg-muted flex items-center justify-center transition-transform hover:scale-[1.02]"
+          onClick={() => setIsAvatarModalOpen(true)}
+        >
+          {avatar ? (
+            <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <User className="h-10 w-10 text-muted-foreground" />
+          )}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Camera className="h-6 w-6 text-white" />
           </div>
         </div>
-        <button className="text-muted-foreground hover:text-foreground p-1">
-          <MoreHorizontal className="h-5 w-5" />
-        </button>
+        <div className="w-full">
+          <input
+            {...register("name")}
+            className="font-bold text-xl text-center text-foreground bg-transparent border-transparent hover:border-border focus:border-primary/30 focus:bg-background focus:ring-2 focus:ring-primary/10 px-2 py-1 rounded-lg w-full outline-none transition-all placeholder:text-muted-foreground/50 truncate"
+            placeholder="Organizer Name"
+          />
+          <div className="flex items-center justify-center text-[13px] text-muted-foreground font-medium mt-1">
+            <span className="opacity-50">@</span>
+            <input
+              {...register("handle")}
+              className="bg-transparent border-transparent text-center hover:border-border focus:border-primary/30 focus:bg-background focus:ring-2 focus:ring-primary/10 rounded-md outline-none w-auto max-w-[150px] transition-all py-0.5 placeholder:text-muted-foreground/40 truncate"
+              placeholder="organizer-handle"
+            />
+          </div>
+        </div>
       </div>
 
-      <Separator className="my-6" />
+      <Separator className="my-6 bg-border/40" />
 
       {/* About / Contact */}
       <div className="mb-6">

@@ -23,6 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getVenueProducts, createProductOrders } from "@/api/products";
 import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
@@ -51,6 +52,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const storageKey = `venue_checkout_desktop_${venue?.id}`;
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
+  const [cart, setCart] = useState<Record<string, number>>({});
   const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -70,6 +72,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -81,6 +84,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const { data: bookings } = useQuery({
     queryKey: ["venueBookings", venue?.id],
     queryFn: () => getVenueBookings({ data: { venue_id: venue?.id } } as any),
+    enabled: !!venue?.id,
+  });
+
+  const { data: venueProducts } = useQuery({
+    queryKey: ["venueProducts", venue?.id],
+    queryFn: () => getVenueProducts({ data: { venue_id: venue?.id } } as any),
     enabled: !!venue?.id,
   });
 
@@ -134,6 +143,15 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     } catch {
       setTicketsData({ "Standard Entry": 1 });
     }
+
+    // Load products cart
+    try {
+      const savedCart = localStorage.getItem(`venue_checkout_products_${venue?.id}`);
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      }
+    } catch {}
+
     setIsHydrated(true);
   }, [storageKey, venue]);
 
@@ -215,6 +233,14 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     phone.trim() !== "" &&
     attendees.every((att) => att.name.trim() !== "");
 
+  const productTotal = Object.entries(cart)
+    .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
+    .reduce((acc, [key, qty]) => {
+      const productId = key.split("_")[1];
+      const prod = venueProducts?.find((p: any) => p.id === productId);
+      return acc + (prod ? parseFloat(prod.price || 0) * qty : 0);
+    }, 0);
+
   const total =
     (venue?.rental_model !== "ENTIRE_VENUE" && venue?.entrance_type !== "free"
       ? [{ name: "Standard Entry", amount: venue?.entrance_fee || 0 }]
@@ -224,7 +250,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       .reduce((acc: number, tier: any) => {
         const qty = ticketsData[tier.name || "Standard Entry"] || 0;
         return acc + qty * (Number(tier.amount) || 0);
-      }, 0) || 0;
+      }, 0) + productTotal;
 
   const { mutate: doCheckout, isPending: isCheckingOut } = useMutation({
     mutationFn: async (paymentDetails?: {
@@ -267,6 +293,41 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
       const res = await createVenueBooking({ data: payload });
 
+      // Insert product_orders for any merchandise in the cart
+      const buyerPhone = paymentDetails?.phone || phone || "";
+      const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+      const productOrderObjects = Object.entries(cart)
+        .filter(([key, qty]) => key.startsWith("merch_") && qty > 0)
+        .map(([key, qty], index) => {
+          const parts = key.split("_");
+          const productId = parts[1];
+          const size = parts[2] !== "NONE" ? parts[2] : null;
+          const color = parts[3] !== "NONE" ? parts[3] : null;
+          const prod = venueProducts?.find((p: any) => p.id === productId);
+          const variantString = [size, color].filter(Boolean).join(" - ");
+          return {
+            product_id: productId,
+            qty: String(qty),
+            amount_paid: prod ? parseFloat(prod.price || 0) * qty : 0,
+            status: isPawaPay ? "Pending Payment" : "Confirmed",
+            phone: buyerPhone,
+            qr_code_string: `${qrBase}-${productId.substring(0, 4)}-${index}`,
+            decrptions: booking_ref,
+            buyer_id: user?.id || null,
+            picked: false,
+            ...(variantString ? { size: variantString } : {}),
+          };
+        });
+
+      if (productOrderObjects.length > 0) {
+        try {
+          await createProductOrders({ data: { objects: productOrderObjects } } as any);
+        } catch (e: any) {
+          console.error("Failed to create product orders:", e);
+        }
+      }
+
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
           data: {
@@ -276,20 +337,32 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || venue.currency,
-            type: "venue_booking",
+            type: "portal_venue_booking",
             referenceId: res.id,
             workspaceId: venue.workspace_id,
             reason: venue?.name || "Venue Booking",
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, isPawaPay: true, depositId: pawaRes.depositId };
+        return {
+          res,
+          isPawaPay: true,
+          depositId: pawaRes.depositId,
+          totalPaid: paymentDetails?.convertedAmount || total,
+        };
       }
 
-      return { res, isPawaPay: false };
+      return {
+        res,
+        isPawaPay: false,
+        totalPaid: paymentDetails?.convertedAmount || total,
+      };
     },
     onSuccess: (data: any) => {
       const res = data.res;
+      if (data.totalPaid) {
+        setFinalTotalPaid(data.totalPaid);
+      }
       const td = res?.tickets_data;
       if (td?.issued) {
         setIssuedTickets(td.issued);
@@ -424,7 +497,12 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 to: email,
                 customerName: name,
                 venueName: venue.name || "the Venue",
+                booking_date: date,
                 attachments,
+                workspaceId: venue.workspace_id,
+                phone: phone,
+                isVenue: true,
+                totalPaid: finalTotalPaid || total,
               } as any,
             });
             toast.success("Booking confirmed and tickets emailed!");
@@ -471,12 +549,13 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   };
 
   useEffect(() => {
+    let tm: any;
     if (isSuccess) {
-      const timer = setTimeout(() => {
+      tm = setTimeout(() => {
         navigate({ to: "/venues" });
-      }, 3000);
-      return () => clearTimeout(timer);
+      }, 5000);
     }
+    return () => clearTimeout(tm);
   }, [isSuccess, navigate]);
 
   if (isPollingPawaPay) {
@@ -531,7 +610,23 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               {Math.random().toString(36).substring(2, 10).toUpperCase()}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">Redirecting to venues...</p>
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => {
+                setIsSuccess(false);
+                setPawapayDepositId(null);
+                setIssuedTickets([]);
+                setCart({});
+                setAttendees([{ name: "", id_document: "" }]);
+              }}
+              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Buy Another Ticket
+            </button>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Or wait to be redirected...
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -540,39 +635,6 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   return (
     <div className="min-h-screen bg-secondary/20 font-sans">
       <Navbar />
-      {showOverrideDialog && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
-          <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
-            <h3 className="text-2xl font-bold mb-3 tracking-tight">Use Account Details?</h3>
-            <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-              You just signed in! Would you like to use your account details (Name, Phone, Email,
-              Nationality) or keep the customer information you already entered?
-            </p>
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={() => {
-                  if (user?.username) setName(user.username);
-                  if (user?.phone) setPhone(user.phone);
-                  if (user?.email) setEmail(user.email);
-                  if (user?.country) setNationality(user.country);
-                  setShowOverrideDialog(false);
-                }}
-                className="w-full h-12 text-base font-semibold"
-              >
-                Use Account Details
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowOverrideDialog(false)}
-                className="w-full h-12 text-base font-semibold"
-              >
-                Keep Entered Info
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showOverrideDialog && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
           <div className="bg-card w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border/50">
@@ -674,6 +736,17 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                       </p>
                     </div>
                   </div>
+
+                  {productTotal > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Products & Gift Cards</span>
+                      <span>
+                        {venue.currency || "RWF"} {productTotal.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="border-t border-border/40 my-3" />
 
                   <div className="border-t border-border/40 pt-6">
                     <h3 className="text-xl font-semibold mb-1">
