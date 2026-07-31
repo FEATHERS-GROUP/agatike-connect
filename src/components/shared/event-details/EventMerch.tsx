@@ -165,6 +165,7 @@ export function EventMerch({
     if (colorQty >= colorLimit) return;
 
     const key = getMerchCartKey(m.id, effectiveSize, sel.color);
+    console.log("EventMerch handleAdd:", { m, effectiveSize, color: sel.color, key, newQty: (prev: any) => (prev[key] || 0) + 1 });
     setCart((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
   };
 
@@ -181,12 +182,14 @@ export function EventMerch({
   };
 
   const setSelection = (id: string, field: "size" | "color", value: string) => {
+    console.log(`EventMerch setSelection:`, { id, field, value });
     setSelections((prev) => {
       const newSel = { ...prev[id], [field]: value };
       // If changing size, clear the color because colors are size-dependent
       if (field === "size") {
         newSel.color = "";
       }
+      console.log(`EventMerch selections updated:`, { ...prev, [id]: newSel });
       return { ...prev, [id]: newSel };
     });
   };
@@ -319,6 +322,25 @@ export function EventMerch({
                   </span>
                 )}
                 <p className="text-sm font-semibold leading-tight line-clamp-2 mb-2">{m.name}</p>
+                
+                {globalQty > 0 && cart && (
+                  <div className="flex flex-col gap-1 mb-3 mt-1">
+                    {Object.entries(cart)
+                      .filter(([k, q]) => (k === `merch_${m.id}` || k.startsWith(`merch_${m.id}_`)) && q > 0)
+                      .map(([k, q]) => {
+                        const parts = k.split("_");
+                        const s = parts[2];
+                        const c = parts[3];
+                        const label = [s, c].filter(Boolean).join(" - ");
+                        return (
+                          <div key={k} className="text-[10px] flex items-center justify-between bg-primary/5 text-primary px-2 py-1 rounded-md border border-primary/10">
+                            <span className="font-medium truncate pr-2">{label || "Selected"}</span>
+                            <span className="font-bold shrink-0">x{q}</span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
 
                 {sizesArr.length > 0 || colorsArr.length > 0 ? (
                   <div className="mt-auto flex items-center justify-end pt-3 border-t border-border/50">

@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/currency";
 
@@ -70,6 +71,9 @@ export function MerchVariantModal({
           <div className="p-5 flex flex-col gap-4">
             <DialogHeader className="p-0 text-left">
               <DialogTitle className="text-xl md:text-2xl">{m.name}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Choose your variant options.
+              </DialogDescription>
               {m.description && (
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   {m.description}
@@ -187,7 +191,7 @@ export function MerchVariantModal({
                               : undefined
                       }
                     >
-                      {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add to Cart"}
+                      {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add"}
                     </Button>
                   )
                 ) : null}
