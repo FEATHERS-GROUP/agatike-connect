@@ -173,7 +173,7 @@ export function MerchVariantModal({
                         size="icon"
                         className="h-10 w-10 rounded-full hover:bg-secondary"
                         onClick={() => {
-                          console.log("MerchVariantModal Plus clicked", {m});
+                          console.log("MerchVariantModal Plus clicked", { m });
                           handleAdd(m);
                         }}
                         disabled={!canAdd}
@@ -181,7 +181,7 @@ export function MerchVariantModal({
                         <Plus className="h-5 w-5" />
                       </Button>
                     </div>
-                    {(!canAdd && (needsSize || needsColor)) && (
+                    {!canAdd && (needsSize || needsColor) && (
                       <span className="text-xs text-destructive font-medium pr-2">
                         {needsSize ? "Please select a variant" : "Please select a sub-variant"}
                       </span>

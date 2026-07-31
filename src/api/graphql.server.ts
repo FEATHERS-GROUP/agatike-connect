@@ -40,46 +40,50 @@ export async function hasuraRequest<T = any>(
       query,
       variables,
     }),
-  }).then(async (response) => {
-    const json = await response.json();
+  })
+    .then(async (response) => {
+      const json = await response.json();
 
-    if (json.errors) {
-      console.error("GraphQL Errors:", json.errors);
-      console.error("Failing Query:", query);
-      console.error("Variables:", variables);
+      if (json.errors) {
+        console.error("GraphQL Errors:", json.errors);
+        console.error("Failing Query:", query);
+        console.error("Variables:", variables);
 
-      const slackUrl = process.env.SLACK_ERROR_WEBHOOK_URL;
-      if (slackUrl) {
-        try {
-          const errorMessages = json.errors.map((e: any) => e.message || "Unknown error").join("\n");
-          const envLabel = process.env.NODE_ENV === "production" ? "[PROD]" : "[DEV]";
-          await fetch(slackUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              text: `🚨 *Agatike API GraphQL Error ${envLabel}*\n*Errors:*\n${errorMessages}\n\n*Variables:*\n\`\`\`json\n${JSON.stringify(variables, null, 2)}\n\`\`\`\n\n*Failing Query:*\n\`\`\`graphql\n${query}\n\`\`\``,
-            }),
-          });
-        } catch (err) {
-          console.error("Failed to send GraphQL error to Slack:", err);
+        const slackUrl = process.env.SLACK_ERROR_WEBHOOK_URL;
+        if (slackUrl) {
+          try {
+            const errorMessages = json.errors
+              .map((e: any) => e.message || "Unknown error")
+              .join("\n");
+            const envLabel = process.env.NODE_ENV === "production" ? "[PROD]" : "[DEV]";
+            await fetch(slackUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                text: `🚨 *Agatike API GraphQL Error ${envLabel}*\n*Errors:*\n${errorMessages}\n\n*Variables:*\n\`\`\`json\n${JSON.stringify(variables, null, 2)}\n\`\`\`\n\n*Failing Query:*\n\`\`\`graphql\n${query}\n\`\`\``,
+              }),
+            });
+          } catch (err) {
+            console.error("Failed to send GraphQL error to Slack:", err);
+          }
         }
+
+        throw new Error(json.errors[0]?.message || "Failed to execute GraphQL query/mutation");
       }
 
-      throw new Error(json.errors[0]?.message || "Failed to execute GraphQL query/mutation");
-    }
+      if (cacheKey) {
+        queryCache.set(cacheKey, {
+          data: json.data,
+          expiry: Date.now() + CACHE_TTL,
+        });
+      }
 
-    if (cacheKey) {
-      queryCache.set(cacheKey, {
-        data: json.data,
-        expiry: Date.now() + CACHE_TTL,
-      });
-    }
-
-    return json.data as T;
-  }).catch((err) => {
-    if (cacheKey) queryCache.delete(cacheKey);
-    throw err;
-  });
+      return json.data as T;
+    })
+    .catch((err) => {
+      if (cacheKey) queryCache.delete(cacheKey);
+      throw err;
+    });
 
   if (cacheKey) {
     queryCache.set(cacheKey, {

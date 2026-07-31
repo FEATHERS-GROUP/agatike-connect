@@ -277,7 +277,10 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         const confirmedOrders = ordersData?.product_orders || [];
         if (confirmedOrders.length > 0) {
           const { generateProductReceiptPdf, generateVoucherPdf } = await import("./receipts");
-          const orgDetails = { name: eventName || venueName || organizerName, themeColor: themeColor };
+          const orgDetails = {
+            name: eventName || venueName || organizerName,
+            themeColor: themeColor,
+          };
           const customerDetails = { name: customerName, email: to, phone: phone || "" };
           const pdfBuffer = await generateProductReceiptPdf(
             confirmedOrders,
@@ -307,7 +310,10 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
         const sponsoredVouchers = ordersData?.sponsored_vouchers || [];
         if (sponsoredVouchers.length > 0) {
           const { generateVoucherPdf } = await import("./receipts");
-          const orgDetails = { name: eventName || venueName || organizerName, themeColor: themeColor };
+          const orgDetails = {
+            name: eventName || venueName || organizerName,
+            themeColor: themeColor,
+          };
           for (const voucher of sponsoredVouchers) {
             // We coerce the voucher into the structure generateVoucherPdf expects:
             // order.batch?.name is natively supported, current_balance is natively supported.
