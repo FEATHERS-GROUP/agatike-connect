@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +25,6 @@ interface MerchVariantModalProps {
   needsColor: boolean;
   handleAdd: (m: any) => void;
   handleRemove: (m: any) => void;
-  handleAddQuantity?: (m: any, qty: number) => void;
   setSelection: (id: string, field: "size" | "color", value: string) => void;
   setCart?: any;
 }
@@ -47,37 +45,18 @@ export function MerchVariantModal({
   needsColor,
   handleAdd,
   handleRemove,
-  handleAddQuantity,
   setSelection,
   setCart,
 }: MerchVariantModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [localQty, setLocalQty] = useState(1);
-
-  const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (open) {
-      setLocalQty(1);
-    }
-  };
-
-  const handleConfirm = () => {
-    if (handleAddQuantity) {
-      handleAddQuantity(m, localQty);
-    } else {
-      for (let i = 0; i < localQty; i++) handleAdd(m);
-    }
-    setIsOpen(false);
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="w-full rounded-full h-8 text-xs font-bold bg-[#F97316] text-white hover:bg-[#EA580C] shadow-sm transition-transform active:scale-95"
+          variant={globalQty > 0 ? "secondary" : "outline"}
+          className={`rounded-full h-7 text-xs w-full mt-2 ${globalQty > 0 ? "border-primary/30" : ""}`}
         >
-          {globalQty > 0 ? `Selected (${globalQty})` : "Options"}
+          {globalQty > 0 ? `Selected (${globalQty})` : "Select Options"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] w-[95vw] max-h-[90vh] overflow-y-auto rounded-xl p-0 gap-0">
@@ -161,32 +140,9 @@ export function MerchVariantModal({
                 </div>
               )}
 
-              <div className="space-y-3 mt-2">
-                <p className="text-sm font-medium">Quantity</p>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border border-border/60 rounded-full bg-background/50 h-12 px-1">
-                    <button
-                      className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                      onClick={() => setLocalQty(Math.max(1, localQty - 1))}
-                      disabled={localQty <= 1}
-                    >
-                      <Minus className="w-5 h-5" />
-                    </button>
-                    <span className="w-10 text-center font-bold text-base">{localQty}</span>
-                    <button
-                      className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-                      onClick={() => setLocalQty(localQty + 1)}
-                      disabled={isStockExceeded}
-                    >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
               <div className="flex items-center justify-between pt-4 border-t mt-2">
                 <div className="flex flex-col">
-                  <span className="font-bold text-xl">{formatCurrency(m.price * localQty, currencyCode)}</span>
+                  <span className="font-bold text-xl">{formatCurrency(m.price, currencyCode)}</span>
                   {(qty > 0 || globalQty > 0) && (
                     <span className="text-xs text-muted-foreground mt-0.5">
                       {qty > 0 ? `${qty} selected` : `${globalQty} total in cart`}
@@ -195,27 +151,45 @@ export function MerchVariantModal({
                 </div>
 
                 {setCart ? (
-                  <Button
-                    onClick={handleConfirm}
-                    disabled={!canAdd}
-                    className="rounded-full px-8 py-6 text-base font-semibold shadow-md flex items-center gap-2"
-                    title={
-                      needsSize
-                        ? "Select a variant first"
-                        : needsColor
-                          ? "Select a sub-variant first"
-                          : isStockExceeded
-                            ? "Out of stock"
-                            : undefined
-                    }
-                  >
-                    {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : (
-                      <>
-                        <ShoppingCart className="w-5 h-5" />
-                        Confirm & Add
-                      </>
-                    )}
-                  </Button>
+                  qty > 0 ? (
+                    <div className="flex items-center gap-3 bg-background rounded-full border px-2 py-1 shadow-sm">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full hover:bg-secondary"
+                        onClick={() => handleRemove(m)}
+                      >
+                        <Minus className="h-5 w-5" />
+                      </Button>
+                      <span className="text-base font-semibold w-6 text-center">{qty}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-10 w-10 rounded-full hover:bg-secondary"
+                        onClick={() => handleAdd(m)}
+                        disabled={isStockExceeded}
+                      >
+                        <Plus className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => handleAdd(m)}
+                      disabled={!canAdd}
+                      className="rounded-full px-8 py-6 text-base font-semibold shadow-md"
+                      title={
+                        needsSize
+                          ? "Select a variant first"
+                          : needsColor
+                            ? "Select a sub-variant first"
+                            : isStockExceeded
+                              ? "Out of stock"
+                              : undefined
+                      }
+                    >
+                      {needsSize ? "Pick variant" : needsColor ? "Pick sub-variant" : "Add to Cart"}
+                    </Button>
+                  )
                 ) : null}
               </div>
             </div>

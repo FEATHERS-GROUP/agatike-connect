@@ -15,6 +15,22 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: "Other",
 };
 
+const normalizeMerch = (m: any) => {
+  let sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+  sizesArr = sizesArr.map((s: any) => {
+    if (typeof s === "string") return { name: s, stock: Number.POSITIVE_INFINITY, colors: [] };
+    return s;
+  });
+
+  let colorsArr = Array.isArray(m.available_colors) ? m.available_colors : [];
+  colorsArr = colorsArr.map((c: any) => {
+    if (typeof c === "string") return { name: c, stock: Number.POSITIVE_INFINITY };
+    return c;
+  });
+
+  return { sizesArr, colorsArr };
+};
+
 export function EventMerch({
   activeMerch,
   currencyCode,
@@ -70,7 +86,7 @@ export function EventMerch({
   const getItemQty = (m: any) => {
     if (!cart) return 0;
     const sel = selections[m.id] || {};
-    const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+    const { sizesArr } = normalizeMerch(m);
     let effectiveSize = sel.size;
     if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
       effectiveSize = "One Size";
@@ -82,7 +98,7 @@ export function EventMerch({
   const handleAdd = (m: any) => {
     if (!setCart) return;
     const sel = selections[m.id] || {};
-    const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+    const { sizesArr, colorsArr } = normalizeMerch(m);
 
     let effectiveSize = sel.size;
     if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
@@ -99,13 +115,37 @@ export function EventMerch({
     if (effectiveSize) {
       const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
       if (sizeObj) {
-        sizeLimit = sizeObj.stock;
-        if (Array.isArray(sizeObj.colors) && sizeObj.colors.length > 0) {
+        sizeLimit = sizeObj.stock != null ? Number(sizeObj.stock) : Number.POSITIVE_INFINITY;
+        if (isNaN(sizeLimit)) sizeLimit = Number.POSITIVE_INFINITY;
+        
+        const nestedColors = Array.isArray(sizeObj.colors) ? sizeObj.colors : [];
+        if (nestedColors.length > 0) {
           hasColors = true;
           if (sel.color) {
-            const colorObj = sizeObj.colors.find((c: any) => c.name === sel.color);
-            if (colorObj) colorLimit = colorObj.stock;
+            const colorObj = nestedColors.find((c: any) => c.name === sel.color);
+            if (colorObj) {
+              colorLimit = colorObj.stock != null ? Number(colorObj.stock) : Number.POSITIVE_INFINITY;
+              if (isNaN(colorLimit)) colorLimit = Number.POSITIVE_INFINITY;
+            }
           }
+        } else if (colorsArr.length > 0) {
+          hasColors = true;
+          if (sel.color) {
+            const colorObj = colorsArr.find((c: any) => c.name === sel.color);
+            if (colorObj) {
+              colorLimit = colorObj.stock != null ? Number(colorObj.stock) : Number.POSITIVE_INFINITY;
+              if (isNaN(colorLimit)) colorLimit = Number.POSITIVE_INFINITY;
+            }
+          }
+        }
+      }
+    } else if (colorsArr.length > 0) {
+      hasColors = true;
+      if (sel.color) {
+        const colorObj = colorsArr.find((c: any) => c.name === sel.color);
+        if (colorObj) {
+          colorLimit = colorObj.stock != null ? Number(colorObj.stock) : Number.POSITIVE_INFINITY;
+          if (isNaN(colorLimit)) colorLimit = Number.POSITIVE_INFINITY;
         }
       }
     }
@@ -128,64 +168,10 @@ export function EventMerch({
     setCart((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
   };
 
-  const handleAddQuantity = (m: any, quantity: number) => {
-    if (!setCart) return;
-    const sel = selections[m.id] || {};
-    const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
-
-    let effectiveSize = sel.size;
-    if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
-      effectiveSize = "One Size";
-    }
-
-    const hasSizes = sizesArr.length > 0;
-    if (hasSizes && !effectiveSize) return;
-
-    let hasColors = false;
-    let colorLimit = Number.POSITIVE_INFINITY;
-    let sizeLimit = Number.POSITIVE_INFINITY;
-
-    if (effectiveSize) {
-      const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
-      if (sizeObj) {
-        sizeLimit = sizeObj.stock;
-        if (Array.isArray(sizeObj.colors) && sizeObj.colors.length > 0) {
-          hasColors = true;
-          if (sel.color) {
-            const colorObj = sizeObj.colors.find((c: any) => c.name === sel.color);
-            if (colorObj) colorLimit = colorObj.stock;
-          }
-        }
-      }
-    }
-
-    if (hasColors && !sel.color) return;
-
-    const { globalQty, sizeQty, colorQty } = getCartTotals(m, effectiveSize, sel.color);
-
-    const parsedStockLimit = parseInt(m.stock_limit, 10);
-    const parsedSoldCount = parseInt(m.sold_count, 10) || 0;
-    const globalLimit = !isNaN(parsedStockLimit)
-      ? parsedStockLimit - parsedSoldCount
-      : Number.POSITIVE_INFINITY;
-
-    const maxCanAddGlobal = globalLimit - globalQty;
-    const maxCanAddSize = sizeLimit - sizeQty;
-    const maxCanAddColor = colorLimit - colorQty;
-
-    const maxAllowed = Math.min(maxCanAddGlobal, maxCanAddSize, maxCanAddColor);
-    const actualAdd = Math.min(quantity, maxAllowed);
-
-    if (actualAdd <= 0) return;
-
-    const key = getMerchCartKey(m.id, effectiveSize, sel.color);
-    setCart((prev) => ({ ...prev, [key]: (prev[key] || 0) + actualAdd }));
-  };
-
   const handleRemove = (m: any) => {
     if (!setCart) return;
     const sel = selections[m.id] || {};
-    const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+    const { sizesArr } = normalizeMerch(m);
     let effectiveSize = sel.size;
     if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
       effectiveSize = "One Size";
@@ -210,7 +196,7 @@ export function EventMerch({
       <h2 className="text-xl font-semibold">Merchandise &amp; add-ons</h2>
       <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
         {activeMerch.map((m: any) => {
-          const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+          const { sizesArr, colorsArr } = normalizeMerch(m);
           const sel = selections[m.id] || {};
           const qty = getItemQty(m);
 
@@ -222,9 +208,14 @@ export function EventMerch({
           let availableColors: any[] = [];
           if (effectiveSize) {
             const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
-            if (sizeObj && Array.isArray(sizeObj.colors)) {
-              availableColors = sizeObj.colors;
+            const nestedColors = sizeObj && Array.isArray(sizeObj.colors) ? sizeObj.colors : [];
+            if (nestedColors.length > 0) {
+              availableColors = nestedColors;
+            } else if (colorsArr.length > 0) {
+              availableColors = colorsArr;
             }
+          } else if (colorsArr.length > 0 && sizesArr.length === 0) {
+            availableColors = colorsArr;
           }
 
           const hideSizeSelection = sizesArr.length === 1 && sizesArr[0].name === "One Size";
@@ -238,12 +229,33 @@ export function EventMerch({
           if (effectiveSize) {
             const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
             if (sizeObj) {
-              sizeLimit = sizeObj.stock;
-              if (Array.isArray(sizeObj.colors) && sizeObj.colors.length > 0) {
+              sizeLimit = sizeObj.stock != null ? Number(sizeObj.stock) : Number.POSITIVE_INFINITY;
+              if (isNaN(sizeLimit)) sizeLimit = Number.POSITIVE_INFINITY;
+              const nestedColors = Array.isArray(sizeObj.colors) ? sizeObj.colors : [];
+              if (nestedColors.length > 0) {
                 if (sel.color) {
-                  const colorObj = sizeObj.colors.find((c: any) => c.name === sel.color);
-                  if (colorObj) colorLimit = colorObj.stock;
+                  const colorObj = nestedColors.find((c: any) => c.name === sel.color);
+                  if (colorObj) {
+                    colorLimit = colorObj.stock != null ? Number(colorObj.stock) : Number.POSITIVE_INFINITY;
+                    if (isNaN(colorLimit)) colorLimit = Number.POSITIVE_INFINITY;
+                  }
                 }
+              } else if (colorsArr.length > 0) {
+                if (sel.color) {
+                  const colorObj = colorsArr.find((c: any) => c.name === sel.color);
+                  if (colorObj) {
+                    colorLimit = colorObj.stock != null ? Number(colorObj.stock) : Number.POSITIVE_INFINITY;
+                    if (isNaN(colorLimit)) colorLimit = Number.POSITIVE_INFINITY;
+                  }
+                }
+              }
+            }
+          } else if (colorsArr.length > 0) {
+            if (sel.color) {
+              const colorObj = colorsArr.find((c: any) => c.name === sel.color);
+              if (colorObj) {
+                colorLimit = colorObj.stock != null ? Number(colorObj.stock) : Number.POSITIVE_INFINITY;
+                if (isNaN(colorLimit)) colorLimit = Number.POSITIVE_INFINITY;
               }
             }
           }
@@ -308,7 +320,7 @@ export function EventMerch({
                 )}
                 <p className="text-sm font-semibold leading-tight line-clamp-2 mb-2">{m.name}</p>
 
-                {sizesArr.length > 0 ? (
+                {sizesArr.length > 0 || colorsArr.length > 0 ? (
                   <div className="mt-auto flex items-center justify-end pt-3 border-t border-border/50">
                     <MerchVariantModal
                       m={m}
@@ -326,7 +338,6 @@ export function EventMerch({
                       needsColor={needsColor}
                       handleAdd={handleAdd}
                       handleRemove={handleRemove}
-                      handleAddQuantity={handleAddQuantity}
                       setSelection={setSelection}
                       setCart={setCart}
                     />

@@ -22,7 +22,7 @@ export const Route = createFileRoute("/checkout/cart")({
   component: CartCheckoutPage,
 });
 
-function CartCheckoutPage() {
+export function CartCheckoutPage() {
   const router = useRouter();
   const { user } = useUserAuth();
   const { items, cartTotal, clearCart } = useCart();
