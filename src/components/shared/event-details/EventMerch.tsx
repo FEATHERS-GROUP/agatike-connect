@@ -128,6 +128,60 @@ export function EventMerch({
     setCart((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
   };
 
+  const handleAddQuantity = (m: any, quantity: number) => {
+    if (!setCart) return;
+    const sel = selections[m.id] || {};
+    const sizesArr = Array.isArray(m.available_sizes) ? m.available_sizes : [];
+
+    let effectiveSize = sel.size;
+    if (!effectiveSize && sizesArr.length === 1 && sizesArr[0].name === "One Size") {
+      effectiveSize = "One Size";
+    }
+
+    const hasSizes = sizesArr.length > 0;
+    if (hasSizes && !effectiveSize) return;
+
+    let hasColors = false;
+    let colorLimit = Number.POSITIVE_INFINITY;
+    let sizeLimit = Number.POSITIVE_INFINITY;
+
+    if (effectiveSize) {
+      const sizeObj = sizesArr.find((s: any) => s.name === effectiveSize);
+      if (sizeObj) {
+        sizeLimit = sizeObj.stock;
+        if (Array.isArray(sizeObj.colors) && sizeObj.colors.length > 0) {
+          hasColors = true;
+          if (sel.color) {
+            const colorObj = sizeObj.colors.find((c: any) => c.name === sel.color);
+            if (colorObj) colorLimit = colorObj.stock;
+          }
+        }
+      }
+    }
+
+    if (hasColors && !sel.color) return;
+
+    const { globalQty, sizeQty, colorQty } = getCartTotals(m, effectiveSize, sel.color);
+
+    const parsedStockLimit = parseInt(m.stock_limit, 10);
+    const parsedSoldCount = parseInt(m.sold_count, 10) || 0;
+    const globalLimit = !isNaN(parsedStockLimit)
+      ? parsedStockLimit - parsedSoldCount
+      : Number.POSITIVE_INFINITY;
+
+    const maxCanAddGlobal = globalLimit - globalQty;
+    const maxCanAddSize = sizeLimit - sizeQty;
+    const maxCanAddColor = colorLimit - colorQty;
+
+    const maxAllowed = Math.min(maxCanAddGlobal, maxCanAddSize, maxCanAddColor);
+    const actualAdd = Math.min(quantity, maxAllowed);
+
+    if (actualAdd <= 0) return;
+
+    const key = getMerchCartKey(m.id, effectiveSize, sel.color);
+    setCart((prev) => ({ ...prev, [key]: (prev[key] || 0) + actualAdd }));
+  };
+
   const handleRemove = (m: any) => {
     if (!setCart) return;
     const sel = selections[m.id] || {};
@@ -272,6 +326,7 @@ export function EventMerch({
                       needsColor={needsColor}
                       handleAdd={handleAdd}
                       handleRemove={handleRemove}
+                      handleAddQuantity={handleAddQuantity}
                       setSelection={setSelection}
                       setCart={setCart}
                     />
