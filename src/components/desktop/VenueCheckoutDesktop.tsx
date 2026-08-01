@@ -108,15 +108,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
     return bookedDates.includes(format(d, "yyyy-MM-dd"));
   };
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id) || {
-    template: "entrance-1",
-    palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
-    font: { css: "sans-serif", name: "Modern" },
-    logoText: "Agatike",
-    logoColorMode: "original",
-    layout: {},
-    back: {},
-  };
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
 
   useEffect(() => {
     try {

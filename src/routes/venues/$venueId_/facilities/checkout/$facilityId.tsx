@@ -101,8 +101,7 @@ function FacilityCheckoutPage() {
       getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id } } as any),
     enabled: !!venue?.workspace_id,
   });
-  const venueProject =
-    ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
 
   const [date, setDate] = useState<DateRange | undefined>();
   const [quantity, setQuantity] = useState(1);
