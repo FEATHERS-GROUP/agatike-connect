@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
-const BUCKET = process.env.SUPABASE_BUCKET || "Agatike";
+const BUCKET = process.env.SUPABASE_BUCKET;
 const SUPABASE_URL = process.env.SUPABASE_URL as string;
 
 if (!SUPABASE_URL) {
