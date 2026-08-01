@@ -751,7 +751,6 @@ function FacilityCheckoutPage() {
             Return to Venue
           </Button>
         </div>
-        <Footer />
       </div>
     );
   }
