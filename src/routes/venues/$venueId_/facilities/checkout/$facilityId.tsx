@@ -41,16 +41,11 @@ import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { Ticket, Plus, Minus } from "lucide-react";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
   beforeLoad: async ({ location }) => {
     const session = await getUserSession();
-    if (!session) {
-      throw redirect({
-        to: "/signin",
-        search: { redirect: location.href } as any,
-      });
-    }
     return { session };
   },
   loader: async ({ params }) => {
@@ -118,6 +113,7 @@ function FacilityCheckoutPage() {
   const [email, setEmail] = useState(session?.email || "");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Payment State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -694,6 +690,20 @@ function FacilityCheckoutPage() {
       }
     }
 
+    if (!session && !isAuthModalOpen) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    if (totalAmount > 0) {
+      setIsPaymentModalOpen(true);
+    } else {
+      bookingMutation.mutate(undefined);
+    }
+  };
+
+  const handleContinueAsGuest = () => {
+    setIsAuthModalOpen(false);
     if (totalAmount > 0) {
       setIsPaymentModalOpen(true);
     } else {
@@ -1220,6 +1230,13 @@ function FacilityCheckoutPage() {
           </Button>
         </div>
       )}
+
+      <AuthSuggestionModal
+        isOpen={isAuthModalOpen}
+        onOpenChange={setIsAuthModalOpen}
+        onSkip={handleContinueAsGuest}
+        redirectPath={typeof window !== 'undefined' ? window.location.pathname + window.location.search : ''}
+      />
 
       <Footer />
       {isGenerating && issuedTickets.length > 0 && venueProject && (
