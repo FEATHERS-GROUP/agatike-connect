@@ -605,7 +605,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   `query GetB($id: uuid!) { 
                      venue_bookings_by_pk(id: $id) { 
                        start_time end_time tickets_data facility_id
-                       rentable_venue { name address city facilities_data } 
+                       rentable_venue { name address city facilities_data opening_hours closing_hours } 
                      } 
                    }`,
                   { id: bookingId }
@@ -638,8 +638,28 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     return `${h}:${m} ${ampm}`;
                   };
                   
-                  const sTime = formatTime(sDate);
-                  const eTime = formatTime(eDate);
+                  let sTime = formatTime(sDate);
+                  let eTime = formatTime(eDate);
+                  
+                  if (!fName && bk.rentable_venue) {
+                    const parseHour = (hStr: string) => {
+                      if (!hStr) return null;
+                      const [hh, mm] = hStr.split(":");
+                      if (!hh) return null;
+                      let h = parseInt(hh, 10);
+                      const ampm = h >= 12 ? 'PM' : 'AM';
+                      h = h % 12;
+                      h = h ? h : 12;
+                      return `${h}:${mm || '00'} ${ampm}`;
+                    };
+                    const open = parseHour(bk.rentable_venue.opening_hours);
+                    const close = parseHour(bk.rentable_venue.closing_hours);
+                    if (open && close) {
+                      sTime = open;
+                      eTime = close;
+                    }
+                  }
+                  
                   const loc = bk.rentable_venue?.address || bk.rentable_venue?.city || "Venue";
                   
                   const what = fName ? `${fName} at ${vName}` : vName;

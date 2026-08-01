@@ -1166,7 +1166,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 date={date}
                 time="Opening Hours"
                 seat={t.attendee_name || name || "General"}
-                price={total.toString()}
+                price={
+                  venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                  total.toString()
+                }
                 currency={venue.currency}
                 cover={venueProject.coverImage || ""}
                 logoText={venueProject.logoText || "Agatike"}
