@@ -604,16 +604,24 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 const bData = await hasuraRequest<{ venue_bookings_by_pk: any }>(
                   `query GetB($id: uuid!) { 
                      venue_bookings_by_pk(id: $id) { 
-                       start_time end_time tickets_data 
-                       facility { name } venue { name address city } 
+                       start_time end_time tickets_data facility_id
+                       rentable_venue { name address city facilities_data } 
                      } 
                    }`,
                   { id: bookingId }
                 );
                 const bk = bData?.venue_bookings_by_pk;
                 if (bk) {
-                  const fName = bk.facility?.name;
-                  const vName = bk.venue?.name || "Venue";
+                  let fName = "";
+                  if (bk.facility_id && bk.rentable_venue?.facilities_data) {
+                    const facilities = bk.rentable_venue.facilities_data || [];
+                    const fac = facilities.find((f: any) => f.id === bk.facility_id);
+                    if (fac && fac.name) {
+                      fName = fac.name;
+                    }
+                  }
+                  
+                  const vName = bk.rentable_venue?.name || "Venue";
                   const bRef = bk.tickets_data?.booking_ref || "";
                   const sDate = new Date(bk.start_time);
                   const eDate = new Date(bk.end_time);
@@ -632,7 +640,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   
                   const sTime = formatTime(sDate);
                   const eTime = formatTime(eDate);
-                  const loc = bk.venue?.address || bk.venue?.city || "Venue";
+                  const loc = bk.rentable_venue?.address || bk.rentable_venue?.city || "Venue";
                   
                   const what = fName ? `${fName} at ${vName}` : vName;
                   msg = `Payment ${amountDisplay} received. Confirmed: ${what}. Code: ${bRef}. Time: ${dateStr}, ${sTime}-${eTime}. Loc: ${loc}`;
