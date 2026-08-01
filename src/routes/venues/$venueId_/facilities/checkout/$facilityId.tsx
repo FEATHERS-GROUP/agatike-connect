@@ -611,11 +611,26 @@ function FacilityCheckoutPage() {
             }
           } else {
             for (const ticket of issuedTickets) {
+              const dateRangeStr = date?.from
+                ? date.to
+                  ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+                  : format(date.from, "LLL dd, y")
+                : "";
+              const timeRangeStr =
+                isSharedAccess || selectedSlots.length === 0
+                  ? "Full Day"
+                  : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+                  
               const fallbackPdf = await generateFallbackReceipt({
-                entityName: venue?.name || "Event/Venue",
+                entityName: facility?.name || "Facility",
                 ticket,
                 bookingRef: ticket.booking_ref || bookingRef,
                 customerName: name,
+                type: "facility",
+                dateStr: dateRangeStr,
+                timeStr: timeRangeStr,
+                locationStr: venue?.name || "Venue",
+                tierName: ticket.tier || "Facility Access",
               });
               attachments.push(fallbackPdf);
             }

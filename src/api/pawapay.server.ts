@@ -353,10 +353,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     entityName: orgName,
                     customerName: firstAtt.names,
                     ticket: { id: firstAtt.qrcode_number, tier: "Event Ticket" },
-                    dateStr: firstStop.date || "TBD",
-                    timeStr: firstStop.time || "TBD",
-                    locationStr: eventLocation,
+                    dateStr: firstStop.date || "",
+                    timeStr: firstStop.time || "",
+                    locationStr: eventLocation || "",
                     bookingRef: tx.reference_id,
+                    type: "event",
                   });
                   fallbackPdfBase64 = fallbackRes.content;
                 } catch (e) {

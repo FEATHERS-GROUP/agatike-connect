@@ -392,6 +392,11 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 ticket,
                 bookingRef: ticket.otp,
                 customerName: ticket.attendee?.firstName || "Guest",
+                type: "movie",
+                dateStr: selectedDate || "",
+                timeStr: currentSchedule?.start_time || "",
+                locationStr: cinema?.name || "",
+                tierName: ticket.tierName,
               });
               attachments.push(fallbackPdf);
             }

@@ -443,6 +443,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 ticket,
                 bookingRef: ticket.booking_ref || ticket.otp || "",
                 customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                type: "venue",
               });
               attachments.push(fallbackPdf);
             }

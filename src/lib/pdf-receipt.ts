@@ -9,19 +9,33 @@ export const generateFallbackReceipt = async (options: {
   durationStr?: string;
   tierName?: string;
   quantity?: number;
+  type?: "venue" | "facility" | "event" | "movie" | "default";
 }) => {
   const {
     entityName = "Event/Venue",
     ticket,
     bookingRef,
     customerName,
-    dateStr = "TBD",
-    timeStr = "TBD",
-    locationStr = "TBD",
+    dateStr,
+    timeStr,
+    locationStr,
     durationStr,
     tierName = "General Admission",
     quantity = 1,
+    type = "default",
   } = options;
+
+  let displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "Valid Anytime";
+  let displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "Open Hours";
+  let displayLocation = locationStr && locationStr !== "TBD" && locationStr.trim() !== "" ? locationStr : "Location on file";
+  
+  if (type === "event" || type === "movie") {
+    displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "TBA";
+    displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "TBA";
+  } else if (type === "facility") {
+    displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "Date Not Set";
+    displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "Time Not Set";
+  }
 
   const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({
@@ -33,71 +47,94 @@ export const generateFallbackReceipt = async (options: {
   pdf.setFillColor(255, 255, 255);
   pdf.rect(0, 0, 300, 480, "F");
 
+  // Top colored bar depending on type
+  if (type === "event" || type === "movie") pdf.setFillColor(236, 72, 153); // pink-500
+  else if (type === "facility") pdf.setFillColor(59, 130, 246); // blue-500
+  else if (type === "venue") pdf.setFillColor(16, 185, 129); // emerald-500
+  else pdf.setFillColor(100, 116, 139); // slate-500
+  
+  pdf.rect(0, 0, 300, 8, "F");
+
+  // Ticket Type Header
+  const typeLabel = 
+    type === "venue" ? "VENUE ENTRANCE PASS" : 
+    type === "facility" ? "FACILITY BOOKING" : 
+    type === "movie" ? "CINEMA TICKET" : "EVENT TICKET";
+  
+  pdf.setFontSize(10);
+  pdf.setTextColor(150, 150, 150);
+  pdf.text(typeLabel, 150, 25, { align: "center" });
+
   // "Passenger" -> Customer Name
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text("Customer", 20, 30);
+  pdf.text("Customer", 20, 50);
 
-  pdf.setFontSize(18);
+  pdf.setFontSize(16);
   pdf.setTextColor(0, 0, 0);
   const attendeeName =
     customerName ||
     (ticket.attendee ? `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim() : "Guest");
-  pdf.text(attendeeName, 20, 50, { maxWidth: 260 });
+  pdf.text(attendeeName, 20, 65, { maxWidth: 260 });
 
   // Times row
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text("Start Time", 20, 80);
-  pdf.text("Duration", 150, 80, { align: "center" });
-  pdf.text("Date", 280, 80, { align: "right" });
+  const timeLabel = type === "facility" ? "Booking Time" : type === "venue" ? "Valid Hours" : "Start Time";
+  pdf.text(timeLabel, 20, 95);
+  pdf.text("Duration", 150, 95, { align: "center" });
+  const dateLabel = type === "facility" ? "Booking Date" : "Date";
+  pdf.text(dateLabel, 280, 95, { align: "right" });
 
   pdf.setFontSize(12);
   pdf.setTextColor(0, 0, 0);
-  pdf.text(timeStr, 20, 95);
-  pdf.text(durationStr || "-", 150, 95, { align: "center" });
-  pdf.text(dateStr, 280, 95, { align: "right" });
+  pdf.text(displayTime, 20, 110, { maxWidth: 100 });
+  pdf.text(durationStr || "-", 150, 110, { align: "center" });
+  pdf.text(displayDate, 280, 110, { align: "right", maxWidth: 100 });
 
   // Divider line
   pdf.setDrawColor(200, 200, 200);
   pdf.setLineWidth(1);
-  pdf.line(20, 115, 280, 115);
+  pdf.line(20, 130, 280, 130);
   pdf.setFillColor(255, 255, 255);
-  pdf.circle(150, 115, 6, "FD");
+  pdf.circle(150, 130, 6, "FD");
 
   // Locations / Entity
   pdf.setFontSize(14);
   pdf.setTextColor(0, 0, 0);
-  pdf.text(entityName, 20, 140, { maxWidth: 120 });
-  pdf.text(locationStr, 280, 140, { align: "right", maxWidth: 120 });
+  pdf.text(entityName, 20, 155, { maxWidth: 120 });
+  pdf.text(displayLocation, 280, 155, { align: "right", maxWidth: 120 });
 
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text("Organizer / Event", 20, 155);
-  pdf.text("Location / Venue", 280, 155, { align: "right" });
+  const entityLabel = type === "facility" ? "Facility Name" : type === "venue" ? "Venue Name" : "Event / Movie";
+  pdf.text(entityLabel, 20, 170);
+  const locLabel = type === "facility" ? "Venue Location" : "Location";
+  pdf.text(locLabel, 280, 170, { align: "right" });
 
   // Booking Reference
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text("Booking Reference", 20, 190);
+  pdf.text("Booking Reference", 20, 205);
 
   pdf.setFontSize(16);
   pdf.setTextColor(0, 0, 0);
   const refCode = bookingRef || ticket.otp || ticket.id;
-  pdf.text(refCode, 20, 210);
+  pdf.text(refCode, 20, 220);
 
   // Details Row
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text("Ticket Tier", 20, 240);
-  pdf.text("Qty", 150, 240, { align: "center" });
-  pdf.text("Status", 280, 240, { align: "right" });
+  const tierLabel = type === "facility" ? "Access Type" : type === "venue" ? "Pass Type" : "Ticket Tier";
+  pdf.text(tierLabel, 20, 250);
+  pdf.text("Qty", 150, 250, { align: "center" });
+  pdf.text("Status", 280, 250, { align: "right" });
 
   pdf.setFontSize(14);
   pdf.setTextColor(0, 0, 0);
-  pdf.text(tierName, 20, 260);
-  pdf.text(quantity.toString(), 150, 260, { align: "center" });
-  pdf.text("Confirmed", 280, 260, { align: "right" });
+  pdf.text(tierName, 20, 265, { maxWidth: 100 });
+  pdf.text(quantity.toString(), 150, 265, { align: "center" });
+  pdf.text("Confirmed", 280, 265, { align: "right" });
 
   // Cutouts
   pdf.setFillColor(20, 20, 20);
