@@ -459,7 +459,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 booking_date: date,
                 attachments,
                 workspaceId: venue.workspace_id,
-                phone: phone,
+                phone: pawapayDepositId ? undefined : phone,
                 isVenue: true,
                 totalPaid: Number(
                   paymentDetails?.convertedAmount || paymentDetails?.amount || total,

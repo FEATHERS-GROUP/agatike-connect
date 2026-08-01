@@ -597,7 +597,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com/dashboard`;
           } else if (tx.type === "space_subscription") {
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com/dashboard`;
-          } else if (tx.type === "venue_booking") {
+          } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
             try {
               const bookingId = tx.reference_id?.split(",")[0];
               if (bookingId) {
@@ -613,7 +613,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 );
                 const bk = bData?.venue_bookings_by_pk;
                 if (bk) {
-                  const fName = bk.facility?.name || "Facility";
+                  const fName = bk.facility?.name;
                   const vName = bk.venue?.name || "Venue";
                   const bRef = bk.tickets_data?.booking_ref || "";
                   const sDate = new Date(bk.start_time);
@@ -635,7 +635,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   const eTime = formatTime(eDate);
                   const loc = bk.venue?.address || bk.venue?.city || "Venue";
                   
-                  msg = `Payment ${amountDisplay} received. Confirmed: ${fName} at ${vName}. Code: ${bRef}. Time: ${dateStr}, ${sTime}-${eTime}. Loc: ${loc}`;
+                  const what = fName ? `${fName} at ${vName}` : vName;
+                  msg = `Payment ${amountDisplay} received. Confirmed: ${what}. Code: ${bRef}. Time: ${dateStr}, ${sTime}-${eTime}. Loc: ${loc}`;
                 }
               }
             } catch (e) {
