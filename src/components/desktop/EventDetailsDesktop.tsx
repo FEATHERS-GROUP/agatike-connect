@@ -206,6 +206,7 @@ export function EventDetailsDesktop({
           selectedStopIdx={d.selectedStopIdx}
           setSelectedStopIdx={d.setSelectedStopIdx}
           activeTicketTiers={d.activeTicketTiers}
+          activeMerch={d.activeMerch}
           currencyCode={d.currencyCode}
           cart={d.cart}
           setCart={d.setCart}
