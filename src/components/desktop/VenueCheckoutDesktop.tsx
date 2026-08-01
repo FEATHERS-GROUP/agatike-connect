@@ -600,16 +600,77 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
   if (isGenerating && issuedTickets.length > 0) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
-        <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 mx-auto" />
-        <h1 className="text-2xl font-bold mb-3">Generating Your Tickets...</h1>
-        <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-          Please wait while we prepare your tickets. This will only take a moment.
-          <br />
-          <br />
-          <strong className="text-foreground">Processing... Please don't close this window!</strong>
-        </p>
-      </div>
+      <>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
+          <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 mx-auto" />
+          <h1 className="text-2xl font-bold mb-3">Generating Your Tickets...</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            Please wait while we prepare your tickets. This will only take a moment.
+            <br />
+            <br />
+            <strong className="text-foreground">Processing... Please don't close this window!</strong>
+          </p>
+        </div>
+        {/* Hidden Ticket Renderer so html-to-image can find it */}
+        {venueProject && (
+          <div
+            className="absolute -z-50 pointer-events-none"
+            style={{ top: "-9999px", left: "-9999px" }}
+          >
+            {issuedTickets.map((t) => (
+              <div
+                key={t.id}
+                id={`ticket-render-${t.id}`}
+                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+              >
+                <TicketPreview
+                  template={venueProject.template}
+                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                  tier={t.tier}
+                  title={venue.name}
+                  subtitle={venue.address || t.attendee_name || name}
+                  date={date}
+                  time="Opening Hours"
+                  seat={t.attendee_name || name || "General"}
+                  price={
+                    venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                    total.toString()
+                  }
+                  currency={venue.currency}
+                  cover={venueProject.coverImage || ""}
+                  logoText={venueProject.logoText || "Agatike"}
+                  logoImage={venueProject.logoImage}
+                  logoScale={Number(venueProject.logoScale || 24)}
+                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                  logoColorMode={venueProject.logoColorMode || "original"}
+                  orderId={t.otp}
+                  qrValue={`${window.location.origin}/v/${t.otp}`}
+                  previewMode="Front"
+                  layout={
+                    venueProject.design_overrides?.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
+                  }
+                  back={
+                    venueProject.design_overrides?.back || {
+                      backText: "",
+                      backImage: "",
+                      backImageOpacity: 0.1,
+                    }
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </>
     );
   }
 
