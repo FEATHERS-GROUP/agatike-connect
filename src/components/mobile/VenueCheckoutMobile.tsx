@@ -596,8 +596,10 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                   time="Opening Hours"
                   seat={t.attendee_name || name || "General"}
                   price={
-                    venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
-                    total.toString()
+                    t.tier === "Standard Entry"
+                      ? venue?.entrance_fee?.toString() || "0"
+                      : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                        total.toString()
                   }
                   currency={venue.currency}
                   cover={venueProject.coverImage || ""}
@@ -1186,8 +1188,10 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 time="Opening Hours"
                 seat={t.attendee_name || name || "General"}
                 price={
-                  venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
-                  total.toString()
+                  t.tier === "Standard Entry"
+                    ? venue?.entrance_fee?.toString() || "0"
+                    : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                      total.toString()
                 }
                 currency={venue.currency}
                 cover={venueProject.coverImage || ""}
