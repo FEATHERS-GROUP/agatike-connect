@@ -568,6 +568,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
             We've sent a payment request to your mobile number. Please enter your PIN to confirm the
             payment.
+            <br />
+            <br />
+            <strong className="text-foreground">Processing... Please don't close this window!</strong>
           </p>
           <div className="flex gap-2 mb-8 justify-center">
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
@@ -591,6 +594,21 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             Cancel Payment
           </Button>
         </main>
+      </div>
+    );
+  }
+
+  if (isGenerating && issuedTickets.length > 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
+        <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 mx-auto" />
+        <h1 className="text-2xl font-bold mb-3">Generating Your Tickets...</h1>
+        <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+          Please wait while we prepare your tickets. This will only take a moment.
+          <br />
+          <br />
+          <strong className="text-foreground">Processing... Please don't close this window!</strong>
+        </p>
       </div>
     );
   }

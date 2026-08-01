@@ -580,7 +580,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           tx.type !== "event_ticket" &&
           tx.type !== "portal_event_ticket" &&
           !tx.type?.startsWith("page_builder_checkout") &&
-          !tx.type?.startsWith("portal_") &&
           body?.payer?.address?.value
         ) {
           const phone = body.payer.address.value;

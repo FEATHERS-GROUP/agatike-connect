@@ -71,6 +71,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -331,14 +332,19 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, isPawaPay: true, depositId: pawaRes.depositId };
+        return { res, isPawaPay: true, depositId: pawaRes.depositId, totalPaid: paymentDetails?.convertedAmount || total };
       }
 
-      return { res, isPawaPay: false };
+      return { res, isPawaPay: false, totalPaid: paymentDetails?.convertedAmount || total };
     },
     onSuccess: (data: any) => {
       const res = data.res;
       const td = res?.tickets_data;
+
+      if (data.totalPaid) {
+        setFinalTotalPaid(data.totalPaid);
+      }
+
       if (td?.issued) {
         setIssuedTickets(td.issued);
       }
@@ -461,9 +467,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 workspaceId: venue.workspace_id,
                 phone: pawapayDepositId ? undefined : phone,
                 isVenue: true,
-                totalPaid: Number(
-                  paymentDetails?.convertedAmount || paymentDetails?.amount || total,
-                ),
+                totalPaid: Number(finalTotalPaid || total),
               } as any,
             });
             toast.success("Booking confirmed and tickets emailed!");
@@ -524,9 +528,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
         <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
         <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-        <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+        <p className="text-muted-foreground mb-8 px-4">
           We've sent a payment request to your mobile number. Please enter your PIN to confirm the
           payment.
+          <br />
+          <br />
+          <strong className="text-foreground">Processing... Please don't close this window!</strong>
         </p>
         <div className="flex gap-2 mb-8 justify-center">
           <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
@@ -549,6 +556,21 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         >
           Cancel Payment
         </Button>
+      </div>
+    );
+  }
+
+  if (isGenerating && issuedTickets.length > 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
+        <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 mx-auto" />
+        <h1 className="text-2xl font-bold mb-3">Generating Your Tickets...</h1>
+        <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+          Please wait while we prepare your tickets. This will only take a moment.
+          <br />
+          <br />
+          <strong className="text-foreground">Processing... Please don't close this window!</strong>
+        </p>
       </div>
     );
   }

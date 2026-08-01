@@ -1196,6 +1196,9 @@ function FacilityCheckoutPage() {
           <p className="text-muted-foreground mb-8 max-w-sm">
             We've sent a payment request to your mobile number. Please enter your PIN to confirm the
             payment.
+            <br />
+            <br />
+            <strong className="text-foreground">Processing... Please don't close this window!</strong>
           </p>
           <div className="flex gap-2 mb-8 justify-center">
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
