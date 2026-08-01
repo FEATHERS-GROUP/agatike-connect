@@ -1250,7 +1250,12 @@ function FacilityCheckoutPage() {
                 date={date?.from ? format(date.from, "LLL dd, yyyy") : ""}
                 time="Full Day Access"
                 seat={name || "General"}
-                price={totalAmount.toString()}
+                price={
+                  ticket.tier === "Standard Entry"
+                    ? venue?.entrance_fee?.toString() || "0"
+                    : venue.pricing_tiers?.find((pt: any) => pt.name === ticket.tier)?.amount?.toString() ||
+                      totalAmount.toString()
+                }
                 currency={currency}
                 cover={venueProject.coverImage || ""}
                 logoText={venueProject.logoText || "Agatike"}
@@ -1274,10 +1279,9 @@ function FacilityCheckoutPage() {
                 }
                 back={
                   venueProject.design_overrides?.back || {
-                    showQr: true,
-                    showBarcode: false,
-                    showTerms: true,
-                    termsText: venueProject.terms || "Standard venue terms apply.",
+                    backText: "",
+                    backImage: "",
+                    backImageOpacity: 0.1,
                   }
                 }
               />
