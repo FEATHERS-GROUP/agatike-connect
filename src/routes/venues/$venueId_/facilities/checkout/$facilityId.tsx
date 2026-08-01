@@ -318,8 +318,37 @@ function FacilityCheckoutPage() {
     dailyRate,
     isActivity,
     perSessionRate,
-    durationMinutes,
   ]);
+
+  const sendEmail = async (bRef: string, atts?: any[]) => {
+    try {
+      const dateRangeStr = date?.from
+        ? date.to
+          ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+          : format(date.from, "LLL dd, y")
+        : "";
+      const timeRangeStr =
+        isSharedAccess || selectedSlots.length === 0
+          ? "Full Day"
+          : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+      await sendVenueBookingEmail({
+        data: {
+          to: email,
+          customerName: name,
+          facilityName: facility?.name || "Facility",
+          venueName: venue.name,
+          venueLocation: venue.address || venue.city || "Venue Location",
+          dateRange: dateRangeStr,
+          timeRange: timeRangeStr,
+          bookingRef: bRef,
+          attachments: atts,
+        },
+      } as any);
+    } catch (e) {
+      console.error("Failed to send booking confirmation email:", e);
+    }
+  };
 
   const sendSmsAlert = async (bRef: string) => {
     try {
@@ -444,35 +473,6 @@ function FacilityCheckoutPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
 
-      const sendEmail = async (bRef: string) => {
-        try {
-          const dateRangeStr = date?.from
-            ? date.to
-              ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
-              : format(date.from, "LLL dd, y")
-            : "";
-          const timeRangeStr =
-            isSharedAccess || selectedSlots.length === 0
-              ? "Full Day"
-              : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
-
-          await sendVenueBookingEmail({
-            data: {
-              to: email,
-              customerName: name,
-              facilityName: facility?.name || "Facility",
-              venueName: venue.name,
-              venueLocation: venue.address || venue.city || "Venue Location",
-              dateRange: dateRangeStr,
-              timeRange: timeRangeStr,
-              bookingRef: bRef,
-            },
-          } as any);
-        } catch (e) {
-          console.error("Failed to send booking confirmation email:", e);
-        }
-      };
-
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -480,11 +480,11 @@ function FacilityCheckoutPage() {
         return;
       }
 
-      if (isSharedAccess && td?.issued && td.issued.length > 0) {
+      if (td?.issued && td.issued.length > 0) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
-        await sendSmsAlert(data.bookingRef || bookingRef);
+        if (!data.isPawaPay) await sendSmsAlert(data.bookingRef || bookingRef);
         await sendEmail(data.bookingRef || bookingRef);
       }
     },
@@ -504,7 +504,7 @@ function FacilityCheckoutPage() {
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (isSharedAccess && issuedTickets.length > 0) {
+          if (issuedTickets.length > 0) {
             setIsGenerating(true);
           } else {
             setIsSuccess(true);
@@ -517,8 +517,6 @@ function FacilityCheckoutPage() {
               isSharedAccess || selectedSlots.length === 0
                 ? "Full Day"
                 : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
-
-            await sendSmsAlert(bookingRef);
 
             await sendVenueBookingEmail({
               data: {
@@ -564,7 +562,7 @@ function FacilityCheckoutPage() {
         try {
           const attachments = [];
 
-          const coverUrl = venueProject.coverImage;
+          const coverUrl = venueProject?.coverImage;
           if (coverUrl) {
             await new Promise<void>((resolve) => {
               const img = new Image();
@@ -625,15 +623,8 @@ function FacilityCheckoutPage() {
           }
 
           if (attachments.length > 0 && email) {
-            await sendTicketsEmail({
-              data: {
-                to: email,
-                customerName: name,
-                venueName: venue.name || "the Venue",
-                attachments,
-              } as any,
-            });
-            await sendSmsAlert(bookingRef);
+            await sendEmail(bookingRef, attachments);
+            if (!pawapayDepositId) await sendSmsAlert(bookingRef);
 
             toast.success("Booking confirmed and tickets emailed!");
           } else {

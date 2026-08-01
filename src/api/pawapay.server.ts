@@ -598,7 +598,52 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           } else if (tx.type === "space_subscription") {
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com/dashboard`;
           } else if (tx.type === "venue_booking") {
-            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your venue booking is confirmed. Visit: https://agatike.com/dashboard`;
+            try {
+              const bookingId = tx.reference_id?.split(",")[0];
+              if (bookingId) {
+                const { hasuraRequest } = await import("./graphql.server");
+                const bData = await hasuraRequest<{ venue_bookings_by_pk: any }>(
+                  `query GetB($id: uuid!) { 
+                     venue_bookings_by_pk(id: $id) { 
+                       start_time end_time tickets_data 
+                       facility { name } venue { name address city } 
+                     } 
+                   }`,
+                  { id: bookingId }
+                );
+                const bk = bData?.venue_bookings_by_pk;
+                if (bk) {
+                  const fName = bk.facility?.name || "Facility";
+                  const vName = bk.venue?.name || "Venue";
+                  const bRef = bk.tickets_data?.booking_ref || "";
+                  const sDate = new Date(bk.start_time);
+                  const eDate = new Date(bk.end_time);
+                  
+                  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                  const dateStr = `${monthNames[sDate.getMonth()]} ${sDate.getDate()}`;
+                  
+                  const formatTime = (d: Date) => {
+                    let h = d.getHours();
+                    const m = (d.getMinutes()<10?'0':'') + d.getMinutes();
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    h = h % 12;
+                    h = h ? h : 12;
+                    return `${h}:${m} ${ampm}`;
+                  };
+                  
+                  const sTime = formatTime(sDate);
+                  const eTime = formatTime(eDate);
+                  const loc = bk.venue?.address || bk.venue?.city || "Venue";
+                  
+                  msg = `Payment ${amountDisplay} received. Confirmed: ${fName} at ${vName}. Code: ${bRef}. Time: ${dateStr}, ${sTime}-${eTime}. Loc: ${loc}`;
+                }
+              }
+            } catch (e) {
+              console.error("Failed to fetch venue booking for SMS", e);
+            }
+            if (!msg) {
+              msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your venue booking is confirmed.`;
+            }
           } else {
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Thank you for your purchase. Visit your profile at: https://agatike.com/profile`;
           }
