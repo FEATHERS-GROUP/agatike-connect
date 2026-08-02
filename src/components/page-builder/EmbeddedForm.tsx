@@ -20,7 +20,7 @@ import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface EmbeddedFormPaymentConfig {
   amount: string | number;
@@ -137,6 +137,7 @@ export function EmbeddedForm({
 
   const doPayment = async (details: any) => {
     setIsProcessingPayment(true);
+    setIsPaymentModalOpen(false); // Close modal immediately so CheckYourPhone appears faster
     try {
       const pawaRes = await initiatePawaPayDeposit({
         data: {
@@ -154,7 +155,6 @@ export function EmbeddedForm({
 
       setPawapayDepositId(pawaRes.depositId);
       setIsPollingPawaPay(true);
-      setIsPaymentModalOpen(false);
     } catch (e: any) {
       toast.error(e.message || "Payment failed");
     } finally {
@@ -165,17 +165,26 @@ export function EmbeddedForm({
   useEffect(() => {
     if (!isPollingPawaPay || !pawapayDepositId) return;
 
+    let done = false; // local guard — prevents handling twice if interval fires before clearInterval takes effect
+
     const intervalId = setInterval(async () => {
+      if (done) return; // already handled, skip this tick
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
         if (
           res?.status?.toLowerCase() === "completed" ||
           res?.status?.toLowerCase() === "success"
         ) {
+          if (done) return;
+          done = true;
+          clearInterval(intervalId); // stop immediately — don't wait for cleanup
           setIsPollingPawaPay(false);
           toast.success("Payment successful!");
-          mutation.mutate(formData); // Submit form after payment success
+          mutation.mutate(formData);
         } else if (res?.status?.toLowerCase() === "failed") {
+          if (done) return;
+          done = true;
+          clearInterval(intervalId);
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
@@ -184,7 +193,10 @@ export function EmbeddedForm({
       }
     }, 5000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      done = true;
+      clearInterval(intervalId);
+    };
   }, [isPollingPawaPay, pawapayDepositId]);
 
   const updateField = (id: string, value: any) => {

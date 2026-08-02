@@ -175,16 +175,25 @@ export function RenderedPage({
   useEffect(() => {
     if (!isPollingPawaPay || !pawapayDepositId) return;
 
+    let done = false;
+
     const intervalId = setInterval(async () => {
+      if (done) return;
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
         if (
           res?.status?.toLowerCase() === "completed" ||
           res?.status?.toLowerCase() === "success"
         ) {
+          if (done) return;
+          done = true;
+          clearInterval(intervalId);
           setIsPollingPawaPay(false);
           toast.success("Payment successful!");
         } else if (res?.status?.toLowerCase() === "failed") {
+          if (done) return;
+          done = true;
+          clearInterval(intervalId);
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
@@ -193,7 +202,10 @@ export function RenderedPage({
       }
     }, 5000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      done = true;
+      clearInterval(intervalId);
+    };
   }, [isPollingPawaPay, pawapayDepositId]);
 
   // isPollingPawaPay will be rendered as an overlay to prevent full page remounts

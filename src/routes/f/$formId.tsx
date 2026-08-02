@@ -121,6 +121,7 @@ function PublicFormPage() {
 
   const doPayment = async (details: any) => {
     setIsProcessingPayment(true);
+    setIsPaymentModalOpen(false); // Close modal immediately so CheckYourPhone appears faster
     try {
       const pawaRes = await initiatePawaPayDeposit({
         data: {
@@ -130,7 +131,7 @@ function PublicFormPage() {
           currency: details.currency || "RWF",
           type: `page_builder_checkout::${paymentSlug || "unknown"}`,
           referenceId: crypto.randomUUID(),
-          workspaceId: paymentWorkspaceId,
+          workspaceId: form?.workspace_id || paymentWorkspaceId,
           reason: paymentLabel || "Page Payment",
           shortfall: details.shortfall || 0,
         },
@@ -138,7 +139,6 @@ function PublicFormPage() {
 
       setPawapayDepositId(pawaRes.depositId);
       setIsPollingPawaPay(true);
-      setIsPaymentModalOpen(false);
     } catch (e: any) {
       toast.error(e.message || "Payment failed");
     } finally {
@@ -149,19 +149,28 @@ function PublicFormPage() {
   useEffect(() => {
     if (!isPollingPawaPay || !pawapayDepositId) return;
 
+    let done = false; // local guard — prevents double mutation if interval fires before clearInterval
+
     const intervalId = setInterval(async () => {
+      if (done) return;
       try {
         const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
         if (
           res?.status?.toLowerCase() === "completed" ||
           res?.status?.toLowerCase() === "success"
         ) {
+          if (done) return;
+          done = true;
+          clearInterval(intervalId); // stop immediately — don't wait for cleanup
           setIsPollingPawaPay(false);
           toast.success("Payment successful!");
           if (pendingFormData) {
             mutation.mutate(pendingFormData);
           }
         } else if (res?.status?.toLowerCase() === "failed") {
+          if (done) return;
+          done = true;
+          clearInterval(intervalId);
           setIsPollingPawaPay(false);
           toast.error("Mobile Money payment failed or was cancelled.");
         }
@@ -170,7 +179,10 @@ function PublicFormPage() {
       }
     }, 5000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      done = true;
+      clearInterval(intervalId);
+    };
   }, [isPollingPawaPay, pawapayDepositId]);
 
   const updateField = (id: string, value: any) => {
