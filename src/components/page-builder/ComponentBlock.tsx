@@ -886,9 +886,11 @@ export function ComponentBlock({
                       <SelectValue placeholder="Columns" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">1 Column</SelectItem>
-                      <SelectItem value="2">2 Columns</SelectItem>
-                      <SelectItem value="3">3 Columns</SelectItem>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} {num === 1 ? 'Column' : 'Columns'}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

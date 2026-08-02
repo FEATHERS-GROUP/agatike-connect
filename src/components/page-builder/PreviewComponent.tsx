@@ -130,14 +130,25 @@ export function PreviewComponent({
   }
 
   if (comp.type === "form_grid" && comp.cards?.length > 0) {
-    const gridCols =
-      comp.columns === "1"
-        ? "grid-cols-1"
-        : comp.columns === "3"
-          ? "grid-cols-1 md:grid-cols-3"
-          : "grid-cols-1 md:grid-cols-2";
+    const c = parseInt(comp.columns) || 2;
+    let gridCols = "grid-cols-1 md:grid-cols-2";
+    switch (c) {
+      case 1: gridCols = "grid-cols-1"; break;
+      case 2: gridCols = "grid-cols-1 md:grid-cols-2"; break;
+      case 3: gridCols = "grid-cols-1 md:grid-cols-3"; break;
+      case 4: gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"; break;
+      case 5: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5"; break;
+      case 6: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6"; break;
+      case 7: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7"; break;
+      case 8: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8"; break;
+      case 9: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9"; break;
+      case 10: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10"; break;
+      case 11: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11"; break;
+      case 12: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12"; break;
+    }
+
     return (
-      <div className={`grid ${gridCols} gap-4`}>
+      <div className={`grid ${gridCols} gap-6`}>
         {comp.cards.map((card: any, idx: number) => {
           let linkedForm = activeForms.find((f: any) => f.id === card.formId);
           if (!linkedForm) {
