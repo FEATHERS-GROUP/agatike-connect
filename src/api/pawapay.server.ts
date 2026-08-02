@@ -19,35 +19,15 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     const providerStatus = body.status;
 
     if (providerReference) {
-      // 0. Idempotency Check: Prevent processing already completed transactions multiple times
-      const txCheckQuery = `
-        query CheckWalletTransaction($provider_reference: String!) {
-          wallet_transactions(where: { provider_reference: { _eq: $provider_reference } }) {
-            id
-            status
-          }
-        }
-      `;
-      const txCheckRes = await hasuraRequest<{ wallet_transactions: any[] }>(txCheckQuery, {
-        provider_reference: providerReference,
-      });
-      const existingTx = txCheckRes.wallet_transactions?.[0];
-
-      if (existingTx && existingTx.status === "completed" && providerStatus === "COMPLETED") {
-        console.log(
-          `[PawaPay Webhook] Transaction ${providerReference} is already completed. Skipping duplicate processing.`,
-        );
-        return new Response(JSON.stringify({ received: true, message: "Already completed" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      // 1. Update the wallet transaction status
+      // Atomic idempotency: only update if NOT already in a terminal state.
+      // If affected_rows === 0, this webhook is a duplicate and we skip processing.
       const updateQuery = `
         mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
           update_wallet_transactions(
-            where: { provider_reference: { _eq: $provider_reference } }, 
+            where: { 
+              provider_reference: { _eq: $provider_reference },
+              status: { _nin: ["completed", "failed"] }
+            }, 
             _set: { 
               provider_status: $provider_status, 
               status: $status,
@@ -55,6 +35,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               updated_at: "now()"
             }
           ) {
+            affected_rows
             returning {
               id
               status
@@ -79,6 +60,19 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               : "pending",
         raw_callback_data: body,
       });
+
+      const affectedRows = res.update_wallet_transactions?.affected_rows ?? 0;
+
+      if (affectedRows === 0) {
+        // Either already completed/failed, or unknown reference — skip duplicate processing
+        console.log(
+          `[PawaPay Webhook] Transaction ${providerReference} already processed or not found. Skipping.`,
+        );
+        return new Response(JSON.stringify({ received: true, message: "Already processed" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
       const tx = res.update_wallet_transactions?.returning?.[0];
 
@@ -353,10 +347,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     entityName: orgName,
                     customerName: firstAtt.names,
                     ticket: { id: firstAtt.qrcode_number, tier: "Event Ticket" },
-                    dateStr: firstStop.date || "TBD",
-                    timeStr: firstStop.time || "TBD",
-                    locationStr: eventLocation,
+                    dateStr: firstStop.date || "",
+                    timeStr: firstStop.time || "",
+                    locationStr: eventLocation || "",
                     bookingRef: tx.reference_id,
+                    type: "event",
                   });
                   fallbackPdfBase64 = fallbackRes.content;
                 } catch (e) {
@@ -580,7 +575,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           tx.type !== "event_ticket" &&
           tx.type !== "portal_event_ticket" &&
           !tx.type?.startsWith("page_builder_checkout") &&
-          !tx.type?.startsWith("portal_") &&
           body?.payer?.address?.value
         ) {
           const phone = body.payer.address.value;
@@ -597,8 +591,95 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com/dashboard`;
           } else if (tx.type === "space_subscription") {
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com/dashboard`;
-          } else if (tx.type === "venue_booking") {
-            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your venue booking is confirmed. Visit: https://agatike.com/dashboard`;
+          } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
+            try {
+              const bookingId = tx.reference_id?.split(",")[0];
+              if (bookingId) {
+                const { hasuraRequest } = await import("./graphql.server");
+                const bData = await hasuraRequest<{ venue_bookings_by_pk: any }>(
+                  `query GetB($id: uuid!) { 
+                     venue_bookings_by_pk(id: $id) { 
+                       start_time end_time tickets_data facility_id
+                       rentable_venue { name address city facilities_data opening_hours closing_hours } 
+                     } 
+                   }`,
+                  { id: bookingId },
+                );
+                const bk = bData?.venue_bookings_by_pk;
+                if (bk) {
+                  let fName = "";
+                  if (bk.facility_id && bk.rentable_venue?.facilities_data) {
+                    const facilities = bk.rentable_venue.facilities_data || [];
+                    const fac = facilities.find((f: any) => f.id === bk.facility_id);
+                    if (fac && fac.name) {
+                      fName = fac.name;
+                    }
+                  }
+
+                  const vName = bk.rentable_venue?.name || "Venue";
+                  const bRef = bk.tickets_data?.booking_ref || "";
+                  const sDate = new Date(bk.start_time);
+                  const eDate = new Date(bk.end_time);
+
+                  const monthNames = [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ];
+                  const dateStr = `${monthNames[sDate.getMonth()]} ${sDate.getDate()}`;
+
+                  const formatTime = (d: Date) => {
+                    let h = d.getHours();
+                    const m = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+                    const ampm = h >= 12 ? "PM" : "AM";
+                    h = h % 12;
+                    h = h ? h : 12;
+                    return `${h}:${m} ${ampm}`;
+                  };
+
+                  let sTime = formatTime(sDate);
+                  let eTime = formatTime(eDate);
+
+                  if (!fName && bk.rentable_venue) {
+                    const parseHour = (hStr: string) => {
+                      if (!hStr) return null;
+                      const [hh, mm] = hStr.split(":");
+                      if (!hh) return null;
+                      let h = parseInt(hh, 10);
+                      const ampm = h >= 12 ? "PM" : "AM";
+                      h = h % 12;
+                      h = h ? h : 12;
+                      return `${h}:${mm || "00"} ${ampm}`;
+                    };
+                    const open = parseHour(bk.rentable_venue.opening_hours);
+                    const close = parseHour(bk.rentable_venue.closing_hours);
+                    if (open && close) {
+                      sTime = open;
+                      eTime = close;
+                    }
+                  }
+
+                  const loc = bk.rentable_venue?.address || bk.rentable_venue?.city || "Venue";
+
+                  const what = fName ? `${fName} at ${vName}` : vName;
+                  msg = `Payment ${amountDisplay} received. Confirmed: ${what}. Code: ${bRef}. Time: ${dateStr}, ${sTime}-${eTime}. Loc: ${loc}`;
+                }
+              }
+            } catch (e) {
+              console.error("Failed to fetch venue booking for SMS", e);
+            }
+            if (!msg) {
+              msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your venue booking is confirmed.`;
+            }
           } else {
             msg = `Your Agatike Payment of ${amountDisplay} confirmed! Thank you for your purchase. Visit your profile at: https://agatike.com/profile`;
           }

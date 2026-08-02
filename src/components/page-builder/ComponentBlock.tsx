@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,12 +10,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  GripVertical,
+  ArrowUp,
+  ArrowDown,
   Image as ImageIcon,
   Trash2,
   AlignLeft,
   AlignRight,
   Plus,
+  Pencil,
+  Check,
 } from "lucide-react";
 import { PreviewComponent } from "./PreviewComponent";
 import { InventorySelector } from "./InventorySelector";
@@ -33,63 +36,194 @@ export function ComponentBlock({
   canMoveDown,
   eventId,
   themeColor,
+  selectedElementId,
+  setSelectedElementId,
 }: any) {
   const [isEditing, setIsEditing] = useState(false);
+  const isSelected = selectedElementId === comp.id;
+  const blockRef = useRef<HTMLDivElement>(null);
+
+  const startDrag = (e: React.PointerEvent, type: "width" | "height" | "both" | "radius") => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    target.setPointerCapture(e.pointerId);
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = blockRef.current?.offsetWidth || 0;
+    const startHeight = blockRef.current?.offsetHeight || 0;
+    const startRadius = parseInt(comp.borderRadius || "16");
+
+    const onMove = (moveEvent: PointerEvent) => {
+      if (type === "width" || type === "both") {
+        const newWidth = startWidth + (moveEvent.clientX - startX);
+        updateComponent(idx, "width", `${Math.max(100, newWidth)}px`);
+      }
+      if (type === "height" || type === "both") {
+        const newHeight = startHeight + (moveEvent.clientY - startY);
+        updateComponent(idx, "height", `${Math.max(50, newHeight)}px`);
+      }
+      if (type === "radius") {
+        const newRadius = startRadius + (moveEvent.clientX - startX);
+        updateComponent(idx, "borderRadius", `${Math.max(0, newRadius)}`);
+      }
+    };
+
+    const onUp = (upEvent: PointerEvent) => {
+      target.releasePointerCapture(upEvent.pointerId);
+      target.removeEventListener("pointermove", onMove);
+      target.removeEventListener("pointerup", onUp);
+    };
+
+    target.addEventListener("pointermove", onMove);
+    target.addEventListener("pointerup", onUp);
+  };
 
   return (
-    <div className="relative group border border-border/40 rounded-xl p-4 bg-secondary/20 hover:border-primary/40 transition-colors">
+    <div
+      ref={blockRef}
+      className={`relative group border transition-all cursor-pointer ${
+        isSelected
+          ? "border-primary ring-2 ring-primary/20"
+          : "border-border/40 hover:border-primary/40"
+      }`}
+      style={{
+        width: comp.width || "100%",
+        height: comp.height || "auto",
+        padding: comp.padding ? `${comp.padding}px` : "16px",
+        backgroundColor:
+          comp.backgroundColor ||
+          (isSelected ? "hsl(var(--background))" : "hsl(var(--secondary) / 0.2)"),
+        borderRadius: comp.borderRadius ? `${comp.borderRadius}px` : "16px",
+        alignSelf:
+          comp.alignment === "start"
+            ? "flex-start"
+            : comp.alignment === "end"
+              ? "flex-end"
+              : "center",
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedElementId(comp.id);
+      }}
+    >
+      {isSelected && (
+        <>
+          {/* Right Width Handle */}
+          <div
+            className="absolute top-1/2 -right-1.5 w-3 h-6 bg-primary rounded-sm -translate-y-1/2 cursor-ew-resize z-30 shadow-sm"
+            onPointerDown={(e) => startDrag(e, "width")}
+          />
+          {/* Bottom Height Handle */}
+          <div
+            className="absolute bottom-[-6px] left-1/2 w-6 h-3 bg-primary rounded-sm -translate-x-1/2 cursor-ns-resize z-30 shadow-sm"
+            onPointerDown={(e) => startDrag(e, "height")}
+          />
+          {/* Bottom Right Both Handle */}
+          <div
+            className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-primary rounded-full cursor-nwse-resize z-30 shadow-sm"
+            onPointerDown={(e) => startDrag(e, "both")}
+          />
+          {/* Top Left Border Radius Handle */}
+          <div
+            className="absolute top-2 left-2 w-3 h-3 bg-background border-2 border-primary rounded-full cursor-nwse-resize z-30 shadow-sm"
+            title="Drag to change border radius"
+            onPointerDown={(e) => startDrag(e, "radius")}
+          />
+        </>
+      )}
       {/* Move / delete controls */}
-      <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute -left-6 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-20 bg-background/80 backdrop-blur-md border border-border/60 rounded-md p-1 shadow-sm">
         {canMoveUp && (
-          <button onClick={() => moveComponent(idx, -1)} className="p-0.5 hover:text-primary">
-            <GripVertical className="w-4 h-4 rotate-90" />
+          <button
+            title="Move Up"
+            onClick={(e) => {
+              e.stopPropagation();
+              moveComponent(idx, -1);
+            }}
+            className="p-1 hover:bg-secondary rounded-sm text-foreground hover:text-primary transition-colors"
+          >
+            <ArrowUp className="w-4 h-4" />
           </button>
         )}
         {canMoveDown && (
-          <button onClick={() => moveComponent(idx, 1)} className="p-0.5 hover:text-primary">
-            <GripVertical className="w-4 h-4 -rotate-90" />
+          <button
+            title="Move Down"
+            onClick={(e) => {
+              e.stopPropagation();
+              moveComponent(idx, 1);
+            }}
+            className="p-1 hover:bg-secondary rounded-sm text-foreground hover:text-primary transition-colors"
+          >
+            <ArrowDown className="w-4 h-4" />
           </button>
         )}
       </div>
       <button
-        onClick={() => removeComponent(idx)}
-        className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity text-destructive bg-background shadow-sm hover:bg-destructive/10 p-1.5 rounded-md z-10"
+        title="Delete Block"
+        onClick={(e) => {
+          e.stopPropagation();
+          removeComponent(idx);
+        }}
+        className="absolute right-3 top-3 text-destructive bg-background/80 backdrop-blur-md shadow-sm border border-border/60 hover:bg-destructive hover:text-destructive-foreground p-1.5 rounded-md z-20 transition-colors"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
 
       {/* Block header */}
-      <div className="mb-4 flex items-center justify-between border-b border-border/40 pb-3">
+      <div className="mb-5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-card border border-border/60 py-2 px-3 rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] z-20 relative">
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {comp.type.replace(/_/g, " ")}
-          </span>
+          <div className="bg-primary/10 text-primary px-2.5 py-1 rounded-md shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider block translate-y-[0.5px]">
+              {comp.type.replace(/_/g, " ")}
+            </span>
+          </div>
+          <div className="h-4 w-[1px] bg-border/80 shrink-0" />
           <Button
-            size="sm"
-            variant={isEditing ? "default" : "outline"}
-            className="h-7 text-xs"
-            onClick={() => setIsEditing(!isEditing)}
+            size="icon"
+            variant="ghost"
+            className={`h-7 w-7 rounded-md transition-colors shrink-0 ${
+              isEditing
+                ? "bg-orange-500 text-white hover:bg-orange-600"
+                : "text-orange-500 hover:bg-orange-500/10"
+            }`}
+            title={isEditing ? "Done Editing" : "Edit Settings"}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditing(!isEditing);
+            }}
           >
-            {isEditing ? "Done Editing" : "Edit Settings"}
+            {isEditing ? <Check className="w-4 h-4" /> : <Pencil className="w-3.5 h-3.5" />}
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-[10px] uppercase text-muted-foreground whitespace-nowrap">
+
+        <div className="flex items-center gap-2 bg-secondary/30 border border-border/60 px-2.5 py-1 rounded-lg shrink-0 transition-colors focus-within:border-primary/40 focus-within:bg-background">
+          <Label className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap m-0 cursor-pointer">
             Nav Label
           </Label>
           <Input
             placeholder="e.g. About"
             value={comp.menuName || ""}
             onChange={(e) => updateComponent(idx, "menuName", e.target.value)}
-            className="h-6 text-xs w-28 bg-background"
+            onClick={(e) => e.stopPropagation()}
+            className="h-6 text-xs w-28 bg-transparent border-none shadow-none focus-visible:ring-0 px-1 font-medium text-foreground placeholder:text-muted-foreground/50"
           />
         </div>
       </div>
 
       {!isEditing ? (
-        <PreviewComponent comp={comp} themeColor={themeColor} activeForms={forms} />
+        <PreviewComponent
+          comp={comp}
+          themeColor={themeColor}
+          activeForms={forms}
+          idx={idx}
+          updateComponent={updateComponent}
+          selectedElementId={selectedElementId}
+          setSelectedElementId={setSelectedElementId}
+        />
       ) : (
-        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 bg-card text-foreground p-4 rounded-xl border border-border/40 shadow-sm">
           {/* TEXT */}
           {comp.type === "text" && (
             <textarea
@@ -434,6 +568,123 @@ export function ComponentBlock({
                   className="w-full bg-background border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[60px]"
                 />
               </div>
+              <div className="space-y-1 pt-2 border-t border-border/40">
+                <Label className="text-xs">Connect to Form (Optional)</Label>
+                <Select
+                  value={comp.connectedFormId || "none"}
+                  onValueChange={(val) =>
+                    updateComponent(idx, "connectedFormId", val === "none" ? null : val)
+                  }
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select a form to require completion before payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Form (Standalone Payment)</SelectItem>
+                    {forms?.map((f: any) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  If selected, the form will be displayed above the button. The payment will act as
+                  the form's submit action.
+                </p>
+                {comp.connectedFormId && comp.connectedFormId !== "none" && (
+                  <div className="space-y-3 pt-2 mt-2 border-t border-border/40">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-[1.5] space-y-1">
+                        <Label className="text-xs">Design</Label>
+                        <Select
+                          value={comp.design || "card"}
+                          onValueChange={(val) => updateComponent(idx, "design", val)}
+                        >
+                          <SelectTrigger className="bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="card">Large Card</SelectItem>
+                            <SelectItem value="button">Simple Button</SelectItem>
+                            <SelectItem value="embedded">Embedded Form</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {comp.design !== "embedded" && (
+                        <div className="flex-[1.5] space-y-1">
+                          <Label className="text-xs">Open In</Label>
+                          <Select
+                            value={comp.openAction || "page"}
+                            onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="page">New Page</SelectItem>
+                              <SelectItem value="modal">Popup Modal</SelectItem>
+                              <SelectItem value="drawer">Side Drawer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                    {comp.design === "embedded" && (
+                      <div className="flex items-center flex-wrap gap-2 pt-2 mt-2">
+                        <Label className="text-[10px] text-muted-foreground w-full">
+                          Form Styling
+                        </Label>
+                        <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                          <Label
+                            className="text-[10px] text-muted-foreground cursor-pointer"
+                            htmlFor={`f2-bg-${idx}`}
+                          >
+                            Bg
+                          </Label>
+                          <Input
+                            id={`f2-bg-${idx}`}
+                            type="color"
+                            value={comp.cardBgColor || "#ffffff"}
+                            onChange={(e) => updateComponent(idx, "cardBgColor", e.target.value)}
+                            className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                          <Label
+                            className="text-[10px] text-muted-foreground cursor-pointer"
+                            htmlFor={`f2-txt-${idx}`}
+                          >
+                            Text
+                          </Label>
+                          <Input
+                            id={`f2-txt-${idx}`}
+                            type="color"
+                            value={comp.cardTextColor || "#000000"}
+                            onChange={(e) => updateComponent(idx, "cardTextColor", e.target.value)}
+                            className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer"
+                          />
+                        </div>
+                        <Select
+                          value={comp.columns || "1"}
+                          onValueChange={(val) => updateComponent(idx, "columns", val)}
+                        >
+                          <SelectTrigger className="w-28 bg-background h-8 text-xs">
+                            <SelectValue placeholder="Columns" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} {num === 1 ? "Column" : "Columns"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -467,6 +718,26 @@ export function ComponentBlock({
                     </SelectContent>
                   </Select>
                 </div>
+                {comp.layout !== "list" && (
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs">Columns</Label>
+                    <Select
+                      value={comp.columns || "4"}
+                      onValueChange={(val) => updateComponent(idx, "columns", val)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                          <SelectItem key={num} value={num.toString()}>
+                            {num}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/40">
                 <div className="space-y-0.5">
@@ -617,6 +888,56 @@ export function ComponentBlock({
                   </div>
                 </div>
               )}
+              {comp.design === "embedded" && (
+                <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-border/40 mt-2">
+                  <Label className="text-xs text-muted-foreground w-full">Form Styling</Label>
+                  <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                    <Label
+                      className="text-[10px] text-muted-foreground cursor-pointer"
+                      htmlFor={`f-bg-${idx}`}
+                    >
+                      Bg
+                    </Label>
+                    <Input
+                      id={`f-bg-${idx}`}
+                      type="color"
+                      value={comp.cardBgColor || "#ffffff"}
+                      onChange={(e) => updateComponent(idx, "cardBgColor", e.target.value)}
+                      className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                    <Label
+                      className="text-[10px] text-muted-foreground cursor-pointer"
+                      htmlFor={`f-txt-${idx}`}
+                    >
+                      Text
+                    </Label>
+                    <Input
+                      id={`f-txt-${idx}`}
+                      type="color"
+                      value={comp.cardTextColor || "#000000"}
+                      onChange={(e) => updateComponent(idx, "cardTextColor", e.target.value)}
+                      className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer"
+                    />
+                  </div>
+                  <Select
+                    value={comp.columns || "1"}
+                    onValueChange={(val) => updateComponent(idx, "columns", val)}
+                  >
+                    <SelectTrigger className="w-28 bg-background h-8 text-xs">
+                      <SelectValue placeholder="Columns" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} {num === 1 ? "Column" : "Columns"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
 
@@ -667,7 +988,96 @@ export function ComponentBlock({
             </div>
           )}
 
-          {/* FORM GRID */}
+          {/* NAVIGATIONS */}
+          {comp.type === "navigations" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Navigation Links</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-[10px]"
+                  onClick={() => {
+                    const currentLinks = comp.links || [];
+                    updateComponent(idx, "links", [
+                      ...currentLinks,
+                      { label: "New Link", url: "#" },
+                    ]);
+                  }}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Link
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {(comp.links || []).map((link: any, linkIdx: number) => (
+                  <div
+                    key={linkIdx}
+                    className="flex items-center gap-2 bg-background p-2 rounded-md border border-border/60"
+                  >
+                    <Input
+                      value={link.label}
+                      onChange={(e) => {
+                        const newLinks = [...comp.links];
+                        newLinks[linkIdx].label = e.target.value;
+                        updateComponent(idx, "links", newLinks);
+                      }}
+                      className="h-7 text-xs"
+                      placeholder="Label"
+                    />
+                    <Input
+                      value={link.url}
+                      onChange={(e) => {
+                        const newLinks = [...comp.links];
+                        newLinks[linkIdx].url = e.target.value;
+                        updateComponent(idx, "links", newLinks);
+                      }}
+                      className="h-7 text-xs"
+                      placeholder="URL or /p/slug"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
+                      onClick={() => {
+                        const newLinks = [...comp.links];
+                        newLinks.splice(linkIdx, 1);
+                        updateComponent(idx, "links", newLinks);
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {(!comp.links || comp.links.length === 0) && (
+                  <div className="text-center p-4 border border-dashed border-border/60 rounded-md text-xs text-muted-foreground">
+                    No links added yet.
+                  </div>
+                )}
+              </div>
+              <div className="pt-4 mt-4 border-t border-border/60">
+                <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">
+                  Preview
+                </p>
+                <div
+                  className="flex gap-4 items-center justify-center py-2"
+                  style={{
+                    backgroundColor: comp.backgroundColor,
+                    borderRadius: comp.borderRadius + "px",
+                  }}
+                >
+                  {(comp.links || []).map((link: any, i: number) => (
+                    <a
+                      key={i}
+                      href={link.url}
+                      className="text-sm font-medium hover:opacity-70 transition-opacity"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           {comp.type === "form_grid" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
@@ -724,9 +1134,11 @@ export function ComponentBlock({
                       <SelectValue placeholder="Columns" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">1 Column</SelectItem>
-                      <SelectItem value="2">2 Columns</SelectItem>
-                      <SelectItem value="3">3 Columns</SelectItem>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} {num === 1 ? "Column" : "Columns"}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

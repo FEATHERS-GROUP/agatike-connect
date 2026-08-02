@@ -239,7 +239,12 @@ export function SpreadsheetEntryForm({
   }
 
   return (
-    <div className="bg-card border border-border/60 rounded-2xl p-6 md:p-8 shadow-sm max-w-4xl mx-auto my-8 overflow-hidden">
+    <div
+      className="border border-border/60 rounded-2xl p-6 md:p-8 shadow-sm max-w-4xl mx-auto my-8 overflow-hidden"
+      style={{
+        backgroundColor: comp.backgroundColor || "var(--card)",
+      }}
+    >
       <h3 className="text-xl md:text-2xl font-bold mb-2">{comp.title || "Request Form"}</h3>
       <p className="text-sm text-muted-foreground mb-6">
         {comp.description || "Submit your details below."}

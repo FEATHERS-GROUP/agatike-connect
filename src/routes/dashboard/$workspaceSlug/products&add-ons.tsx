@@ -758,7 +758,11 @@ function WorkspaceProductsView() {
                     {selectedItem.type === "voucher_batch" && (
                       <div className="mt-4">
                         <Link
-                          to={`/dashboard/${activeWorkspace?.slug}/vouchers/${selectedItem.id}`}
+                          to="/dashboard/$workspaceSlug/vouchers/$batchId"
+                          params={{
+                            workspaceSlug: activeWorkspace?.slug || "",
+                            batchId: selectedItem.id,
+                          }}
                         >
                           <Button className="rounded-full shadow-lg text-blue-600 bg-white hover:bg-white/90">
                             View All Vouchers

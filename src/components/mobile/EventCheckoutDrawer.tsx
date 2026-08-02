@@ -24,6 +24,7 @@ export function EventCheckoutDrawer({
   setCart,
   currentVenueProject,
   setActiveTicketIdForMap,
+  activeMerch,
   total,
   totalTickets,
   selectedSeatsObj,
@@ -50,6 +51,7 @@ export function EventCheckoutDrawer({
   setCart: (updater: (prev: Record<string, number>) => Record<string, number>) => void;
   currentVenueProject: any;
   setActiveTicketIdForMap: (id: string) => void;
+  activeMerch?: any[];
   total: number;
   totalTickets: number;
   selectedSeatsObj: any[];
@@ -481,16 +483,59 @@ export function EventCheckoutDrawer({
                   </div>
                 )}
 
+              {(() => {
+                const t = totalTickets;
+                let physicalQty = 0;
+                let voucherQty = 0;
+
+                Object.entries(cart).forEach(([key, qty]) => {
+                  if (key.startsWith("merch_")) {
+                    const merchId = key.split("_")[1];
+                    const merch = activeMerch?.find((m: any) => String(m.id) === String(merchId));
+                    if (
+                      merch?.type === "voucher" ||
+                      merch?.category === "gift_card" ||
+                      merch?.type === "gift_card"
+                    ) {
+                      voucherQty += qty;
+                    } else {
+                      physicalQty += qty;
+                    }
+                  }
+                });
+
+                if (t === 0 && physicalQty === 0 && voucherQty === 0) return null;
+
+                return (
+                  <div className="mt-4 flex flex-col gap-1.5 text-xs text-muted-foreground border-t border-border/40 pt-3">
+                    {t > 0 && (
+                      <div className="flex justify-between">
+                        <span>Tickets</span>
+                        <span className="font-medium text-foreground">{t}</span>
+                      </div>
+                    )}
+                    {physicalQty > 0 && (
+                      <div className="flex justify-between">
+                        <span>Physical Products</span>
+                        <span className="font-medium text-foreground">{physicalQty}</span>
+                      </div>
+                    )}
+                    {voucherQty > 0 && (
+                      <div className="flex justify-between">
+                        <span>Voucher Products</span>
+                        <span className="font-medium text-foreground">{voucherQty}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Action Row */}
               <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-border/30">
                 {!isSuspended && (
                   <div className="flex flex-col">
                     <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                      {(() => {
-                        const t = totalTickets;
-                        const m = Object.values(cart).reduce((a, b) => a + b, 0) - t;
-                        return `Total (${t} ticket${t !== 1 ? "s" : ""}${m > 0 ? `, ${m} product${m !== 1 ? "s" : ""}` : ""})`;
-                      })()}
+                      Total
                     </span>
                     <span className="text-lg font-bold text-foreground">
                       {formatCurrency(total, currencyCode)}

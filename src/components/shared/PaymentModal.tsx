@@ -120,14 +120,18 @@ export function PaymentModal({
     queryKey: ["profitableNetworks", workspaceId, baseAmount, supportedNetworks],
     queryFn: () =>
       getProfitableNetworks({
-        data: { workspaceId, baseAmount, networks: supportedNetworks },
+        data: { workspaceId, baseAmount: baseAmount || 1, networks: supportedNetworks },
       } as any),
-    enabled: isOpen && !!workspaceId && supportedNetworks.length > 0 && !!baseAmount,
+    enabled: isOpen && !!workspaceId && supportedNetworks.length > 0,
   });
 
   const availableNetworks = useMemo(() => {
-    if (!supportedNetworks || supportedNetworks.length === 0 || !profitableNetworksData) return [];
-    return ALL_NETWORKS.filter((n) => profitableNetworksData.includes(n.value));
+    if (!supportedNetworks || supportedNetworks.length === 0) return [];
+    // If profitability data loaded, filter to profitable networks; otherwise show all supported
+    if (profitableNetworksData) {
+      return ALL_NETWORKS.filter((n) => profitableNetworksData.includes(n.value));
+    }
+    return ALL_NETWORKS.filter((n) => supportedNetworks.includes(n.value));
   }, [supportedNetworks, profitableNetworksData]);
 
   const selectedNetworkObj = useMemo(
@@ -538,8 +542,8 @@ export function PaymentModal({
                   (paymentMethod === "momo" &&
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
-                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide md:!bg-background md:!text-primary hover:md:!bg-background/90 md:!shadow-xl"
-                style={{ background: themeColor || "var(--gradient-primary)", color: "#fff" }}
+                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide hover:opacity-90 md:shadow-xl"
+                style={{ backgroundColor: "#ffffff", color: themeColor || "var(--primary)" }}
               >
                 {isGenerating
                   ? "Generating..."

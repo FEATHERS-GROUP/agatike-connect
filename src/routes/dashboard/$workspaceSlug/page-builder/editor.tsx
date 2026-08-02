@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { EditorTopbar } from "@/components/page-builder/EditorTopbar";
 import { EditorCanvas } from "@/components/page-builder/EditorCanvas";
 import { PageSettingsPanel } from "@/components/page-builder/PageSettingsPanel";
+import { PageBuilderSidebar } from "@/components/page-builder/PageBuilderSidebar";
+import { EditorFloatingToolbar } from "@/components/page-builder/EditorFloatingToolbar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllWorkspacePages,
@@ -13,6 +15,7 @@ import {
 import { getWorkspaceForms } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
+import { DynamicFontLoader } from "@/components/page-builder/DynamicFontLoader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -65,8 +68,15 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
 
+type EditorSearch = {
+  pageId?: string;
+  templateId?: string;
+  parentId?: string;
+  slug?: string;
+};
+
 export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/editor")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): EditorSearch => {
     return {
       pageId: search.pageId as string | undefined,
       templateId: search.templateId as string | undefined,
@@ -85,10 +95,16 @@ function makeBlankPage() {
     title: "",
     description: "",
     themeColor: "#000000",
+    pageBackgroundColor: "#ffffff",
+    pageBackgroundImageUrl: "",
+    pageTextColor: "#000000",
     headerImageUrl: "",
     logoUrl: "",
     logoPosition: "hero" as "hero" | "navbar",
     navbarStyle: "transparent" as "transparent" | "solid",
+    navbarBackgroundColor: "",
+    navbarTextColor: "",
+    navbarAlignment: "right" as "left" | "center" | "right",
     fontFamily: "Inter",
     heroAlign: "center" as
       | "center"
@@ -125,6 +141,8 @@ function PageBuilder() {
   const [activePageId, setActivePageId] = useState<string | null>(pageId || null);
   const [editorState, setEditorState] = useState(makeBlankPage());
   const [isInitialized, setIsInitialized] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>("page");
 
   // ── Sync URL params to local state ────────────────────────────────────────
   useEffect(() => {
@@ -166,10 +184,16 @@ function PageBuilder() {
         title: pageData.title || "",
         description: pageData.description || "",
         themeColor: pageData.theme_color || "#000000",
+        pageBackgroundColor: settingsBlock?.pageBackgroundColor || "#ffffff",
+        pageBackgroundImageUrl: settingsBlock?.pageBackgroundImageUrl || "",
+        pageTextColor: settingsBlock?.pageTextColor || "#000000",
         headerImageUrl: pageData.header_image_url || "",
         logoUrl: pageData.logo_url || "",
         logoPosition: settingsBlock?.logoPosition || "hero",
         navbarStyle: settingsBlock?.navbarStyle || "transparent",
+        navbarBackgroundColor: settingsBlock?.navbarBackgroundColor || "",
+        navbarTextColor: settingsBlock?.navbarTextColor || "",
+        navbarAlignment: settingsBlock?.navbarAlignment || "right",
         fontFamily: settingsBlock?.fontFamily || "Inter",
         heroAlign: settingsBlock?.heroAlign || "center",
         heroOverlayColor: settingsBlock?.heroOverlayColor || "#000000",
@@ -193,10 +217,16 @@ function PageBuilder() {
           title: template.title,
           description: template.pageDescription,
           themeColor: template.themeColor,
+          pageBackgroundColor: "#ffffff",
+          pageBackgroundImageUrl: "",
+          pageTextColor: "#000000",
           headerImageUrl: template.headerImageUrl,
           logoUrl: "",
           logoPosition: template.logoPosition,
           navbarStyle: "transparent",
+          navbarBackgroundColor: "",
+          navbarTextColor: "",
+          navbarAlignment: "right",
           fontFamily: template.fontFamily,
           heroAlign: "center",
           heroOverlayColor: "#000000",
@@ -208,7 +238,7 @@ function PageBuilder() {
           heroForegroundPosition: "right",
           elementShape: "rounded-2xl",
           parent_id: parentId || null,
-          components: JSON.parse(JSON.stringify(template.components)), // Deep copy
+          components: JSON.parse(JSON.stringify(template.components)) as any[], // Deep copy
         });
       }
       setIsInitialized(true);
@@ -235,7 +265,16 @@ function PageBuilder() {
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
       queryClient.invalidateQueries({ queryKey: ["workspace-page", activePageId] });
     },
-    onError: (err: any) => toast.error(err.message || "Failed to save page."),
+    onError: (err: any) => {
+      const msg = err.message || "";
+      if (msg.includes("workspace_pages_slug_key") || msg.includes("Uniqueness violation")) {
+        toast.error(
+          `The URL slug "${editorState.slug}" is already taken. Please choose a different one.`,
+        );
+      } else {
+        toast.error(msg || "Failed to save page.");
+      }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -267,6 +306,9 @@ function PageBuilder() {
           logoPosition: editorState.logoPosition,
           navbarStyle: editorState.navbarStyle,
           fontFamily: editorState.fontFamily,
+          pageBackgroundColor: editorState.pageBackgroundColor,
+          pageBackgroundImageUrl: editorState.pageBackgroundImageUrl,
+          pageTextColor: editorState.pageTextColor,
           heroAlign: editorState.heroAlign,
           heroOverlayColor: editorState.heroOverlayColor,
           heroOverlayOpacity: editorState.heroOverlayOpacity,
@@ -337,6 +379,14 @@ function PageBuilder() {
     setEditorState((prev) => ({ ...prev, components: [...prev.components, newComp] }));
   };
 
+  const addComponents = (comps: any[]) => {
+    const newComps = comps.map((c) => ({
+      ...c,
+      id: Math.random().toString(36).substr(2, 9),
+    }));
+    setEditorState((prev) => ({ ...prev, components: [...prev.components, ...newComps] }));
+  };
+
   const updateComponent = (index: number, key: string, value: any) => {
     const newComps = [...editorState.components];
     newComps[index] = { ...newComps[index], [key]: value };
@@ -361,55 +411,132 @@ function PageBuilder() {
   const set = (field: string) => (value: any) =>
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
-  return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
-      {/* Top Bar */}
-      <EditorTopbar
-        activeWorkspace={activeWorkspace}
-        editorState={editorState}
-        workspace_id={workspace_id}
-        allPages={allPages}
-        handleCopyLink={handleCopyLink}
-        deleteMutation={deleteMutation}
-        handlePublish={handlePublish}
-        saveMutation={saveMutation}
-      />
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isSpaceDown, setIsSpaceDown] = useState(false);
 
-      <div className="flex flex-1 overflow-hidden">
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && e.target === document.body) {
+        e.preventDefault();
+        setIsSpaceDown(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") setIsSpaceDown(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button === 1 || isSpaceDown) {
+      e.preventDefault();
+      const startX = e.clientX - pan.x;
+      const startY = e.clientY - pan.y;
+
+      const onMove = (moveEvent: PointerEvent) => {
+        setPan({
+          x: moveEvent.clientX - startX,
+          y: moveEvent.clientY - startY,
+        });
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    }
+  };
+
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+      <DynamicFontLoader components={editorState.components} />
+      {/* Left Sidebar */}
+      {!isLoadingPage && (
+        <div className="w-72 shrink-0 border-r border-border/60 bg-card overflow-visible z-10 hidden md:flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative">
+          <PageBuilderSidebar
+            addComponent={addComponent}
+            addComponents={addComponents}
+            allPages={allPages}
+            activeWorkspace={activeWorkspace}
+          />
+        </div>
+      )}
+
+      {/* Main Center Area */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+        {/* Top Bar */}
+        <EditorTopbar
+          activeWorkspace={activeWorkspace}
+          editorState={editorState}
+          workspace_id={workspace_id}
+          allPages={allPages}
+          handleCopyLink={handleCopyLink}
+          deleteMutation={deleteMutation}
+          handlePublish={handlePublish}
+          saveMutation={saveMutation}
+        />
+
         {/* Builder Content Area (The Canvas) */}
-        <div className="flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8">
+        <div
+          className={`flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8 ${isSpaceDown ? "cursor-grab active:cursor-grabbing" : ""}`}
+          onPointerDown={handlePointerDown}
+        >
           {isLoadingPage && !!activePageId ? (
             <div className="flex-1 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <EditorCanvas
-              addComponent={addComponent}
-              editorState={editorState}
-              set={set}
-              handleImageUpload={handleImageUpload}
-              allPages={allPages}
-              forms={forms}
-              workspace_id={workspace_id}
-              updateComponent={updateComponent}
-              removeComponent={removeComponent}
-              moveComponent={moveComponent}
-            />
+            <div
+              className="w-full flex justify-center origin-top transition-transform duration-75"
+              style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
+            >
+              <EditorCanvas
+                addComponent={addComponent}
+                editorState={editorState}
+                set={set}
+                handleImageUpload={handleImageUpload}
+                allPages={allPages}
+                forms={forms}
+                workspace_id={workspace_id}
+                updateComponent={updateComponent}
+                removeComponent={removeComponent}
+                moveComponent={moveComponent}
+                zoomLevel={zoomLevel}
+                selectedElementId={selectedElementId}
+                setSelectedElementId={setSelectedElementId}
+              />
+            </div>
           )}
         </div>
-
-        {/* Right Sidebar: Settings + Toolbox */}
         {!isLoadingPage && (
-          <div className="w-80 shrink-0 border-l border-border/60 bg-card overflow-y-auto z-10 flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.02)] hidden md:flex">
-            <PageSettingsPanel
-              addComponent={addComponent}
-              editorState={editorState}
-              set={set}
-              handleImageUpload={handleImageUpload}
-            />
-          </div>
+          <EditorFloatingToolbar
+            zoomLevel={zoomLevel}
+            setZoomLevel={setZoomLevel}
+            activeWorkspace={activeWorkspace}
+          />
         )}
       </div>
+
+      {/* Right Sidebar: Settings */}
+      {!isLoadingPage && (
+        <div className="w-[280px] shrink-0 border-l border-border/60 bg-card overflow-y-auto z-10 flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.02)] hidden md:flex">
+          <PageSettingsPanel
+            addComponent={addComponent}
+            editorState={editorState}
+            set={set}
+            handleImageUpload={handleImageUpload}
+            selectedElementId={selectedElementId}
+            updateComponent={updateComponent}
+            allPages={allPages}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/currency";
+import { useState } from "react";
 
 interface MerchVariantModalProps {
   m: any;
@@ -49,14 +50,19 @@ export function MerchVariantModal({
   setSelection,
   setCart,
 }: MerchVariantModalProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           size="sm"
           variant={globalQty > 0 ? "secondary" : "outline"}
           className={`rounded-full h-7 text-xs w-full mt-2 ${globalQty > 0 ? "border-primary/30" : ""}`}
-          onClick={() => console.log(`MerchVariantModal opened for item:`, m.name)}
+          onClick={() => {
+            console.log(`MerchVariantModal opened for item:`, m.name);
+            setIsOpen(true);
+          }}
         >
           {globalQty > 0 ? `Selected (${globalQty})` : "Select Options"}
         </Button>
@@ -76,9 +82,10 @@ export function MerchVariantModal({
                 Choose your variant options.
               </DialogDescription>
               {m.description && (
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  {m.description}
-                </p>
+                <div
+                  className="text-sm text-muted-foreground mt-2 leading-relaxed [&_p]:mb-2 last:[&_p]:mb-0 break-words"
+                  dangerouslySetInnerHTML={{ __html: m.description.replace(/&nbsp;/g, " ") }}
+                />
               )}
 
               {m.specs && Array.isArray(m.specs) && m.specs.length > 0 && (
@@ -145,49 +152,65 @@ export function MerchVariantModal({
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-4 border-t mt-2">
-                <div className="flex flex-col">
-                  <span className="font-bold text-xl">{formatCurrency(m.price, currencyCode)}</span>
-                  {(qty > 0 || globalQty > 0) && (
-                    <span className="text-xs text-muted-foreground mt-0.5">
-                      {qty > 0 ? `${qty} selected` : `${globalQty} total in cart`}
+              <div className="flex flex-col gap-4 pt-4 border-t mt-2">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xl">
+                      {formatCurrency(m.price, currencyCode)}
                     </span>
-                  )}
-                </div>
-
-                {setCart ? (
-                  <div className="flex flex-col gap-2 items-end">
-                    <div className="flex items-center gap-3 bg-background rounded-full border px-2 py-1 shadow-sm h-12 w-[140px] justify-between">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-full hover:bg-secondary"
-                        onClick={() => handleRemove(m)}
-                        disabled={qty <= 0}
-                      >
-                        <Minus className="h-5 w-5" />
-                      </Button>
-                      <span className="text-base font-semibold w-6 text-center">{qty}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-full hover:bg-secondary"
-                        onClick={() => {
-                          console.log("MerchVariantModal Plus clicked", { m });
-                          handleAdd(m);
-                        }}
-                        disabled={!canAdd}
-                      >
-                        <Plus className="h-5 w-5" />
-                      </Button>
-                    </div>
-                    {!canAdd && (needsSize || needsColor) && (
-                      <span className="text-xs text-destructive font-medium pr-2">
-                        {needsSize ? "Please select a variant" : "Please select a sub-variant"}
+                    {(qty > 0 || globalQty > 0) && (
+                      <span className="text-xs text-muted-foreground mt-0.5">
+                        {qty > 0 ? `${qty} selected` : `${globalQty} total in cart`}
                       </span>
                     )}
                   </div>
-                ) : null}
+
+                  {setCart ? (
+                    <div className="flex flex-col gap-2 items-end">
+                      <div className="flex items-center gap-3 bg-background rounded-full border px-2 py-1 shadow-sm h-12 w-[140px] justify-between">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 rounded-full hover:bg-secondary"
+                          onClick={() => handleRemove(m)}
+                          disabled={qty <= 0}
+                        >
+                          <Minus className="h-5 w-5" />
+                        </Button>
+                        <span className="text-base font-semibold w-6 text-center">{qty}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 rounded-full hover:bg-secondary"
+                          onClick={() => handleAdd(m)}
+                          disabled={!canAdd}
+                        >
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
+                      {!canAdd && (needsSize || needsColor) && (
+                        <span className="text-xs text-destructive font-medium pr-2">
+                          {needsSize ? "Please select a variant" : "Please select a sub-variant"}
+                        </span>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+
+                {setCart && (
+                  <Button
+                    className="w-full rounded-2xl h-12 text-base font-bold shadow-md mt-2 text-white bg-primary hover:bg-primary/90 transition-all"
+                    disabled={!canAdd && qty === 0}
+                    onClick={() => {
+                      if (qty === 0 && canAdd) {
+                        handleAdd(m);
+                      }
+                      setIsOpen(false);
+                    }}
+                  >
+                    {qty === 0 ? "Add to Order" : "Confirm Selection"}
+                  </Button>
+                )}
               </div>
             </div>
           </div>

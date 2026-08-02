@@ -46,6 +46,9 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         parent {
           slug
           title
+          logo_url
+          theme_color
+          components
           children {
             slug
             title

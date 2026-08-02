@@ -12,6 +12,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -71,6 +72,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -106,15 +108,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
     return bookedDates.includes(format(d, "yyyy-MM-dd"));
   };
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id) || {
-    template: "entrance-1",
-    palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
-    font: { css: "sans-serif", name: "Modern" },
-    logoText: "Agatike",
-    logoColorMode: "original",
-    layout: {},
-    back: {},
-  };
+  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
 
   useEffect(() => {
     try {
@@ -331,14 +325,24 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, isPawaPay: true, depositId: pawaRes.depositId };
+        return {
+          res,
+          isPawaPay: true,
+          depositId: pawaRes.depositId,
+          totalPaid: paymentDetails?.convertedAmount || total,
+        };
       }
 
-      return { res, isPawaPay: false };
+      return { res, isPawaPay: false, totalPaid: paymentDetails?.convertedAmount || total };
     },
     onSuccess: (data: any) => {
       const res = data.res;
       const td = res?.tickets_data;
+
+      if (data.totalPaid) {
+        setFinalTotalPaid(data.totalPaid);
+      }
+
       if (td?.issued) {
         setIssuedTickets(td.issued);
       }
@@ -445,6 +449,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 ticket,
                 bookingRef: ticket.booking_ref || ticket.otp || "",
                 customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                type: "venue",
               });
               attachments.push(fallbackPdf);
             }
@@ -459,11 +464,9 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 booking_date: date,
                 attachments,
                 workspaceId: venue.workspace_id,
-                phone: phone,
+                phone: pawapayDepositId ? undefined : phone,
                 isVenue: true,
-                totalPaid: Number(
-                  paymentDetails?.convertedAmount || paymentDetails?.amount || total,
-                ),
+                totalPaid: Number(finalTotalPaid || total),
               } as any,
             });
             toast.success("Booking confirmed and tickets emailed!");
@@ -521,35 +524,99 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
   if (isPollingPawaPay) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
-        <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
-        <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-        <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-          We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-          payment.
-        </p>
-        <div className="flex gap-2 mb-8 justify-center">
-          <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-          <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
-          <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
-        </div>
-        <Button
-          variant="outline"
-          onClick={async () => {
-            setIsPollingPawaPay(false);
-            if (pawapayDepositId) {
-              try {
-                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-              } catch (e) {
-                console.error("Cancel cleanup failed:", e);
-              }
+      <CheckYourPhone
+        onCancel={async () => {
+          setIsPollingPawaPay(false);
+          if (pawapayDepositId) {
+            try {
+              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+            } catch (e) {
+              console.error("Cancel cleanup failed:", e);
             }
-          }}
-          className="rounded-2xl h-12 px-8"
-        >
-          Cancel Payment
-        </Button>
-      </div>
+          }
+        }}
+      />
+    );
+  }
+
+  if (isGenerating && issuedTickets.length > 0) {
+    return (
+      <>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 pb-32">
+          <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 mx-auto" />
+          <h1 className="text-2xl font-bold mb-3">Generating Your Tickets...</h1>
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            Please wait while we prepare your tickets. This will only take a moment.
+            <br />
+            <br />
+            <strong className="text-foreground">
+              Processing... Please don't close this window!
+            </strong>
+          </p>
+        </div>
+        {/* Hidden Ticket Renderer so html-to-image can find it */}
+        {venueProject && (
+          <div
+            className="absolute -z-50 pointer-events-none"
+            style={{ top: "-9999px", left: "-9999px" }}
+          >
+            {issuedTickets.map((t) => (
+              <div
+                key={t.id}
+                id={`ticket-render-${t.id}`}
+                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+              >
+                <TicketPreview
+                  template={venueProject.template}
+                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+                  tier={t.tier}
+                  title={venue.name}
+                  subtitle={venue.address || t.attendee_name || name}
+                  date={date}
+                  time="Opening Hours"
+                  seat={t.attendee_name || name || "General"}
+                  price={
+                    t.tier === "Standard Entry"
+                      ? venue?.entrance_fee?.toString() || "0"
+                      : venue.pricing_tiers
+                          ?.find((pt: any) => pt.name === t.tier)
+                          ?.amount?.toString() || total.toString()
+                  }
+                  currency={venue.currency}
+                  cover={venueProject.coverImage || ""}
+                  logoText={venueProject.logoText || "Agatike"}
+                  logoImage={venueProject.logoImage}
+                  logoScale={Number(venueProject.logoScale || 24)}
+                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+                  logoColorMode={venueProject.logoColorMode || "original"}
+                  orderId={t.otp}
+                  qrValue={`${window.location.origin}/v/${t.otp}`}
+                  previewMode="Front"
+                  layout={
+                    venueProject.design_overrides?.layout || {
+                      titleSize: 30,
+                      subtitleSize: 14,
+                      metaSize: 11,
+                      titleAlign: "left",
+                      titleOffsetY: 0,
+                      subtitleOffsetY: 0,
+                      metaOffsetY: 0,
+                    }
+                  }
+                  back={
+                    venueProject.design_overrides?.back || {
+                      backText: "",
+                      backImage: "",
+                      backImageOpacity: 0.1,
+                    }
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </>
     );
   }
 
@@ -1102,7 +1169,13 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                 date={date}
                 time="Opening Hours"
                 seat={t.attendee_name || name || "General"}
-                price={total.toString()}
+                price={
+                  t.tier === "Standard Entry"
+                    ? venue?.entrance_fee?.toString() || "0"
+                    : venue.pricing_tiers
+                        ?.find((pt: any) => pt.name === t.tier)
+                        ?.amount?.toString() || total.toString()
+                }
                 currency={venue.currency}
                 cover={venueProject.coverImage || ""}
                 logoText={venueProject.logoText || "Agatike"}

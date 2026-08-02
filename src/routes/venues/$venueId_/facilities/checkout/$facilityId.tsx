@@ -28,6 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 import { PaymentModal } from "@/components/shared/PaymentModal";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import {
   initiatePawaPayDeposit,
   getPawaPayDepositStatus,
@@ -41,16 +42,11 @@ import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { getWorkspaceTicketProjects } from "@/api/events";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { Ticket, Plus, Minus } from "lucide-react";
+import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
 
 export const Route = createFileRoute("/venues/$venueId_/facilities/checkout/$facilityId")({
   beforeLoad: async ({ location }) => {
     const session = await getUserSession();
-    if (!session) {
-      throw redirect({
-        to: "/signin",
-        search: { redirect: location.href } as any,
-      });
-    }
     return { session };
   },
   loader: async ({ params }) => {
@@ -118,6 +114,7 @@ function FacilityCheckoutPage() {
   const [email, setEmail] = useState(session?.email || "");
   const [phone, setPhone] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Payment State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -322,8 +319,37 @@ function FacilityCheckoutPage() {
     dailyRate,
     isActivity,
     perSessionRate,
-    durationMinutes,
   ]);
+
+  const sendEmail = async (bRef: string, atts?: any[]) => {
+    try {
+      const dateRangeStr = date?.from
+        ? date.to
+          ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+          : format(date.from, "LLL dd, y")
+        : "";
+      const timeRangeStr =
+        isSharedAccess || selectedSlots.length === 0
+          ? "Full Day"
+          : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
+      await sendVenueBookingEmail({
+        data: {
+          to: email,
+          customerName: name,
+          facilityName: facility?.name || "Facility",
+          venueName: venue.name,
+          venueLocation: venue.address || venue.city || "Venue Location",
+          dateRange: dateRangeStr,
+          timeRange: timeRangeStr,
+          bookingRef: bRef,
+          attachments: atts,
+        },
+      } as any);
+    } catch (e) {
+      console.error("Failed to send booking confirmation email:", e);
+    }
+  };
 
   const sendSmsAlert = async (bRef: string) => {
     try {
@@ -448,35 +474,6 @@ function FacilityCheckoutPage() {
       }
       queryClient.invalidateQueries({ queryKey: ["venue_bookings", venueId] });
 
-      const sendEmail = async (bRef: string) => {
-        try {
-          const dateRangeStr = date?.from
-            ? date.to
-              ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
-              : format(date.from, "LLL dd, y")
-            : "";
-          const timeRangeStr =
-            isSharedAccess || selectedSlots.length === 0
-              ? "Full Day"
-              : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
-
-          await sendVenueBookingEmail({
-            data: {
-              to: email,
-              customerName: name,
-              facilityName: facility?.name || "Facility",
-              venueName: venue.name,
-              venueLocation: venue.address || venue.city || "Venue Location",
-              dateRange: dateRangeStr,
-              timeRange: timeRangeStr,
-              bookingRef: bRef,
-            },
-          } as any);
-        } catch (e) {
-          console.error("Failed to send booking confirmation email:", e);
-        }
-      };
-
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);
@@ -484,11 +481,11 @@ function FacilityCheckoutPage() {
         return;
       }
 
-      if (isSharedAccess && td?.issued && td.issued.length > 0) {
+      if (td?.issued && td.issued.length > 0) {
         setIsGenerating(true);
       } else {
         setIsSuccess(true);
-        await sendSmsAlert(data.bookingRef || bookingRef);
+        if (!data.isPawaPay) await sendSmsAlert(data.bookingRef || bookingRef);
         await sendEmail(data.bookingRef || bookingRef);
       }
     },
@@ -508,7 +505,7 @@ function FacilityCheckoutPage() {
           res?.status?.toLowerCase() === "success"
         ) {
           setIsPollingPawaPay(false);
-          if (isSharedAccess && issuedTickets.length > 0) {
+          if (issuedTickets.length > 0) {
             setIsGenerating(true);
           } else {
             setIsSuccess(true);
@@ -521,8 +518,6 @@ function FacilityCheckoutPage() {
               isSharedAccess || selectedSlots.length === 0
                 ? "Full Day"
                 : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
-
-            await sendSmsAlert(bookingRef);
 
             await sendVenueBookingEmail({
               data: {
@@ -568,7 +563,7 @@ function FacilityCheckoutPage() {
         try {
           const attachments = [];
 
-          const coverUrl = venueProject.coverImage;
+          const coverUrl = venueProject?.coverImage;
           if (coverUrl) {
             await new Promise<void>((resolve) => {
               const img = new Image();
@@ -618,26 +613,34 @@ function FacilityCheckoutPage() {
             }
           } else {
             for (const ticket of issuedTickets) {
+              const dateRangeStr = date?.from
+                ? date.to
+                  ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}`
+                  : format(date.from, "LLL dd, y")
+                : "";
+              const timeRangeStr =
+                isSharedAccess || selectedSlots.length === 0
+                  ? "Full Day"
+                  : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+
               const fallbackPdf = await generateFallbackReceipt({
-                entityName: venue?.name || "Event/Venue",
+                entityName: facility?.name || "Facility",
                 ticket,
                 bookingRef: ticket.booking_ref || bookingRef,
                 customerName: name,
+                type: "facility",
+                dateStr: dateRangeStr,
+                timeStr: timeRangeStr,
+                locationStr: venue?.name || "Venue",
+                tierName: ticket.tier || "Facility Access",
               });
               attachments.push(fallbackPdf);
             }
           }
 
           if (attachments.length > 0 && email) {
-            await sendTicketsEmail({
-              data: {
-                to: email,
-                customerName: name,
-                venueName: venue.name || "the Venue",
-                attachments,
-              } as any,
-            });
-            await sendSmsAlert(bookingRef);
+            await sendEmail(bookingRef, attachments);
+            if (!pawapayDepositId) await sendSmsAlert(bookingRef);
 
             toast.success("Booking confirmed and tickets emailed!");
           } else {
@@ -694,6 +697,20 @@ function FacilityCheckoutPage() {
       }
     }
 
+    if (!session && !isAuthModalOpen) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    if (totalAmount > 0) {
+      setIsPaymentModalOpen(true);
+    } else {
+      bookingMutation.mutate(undefined);
+    }
+  };
+
+  const handleContinueAsGuest = () => {
+    setIsAuthModalOpen(false);
     if (totalAmount > 0) {
       setIsPaymentModalOpen(true);
     } else {
@@ -741,7 +758,6 @@ function FacilityCheckoutPage() {
             Return to Venue
           </Button>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -1190,36 +1206,28 @@ function FacilityCheckoutPage() {
       />
 
       {isPollingPawaPay && (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
-          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-          <p className="text-muted-foreground mb-8 max-w-sm">
-            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-            payment.
-          </p>
-          <div className="flex gap-2 mb-8 justify-center">
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
-          </div>
-          <Button
-            variant="outline"
-            className="rounded-xl h-12 px-8"
-            onClick={async () => {
-              setIsPollingPawaPay(false);
-              if (pawapayDepositId) {
-                try {
-                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                } catch (e) {
-                  console.error("Cancel cleanup failed:", e);
-                }
+        <CheckYourPhone
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
               }
-            }}
-          >
-            Cancel Payment
-          </Button>
-        </div>
+            }
+          }}
+        />
       )}
+
+      <AuthSuggestionModal
+        isOpen={isAuthModalOpen}
+        onOpenChange={setIsAuthModalOpen}
+        onSkip={handleContinueAsGuest}
+        redirectPath={
+          typeof window !== "undefined" ? window.location.pathname + window.location.search : ""
+        }
+      />
 
       <Footer />
       {isGenerating && issuedTickets.length > 0 && venueProject && (
@@ -1240,7 +1248,13 @@ function FacilityCheckoutPage() {
                 date={date?.from ? format(date.from, "LLL dd, yyyy") : ""}
                 time="Full Day Access"
                 seat={name || "General"}
-                price={totalAmount.toString()}
+                price={
+                  ticket.tier === "Standard Entry"
+                    ? venue?.entrance_fee?.toString() || "0"
+                    : venue.pricing_tiers
+                        ?.find((pt: any) => pt.name === ticket.tier)
+                        ?.amount?.toString() || totalAmount.toString()
+                }
                 currency={currency}
                 cover={venueProject.coverImage || ""}
                 logoText={venueProject.logoText || "Agatike"}
@@ -1264,10 +1278,9 @@ function FacilityCheckoutPage() {
                 }
                 back={
                   venueProject.design_overrides?.back || {
-                    showQr: true,
-                    showBarcode: false,
-                    showTerms: true,
-                    termsText: venueProject.terms || "Standard venue terms apply.",
+                    backText: "",
+                    backImage: "",
+                    backImageOpacity: 0.1,
                   }
                 }
               />

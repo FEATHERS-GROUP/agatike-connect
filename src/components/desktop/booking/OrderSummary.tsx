@@ -108,7 +108,10 @@ export function OrderSummary({
             const parts = cartKey.split("_");
             const productId = parts[1];
             const variantInfo = parts.slice(2).join(" · ");
-            const merch = eventProducts.find((p: any) => p.id === productId);
+            let merch = eventProducts.find((p: any) => String(p.id) === productId);
+            if (!merch && event?.merchandises) {
+              merch = event.merchandises.find((m: any) => String(m.id) === productId);
+            }
             const lineTotal = merch ? parseFloat(merch.price || 0) * qty : 0;
             return (
               <div key={cartKey} className="flex justify-between items-start">

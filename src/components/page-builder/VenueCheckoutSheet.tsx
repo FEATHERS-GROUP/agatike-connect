@@ -18,6 +18,8 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
 import { useState, useEffect } from "react";
@@ -505,47 +507,19 @@ export function VenueCheckoutSheet({
         <SheetTitle className="sr-only">Checkout</SheetTitle>
 
         {isPollingPawaPay ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
-            <Smartphone
-              className="h-16 w-16 mb-6 animate-pulse"
-              style={{ color: "var(--primary)" }}
-            />
-            <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-              We've sent a payment request to your mobile number. Please enter your PIN to confirm
-              the payment.
-            </p>
-            <div className="flex gap-2 mb-8 justify-center">
-              <div
-                className="h-2 w-2 rounded-full animate-bounce"
-                style={{ backgroundColor: "var(--primary)" }}
-              />
-              <div
-                className="h-2 w-2 rounded-full animate-bounce delay-75"
-                style={{ backgroundColor: "var(--primary)" }}
-              />
-              <div
-                className="h-2 w-2 rounded-full animate-bounce delay-150"
-                style={{ backgroundColor: "var(--primary)" }}
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                setIsPollingPawaPay(false);
-                if (pawapayDepositId) {
-                  try {
-                    await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                  } catch (e) {
-                    console.error("Cancel cleanup failed:", e);
-                  }
+          <CheckYourPhone
+            themeColor={themeColor}
+            onCancel={async () => {
+              setIsPollingPawaPay(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
                 }
-              }}
-              className="rounded-2xl h-12 px-8"
-            >
-              Cancel Payment
-            </Button>
-          </div>
+              }
+            }}
+          />
         ) : isSuccess ? (
           <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 min-h-screen">
             <div className="bg-card p-12 rounded-3xl shadow-xl text-center max-w-md w-full border border-border/50">

@@ -6,10 +6,11 @@ import {
   Calendar,
   CheckCircle2,
   Ticket,
-  Clock,
   Smartphone,
   Loader2,
 } from "lucide-react";
+import { ChevronLeft, Calendar, Clock, Tag, Minus, Plus } from "lucide-react";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -392,6 +393,11 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
                 ticket,
                 bookingRef: ticket.otp,
                 customerName: ticket.attendee?.firstName || "Guest",
+                type: "movie",
+                dateStr: selectedDate || "",
+                timeStr: currentSchedule?.start_time || "",
+                locationStr: cinema?.name || "",
+                tierName: ticket.tierName,
               });
               attachments.push(fallbackPdf);
             }
@@ -513,35 +519,18 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
         <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-          <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
-          <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-            We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-            payment.
-          </p>
-          <div className="flex gap-2 mb-8 justify-center">
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
-          </div>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              setIsPollingPawaPay(false);
-              if (pawapayDepositId) {
-                try {
-                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                } catch (e) {
-                  console.error("Cancel cleanup failed:", e);
-                }
+        <CheckYourPhone
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
               }
-            }}
-            className="rounded-2xl h-12 px-8"
-          >
-            Cancel Payment
-          </Button>
-        </main>
+            }
+          }}
+        />
         <Footer />
       </div>
     );

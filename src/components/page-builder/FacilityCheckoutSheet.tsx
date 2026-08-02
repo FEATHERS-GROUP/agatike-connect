@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/site/Navbar";
 import { formatCurrency } from "@/lib/currency";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { toast } from "sonner";
 import { format, isBefore, startOfDay, addDays } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -1222,47 +1223,19 @@ export function FacilityCheckoutSheet({
         />
 
         {isPollingPawaPay && (
-          <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-            <Smartphone
-              className="h-16 w-16 mb-6 animate-pulse"
-              style={{ color: "var(--primary)" }}
-            />
-            <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-            <p className="text-muted-foreground mb-8 max-w-sm">
-              We've sent a payment request to your mobile number. Please enter your PIN to confirm
-              the payment.
-            </p>
-            <div className="flex gap-2 mb-8 justify-center">
-              <div
-                className="h-2 w-2 rounded-full animate-bounce"
-                style={{ backgroundColor: "var(--primary)" }}
-              />
-              <div
-                className="h-2 w-2 rounded-full animate-bounce delay-75"
-                style={{ backgroundColor: "var(--primary)" }}
-              />
-              <div
-                className="h-2 w-2 rounded-full animate-bounce delay-150"
-                style={{ backgroundColor: "var(--primary)" }}
-              />
-            </div>
-            <Button
-              variant="outline"
-              className="rounded-xl h-12 px-8"
-              onClick={async () => {
-                setIsPollingPawaPay(false);
-                if (pawapayDepositId) {
-                  try {
-                    await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                  } catch (e) {
-                    console.error("Cancel cleanup failed:", e);
-                  }
+          <CheckYourPhone
+            themeColor={themeColor || "var(--primary)"}
+            onCancel={async () => {
+              setIsPollingPawaPay(false);
+              if (pawapayDepositId) {
+                try {
+                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                } catch (e) {
+                  console.error("Cancel cleanup failed:", e);
                 }
-              }}
-            >
-              Cancel Payment
-            </Button>
-          </div>
+              }
+            }}
+          />
         )}
 
         {isGenerating && issuedTickets.length > 0 && venueProject && (

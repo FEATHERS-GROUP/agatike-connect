@@ -101,8 +101,8 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-[100] md:hidden">
-      <div className="bg-card text-card-foreground shadow-2xl border border-border/60 rounded-2xl p-4 flex items-start gap-4 animate-in slide-in-from-bottom-8 duration-500">
+    <div className="fixed bottom-20 left-0 right-0 z-[100] md:hidden flex justify-center px-4 pointer-events-none">
+      <div className="bg-card text-card-foreground shadow-2xl border border-border/60 rounded-2xl p-4 flex items-start gap-4 animate-in slide-in-from-bottom-8 duration-500 w-full max-w-sm pointer-events-auto mx-auto">
         <div className="bg-primary/10 p-3 rounded-2xl flex-shrink-0">
           <img src="/icon.svg" alt="Agatike Logo" className="w-8 h-8 object-contain rounded" />
         </div>

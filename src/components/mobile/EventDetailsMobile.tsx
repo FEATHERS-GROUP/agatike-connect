@@ -296,6 +296,7 @@ export function EventDetailsMobile({
         setSelectedStopIdx={d.setSelectedStopIdx}
         hasSelectedStop={d.hasSelectedStop}
         setHasSelectedStop={d.setHasSelectedStop}
+        activeMerch={d.activeMerch}
         isTicketsExpanded={isTicketsExpanded}
         setIsTicketsExpanded={setIsTicketsExpanded}
         isSeatModalOpen={d.isSeatModalOpen}

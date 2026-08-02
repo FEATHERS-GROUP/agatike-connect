@@ -14,12 +14,41 @@ export function EditorCanvas({
   updateComponent,
   removeComponent,
   moveComponent,
+  zoomLevel,
+  selectedElementId,
+  setSelectedElementId,
 }: any) {
   return (
-    <div className="w-full max-w-6xl mx-auto flex-1 min-w-0 mb-24 transition-all duration-300 group/canvas">
-      <div className="bg-background border border-border/40 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5 flex flex-col">
+    <div
+      className="w-full max-w-6xl mx-auto flex-1 min-w-0 mb-24 transition-all duration-300 group/canvas origin-top"
+      style={{ transform: `scale(${zoomLevel / 100})` }}
+      onClick={() => setSelectedElementId("page")}
+    >
+      <div
+        className={`border rounded-2xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col transition-all min-h-[800px] ${
+          selectedElementId === "page"
+            ? "ring-2 ring-primary border-primary"
+            : "border-border/40 ring-1 ring-black/5"
+        }`}
+        style={
+          {
+            "--primary": editorState.themeColor || "#000000",
+            "--primary-foreground": "#fff",
+            "--custom-theme-color": editorState.themeColor || "#000000",
+            fontFamily: `'${editorState.fontFamily || "Inter"}', sans-serif`,
+            backgroundColor: editorState.pageBackgroundColor || "#ffffff",
+            backgroundImage: editorState.pageBackgroundImageUrl
+              ? `url(${editorState.pageBackgroundImageUrl})`
+              : "none",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+            color: editorState.pageTextColor || "#000000",
+          } as React.CSSProperties
+        }
+      >
         {/* Browser Mockup Top Bar */}
-        <div className="bg-secondary/40 border-b border-border/40 px-4 py-3 flex items-center gap-4">
+        <div className="bg-background border-b border-border/40 px-4 py-3 flex items-center gap-4">
           <div className="flex gap-2 shrink-0">
             <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm" />
             <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm" />
@@ -36,14 +65,58 @@ export function EditorCanvas({
 
         {/* Solid Navbar Style */}
         {editorState.navbarStyle === "solid" &&
-          editorState.logoUrl &&
-          editorState.logoPosition === "navbar" && (
-            <div className="w-full bg-background border-b border-border/40 p-4 px-8 z-10 flex items-center">
-              <img
-                src={editorState.logoUrl}
-                alt="Logo"
-                className="h-8 max-w-[150px] object-contain"
-              />
+          (editorState.logoPosition === "navbar" || editorState.navbarBackgroundColor) && (
+            <div
+              className={`w-full border-b border-border/40 p-4 px-8 z-10 flex items-center ${
+                editorState.navbarAlignment === "center"
+                  ? "justify-between relative"
+                  : "justify-between"
+              }`}
+              style={{
+                backgroundColor: editorState.navbarBackgroundColor || "var(--background)",
+              }}
+            >
+              <div className="flex items-center z-10">
+                {editorState.logoPosition === "navbar" && editorState.logoUrl ? (
+                  <img
+                    src={editorState.logoUrl}
+                    alt="Logo"
+                    className="h-8 max-w-[150px] object-contain"
+                  />
+                ) : (
+                  editorState.logoPosition === "navbar" && (
+                    <div
+                      className="font-bold text-lg truncate max-w-[150px]"
+                      style={{ color: editorState.navbarTextColor || "inherit" }}
+                    >
+                      Site Title
+                    </div>
+                  )
+                )}
+              </div>
+
+              <div
+                className={`hidden md:flex items-center gap-4 z-10 ${
+                  editorState.navbarAlignment === "center"
+                    ? "absolute left-1/2 -translate-x-1/2"
+                    : editorState.navbarAlignment === "left"
+                      ? "flex-1 ml-6 justify-start"
+                      : "flex-1 justify-end"
+                }`}
+              >
+                <div
+                  className="h-1.5 w-12 rounded-full opacity-30"
+                  style={{ backgroundColor: editorState.navbarTextColor || "currentColor" }}
+                />
+                <div
+                  className="h-1.5 w-16 rounded-full opacity-30"
+                  style={{ backgroundColor: editorState.navbarTextColor || "currentColor" }}
+                />
+                <div
+                  className="h-1.5 w-10 rounded-full opacity-30"
+                  style={{ backgroundColor: editorState.navbarTextColor || "currentColor" }}
+                />
+              </div>
             </div>
           )}
 
@@ -359,7 +432,7 @@ export function EditorCanvas({
         </div>
 
         {/* Components */}
-        <div className="p-5 space-y-4">
+        <div className="py-5 px-10 space-y-4">
           {editorState.components.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-xl">
               <Plus className="h-8 w-8 mb-2 opacity-40" />
@@ -382,6 +455,8 @@ export function EditorCanvas({
               canMoveDown={idx < editorState.components.length - 1}
               eventId={undefined}
               themeColor={editorState.themeColor}
+              selectedElementId={selectedElementId}
+              setSelectedElementId={setSelectedElementId}
             />
           ))}
         </div>

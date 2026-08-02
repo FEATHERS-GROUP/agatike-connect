@@ -13,7 +13,11 @@ import {
   CalendarDays,
   User,
   Tag,
+  Plus,
+  Minus,
+  Info,
 } from "lucide-react";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { useState, useEffect, useMemo } from "react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
@@ -251,7 +255,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   };
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
-    console.log("BookingMobile Cart entry:", { key, qty });
     if (qty <= 0) return sum;
     if (key.startsWith("merch_")) {
       const id = key.split("_")[1];
@@ -259,14 +262,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       if (!merch && event?.merchandises) {
         merch = event.merchandises.find((m: any) => String(m.id) === id);
       }
-      console.log("BookingMobile Merch found:", merch, "price:", merch?.price, "qty:", qty);
       return sum + (merch ? parseFloat(merch.price || 0) * qty : 0);
     }
     const [, tierId] = key.split("_");
     const tier = getTierDetails(tierId);
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
   }, 0);
-  console.log("BookingMobile Calculated total:", total);
 
   // SEATING LOGIC
   const activeStopIndices = useMemo(() => {
@@ -646,9 +647,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   ticket,
                   bookingRef: ticket.otp,
                   customerName: ticket.attendee?.firstName || "Guest",
-                  dateStr: stop?.date || "TBD",
-                  timeStr: stop?.time || "TBD",
-                  locationStr: stop?.city || "TBD",
+                  type: "event",
+                  dateStr: stop?.date || "",
+                  timeStr: stop?.time || "",
+                  locationStr: stop?.city || "",
                   durationStr: event?.duration || "",
                   tierName: ticket.tier,
                   quantity: 1,
@@ -664,9 +666,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 ticket,
                 bookingRef: ticket.otp,
                 customerName: ticket.attendee?.firstName || "Guest",
-                dateStr: stop?.date || "TBD",
-                timeStr: stop?.time || "TBD",
-                locationStr: stop?.city || "TBD",
+                type: "event",
+                dateStr: stop?.date || "",
+                timeStr: stop?.time || "",
+                locationStr: stop?.city || "",
                 durationStr: event?.duration || "",
                 tierName: ticket.tier,
                 quantity: 1,
@@ -813,35 +816,18 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   if (isPollingPawaPay) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <Smartphone className="h-16 w-16 text-primary mb-6 animate-pulse" />
-        <h1 className="text-2xl font-bold mb-3">Check Your Phone</h1>
-        <p className="text-muted-foreground mb-8 max-w-sm">
-          We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-          payment.
-        </p>
-        <div className="flex gap-2 mb-8">
-          <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-          <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-75" />
-          <div className="h-2 w-2 rounded-full bg-primary animate-bounce delay-150" />
-        </div>
-        <Button
-          variant="outline"
-          onClick={async () => {
-            setIsPollingPawaPay(false);
-            if (pawapayDepositId) {
-              try {
-                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-              } catch (e) {
-                console.error("Cancel cleanup failed:", e);
-              }
+      <CheckYourPhone
+        onCancel={async () => {
+          setIsPollingPawaPay(false);
+          if (pawapayDepositId) {
+            try {
+              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+            } catch (e) {
+              console.error("Cancel cleanup failed:", e);
             }
-          }}
-          className="rounded-2xl h-12 px-8"
-        >
-          Cancel Payment
-        </Button>
-      </div>
+          }
+        }}
+      />
     );
   }
 
@@ -1018,7 +1004,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 const parts = cartKey.split("_");
                 const productId = parts[1];
                 const variantInfo = parts.slice(2).join(" · ");
-                const merch = eventProducts.find((p: any) => p.id === productId);
+                let merch = eventProducts.find((p: any) => String(p.id) === productId);
+                if (!merch && event?.merchandises) {
+                  merch = event.merchandises.find((m: any) => String(m.id) === productId);
+                }
                 const lineTotal = merch ? parseFloat(merch.price || 0) * qty : 0;
                 return (
                   <div key={cartKey} className="flex justify-between items-start text-sm">

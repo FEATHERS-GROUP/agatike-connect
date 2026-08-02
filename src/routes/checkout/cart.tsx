@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle, ShoppingCart } from "lucide-react";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import {
@@ -222,50 +223,20 @@ export function CartCheckoutPage() {
 
   if (isPollingPawaPay) {
     return (
-      <div
-        className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background p-6 text-center"
-        style={{ fontFamily: `${fontFamily}, sans-serif` }}
-      >
-        <Smartphone
-          className="h-20 w-20 text-primary mb-8 animate-pulse"
-          style={{ color: themeColor }}
-        />
-        <h1 className="text-3xl font-bold mb-4">Check Your Phone</h1>
-        <p className="text-lg text-muted-foreground mb-10 max-w-sm mx-auto">
-          We've sent a payment request to your mobile number. Please enter your PIN to confirm the
-          payment of <strong>RWF {(actualCharge || cartTotal).toLocaleString()}</strong>.
-        </p>
-        <div className="flex gap-3 mb-10 justify-center">
-          <div
-            className="h-3 w-3 rounded-full animate-bounce"
-            style={{ backgroundColor: themeColor }}
-          />
-          <div
-            className="h-3 w-3 rounded-full animate-bounce delay-75"
-            style={{ backgroundColor: themeColor }}
-          />
-          <div
-            className="h-3 w-3 rounded-full animate-bounce delay-150"
-            style={{ backgroundColor: themeColor }}
-          />
-        </div>
-        <Button
-          variant="outline"
-          onClick={async () => {
-            setIsPollingPawaPay(false);
-            if (pawapayDepositId) {
-              try {
-                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-              } catch (e) {
-                console.error("Cancel cleanup failed:", e);
-              }
+      <CheckYourPhone
+        amount={actualCharge || cartTotal}
+        themeColor={themeColor}
+        onCancel={async () => {
+          setIsPollingPawaPay(false);
+          if (pawapayDepositId) {
+            try {
+              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+            } catch (e) {
+              console.error("Cancel cleanup failed:", e);
             }
-          }}
-          className="rounded-2xl h-14 px-10 font-bold"
-        >
-          Cancel Payment
-        </Button>
-      </div>
+          }
+        }}
+      />
     );
   }
 
