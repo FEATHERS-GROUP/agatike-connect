@@ -990,6 +990,22 @@ This creates the full end-to-end funnel: **Page Builder → Public Page → Form
 
 **Database tables:** `workspace_pages`
 
+### Payment Checkout Integration (Page Builder & Forms)
+
+The Page Builder also supports a **Payment Button** block (`payment_button`), which allows organizers to create custom checkout flows linked to their workspace wallets.
+
+**Checkout Flow & Routing:**
+- If a Payment Button is configured to open a form in a "New Page", it navigates to the standalone public form route (`/f/$formId`).
+- To maintain the checkout context, the `RenderedPage` component passes all payment configurations (amount, label, workspace_id, color, slug) as **URL query parameters** (e.g., `?pay=1&amount=500&...`).
+- The standalone route (`src/routes/f/$formId.tsx`) detects `isPaymentMode` from the URL. It automatically swaps the generic "Submit" flow for a full **"Pay & Register"** checkout, reusing the `PaymentModal` and `CheckYourPhone` components.
+- The route dynamically fetches the original Page Builder landing page (`getWorkspacePageBySlug`) to inject a branded sticky header with the organizer's logo and a "Back to page" navigation link, ensuring a seamless user experience.
+
+**Idempotent PawaPay Webhooks:**
+Because Mobile Money payments involve background polling and delayed USSD approvals, the checkout relies on PawaPay webhooks (`/api/pawapay/deposits`).
+- To prevent duplicate form submissions, double-charging, or looping email receipts when PawaPay retries webhooks, the system uses a **database-level atomic lock**.
+- The webhook handler performs a single atomic `UPDATE wallet_transactions ... WHERE provider_reference = $ref AND status NOT IN ('completed', 'failed')`. 
+- By checking `affected_rows === 0`, it instantly detects if another concurrent webhook already processed the payment, discarding duplicates safely.
+
 ---
 
 ## 18. Attendees Page — Full Logic & Forms Integration
