@@ -119,6 +119,7 @@ export function ResizableSubElement({
       } ${className}`}
       style={{
         width: getValue('width') || defaultWidth,
+        maxWidth: '100%',
         height: getValue('height') || defaultHeight,
         padding: getValue('padding') ? `${getValue('padding')}px` : defaultPadding,
         alignSelf: getValue('alignment') === 'start' ? 'flex-start' : getValue('alignment') === 'end' ? 'flex-end' : 'center',

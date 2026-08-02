@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  GripVertical,
+  ArrowUp,
+  ArrowDown,
   Image as ImageIcon,
   Trash2,
   AlignLeft,
@@ -124,21 +125,39 @@ export function ComponentBlock({
         </>
       )}
       {/* Move / delete controls */}
-      <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute -left-6 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-20 bg-background/80 backdrop-blur-md border border-border/60 rounded-md p-1 shadow-sm">
         {canMoveUp && (
-          <button onClick={() => moveComponent(idx, -1)} className="p-0.5 hover:text-primary">
-            <GripVertical className="w-4 h-4 rotate-90" />
+          <button 
+            title="Move Up"
+            onClick={(e) => {
+              e.stopPropagation();
+              moveComponent(idx, -1);
+            }} 
+            className="p-1 hover:bg-secondary rounded-sm text-foreground hover:text-primary transition-colors"
+          >
+            <ArrowUp className="w-4 h-4" />
           </button>
         )}
         {canMoveDown && (
-          <button onClick={() => moveComponent(idx, 1)} className="p-0.5 hover:text-primary">
-            <GripVertical className="w-4 h-4 -rotate-90" />
+          <button 
+            title="Move Down"
+            onClick={(e) => {
+              e.stopPropagation();
+              moveComponent(idx, 1);
+            }} 
+            className="p-1 hover:bg-secondary rounded-sm text-foreground hover:text-primary transition-colors"
+          >
+            <ArrowDown className="w-4 h-4" />
           </button>
         )}
       </div>
       <button
-        onClick={() => removeComponent(idx)}
-        className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity text-destructive bg-background shadow-sm hover:bg-destructive/10 p-1.5 rounded-md z-10"
+        title="Delete Block"
+        onClick={(e) => {
+          e.stopPropagation();
+          removeComponent(idx);
+        }}
+        className="absolute right-3 top-3 text-destructive bg-background/80 backdrop-blur-md shadow-sm border border-border/60 hover:bg-destructive hover:text-destructive-foreground p-1.5 rounded-md z-20 transition-colors"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>

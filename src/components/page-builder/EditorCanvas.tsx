@@ -424,7 +424,7 @@ export function EditorCanvas({
         </div>
 
         {/* Components */}
-        <div className="p-5 space-y-4">
+        <div className="py-5 px-10 space-y-4">
           {editorState.components.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-xl">
               <Plus className="h-8 w-8 mb-2 opacity-40" />

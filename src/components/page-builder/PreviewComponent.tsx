@@ -170,7 +170,7 @@ export function PreviewComponent({
                 <div
                   className="border border-border/60 p-5 flex flex-col h-full w-full"
                   style={{
-                    backgroundColor: comp.cardBgColor || "var(--card)",
+                    backgroundColor: comp.backgroundColor || "var(--card)",
                     color: comp.cardTextColor || "inherit",
                   }}
                 >
