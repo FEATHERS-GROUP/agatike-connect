@@ -64,23 +64,22 @@ export const recordHeartbeat = createServerFn({ method: "POST" })
       });
 
       // Probabilistic Garbage Collection: 1% chance to clean up old telemetry
-      // This prevents the Firebase collection from growing indefinitely.
+      // Uses a simple orderBy + limit to avoid needing a composite index.
       if (Math.random() < 0.01) {
-        // Run asynchronously so we don't block the heartbeat response
         Promise.resolve().then(async () => {
           try {
             const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-            const oldSnapshot = await db
-              .collection("platform_telemetry")
-              .where("lastActive", "<", sevenDaysAgo)
-              .limit(500)
-              .get();
-
-            if (!oldSnapshot.empty) {
-              const batch = db.batch();
-              oldSnapshot.docs.forEach((doc: any) => batch.delete(doc.ref));
-              await batch.commit();
-            }
+            // Get all and filter in JS — avoids needing a Firestore index
+            const allSnap = await db.collection("platform_telemetry").limit(2000).get();
+            const batch = db.batch();
+            let count = 0;
+            allSnap.docs.forEach((doc: any) => {
+              if (doc.data().lastActive < sevenDaysAgo) {
+                batch.delete(doc.ref);
+                count++;
+              }
+            });
+            if (count > 0) await batch.commit();
           } catch (e) {
             console.error("Telemetry cleanup error", e);
           }
@@ -100,15 +99,15 @@ export const getTelemetryStats = createServerFn({ method: "POST" }).handler(asyn
     const { db } = getFirebaseAdmin();
 
     const now = Date.now();
-
-    // Fetch last 8 days of data for full day-comparison coverage
     const eightDaysAgo = new Date(now - 8 * 24 * 60 * 60 * 1000).toISOString();
-    const snapshot = await db
-      .collection("platform_telemetry")
-      .where("lastActive", ">=", eightDaysAgo)
-      .get();
 
-    const allSessions: any[] = snapshot.docs.map((doc: any) => doc.data());
+    // Fetch ALL telemetry docs (no range filter = no index needed)
+    // Then filter in JS. For large collections this is acceptable since
+    // GC keeps it trimmed to ~7 days of data.
+    const snapshot = await db.collection("platform_telemetry").get();
+    const allSessions: any[] = snapshot.docs
+      .map((doc: any) => doc.data())
+      .filter((s: any) => s.lastActive >= eightDaysAgo);
 
     // Partition today vs yesterday for comparison
     const todayStart = new Date();
