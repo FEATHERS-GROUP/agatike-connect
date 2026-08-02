@@ -281,21 +281,16 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   };
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
-    console.log("Cart entry:", { key, qty });
     if (qty <= 0) return sum;
     if (key.startsWith("merch_")) {
-      // key format: merch_<id>_<size?>_<color?>
-      const parts = key.split("_");
-      const id = parts[1];
+      const id = key.split("_")[1];
       const merch = activeMerch.find((m: any) => String(m.id) === id);
-      console.log("Merch found:", merch, "price:", merch?.price, "qty:", qty);
       return sum + (merch ? Number(merch.price || 0) * qty : 0);
     }
     const [, tierId] = key.split("_");
     const tier = allTicketTiers.find((t: any) => t.id === tierId);
     return sum + (tier ? Number(tier.price || 0) * qty : 0);
   }, 0);
-  console.log("Calculated total:", total);
 
   const totalTickets = Object.entries(cart).reduce((sum, [key, qty]) => {
     if (key.startsWith("merch_")) return sum; // don't count merch as tickets

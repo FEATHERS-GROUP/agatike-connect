@@ -252,7 +252,6 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   };
 
   const total = Object.entries(cart).reduce((sum, [key, qty]) => {
-    console.log("BookingDesktop Cart entry:", { key, qty });
     if (qty <= 0) return sum;
     if (key.startsWith("merch_")) {
       const id = key.split("_")[1];
@@ -260,14 +259,12 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       if (!merch && event?.merchandises) {
         merch = event.merchandises.find((m: any) => String(m.id) === id);
       }
-      console.log("BookingDesktop Merch found:", merch, "price:", merch?.price, "qty:", qty);
       return sum + (merch ? parseFloat(merch.price || 0) * qty : 0);
     }
     const [, tierId] = key.split("_");
     const tier = getTierDetails(tierId);
     return sum + (tier ? parseFloat(tier.cost || tier.price || 0) * qty : 0);
   }, 0);
-  console.log("BookingDesktop Calculated total:", total);
 
   // SEATING LOGIC
   const activeStopIndices = useMemo(() => {
