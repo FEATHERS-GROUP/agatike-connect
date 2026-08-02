@@ -40,7 +40,7 @@ export function EditorFloatingToolbar({ zoomLevel, setZoomLevel, activeWorkspace
           className="h-8 px-4 rounded-full bg-primary/10 text-primary hover:bg-primary/20 text-xs font-medium ml-1"
           asChild
         >
-          <Link to={`/dashboard/${activeWorkspace.slug}/billing`}>
+          <Link to="/dashboard/billing">
             Upgrade Plan
           </Link>
         </Button>
