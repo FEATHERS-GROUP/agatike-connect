@@ -17,10 +17,44 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { PaymentModal } from "@/components/shared/PaymentModal";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import { useEffect } from "react";
 
-export function EmbeddedForm({ formId }: { formId: string }) {
+export interface EmbeddedFormPaymentConfig {
+  amount: string | number;
+  label: string;
+  description?: string;
+  workspace_id: string;
+  theme_color?: string;
+  slug?: string;
+}
+
+export interface EmbeddedFormStyleConfig {
+  cardBgColor?: string;
+  cardTextColor?: string;
+  columns?: string | number;
+}
+
+export function EmbeddedForm({ 
+  formId, 
+  paymentConfig,
+  styleConfig
+}: { 
+  formId: string; 
+  paymentConfig?: EmbeddedFormPaymentConfig;
+  styleConfig?: EmbeddedFormStyleConfig;
+}) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  // Payment State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("MTN_MOMO_RWA");
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
 
   const isPreview = formId === "preview-id";
 
@@ -93,8 +127,65 @@ export function EmbeddedForm({ formId }: { formId: string }) {
       });
       return;
     }
-    mutation.mutate(formData);
+    
+    if (paymentConfig) {
+      setIsPaymentModalOpen(true);
+    } else {
+      mutation.mutate(formData);
+    }
   };
+
+  const doPayment = async (details: any) => {
+    setIsProcessingPayment(true);
+    try {
+      const pawaRes = await initiatePawaPayDeposit({
+        data: {
+          amount: Number(paymentConfig?.amount || 0),
+          phone: details.phone,
+          network: details.network,
+          currency: details.currency || "RWF",
+          type: `page_builder_checkout::${paymentConfig?.slug || "unknown"}`,
+          referenceId: crypto.randomUUID(),
+          workspaceId: paymentConfig?.workspace_id,
+          reason: paymentConfig?.label || "Page Payment",
+          shortfall: details.shortfall || 0,
+        },
+      } as any);
+
+      setPawapayDepositId(pawaRes.depositId);
+      setIsPollingPawaPay(true);
+      setIsPaymentModalOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || "Payment failed");
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isPollingPawaPay || !pawapayDepositId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await getPawaPayDepositStatus({ data: { depositId: pawapayDepositId } } as any);
+        if (
+          res?.status?.toLowerCase() === "completed" ||
+          res?.status?.toLowerCase() === "success"
+        ) {
+          setIsPollingPawaPay(false);
+          toast.success("Payment successful!");
+          mutation.mutate(formData); // Submit form after payment success
+        } else if (res?.status?.toLowerCase() === "failed") {
+          setIsPollingPawaPay(false);
+          toast.error("Mobile Money payment failed or was cancelled.");
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [isPollingPawaPay, pawapayDepositId]);
 
   const updateField = (id: string, value: any) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -132,6 +223,25 @@ export function EmbeddedForm({ formId }: { formId: string }) {
     );
   }
 
+  if (isPollingPawaPay) {
+    return (
+      <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
+        <CheckYourPhone
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
   if (isSubmitted) {
     return (
       <div className="p-12 bg-card rounded-2xl shadow-sm border border-border/60 text-center animate-in zoom-in-95 duration-500">
@@ -145,17 +255,34 @@ export function EmbeddedForm({ formId }: { formId: string }) {
   }
 
   return (
-    <div className="bg-card rounded-2xl shadow-sm border border-border/60 overflow-hidden relative">
-      <div className="p-6 border-b border-border/60 relative overflow-hidden bg-secondary/20">
-        <h3 className="text-2xl font-bold tracking-tight text-foreground">{form.title}</h3>
-        {form.description && (
-          <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap leading-relaxed">
-            {form.description}
+    <div 
+      className="bg-card rounded-2xl shadow-sm border border-border/60 overflow-hidden relative"
+      style={{ 
+        backgroundColor: styleConfig?.cardBgColor, 
+        color: styleConfig?.cardTextColor 
+      }}
+    >
+      <div 
+        className="p-6 border-b border-border/60 relative overflow-hidden bg-secondary/20"
+        style={{ backgroundColor: styleConfig?.cardBgColor ? 'rgba(0,0,0,0.05)' : undefined }}
+      >
+        <h3 className="text-2xl font-bold tracking-tight" style={{ color: styleConfig?.cardTextColor }}>
+          {paymentConfig?.label || form.title}
+        </h3>
+        {(paymentConfig?.description || form.description) && (
+          <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed opacity-90" style={{ color: styleConfig?.cardTextColor }}>
+            {paymentConfig?.description || form.description}
           </p>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      <form 
+        onSubmit={handleSubmit} 
+        className="p-6 grid gap-6"
+        style={{ 
+          gridTemplateColumns: `repeat(${styleConfig?.columns || 1}, minmax(0, 1fr))` 
+        }}
+      >
         {form.form_fields.map((field: any) => {
           const options = field.options || [];
 
@@ -347,18 +474,42 @@ export function EmbeddedForm({ formId }: { formId: string }) {
           );
         })}
 
-        <div className="pt-4 mt-4 border-t border-border/60">
+        <div className="pt-4 mt-4 border-t border-border/60" style={{ gridColumn: '1 / -1' }}>
           {!isPreview && !canCreateRsvp() ? (
             <div className="text-center p-3 bg-destructive/10 text-destructive rounded-lg text-sm font-semibold mb-4">
               This form has reached its maximum response capacity.
             </div>
           ) : (
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
-              {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Submit"}
+            <Button 
+              type="submit" 
+              className="w-full text-white shadow-lg" 
+              disabled={mutation.isPending || isProcessingPayment || isPollingPawaPay}
+              style={{ background: paymentConfig?.theme_color }}
+            >
+              {mutation.isPending || isProcessingPayment ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                paymentConfig?.label || "Submit"
+              )}
             </Button>
           )}
         </div>
       </form>
+
+      {paymentConfig && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onOpenChange={setIsPaymentModalOpen}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          isProcessing={isProcessingPayment}
+          isGenerating={false}
+          workspaceId={paymentConfig.workspace_id}
+          baseAmount={Number(paymentConfig.amount || 0)}
+          itemLabel={paymentConfig.label}
+          onProceed={doPayment}
+        />
+      )}
     </div>
   );
 }

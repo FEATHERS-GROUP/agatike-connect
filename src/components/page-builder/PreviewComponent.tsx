@@ -244,8 +244,13 @@ export function PreviewComponent({
     );
   }
 
-  if (comp.type === "form_link" && comp.content) {
-    let linkedForm = activeForms.find((f: any) => f.id === comp.content);
+  const isFormLink = comp.type === "form_link" && comp.content;
+  const isPaymentForm = comp.type === "payment_button" && comp.connectedFormId && comp.connectedFormId !== "none";
+
+  if (isFormLink || isPaymentForm) {
+    const targetFormId = isPaymentForm ? comp.connectedFormId : comp.content;
+    let linkedForm = activeForms.find((f: any) => f.id === targetFormId);
+
     if (!linkedForm) {
       linkedForm = {
         id: "preview-id",
@@ -255,13 +260,35 @@ export function PreviewComponent({
       };
     }
 
+    const paymentConfig = isPaymentForm ? {
+      amount: comp.amount,
+      label: comp.label || "Pay & Register",
+      description: comp.description,
+      workspace_id: "preview",
+      theme_color: themeColor,
+      slug: "preview"
+    } : undefined;
+
+    const embeddedFormProps = {
+      formId: linkedForm.id,
+      paymentConfig,
+      styleConfig: {
+        cardBgColor: comp.cardBgColor,
+        cardTextColor: comp.cardTextColor,
+        columns: comp.columns
+      }
+    };
+
     if (comp.design === "embedded") {
       return (
         <div className="w-full">
-          <EmbeddedForm formId={linkedForm.id} />
+          <EmbeddedForm {...embeddedFormProps} />
         </div>
       );
     }
+
+    const displayTitle = (isPaymentForm ? (comp.label || comp.title) : null) || linkedForm.title;
+    const displayDesc = (isPaymentForm ? comp.description : null) || linkedForm.description;
 
     if (comp.design === "button") {
       return (
@@ -270,7 +297,7 @@ export function PreviewComponent({
             className="rounded-full px-8 py-4 text-sm font-bold shadow-md text-white text-center cursor-pointer"
             style={{ backgroundColor: themeColor }}
           >
-            {linkedForm.title}
+            {displayTitle}
           </div>
         </div>
       );
@@ -302,13 +329,13 @@ export function PreviewComponent({
         )}
         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full">
           {wrap('form_title',
-            <h3 className="text-xl font-bold mb-2">{linkedForm.title}</h3>,
+            <h3 className="text-xl font-bold mb-2">{displayTitle}</h3>,
             "100%", "auto", "0px", "0px"
           )}
-          {linkedForm.description && (
+          {displayDesc && (
             wrap('form_desc',
               <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
-                {linkedForm.description}
+                {displayDesc}
               </p>,
               "100%", "auto", "0px", "0px"
             )
@@ -326,7 +353,7 @@ export function PreviewComponent({
     );
   }
 
-  if (comp.type === "payment_button") {
+  if (comp.type === "payment_button" && (!comp.connectedFormId || comp.connectedFormId === "none")) {
     return (
       <div className="flex flex-col items-center justify-center w-full px-4 py-6">
         {wrap('pay_button',

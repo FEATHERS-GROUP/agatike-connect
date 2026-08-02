@@ -196,24 +196,7 @@ export function RenderedPage({
     return () => clearInterval(intervalId);
   }, [isPollingPawaPay, pawapayDepositId]);
 
-  if (isPollingPawaPay) {
-    return (
-      <div className="min-h-screen bg-background text-foreground relative flex flex-col">
-        <CheckYourPhone
-          onCancel={async () => {
-            setIsPollingPawaPay(false);
-            if (pawapayDepositId) {
-              try {
-                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-              } catch (e) {
-                console.error("Cancel cleanup failed:", e);
-              }
-            }
-          }}
-        />
-      </div>
-    );
-  }
+  // isPollingPawaPay will be rendered as an overlay to prevent full page remounts
 
   if (isLoadingPage && !isPreview) {
     if (children) {
@@ -835,8 +818,12 @@ export function RenderedPage({
                       );
                     }
 
-                    if (comp.type === "form_link" && comp.content) {
-                      let linkedForm = activeForms.find((f: any) => f.id === comp.content);
+                    const isFormLink = comp.type === "form_link" && comp.content;
+                    const isPaymentForm = comp.type === "payment_button" && comp.connectedFormId && comp.connectedFormId !== "none";
+
+                    if (isFormLink || isPaymentForm) {
+                      const targetFormId = isPaymentForm ? comp.connectedFormId : comp.content;
+                      let linkedForm = activeForms.find((f: any) => f.id === targetFormId);
 
                       if (!linkedForm && isPreview) {
                         linkedForm = {
@@ -849,13 +836,37 @@ export function RenderedPage({
 
                       if (!linkedForm) return null;
 
+                      const paymentConfig = isPaymentForm ? {
+                        amount: comp.amount,
+                        label: comp.label || "Pay & Register",
+                        description: comp.description,
+                        workspace_id: workspace_id,
+                        theme_color: theme_color,
+                        slug: slug
+                      } : undefined;
+
+                      const embeddedFormProps = {
+                        formId: linkedForm.id,
+                        paymentConfig,
+                        styleConfig: {
+                          cardBgColor: comp.cardBgColor,
+                          cardTextColor: comp.cardTextColor,
+                          columns: comp.columns
+                        }
+                      };
+
                       if (comp.design === "embedded") {
                         return (
                           <div key={comp.id} className="w-full">
-                            <EmbeddedForm formId={linkedForm.id} />
+                            <EmbeddedForm {...embeddedFormProps} />
                           </div>
                         );
                       }
+
+                      const actualOpenAction = isPaymentForm && (comp.openAction === "page" || !comp.openAction) ? "modal" : (comp.openAction || "page");
+
+                      const displayTitle = (isPaymentForm ? (comp.label || comp.title) : null) || linkedForm.title;
+                      const displayDesc = (isPaymentForm ? comp.description : null) || linkedForm.description;
 
                       if (comp.design === "button") {
                         const buttonContent = (
@@ -864,13 +875,13 @@ export function RenderedPage({
                             className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer"
                             style={{ background: theme_color }}
                           >
-                            {linkedForm.title}{" "}
+                            {displayTitle}{" "}
                             <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
                           </Button>
                         );
 
                         let contentWrapper = buttonContent;
-                        if (comp.openAction === "modal") {
+                        if (actualOpenAction === "modal") {
                           contentWrapper = (
                             <Dialog>
                               <DialogTrigger asChild>{buttonContent}</DialogTrigger>
@@ -882,7 +893,7 @@ export function RenderedPage({
                               </DialogContent>
                             </Dialog>
                           );
-                        } else if (comp.openAction === "drawer") {
+                        } else if (actualOpenAction === "drawer") {
                           contentWrapper = (
                             <Sheet>
                               <SheetTrigger asChild>{buttonContent}</SheetTrigger>
@@ -948,14 +959,14 @@ export function RenderedPage({
                           <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full min-w-0">
                             {wrap('form_title',
                               <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors m-0 w-full">
-                                {linkedForm.title}
+                                {displayTitle}
                               </h3>,
                               "100%", "auto", "0px", "0px"
                             )}
-                            {linkedForm.description && (
+                            {displayDesc && (
                               wrap('form_desc',
                                 <p className="text-muted-foreground line-clamp-2 mb-4 w-full m-0">
-                                  {linkedForm.description}
+                                  {displayDesc}
                                 </p>,
                                 "100%", "auto", "0px", "0px"
                               )
@@ -973,7 +984,7 @@ export function RenderedPage({
                         </div>
                       );
 
-                      if (comp.openAction === "modal") {
+                      if (actualOpenAction === "modal") {
                         return (
                           <div key={comp.id} className="group">
                             <Dialog>
@@ -989,13 +1000,13 @@ export function RenderedPage({
                               <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
                                 <DialogTitle className="sr-only">Form</DialogTitle>
                                 <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
-                                  <EmbeddedForm formId={linkedForm.id} />
+                                  <EmbeddedForm {...embeddedFormProps} />
                                 </div>
                               </DialogContent>
                             </Dialog>
                           </div>
                         );
-                      } else if (comp.openAction === "drawer") {
+                      } else if (actualOpenAction === "drawer") {
                         return (
                           <div key={comp.id} className="group">
                             <Sheet>
@@ -1014,7 +1025,7 @@ export function RenderedPage({
                               >
                                 <SheetTitle className="sr-only">Form</SheetTitle>
                                 <div className="h-full relative bg-background">
-                                  <EmbeddedForm formId={linkedForm.id} />
+                                  <EmbeddedForm {...embeddedFormProps} />
                                 </div>
                               </SheetContent>
                             </Sheet>
@@ -1033,7 +1044,7 @@ export function RenderedPage({
                       }
                     }
 
-                    if (comp.type === "payment_button") {
+                    if (comp.type === "payment_button" && (!comp.connectedFormId || comp.connectedFormId === "none")) {
                       return (
                         <div key={comp.id} className="flex flex-col items-center justify-center w-full px-4 py-8">
                           {wrap('payment_btn',

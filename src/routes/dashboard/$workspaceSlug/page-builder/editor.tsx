@@ -426,10 +426,12 @@ function PageBuilder() {
                 selectedElementId={selectedElementId}
                 setSelectedElementId={setSelectedElementId}
               />
-              <EditorFloatingToolbar zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} activeWorkspace={activeWorkspace} />
             </>
           )}
         </div>
+        {!isLoadingPage && (
+          <EditorFloatingToolbar zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} activeWorkspace={activeWorkspace} />
+        )}
       </div>
 
       {/* Right Sidebar: Settings */}

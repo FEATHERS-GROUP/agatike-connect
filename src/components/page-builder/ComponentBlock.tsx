@@ -525,6 +525,89 @@ export function ComponentBlock({
                   className="w-full bg-background border border-border/60 rounded-md p-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[60px]"
                 />
               </div>
+              <div className="space-y-1 pt-2 border-t border-border/40">
+                <Label className="text-xs">Connect to Form (Optional)</Label>
+                <Select
+                  value={comp.connectedFormId || "none"}
+                  onValueChange={(val) => updateComponent(idx, "connectedFormId", val === "none" ? null : val)}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select a form to require completion before payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Form (Standalone Payment)</SelectItem>
+                    {forms?.map((f: any) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  If selected, the form will be displayed above the button. The payment will act as the form's submit action.
+                </p>
+                {comp.connectedFormId && comp.connectedFormId !== "none" && (
+                  <div className="space-y-3 pt-2 mt-2 border-t border-border/40">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-[1.5] space-y-1">
+                        <Label className="text-xs">Design</Label>
+                        <Select
+                          value={comp.design || "card"}
+                          onValueChange={(val) => updateComponent(idx, "design", val)}
+                        >
+                          <SelectTrigger className="bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="card">Large Card</SelectItem>
+                            <SelectItem value="button">Simple Button</SelectItem>
+                            <SelectItem value="embedded">Embedded Form</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {comp.design !== "embedded" && (
+                        <div className="flex-[1.5] space-y-1">
+                          <Label className="text-xs">Open In</Label>
+                          <Select
+                            value={comp.openAction || "page"}
+                            onValueChange={(val) => updateComponent(idx, "openAction", val)}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="page">New Page</SelectItem>
+                              <SelectItem value="modal">Popup Modal</SelectItem>
+                              <SelectItem value="drawer">Side Drawer</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                    {comp.design === "embedded" && (
+                      <div className="flex items-center flex-wrap gap-2 pt-2 mt-2">
+                        <Label className="text-[10px] text-muted-foreground w-full">Form Styling</Label>
+                        <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                          <Label className="text-[10px] text-muted-foreground cursor-pointer" htmlFor={`f2-bg-${idx}`}>Bg</Label>
+                          <Input id={`f2-bg-${idx}`} type="color" value={comp.cardBgColor || "#ffffff"} onChange={(e) => updateComponent(idx, "cardBgColor", e.target.value)} className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer" />
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                          <Label className="text-[10px] text-muted-foreground cursor-pointer" htmlFor={`f2-txt-${idx}`}>Text</Label>
+                          <Input id={`f2-txt-${idx}`} type="color" value={comp.cardTextColor || "#000000"} onChange={(e) => updateComponent(idx, "cardTextColor", e.target.value)} className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer" />
+                        </div>
+                        <Select value={comp.columns || "1"} onValueChange={(val) => updateComponent(idx, "columns", val)}>
+                          <SelectTrigger className="w-28 bg-background h-8 text-xs"><SelectValue placeholder="Columns" /></SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>{num} {num === 1 ? 'Column' : 'Columns'}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -726,6 +809,27 @@ export function ComponentBlock({
                     </p>
                     <p className="text-xs text-muted-foreground">Auto-generated card</p>
                   </div>
+                </div>
+              )}
+              {comp.design === "embedded" && (
+                <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-border/40 mt-2">
+                  <Label className="text-xs text-muted-foreground w-full">Form Styling</Label>
+                  <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                    <Label className="text-[10px] text-muted-foreground cursor-pointer" htmlFor={`f-bg-${idx}`}>Bg</Label>
+                    <Input id={`f-bg-${idx}`} type="color" value={comp.cardBgColor || "#ffffff"} onChange={(e) => updateComponent(idx, "cardBgColor", e.target.value)} className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer" />
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-background border border-border/60 rounded px-2 h-8">
+                    <Label className="text-[10px] text-muted-foreground cursor-pointer" htmlFor={`f-txt-${idx}`}>Text</Label>
+                    <Input id={`f-txt-${idx}`} type="color" value={comp.cardTextColor || "#000000"} onChange={(e) => updateComponent(idx, "cardTextColor", e.target.value)} className="w-5 h-5 p-0 border-0 bg-transparent cursor-pointer" />
+                  </div>
+                  <Select value={comp.columns || "1"} onValueChange={(val) => updateComponent(idx, "columns", val)}>
+                    <SelectTrigger className="w-28 bg-background h-8 text-xs"><SelectValue placeholder="Columns" /></SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>{num} {num === 1 ? 'Column' : 'Columns'}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </div>
