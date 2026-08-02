@@ -8,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
@@ -44,7 +46,28 @@ import {
   AlignHorizontalDistributeCenter,
   AlignVerticalDistributeCenter,
   Zap,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
+import React from "react";
+import { cn } from "@/lib/utils";
+
+const GOOGLE_FONTS = [
+  "Inter", "Roboto", "Open Sans", "Montserrat", "Lato", "Poppins", "Nunito", "Playfair Display",
+  "Merriweather", "Raleway", "Rubik", "Oswald", "Ubuntu", "PT Sans", "Work Sans", "Noto Sans",
+  "Quicksand", "Karla", "Lora", "Fira Sans", "Mulish", "Inconsolata", "Barlow", "Josefin Sans",
+  "Cabin", "Heebo", "Mukta", "Dosis", "Arimo", "Titillium Web", "PT Serif", "Bitter", "Anton",
+  "Hind", "Varela Round", "Assistant", "Oxygen", "Nanum Gothic", "Teko", "Abel", "Yanone Kaffeesatz",
+  "Signika", "Righteous", "Pacifico", "Dancing Script", "Bebas Neue", "Caveat", "Satisfy", "Courgette",
+  "Great Vibes", "Sacramento", "Play", "Questrial", "Asap", "Rokkitt", "Zilla Slab", "Crimson Text",
+  "Domine", "Cardo", "Alfa Slab One", "Cinzel", "Exo 2", "Rajdhani", "Jost", "Kanit", "Tauri",
+  "Sarabun", "Fjalla One", "Prompt", "Manrope", "Sen", "Spartan", "Syne", "Outfit", "Plus Jakarta Sans",
+  "DM Sans", "Be Vietnam Pro", "Public Sans", "Space Grotesk", "Space Mono", "JetBrains Mono",
+  "IBM Plex Sans", "IBM Plex Serif", "IBM Plex Mono", "Overpass", "Fira Code", "Blinker", "Literata",
+  "Merriweather Sans", "Source Sans Pro", "Source Serif Pro", "Source Code Pro", "Noto Serif",
+  "Slabo 27px", "Cormorant Garamond", "Libre Baskerville", "Playfair Display SC", "Vollkorn",
+  "Alegreya", "Alegreya Sans"
+];
 
 export function PageSettingsPanel({
   addComponent,
@@ -61,6 +84,7 @@ export function PageSettingsPanel({
   selectedElementId?: string | null;
   updateComponent?: (index: number, key: string, value: any) => void;
 }) {
+  const [openFontDropdown, setOpenFontDropdown] = React.useState(false);
   const parentId = selectedElementId?.split('__')[0];
   const subKey = selectedElementId?.split('__')[1] || "";
   const selectedIndex = editorState.components.findIndex((c: any) => c.id === parentId);
@@ -300,6 +324,60 @@ export function PageSettingsPanel({
                         </div>
                       </div>
                       <div id="typography-section" className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Font</span>
+                          <Popover open={openFontDropdown} onOpenChange={setOpenFontDropdown}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={openFontDropdown}
+                                className="h-7 w-[120px] justify-between text-xs bg-secondary/30 border-border/60 font-normal px-2"
+                              >
+                                {getVal("fontFamily") || "Inherit"}
+                                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[200px] p-0" align="end">
+                              <Command>
+                                <CommandInput placeholder="Search font..." className="h-8 text-xs" />
+                                <CommandList>
+                                  <CommandEmpty>No font found.</CommandEmpty>
+                                  <CommandGroup>
+                                    <ScrollArea className="h-48">
+                                      <CommandItem
+                                        value="inherit"
+                                        onSelect={() => {
+                                          updateSelected("fontFamily", "");
+                                          setOpenFontDropdown(false);
+                                        }}
+                                        className="text-xs"
+                                      >
+                                        <Check className={cn("mr-2 h-3 w-3", !getVal("fontFamily") ? "opacity-100" : "opacity-0")} />
+                                        Inherit
+                                      </CommandItem>
+                                      {GOOGLE_FONTS.map((font) => (
+                                        <CommandItem
+                                          key={font}
+                                          value={font}
+                                          onSelect={() => {
+                                            updateSelected("fontFamily", font);
+                                            setOpenFontDropdown(false);
+                                          }}
+                                          className="text-xs"
+                                          style={{ fontFamily: `'${font}', sans-serif` }}
+                                        >
+                                          <Check className={cn("mr-2 h-3 w-3", getVal("fontFamily") === font ? "opacity-100" : "opacity-0")} />
+                                          {font}
+                                        </CommandItem>
+                                      ))}
+                                    </ScrollArea>
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">Size (px)</span>
                           <Input 

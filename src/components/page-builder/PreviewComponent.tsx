@@ -127,7 +127,7 @@ export function PreviewComponent({
           ? "grid-cols-1 md:grid-cols-3"
           : "grid-cols-1 md:grid-cols-2";
     return (
-      <div className={`grid ${gridCols} gap-4 pointer-events-none`}>
+      <div className={`grid ${gridCols} gap-4`}>
         {comp.cards.map((card: any, idx: number) => {
           let linkedForm = activeForms.find((f: any) => f.id === card.formId);
           if (!linkedForm) {
@@ -148,40 +148,53 @@ export function PreviewComponent({
                     color: comp.cardTextColor || "inherit",
                   }}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-bold">{card.customTitle || linkedForm.title}</h3>
+                  <div className="flex items-start justify-between mb-3 w-full">
+                    {wrap(`card_${idx}_title`,
+                      <h3 className="text-xl font-bold">{card.customTitle || linkedForm.title}</h3>,
+                      "100%", "auto", "0px", "0px"
+                    )}
                     {linkedForm.cover_image_url && (
-                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 ml-3">
-                        <img
-                          src={linkedForm.cover_image_url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      wrap(`card_${idx}_image`,
+                        <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 ml-3">
+                          <img
+                            src={linkedForm.cover_image_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>,
+                        "48px", "48px", "0px", "8px"
+                      )
                     )}
                   </div>
                   {card.bulletPoints ? (
-                    <div
-                      className="prose prose-xs dark:prose-invert mb-6 flex-1 whitespace-pre-wrap"
-                      style={{ color: comp.cardTextColor || "var(--muted-foreground)" }}
-                    >
-                      {card.bulletPoints}
-                    </div>
+                    wrap(`card_${idx}_desc`,
+                      <div
+                        className="prose prose-xs dark:prose-invert mb-6 flex-1 whitespace-pre-wrap w-full"
+                      >
+                        {card.bulletPoints}
+                      </div>,
+                      "100%", "auto", "0px", "0px"
+                    )
                   ) : linkedForm.description ? (
-                    <p
-                      className="line-clamp-3 mb-6 flex-1 text-sm"
-                      style={{ color: comp.cardTextColor || "var(--muted-foreground)" }}
-                    >
-                      {linkedForm.description}
-                    </p>
+                    wrap(`card_${idx}_desc`,
+                      <p
+                        className="line-clamp-3 mb-6 flex-1 text-sm w-full"
+                      >
+                        {linkedForm.description}
+                      </p>,
+                      "100%", "auto", "0px", "0px"
+                    )
                   ) : (
                     <div className="flex-1" />
                   )}
-                  <div
-                    className="w-full rounded-full mt-auto py-2 text-center text-white text-sm font-medium"
-                  >
-                    {card.buttonLabel || "Register"}
-                  </div>
+                  {wrap(`card_${idx}_button`,
+                    <div
+                      className="w-full rounded-full py-2 text-center text-white text-sm font-medium mt-auto flex items-center justify-center"
+                    >
+                      {card.buttonLabel || "Register"}
+                    </div>,
+                    "100%", "auto", "0px", "9999px", themeColor
+                  )}
                 </div>, 
                 "100%", "100%", "0px", "16px", comp.cardBgColor || "var(--card)"
               )}
@@ -194,7 +207,7 @@ export function PreviewComponent({
 
   if (comp.type === "sponsor_logos" && comp.logos?.length > 0) {
     return (
-      <div className="py-4 pointer-events-none">
+      <div className="py-4">
         {comp.title && <h3 className="text-lg font-bold text-center mb-4">{comp.title}</h3>}
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 items-center justify-items-center opacity-80">
           {comp.logos.map((logo: any, idx: number) => (
@@ -223,7 +236,7 @@ export function PreviewComponent({
 
     if (comp.design === "embedded") {
       return (
-        <div className="w-full pointer-events-none">
+        <div className="w-full">
           <EmbeddedForm formId={linkedForm.id} />
         </div>
       );
@@ -231,7 +244,7 @@ export function PreviewComponent({
 
     if (comp.design === "button") {
       return (
-        <div className="flex justify-center w-full px-4 py-4 pointer-events-none">
+        <div className="flex justify-center w-full px-4 py-4">
           <div
             className="rounded-full px-8 py-4 text-sm font-bold shadow-md text-white text-center cursor-pointer"
             style={{ backgroundColor: themeColor }}
@@ -311,7 +324,7 @@ export function PreviewComponent({
   if (comp.type === "qr_code") {
     const size = comp.size || 128;
     return (
-      <div className="flex flex-col items-center justify-center w-full py-8 pointer-events-none gap-4">
+      <div className="flex flex-col items-center justify-center w-full py-8 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-border/60">
           <QRCode value={comp.content || "https://agatike.com"} size={size} />
         </div>
@@ -320,9 +333,9 @@ export function PreviewComponent({
     );
   }
 
-  if (comp.type === "budget_request" || comp.type === "damage_report") {
+  if (comp.type === "budget_request" || comp.type === "damage_report" || comp.type === "ticket_type_list") {
     return (
-      <div className="w-full pointer-events-none opacity-80">
+      <div className="w-full opacity-80">
         <SpreadsheetEntryForm
           workspace_id="preview"
           themeColor={themeColor || "#000"}
@@ -352,7 +365,7 @@ export function PreviewComponent({
     };
 
     return (
-      <div className="space-y-6 pointer-events-none opacity-80">
+      <div className="space-y-6 opacity-80">
         {comp.title && <h3 className="text-xl font-bold text-center">{comp.title}</h3>}
         <div
           className={`grid gap-4 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1"}`}
@@ -363,28 +376,42 @@ export function PreviewComponent({
                   <div
                     className={`bg-card border border-border/40 overflow-hidden shadow-sm flex w-full h-full ${isGrid ? "flex-col" : "flex-row"}`}
                   >
-                    <div
-                      className={`bg-secondary ${isGrid ? "w-full aspect-[4/3]" : "w-32 h-full min-h-[120px]"} flex items-center justify-center`}
-                    >
-                      <span className="text-muted-foreground text-sm font-medium">
-                        {typeLabels[comp.type]} {i}
-                      </span>
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h4 className="font-semibold mb-1">Sample {typeLabels[comp.type]}</h4>
-                      <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
-                        This is a placeholder for your workspace {typeLabels[comp.type].toLowerCase()}. It
-                        will be populated with real data on the live page.
-                      </p>
-                      <div className="mt-auto flex items-center justify-between pt-2">
-                        <span className="text-sm font-medium">$0.00</span>
+                    {wrap(`inv_${i}_image`,
+                      <div
+                        className={`bg-secondary ${isGrid ? "w-full aspect-[4/3]" : "w-32 h-full min-h-[120px]"} flex items-center justify-center shrink-0`}
+                      >
+                        <span className="text-muted-foreground text-sm font-medium">
+                          {typeLabels[comp.type]} {i}
+                        </span>
+                      </div>,
+                      "100%", "auto", "0px", "0px"
+                    )}
+                    <div className="p-4 flex-1 flex flex-col w-full">
+                      {wrap(`inv_${i}_title`,
+                        <h4 className="font-semibold mb-1">Sample {typeLabels[comp.type]}</h4>,
+                        "100%", "auto", "0px", "0px"
+                      )}
+                      {wrap(`inv_${i}_desc`,
+                        <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
+                          This is a placeholder for your workspace {typeLabels[comp.type].toLowerCase()}. It
+                          will be populated with real data on the live page.
+                        </p>,
+                        "100%", "auto", "0px", "0px"
+                      )}
+                      <div className="mt-auto flex items-center justify-between pt-2 w-full">
+                        {wrap(`inv_${i}_price`,
+                          <span className="text-sm font-medium">$0.00</span>,
+                          "auto", "auto", "0px", "0px"
+                        )}
                         {comp.allowSelling !== false && (
-                          <div
-                            className="px-3 py-1.5 rounded-md text-xs font-bold text-white shadow-sm"
-                            style={{ backgroundColor: themeColor }}
-                          >
-                            {buttonLabels[comp.type]}
-                          </div>
+                          wrap(`inv_${i}_button`,
+                            <div
+                              className="px-3 py-1.5 text-xs font-bold text-white flex items-center justify-center"
+                            >
+                              {buttonLabels[comp.type]}
+                            </div>,
+                            "auto", "auto", "0px", "6px", themeColor
+                          )
                         )}
                       </div>
                     </div>

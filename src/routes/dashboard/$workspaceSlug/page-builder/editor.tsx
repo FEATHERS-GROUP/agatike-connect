@@ -15,6 +15,7 @@ import {
 import { getWorkspaceForms } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/button";
+import { DynamicFontLoader } from "@/components/page-builder/DynamicFontLoader";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -375,6 +376,7 @@ function PageBuilder() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+      <DynamicFontLoader components={editorState.components} />
       {/* Left Sidebar */}
       {!isLoadingPage && (
         <div className="w-72 shrink-0 border-r border-border/60 bg-card overflow-visible z-10 hidden md:flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative">

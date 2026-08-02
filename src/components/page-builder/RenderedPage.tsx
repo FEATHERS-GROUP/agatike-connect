@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
 import { SpreadsheetEntryForm } from "@/components/page-builder/SpreadsheetEntryForm";
+import { DynamicFontLoader } from "./DynamicFontLoader";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useMutation } from "@tanstack/react-query";
@@ -305,6 +306,7 @@ export function RenderedPage({
   return (
     <>
       <style>{`@import url('${googleFontUrl}');`}</style>
+      <DynamicFontLoader components={actualComponents} />
       <div
         className="min-h-screen bg-background"
         style={
