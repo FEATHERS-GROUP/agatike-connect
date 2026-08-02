@@ -17,117 +17,135 @@ import {
   AlertCircle,
   XCircle,
   MessageSquare,
-  History,
-  Info,
-  ShieldCheck,
   Loader2,
   CreditCard,
   RefreshCw,
   Send,
-  UserCheck,
   Wrench,
   PauseCircle,
   MinusCircle,
   Code2,
+  Pencil,
+  RotateCcw,
+  X,
+  ChevronDown,
+  Plus,
+  Forward,
+  Minus,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Calendar,
+  Paperclip,
+  Lock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/internal/control/admin/support/$ticketId")({
   component: AdminTicketDetailPage,
 });
 
-const CATEGORY_LABELS: Record<string, string> = {
-  billing: "Billing",
-  subscription: "Subscription",
-  payment: "Payment",
-  event: "Event",
-  model_issue: "Model Issue",
-  request: "Request",
-  bug: "Bug",
-  other: "Other",
-};
+// ── helpers ──────────────────────────────────────────────────────────────────
+function avatarColor(seed: string) {
+  const palette = [
+    "bg-violet-500","bg-blue-500","bg-sky-500","bg-teal-500",
+    "bg-emerald-500","bg-amber-500","bg-orange-500","bg-rose-500",
+    "bg-pink-500","bg-indigo-500",
+  ];
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) & 0xffff;
+  return palette[h % palette.length];
+}
 
-const CATEGORY_COLORS: Record<string, string> = {
-  billing: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  subscription: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  payment: "bg-green-500/20 text-green-400 border-green-500/30",
-  event: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  model_issue: "bg-red-500/20 text-red-400 border-red-500/30",
-  request: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-  bug: "bg-rose-500/20 text-rose-400 border-rose-500/30",
-  other:
-    "bg-gray-200 dark:bg-[#333]/60 text-gray-600 dark:text-[#999] border-gray-300 dark:border-[#444]",
-};
+function Avatar({ name, size = "h-8 w-8", text = "text-[11px]" }: { name: string; size?: string; text?: string }) {
+  const parts = (name || "?").trim().split(/\s+/);
+  const letters =
+    parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (name[0] || "?").toUpperCase();
+  return (
+    <div className={`${size} rounded-full ${avatarColor(name)} flex items-center justify-center text-white ${text} font-bold shrink-0`}>
+      {letters}
+    </div>
+  );
+}
 
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - d.getTime()) / 60000);
+  if (diff < 1) return "just now";
+  if (diff < 60) return `${diff} min ago`;
+  if (diff < 1440) return `${Math.floor(diff / 60)} hr ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function formatFullDate(dateStr: string) {
+  return new Date(dateStr).toLocaleString("en-US", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true,
+  });
+}
+
+// ── constants ─────────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string; bg: string }> = {
-  open: {
-    label: "Open",
-    icon: AlertCircle,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/30",
-  },
-  troubleshooting: {
-    label: "Troubleshooting",
-    icon: Wrench,
-    color: "text-purple-400",
-    bg: "bg-purple-500/10 border-purple-500/30",
-  },
-  pending_customer_response: {
-    label: "Waiting on Customer",
-    icon: Clock,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10 border-blue-500/30",
-  },
-  on_hold: {
-    label: "On Hold",
-    icon: PauseCircle,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/30",
-  },
-  suspended: {
-    label: "Suspended",
-    icon: MinusCircle,
-    color: "text-red-400",
-    bg: "bg-red-500/10 border-red-500/30",
-  },
-  under_development: {
-    label: "Under Development",
-    icon: Code2,
-    color: "text-cyan-400",
-    bg: "bg-cyan-500/10 border-cyan-500/30",
-  },
-  in_progress: {
-    label: "In Progress",
-    icon: Clock,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10 border-blue-500/30",
-  },
-  resolved: {
-    label: "Resolved",
-    icon: CheckCircle2,
-    color: "text-green-400",
-    bg: "bg-green-500/10 border-green-500/30",
-  },
-  closed: {
-    label: "Closed",
-    icon: XCircle,
-    color: "text-gray-500 dark:text-[#888]",
-    bg: "bg-gray-100 dark:bg-[#222] border-gray-200 dark:border-[#333]",
-  },
+  open:                      { label: "Open",                  icon: AlertCircle,  color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
+  troubleshooting:           { label: "Troubleshooting",       icon: Wrench,       color: "text-purple-600",  bg: "bg-purple-50 border-purple-200" },
+  pending_customer_response: { label: "Waiting on Customer",   icon: Clock,        color: "text-blue-600",    bg: "bg-blue-50 border-blue-200" },
+  on_hold:                   { label: "On Hold",               icon: PauseCircle,  color: "text-amber-600",   bg: "bg-amber-50 border-amber-200" },
+  suspended:                 { label: "Suspended",             icon: MinusCircle,  color: "text-red-600",     bg: "bg-red-50 border-red-200" },
+  under_development:         { label: "Under Development",     icon: Code2,        color: "text-cyan-600",    bg: "bg-cyan-50 border-cyan-200" },
+  in_progress:               { label: "In Progress",           icon: Clock,        color: "text-blue-600",    bg: "bg-blue-50 border-blue-200" },
+  resolved:                  { label: "Resolved",              icon: CheckCircle2, color: "text-green-600",   bg: "bg-green-50 border-green-200" },
+  closed:                    { label: "Closed",                icon: XCircle,      color: "text-gray-500",    bg: "bg-gray-100 border-gray-200" },
 };
 
+const PRIORITY_COLORS: Record<string, string> = {
+  low: "text-gray-500", normal: "text-blue-600", high: "text-red-500", urgent: "text-orange-500", critical: "text-red-700",
+};
+const PRIORITY_BG: Record<string, string> = {
+  low: "bg-gray-100", normal: "bg-blue-50", high: "bg-red-50", urgent: "bg-orange-50", critical: "bg-red-100",
+};
+
+// ── SideRow: reusable left-panel row ─────────────────────────────────────────
+function SideRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="py-3 px-4 border-b border-gray-100 dark:border-[#252526] last:border-0">
+      <div className="text-[11px] font-semibold text-gray-400 dark:text-[#666] uppercase tracking-wider mb-1.5">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function SelectRow({
+  label, value, onChange, disabled, children,
+}: { label: string; value: string; onChange: (v: string) => void; disabled?: boolean; children: React.ReactNode }) {
+  return (
+    <SideRow label={label}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        className="w-full text-[13px] text-gray-800 dark:text-[#e0e0e0] bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded-md px-2.5 py-1.5 outline-none focus:border-blue-400 disabled:opacity-50 appearance-none pr-7 cursor-pointer"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}
+      >
+        {children}
+      </select>
+    </SideRow>
+  );
+}
+
+// ── main page ─────────────────────────────────────────────────────────────────
 function AdminTicketDetailPage() {
   const { ticketId } = Route.useParams();
   const queryClient = useQueryClient();
   const router = useRouter();
 
   const [reply, setReply] = useState("");
+  const [activeComposer, setActiveComposer] = useState<"reply" | "note" | "forward">("reply");
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  const {
-    data: ticket,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data: ticket, isLoading, refetch } = useQuery({
     queryKey: ["admin-ticket-detail", ticketId],
     queryFn: () => getAdminTicketWithComments({ data: { ticketId } }),
     refetchInterval: 15000,
@@ -140,36 +158,19 @@ function AdminTicketDetailPage() {
 
   const assignMutation = useMutation({
     mutationFn: (adminUserId: string | null) => assignTicket({ data: { ticketId, adminUserId } }),
-    onSuccess: () => {
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
-    },
+    onSuccess: () => { refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
   });
-
   const statusMutation = useMutation({
     mutationFn: (status: TicketStatus) => updateTicketStatus({ data: { ticketId, status } }),
-    onSuccess: () => {
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
-    },
+    onSuccess: () => { refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
   });
-
   const priorityMutation = useMutation({
-    mutationFn: (priority: TicketPriority) =>
-      updateTicketPriority({ data: { ticketId, priority } }),
-    onSuccess: () => {
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
-    },
+    mutationFn: (priority: TicketPriority) => updateTicketPriority({ data: { ticketId, priority } }),
+    onSuccess: () => { refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
   });
-
   const replyMutation = useMutation({
     mutationFn: () => addAdminComment({ data: { ticketId, body: reply } }),
-    onSuccess: () => {
-      setReply("");
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
-    },
+    onSuccess: () => { setReply(""); refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
   });
 
   useEffect(() => {
@@ -178,7 +179,7 @@ function AdminTicketDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full w-full">
+      <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-[#f97316]" />
       </div>
     );
@@ -186,13 +187,9 @@ function AdminTicketDetailPage() {
 
   if (!ticket) {
     return (
-      <div className="p-8 text-center text-gray-500 dark:text-[#888]">
-        Ticket not found.
-        <br />
-        <Link
-          to="/internal/control/admin/support"
-          className="text-[#f97316] hover:underline mt-4 inline-block"
-        >
+      <div className="p-8 text-center text-gray-500">
+        Ticket not found.{" "}
+        <Link to="/internal/control/admin/support" className="text-blue-500 hover:underline">
           Return to Support
         </Link>
       </div>
@@ -201,322 +198,389 @@ function AdminTicketDetailPage() {
 
   const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
   const StatusIcon = statusCfg.icon;
+  const organizerName = (ticket as any).organizer?.name || "Unknown";
+  const organizerEmail = (ticket as any).organizer?.email || "";
+  const assigneeName = (ticket as any).assignedAdmin?.email?.split("@")[0] || null;
+  const ticketShortId = `#${String(ticket.id).slice(-6).toUpperCase()}`;
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-white overflow-y-auto p-6 font-sans">
-      <div className="max-w-6xl w-full mx-auto flex flex-col gap-5">
-        {/* ── BACK BUTTON ── */}
+    <div className="flex flex-col h-full bg-white dark:bg-[#111] font-sans text-sm overflow-hidden">
+      {/* ── Top bar ── */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-[#252526] bg-white dark:bg-[#111] shrink-0">
         <button
           onClick={() => router.history.back()}
-          className="flex items-center gap-2 text-gray-500 dark:text-[#888] hover:text-gray-900 dark:hover:text-white transition-colors w-fit text-sm font-medium"
+          className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-500 transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Tickets
+          <ArrowLeft className="h-4 w-4" />
         </button>
 
-        {/* ── CRM HEADER ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 md:p-6 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#161616] shadow-sm relative overflow-hidden">
-          <div className="flex items-start gap-4 relative z-10">
-            <div
-              className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}
-            >
-              <MessageSquare className="h-6 w-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[11px] font-bold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                  Ticket
-                </span>
-                <span className="text-[11px] font-mono text-gray-500 dark:text-[#888] bg-gray-100 dark:bg-[#222] px-1.5 py-0.5 rounded border border-gray-200 dark:border-[#333]">
-                  #{ticket.id.slice(0, 8).toUpperCase()}
-                </span>
-              </div>
-              <h1 className="text-xl md:text-2xl font-bold leading-tight text-gray-900 dark:text-white">
-                {ticket.subject}
-              </h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 relative z-10">
-            <div
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border font-medium text-sm shadow-sm ${statusCfg.bg} ${statusCfg.color}`}
-            >
-              <StatusIcon className="h-4 w-4" />
-              {statusCfg.label}
-            </div>
-            <button
-              onClick={() => refetch()}
-              className="p-2 bg-gray-100 dark:bg-[#222] border border-gray-200 dark:border-[#333] shadow-sm rounded-md hover:bg-gray-200 dark:bg-[#333] transition-colors text-gray-700 dark:text-[#ccc]"
-              title="Refresh"
-            >
-              <RefreshCw className="h-4 w-4" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-[15px] font-semibold text-gray-900 dark:text-white truncate">{ticket.subject}</h1>
+            <span className="text-[12px] font-mono text-gray-400 dark:text-[#666] shrink-0">{ticketShortId}</span>
+            <button className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors shrink-0">
+              <Pencil className="h-3 w-3" />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* ── LEFT: MAIN TIMELINE & PUBLISHER ── */}
-          <div className="lg:col-span-8 flex flex-col gap-5">
-            {/* Publisher Box */}
-            <div className="rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#161616] shadow-sm overflow-hidden focus-within:ring-1 focus-within:ring-[#f97316] transition-all">
-              <div className="bg-gray-100 dark:bg-[#1a1a1a] px-4 py-2.5 border-b border-gray-200 dark:border-[#333] text-xs font-bold text-gray-500 dark:text-[#888] uppercase tracking-wider flex items-center gap-2">
-                <MessageSquare className="h-3.5 w-3.5" /> Post an Update
+        <div className="flex items-center gap-2 shrink-0">
+          <button onClick={() => refetch()} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors" title="Refresh">
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+          <Link to="/internal/control/admin/support" className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ── 3-column body ── */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* ── LEFT: metadata sidebar ── */}
+        <div className="w-52 shrink-0 border-r border-gray-200 dark:border-[#252526] bg-white dark:bg-[#111] overflow-y-auto">
+          {/* Resolution due */}
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-[#252526]">
+            <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Resolution Due</div>
+            <div className="text-[13px] font-medium text-gray-800 dark:text-[#ddd]">
+              {new Date(ticket.created_at).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}
+            </div>
+            <div className="text-[12px] text-gray-500 mt-0.5">
+              {new Date(ticket.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+            </div>
+            {/* orange progress bar */}
+            <div className="mt-2 h-1 w-full bg-gray-100 dark:bg-[#252526] rounded-full overflow-hidden">
+              <div className="h-1 bg-orange-400 rounded-full" style={{ width: "60%" }} />
+            </div>
+            <div className="text-[10px] text-gray-400 mt-1">Due in 9h 50m 15s</div>
+          </div>
+
+          <SelectRow
+            label="Status"
+            value={ticket.status}
+            onChange={(v) => statusMutation.mutate(v as TicketStatus)}
+            disabled={statusMutation.isPending}
+          >
+            <option value="open">Open</option>
+            <option value="troubleshooting">Troubleshooting</option>
+            <option value="pending_customer_response">Waiting on Customer</option>
+            <option value="on_hold">On Hold</option>
+            <option value="suspended">Suspended</option>
+            <option value="under_development">Under Development</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </SelectRow>
+
+          <SelectRow
+            label="Priority"
+            value={ticket.priority}
+            onChange={(v) => priorityMutation.mutate(v as TicketPriority)}
+            disabled={priorityMutation.isPending}
+          >
+            <option value="low">Low</option>
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+          </SelectRow>
+
+          <SideRow label="Group">
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] text-gray-700 dark:text-[#ccc]">
+                {(ticket as any).category ? (ticket as any).category.replace(/_/g, " ") : "General"}
+              </span>
+              <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+            </div>
+          </SideRow>
+
+          <SelectRow
+            label="Assigned To"
+            value={ticket.assigned_to || ""}
+            onChange={(v) => assignMutation.mutate(v || null)}
+            disabled={assignMutation.isPending}
+          >
+            <option value="">— Unassigned —</option>
+            {(adminUsers as any[]).map((a: any) => (
+              <option key={a.id} value={a.id}>{a.email?.split("@")[0] || a.email}</option>
+            ))}
+          </SelectRow>
+
+          <SideRow label="Channel">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-[13px] text-gray-700 dark:text-[#ccc]">Email</span>
               </div>
-              <div className="p-0">
-                <textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Type your reply to the organizer here..."
-                  rows={4}
-                  className="w-full bg-transparent p-4 text-sm outline-none resize-none placeholder:text-gray-500 dark:text-[#555] text-gray-900 dark:text-white"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && reply.trim())
-                      replyMutation.mutate();
-                  }}
-                />
-                <div className="flex items-center justify-between px-4 py-3 bg-gray-100 dark:bg-[#1a1a1a] border-t border-gray-200 dark:border-[#333]">
-                  <span className="text-[10px] text-gray-500 dark:text-[#888] font-medium bg-gray-100 dark:bg-[#222] px-2 py-1 rounded border border-gray-200 dark:border-[#333] hidden sm:inline-block">
-                    Press ⌘+Enter to send
-                  </span>
-                  <div className="sm:hidden" />
-                  <button
-                    onClick={() => replyMutation.mutate()}
-                    disabled={!reply.trim() || replyMutation.isPending}
-                    className="flex items-center gap-2 px-5 py-2 rounded-md bg-[#f97316] text-white text-xs font-bold hover:bg-[#ea6a0a] transition-all shadow-sm disabled:opacity-50"
-                  >
-                    {replyMutation.isPending ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      "Send Reply"
-                    )}
-                  </button>
+              <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+            </div>
+          </SideRow>
+
+          <SideRow label="Tags">
+            <div className="flex items-center gap-1 text-gray-400">
+              <Plus className="h-3 w-3" />
+              <span className="text-[12px]">Add tags</span>
+              <ChevronDown className="h-3 w-3 ml-auto" />
+            </div>
+          </SideRow>
+        </div>
+
+        {/* ── CENTRE: conversation ── */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-[#0f0f0f]">
+          {/* Messages scroll area */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+            {/* Original message */}
+            <div className="flex gap-3">
+              <Avatar name={organizerName} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-[13px] font-semibold text-gray-900 dark:text-white">{organizerName}</span>
+                  <span className="text-[11px] text-gray-400">{formatTime(ticket.created_at)}</span>
+                  <span className="text-[11px] text-gray-400 ml-auto">{formatFullDate(ticket.created_at)}</span>
+                </div>
+                <div className="text-[11px] text-gray-400 mb-2">
+                  To: support@wd.jservicedesk.com
+                </div>
+                <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] rounded-lg p-4 text-[13px] text-gray-700 dark:text-[#ccc] leading-relaxed">
+                  {ticket.description || ticket.subject}
                 </div>
               </div>
             </div>
 
-            {/* Activity Timeline */}
-            <div className="rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#161616] shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-200 dark:border-[#333] flex items-center gap-2">
-                <History className="h-4 w-4 text-gray-500 dark:text-[#888]" />
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Activity Timeline
-                </h3>
-              </div>
+            {/* Comments */}
+            {(ticket.comments || []).map((comment: SupportTicketComment) => {
+              const isAdmin = comment.author_type === "admin";
+              const isPrivate = (comment as any).is_private;
+              const authorName = isAdmin
+                ? ((ticket as any).assignedAdmin?.email?.split("@")[0] || "Support Team")
+                : (comment.author_name || organizerName);
 
-              <div className="p-5 sm:p-6">
-                {!ticket.comments || ticket.comments.length === 0 ? (
-                  <div className="text-center py-8 text-sm text-gray-500 dark:text-[#888] flex flex-col items-center">
-                    <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center mb-3">
-                      <MessageSquare className="h-5 w-5 opacity-40" />
+              return (
+                <div key={comment.id} className="flex gap-3">
+                  <Avatar name={authorName} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-gray-900 dark:text-white">{authorName}</span>
+                      {isAdmin && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 font-semibold">Replied</span>
+                      )}
+                      {isPrivate && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-semibold flex items-center gap-1">
+                          <Lock className="h-2.5 w-2.5" /> private note
+                        </span>
+                      )}
+                      <span className="text-[11px] text-gray-400">{formatTime(comment.created_at)}</span>
+                      <span className="text-[11px] text-gray-400 ml-auto">{formatFullDate(comment.created_at)}</span>
                     </div>
-                    No activity yet.
+                    {isAdmin && (
+                      <div className="text-[11px] text-gray-400 mb-2">
+                        To: {organizerEmail}
+                        {(ticket as any).assignedAdmin?.email && ` · Cc: ${(ticket as any).assignedAdmin.email}`}
+                      </div>
+                    )}
+                    <div className={`border rounded-lg p-4 text-[13px] leading-relaxed ${
+                      isPrivate
+                        ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800/40 text-yellow-900 dark:text-yellow-200"
+                        : isAdmin
+                        ? "bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-[#2a2a2a] text-gray-700 dark:text-[#ccc]"
+                        : "bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-[#2a2a2a] text-gray-700 dark:text-[#ccc]"
+                    }`}>
+                      <div className="whitespace-pre-wrap">{comment.body}</div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:top-2 before:bottom-2 before:left-[11px] sm:before:left-[15px] before:w-px before:bg-gray-200 dark:bg-[#333]">
-                    {ticket.comments?.map((comment: SupportTicketComment) => {
-                      const isAdmin = comment.author_type === "admin";
-                      return (
-                        <div key={comment.id} className="relative group">
-                          {/* Timeline Node */}
-                          <div
-                            className={`absolute -left-[30px] sm:-left-[38px] top-0 h-6 w-6 sm:h-7 sm:w-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold border-2 border-gray-200 dark:border-[#161616] z-10 shadow-sm ${
-                              isAdmin ? "bg-[#f97316] text-white" : "bg-blue-600 text-white"
-                            }`}
-                          >
-                            {isAdmin ? "A" : comment.author_name?.[0]?.toUpperCase() || "O"}
-                          </div>
+                </div>
+              );
+            })}
+            <div ref={commentsEndRef} />
+          </div>
 
-                          {/* Content Box */}
-                          <div
-                            className={`rounded-lg border shadow-sm p-4 ${
-                              isAdmin
-                                ? "bg-[#f97316]/5 border-[#f97316]/20"
-                                : "bg-gray-100 dark:bg-[#222] border-gray-200 dark:border-[#333]"
-                            }`}
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                              <span className="text-xs font-bold flex items-center gap-1.5 text-gray-900 dark:text-white">
-                                {isAdmin ? "Support Team" : comment.author_name || "Organizer"}
-                                {isAdmin && <ShieldCheck className="h-3 w-3 text-[#f97316]" />}
-                              </span>
-                              <span className="text-[10px] text-gray-500 dark:text-[#888] font-medium bg-white dark:bg-[#111] px-2 py-0.5 rounded-full border border-gray-200 dark:border-[#333] w-fit">
-                                {new Date(comment.created_at).toLocaleString(undefined, {
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            </div>
-                            <div className="text-sm leading-relaxed text-gray-900 dark:text-[#ddd] whitespace-pre-wrap">
-                              {comment.body}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div ref={commentsEndRef} />
-                  </div>
-                )}
+          {/* ── Composer bar ── */}
+          <div className="shrink-0 border-t border-gray-200 dark:border-[#252526] bg-white dark:bg-[#111]">
+            {/* Composer tabs */}
+            <div className="flex border-b border-gray-200 dark:border-[#252526]">
+              {(["reply", "note", "forward"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveComposer(tab)}
+                  className={`px-4 py-2.5 text-[12px] font-medium capitalize flex items-center gap-1.5 border-b-2 -mb-px transition-colors ${
+                    activeComposer === tab
+                      ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  }`}
+                >
+                  {tab === "reply" && <MessageSquare className="h-3.5 w-3.5" />}
+                  {tab === "note" && <Plus className="h-3.5 w-3.5" />}
+                  {tab === "forward" && <Forward className="h-3.5 w-3.5" />}
+                  {tab === "reply" ? "Reply" : tab === "note" ? "Add Note" : "Forward"}
+                </button>
+              ))}
+              <div className="flex-1" />
+              <button className="px-3 text-gray-400 hover:text-gray-600">
+                <Minus className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <textarea
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder={
+                activeComposer === "reply"
+                  ? "Type your reply..."
+                  : activeComposer === "note"
+                  ? "Add a private note..."
+                  : "Forward this ticket..."
+              }
+              rows={4}
+              className={`w-full px-5 py-3 text-[13px] bg-transparent outline-none resize-none text-gray-800 dark:text-[#ddd] placeholder:text-gray-400 ${
+                activeComposer === "note" ? "bg-yellow-50/40 dark:bg-yellow-950/10" : ""
+              }`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && reply.trim())
+                  replyMutation.mutate();
+              }}
+            />
+
+            <div className="flex items-center justify-between px-5 py-2.5 border-t border-gray-100 dark:border-[#252526]">
+              <div className="flex items-center gap-2">
+                <button className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors" title="Attach file">
+                  <Paperclip className="h-3.5 w-3.5" />
+                </button>
+                <span className="text-[11px] text-gray-400 hidden sm:block">⌘+Enter to send</span>
               </div>
+              <button
+                onClick={() => replyMutation.mutate()}
+                disabled={!reply.trim() || replyMutation.isPending}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-40 ${
+                  activeComposer === "note"
+                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+              >
+                {replyMutation.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="h-3.5 w-3.5" />
+                    {activeComposer === "reply" ? "Reply" : activeComposer === "note" ? "Add Note" : "Forward"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT: contact panel ── */}
+        <div className="w-60 shrink-0 border-l border-gray-200 dark:border-[#252526] bg-white dark:bg-[#111] overflow-y-auto">
+          {/* Contact details header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-[#252526]">
+            <span className="text-[12px] font-semibold text-gray-600 dark:text-[#aaa]">Contact Details</span>
+            <button className="text-gray-400 hover:text-gray-600">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Avatar + name */}
+          <div className="px-4 py-4 border-b border-gray-100 dark:border-[#252526]">
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar name={organizerName} size="h-10 w-10" text="text-[13px]" />
+              <div>
+                <div className="text-[13px] font-semibold text-gray-900 dark:text-white">{organizerName}</div>
+                <div className="text-[11px] text-gray-400 break-all">{organizerEmail}</div>
+              </div>
+              <button className="ml-auto text-gray-400 hover:text-gray-600 shrink-0">
+                <Pencil className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Contact fields */}
+            <div className="space-y-2">
+              {(ticket as any).organizer?.phone && (
+                <div className="flex items-center gap-2 text-[12px] text-gray-500">
+                  <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                  <span>{(ticket as any).organizer.phone}</span>
+                </div>
+              )}
+              {(ticket as any).organizer?.company && (
+                <div className="flex items-center gap-2 text-[12px] text-gray-500">
+                  <Globe className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                  <span>{(ticket as any).organizer.company}</span>
+                </div>
+              )}
+              {(ticket as any).organizer?.address && (
+                <div className="flex items-center gap-2 text-[12px] text-gray-500">
+                  <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                  <span>{(ticket as any).organizer.address}</span>
+                </div>
+              )}
+              {ticket.subscription_plan_name && (
+                <div className="flex items-center gap-2 text-[12px] text-orange-500">
+                  <CreditCard className="h-3.5 w-3.5 shrink-0" />
+                  <span className="font-medium">{ticket.subscription_plan_name}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ── RIGHT: ADMIN CONTROLS & DETAILS PANEL ── */}
-          <div className="lg:col-span-4 space-y-5">
-            {/* Control Panel */}
-            <div className="rounded-xl border border-[#f97316]/30 bg-[#f97316]/5 shadow-sm overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#f97316]/20 bg-[#f97316]/10 flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[#f97316]" />
-                <h3 className="text-sm font-bold text-[#f97316]">Admin Controls</h3>
-              </div>
+          {/* Extra info rows */}
+          {[
+            { label: "Language", value: "English" },
+            { label: "Since", value: new Date(ticket.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) },
+          ].map((r) => (
+            <div key={r.label} className="px-4 py-2.5 border-b border-gray-100 dark:border-[#252526]">
+              <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">{r.label}</div>
+              <div className="text-[13px] text-gray-700 dark:text-[#ccc]">{r.value}</div>
+            </div>
+          ))}
 
-              <div className="p-4 space-y-4">
-                {/* Assignee */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Assigned To
-                  </label>
-                  <div className="flex gap-2">
-                    <select
-                      value={ticket.assigned_to || ""}
-                      onChange={(e) => assignMutation.mutate(e.target.value || null)}
-                      disabled={assignMutation.isPending}
-                      className="flex-1 bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] text-xs text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-[#f97316] disabled:opacity-50"
-                    >
-                      <option value="">— Unassigned —</option>
-                      {adminUsers.map((a: any) => (
-                        <option key={a.id} value={a.id}>
-                          {a.email}
-                        </option>
-                      ))}
-                    </select>
+          {/* Previous Tickets */}
+          <div className="px-4 py-3">
+            <div className="text-[12px] font-semibold text-gray-600 dark:text-[#aaa] mb-3">Previous Tickets</div>
+            <div className="space-y-3">
+              {/* Placeholder previous tickets — in production these would come from API */}
+              {[
+                { id: "#" + ticketShortId.slice(1, 4) + "65", subject: "Fridge making strange noises", status: "resolved", priority: "normal", date: "13 Sep 2023, 04:32 PM" },
+                { id: "#" + ticketShortId.slice(1, 4) + "62", subject: "Oven not heating evenly", status: "resolved", priority: "low", date: "06 Aug 2023, 11:27 AM" },
+              ].map((pt) => (
+                <div key={pt.id} className="border border-gray-200 dark:border-[#252526] rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400">{pt.id}</span>
+                    <span className="text-[10px] text-gray-400">{pt.date}</span>
+                  </div>
+                  <p className="text-[12px] text-gray-600 dark:text-[#bbb] mb-2 leading-snug">{pt.subject}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-semibold">
+                      <CheckCircle2 className="h-2.5 w-2.5" />
+                      Resolved
+                    </span>
+                    <span className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-semibold ${PRIORITY_BG[pt.priority]} ${PRIORITY_COLORS[pt.priority]}`}>
+                      {pt.priority.charAt(0).toUpperCase() + pt.priority.slice(1)}
+                    </span>
                   </div>
                 </div>
-
-                {/* Priority */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Severity / Priority
-                  </label>
-                  <select
-                    value={ticket.priority}
-                    onChange={(e) => priorityMutation.mutate(e.target.value as TicketPriority)}
-                    disabled={priorityMutation.isPending}
-                    className="w-full bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] text-xs text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-[#f97316] disabled:opacity-50"
-                  >
-                    <option value="low">Low</option>
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-
-                {/* Status */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Ticket Status
-                  </label>
-                  <select
-                    value={ticket.status}
-                    onChange={(e) => statusMutation.mutate(e.target.value as TicketStatus)}
-                    disabled={statusMutation.isPending}
-                    className="w-full bg-gray-50 dark:bg-[#161616] border border-gray-200 dark:border-[#333] text-xs text-gray-900 dark:text-white px-3 py-2 rounded-md outline-none focus:border-[#f97316] disabled:opacity-50"
-                  >
-                    <option value="open">Open</option>
-                    <option value="troubleshooting">Troubleshooting</option>
-                    <option value="pending_customer_response">Waiting on Customer</option>
-                    <option value="on_hold">On Hold</option>
-                    <option value="suspended">Suspended</option>
-                    <option value="under_development">Under Development</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Details Panel */}
-            <div className="rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#161616] shadow-sm overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-200 dark:border-[#333] bg-gray-100 dark:bg-[#1a1a1a] flex items-center gap-2">
-                <Info className="h-4 w-4 text-gray-500 dark:text-[#888]" />
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">Ticket Details</h3>
+            {/* Assigned admin */}
+            {assigneeName && (
+              <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#252526]">
+                <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-2">Assigned Agent</div>
+                <div className="flex items-center gap-2">
+                  <Avatar name={assigneeName} size="h-7 w-7" text="text-[10px]" />
+                  <span className="text-[13px] text-gray-700 dark:text-[#ccc]">{assigneeName}</span>
+                </div>
               </div>
+            )}
 
-              <div className="divide-y divide-gray-200 dark:divide-[#333]">
-                {/* Organizer */}
-                <div className="p-4 flex flex-col gap-1.5">
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Organizer
-                  </span>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {(ticket as any).organizer?.name || "Unknown"}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-[#888]">
-                      {(ticket as any).organizer?.email}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Organizer ID */}
-                <div className="p-4 flex flex-col gap-1.5">
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Organizer ID
-                  </span>
-                  <span className="text-xs font-mono text-gray-500 dark:text-[#888] break-all">
-                    {(ticket as any).organizer_id}
-                  </span>
-                </div>
-
-                {/* System ID */}
-                <div className="p-4 flex flex-col gap-1.5">
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    System Ticket ID
-                  </span>
-                  <span className="text-xs font-mono text-gray-500 dark:text-[#888] break-all">
-                    {ticket.id}
-                  </span>
-                </div>
-
-                {/* Category */}
-                <div className="p-4 flex flex-col gap-1.5">
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Category
-                  </span>
-                  <span
-                    className={`inline-flex items-center w-fit px-2 py-0.5 rounded text-xs font-bold border ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}
-                  >
-                    {CATEGORY_LABELS[ticket.category] || ticket.category}
-                  </span>
-                </div>
-
-                {/* Plan */}
-                {ticket.subscription_plan_name && (
-                  <div className="p-4 flex flex-col gap-1.5">
-                    <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                      Related Plan
-                    </span>
-                    <div className="flex items-center gap-2 text-[#f97316]">
-                      <CreditCard className="h-4 w-4" />
-                      <span className="text-sm font-medium">{ticket.subscription_plan_name}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Created */}
-                <div className="p-4 flex flex-col gap-1.5">
-                  <span className="text-[11px] font-semibold text-gray-500 dark:text-[#888] uppercase tracking-wider">
-                    Opened On
-                  </span>
-                  <span className="text-sm font-medium text-gray-700 dark:text-[#ccc]">
-                    {new Date(ticket.created_at).toLocaleDateString(undefined, {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
+            {/* Ticket meta */}
+            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#252526] space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <Calendar className="h-3 w-3 shrink-0" />
+                <span>Opened {formatTime(ticket.created_at)}</span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px]">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] font-medium ${statusCfg.bg} ${statusCfg.color}`}>
+                  <StatusIcon className="h-2.5 w-2.5" />
+                  {statusCfg.label}
+                </span>
               </div>
             </div>
           </div>
