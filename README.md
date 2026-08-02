@@ -2719,6 +2719,17 @@ flowchart TD
   end
 ```
 
+## 31. Dynamic Fallback Ticket Generation
+
+**Logic:**
+- To ensure customers always receive a professional booking receipt even when an organizer has not created a custom ticket design, the system employs a dynamic fallback ticket generator (`src/lib/pdf-receipt.ts`).
+- **Context-Aware Styling:** The `generateFallbackReceipt` function accepts a `type` parameter (`venue`, `facility`, `event`, or `movie`). It dynamically alters the PDF layout, border colors, and text labels (e.g., "VENUE ENTRANCE PASS" vs. "FACILITY BOOKING") based on this type.
+- **Graceful "TBD" Handling:** To avoid presenting confusing placeholders to customers, the generator intelligently processes missing dates and times based on context:
+  - For **Venues** (which often sell open-ended entrance tickets), missing dates read as "Valid Anytime" and times as "Open Hours".
+  - For **Facilities**, missing selections read as "Date Not Set" and "Time Not Set".
+  - For **Events** and **Movies**, missing schedules read as "TBA" (To Be Announced).
+- **Integration:** This logic is seamlessly integrated into all checkout workflows (`VenueCheckoutDesktop`, `VenueCheckoutMobile`, `BookingMobile`, `MovieBookingDesktop`, `pawapay.server.ts`, and `facilityId.tsx`). If the system detects that `venueProject` or a custom ticket design is missing, it skips the DOM-based `<TicketPreview>` rendering and instantly delegates to this fallback generator before emailing the customer.
+
 ---
 
-_Last updated: July 2026 — Agatike Connect_
+_Last updated: August 2026 — Agatike Connect_
