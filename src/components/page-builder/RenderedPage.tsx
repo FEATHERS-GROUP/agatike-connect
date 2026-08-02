@@ -863,7 +863,12 @@ export function RenderedPage({
                         );
                       }
 
-                      const actualOpenAction = isPaymentForm && (comp.openAction === "page" || !comp.openAction) ? "modal" : (comp.openAction || "page");
+                      const actualOpenAction = isPaymentForm && (comp.openAction === "page" || !comp.openAction) ? "page" : (comp.openAction || "page");
+
+                      // Build query string for payment config when navigating to a new page
+                      const paymentQueryString = isPaymentForm
+                        ? `?pay=1&amount=${encodeURIComponent(comp.amount || "")}&label=${encodeURIComponent(comp.label || "")}&description=${encodeURIComponent(comp.description || "")}&workspace_id=${encodeURIComponent(workspace_id || "")}&color=${encodeURIComponent(theme_color || "")}&slug=${encodeURIComponent(slug || "")}`
+                        : "";
 
                       const displayTitle = (isPaymentForm ? (comp.label || comp.title) : null) || linkedForm.title;
                       const displayDesc = (isPaymentForm ? comp.description : null) || linkedForm.description;
@@ -910,7 +915,7 @@ export function RenderedPage({
                           );
                         } else {
                           contentWrapper = (
-                            <Link to={`/f/${linkedForm.id}` as any}>{buttonContent}</Link>
+                            <a href={`/f/${linkedForm.id}${paymentQueryString}`}>{buttonContent}</a>
                           );
                         }
 
@@ -1033,13 +1038,13 @@ export function RenderedPage({
                         );
                       } else {
                         return (
-                          <Link
+                          <a
                             key={comp.id}
-                            to={`/f/${linkedForm.id}` as any}
+                            href={`/f/${linkedForm.id}${paymentQueryString}`}
                             className="block group"
                           >
                             {cardContent}
-                          </Link>
+                          </a>
                         );
                       }
                     }
