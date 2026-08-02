@@ -106,10 +106,13 @@ export function EditorTopbar({
         <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/80" onClick={() => handleCopyLink(editorState.slug)}>
           <Share2 className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/80" asChild>
-          <a href={getWorkspacePageUrl(editorState.slug)} target="_blank" rel="noreferrer">
-            <Play className="w-4 h-4" />
-          </a>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/80" 
+          onClick={() => window.open(getWorkspacePageUrl(editorState.slug), '_blank', 'noopener,noreferrer')}
+        >
+          <Play className="w-4 h-4" />
         </Button>
         <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/80">
           <Settings className="w-4 h-4" />

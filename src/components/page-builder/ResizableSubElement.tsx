@@ -29,6 +29,20 @@ export function ResizableSubElement({
   defaultBackgroundColor?: string;
   className?: string;
 }) {
+  const getValue = (keySuffix: string) => {
+    let val = comp[`${subKey}_${keySuffix}`];
+    if (val !== undefined) return val;
+    // Fallback for legacy items before unified styling
+    if (subKey.startsWith('inv_item')) {
+      const legacyKey = subKey.replace('inv_item', 'inv_1');
+      val = comp[`${legacyKey}_${keySuffix}`];
+    } else if (subKey.startsWith('card_item')) {
+      const legacyKey = subKey.replace('card_item', 'card_1');
+      val = comp[`${legacyKey}_${keySuffix}`];
+    }
+    return val;
+  };
+
   const compositeId = `${comp.id}__${subKey}`;
   const isSelected = selectedElementId === compositeId;
   const blockRef = useRef<HTMLDivElement>(null);
@@ -43,9 +57,9 @@ export function ResizableSubElement({
     const startY = e.clientY;
     const startWidth = blockRef.current?.offsetWidth || 0;
     const startHeight = blockRef.current?.offsetHeight || 0;
-    const startRadius = parseInt(comp[`${subKey}_borderRadius`] || defaultRadius.replace('px', ''));
-    const startPosX = parseInt(comp[`${subKey}_x`] || '0');
-    const startPosY = parseInt(comp[`${subKey}_y`] || '0');
+    const startRadius = parseInt(getValue('borderRadius') || defaultRadius.replace('px', ''));
+    const startPosX = parseInt(getValue('x') || '0');
+    const startPosY = parseInt(getValue('y') || '0');
 
     const onMove = (moveEvent: PointerEvent) => {
       if (type === 'width' || type === 'both') {
@@ -78,17 +92,17 @@ export function ResizableSubElement({
     target.addEventListener('pointerup', onUp);
   };
 
-  const isHidden = comp[`${subKey}_hidden`] === true;
+  const isHidden = getValue('hidden') === true;
   if (isHidden) return null;
 
   const innerStyle = {
-    color: comp[`${subKey}_color`] || undefined,
-    fontFamily: comp[`${subKey}_fontFamily`] || undefined,
-    fontSize: comp[`${subKey}_fontSize`] ? `${comp[`${subKey}_fontSize`]}px` : undefined,
-    textDecoration: comp[`${subKey}_textDecoration`] || undefined,
-    fontWeight: comp[`${subKey}_fontWeight`] || undefined,
-    backgroundColor: comp[`${subKey}_backgroundColor`] || defaultBackgroundColor || undefined,
-    borderRadius: comp[`${subKey}_borderRadius`] ? `${comp[`${subKey}_borderRadius`]}px` : defaultRadius,
+    color: getValue('color') || undefined,
+    fontFamily: getValue('fontFamily') || undefined,
+    fontSize: getValue('fontSize') ? `${getValue('fontSize')}px` : undefined,
+    textDecoration: getValue('textDecoration') || undefined,
+    fontWeight: getValue('fontWeight') || undefined,
+    backgroundColor: getValue('backgroundColor') || defaultBackgroundColor || undefined,
+    borderRadius: getValue('borderRadius') ? `${getValue('borderRadius')}px` : defaultRadius,
   };
 
   const styledChild = React.isValidElement(children) 
@@ -104,19 +118,19 @@ export function ResizableSubElement({
         isSelected ? "ring-2 ring-primary/40 z-10" : "hover:ring-1 hover:ring-primary/20"
       } ${className}`}
       style={{
-        width: comp[`${subKey}_width`] || defaultWidth,
-        height: comp[`${subKey}_height`] || defaultHeight,
-        padding: comp[`${subKey}_padding`] ? `${comp[`${subKey}_padding`]}px` : defaultPadding,
-        alignSelf: comp[`${subKey}_alignment`] === 'start' ? 'flex-start' : comp[`${subKey}_alignment`] === 'end' ? 'flex-end' : 'center',
-        transform: `translate(${comp[`${subKey}_x`] || 0}px, ${comp[`${subKey}_y`] || 0}px)`,
+        width: getValue('width') || defaultWidth,
+        height: getValue('height') || defaultHeight,
+        padding: getValue('padding') ? `${getValue('padding')}px` : defaultPadding,
+        alignSelf: getValue('alignment') === 'start' ? 'flex-start' : getValue('alignment') === 'end' ? 'flex-end' : 'center',
+        transform: `translate(${getValue('x') || 0}px, ${getValue('y') || 0}px)`,
       }}
       onClick={(e) => {
         e.stopPropagation();
         setSelectedElementId(compositeId);
       }}
     >
-      {comp[`${subKey}_url`] ? (
-        <a href={comp[`${subKey}_url`]} className="block w-full h-full" onClick={(e) => e.preventDefault()}>
+      {getValue('url') ? (
+        <a href={getValue('url')} className="block w-full h-full" onClick={(e) => e.preventDefault()}>
           {styledChild}
         </a>
       ) : styledChild}

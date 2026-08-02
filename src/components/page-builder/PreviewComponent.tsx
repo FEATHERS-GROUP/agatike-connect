@@ -4,6 +4,7 @@ import { EmbeddedForm } from "./EmbeddedForm";
 import { SpreadsheetEntryForm } from "./SpreadsheetEntryForm";
 import { ResizableSubElement } from "./ResizableSubElement";
 import { StaticSubElement } from "./StaticSubElement";
+import { ArrowRight } from "lucide-react";
 
 export function PreviewComponent({
   comp,
@@ -264,7 +265,15 @@ export function PreviewComponent({
       );
     }
     return (
-      <div className="bg-card border border-border/60 rounded-2xl p-5 flex flex-col md:flex-row items-center gap-5">
+      <div 
+        className="bg-card border border-border/60 flex flex-col md:flex-row items-center gap-5"
+        style={{
+          backgroundColor: comp.backgroundColor || undefined,
+          borderRadius: comp.borderRadius ? `${comp.borderRadius}px` : "16px",
+          padding: comp.padding ? `${comp.padding}rem` : "1.25rem",
+          color: comp.color || undefined,
+        }}
+      >
         {linkedForm.cover_image_url ? (
           wrap('form_image',
             <div className="w-full md:w-40 h-24 rounded-xl overflow-hidden shrink-0">
@@ -295,11 +304,11 @@ export function PreviewComponent({
           )}
           {wrap('form_button',
             <div
-              className="mt-auto rounded-full py-1.5 px-4 text-xs font-medium text-white flex items-center justify-center"
+              className="mt-auto rounded-full w-full h-full text-sm font-medium text-white flex items-center justify-center py-1.5"
             >
-              Fill Form
+              Fill Form <ArrowRight className="w-4 h-4 ml-2" />
             </div>,
-            "auto", "auto", "6px", "9999px", themeColor
+            "auto", "auto", "0px", "9999px", themeColor
           )}
         </div>
       </div>

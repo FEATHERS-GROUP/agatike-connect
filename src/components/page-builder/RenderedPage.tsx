@@ -902,7 +902,13 @@ export function RenderedPage({
 
                       const cardContent = (
                         <div
-                          className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6 ${elementShape} cursor-pointer w-full text-left`}
+                          className={`bg-card border border-border/60 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6 ${elementShape} cursor-pointer w-full text-left`}
+                          style={{
+                            backgroundColor: comp.backgroundColor || undefined,
+                            borderRadius: comp.borderRadius ? `${comp.borderRadius}px` : undefined,
+                            padding: comp.padding ? `${comp.padding}rem` : "1.5rem",
+                            color: comp.color || undefined,
+                          }}
                         >
                           {linkedForm.cover_image_url ? (
                             wrap('form_image',
@@ -944,7 +950,7 @@ export function RenderedPage({
                                 "100%", "auto", "0px", "0px"
                               )
                             )}
-                            {wrap('form_btn',
+                            {wrap('form_button',
                               <Button
                                 className="mt-auto rounded-full w-full h-full"
                                 style={{ background: theme_color }}
