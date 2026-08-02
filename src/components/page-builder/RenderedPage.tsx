@@ -1051,7 +1051,7 @@ export function RenderedPage({
                             )}
                             {wrap('form_button',
                               <Button
-                                className="mt-4 md:mt-auto !rounded-full w-fit px-8 py-2"
+                                className="mt-4 md:mt-auto !rounded-full w-fit md:w-full px-8 py-2"
                                 style={{ background: theme_color }}
                               >
                                 Fill Form <ArrowRight className="w-4 h-4 ml-2 shrink-0" />
