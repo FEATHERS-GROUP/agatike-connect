@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getFormDetails, createRSVP } from "@/api/rsvps";
+import { getWorkspacePageBySlug } from "@/api/workspace-pages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, UploadCloud, FileIcon } from "lucide-react";
+import { CheckCircle2, Loader2, UploadCloud, FileIcon, ArrowLeft } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
 import {
   Select,
@@ -58,6 +59,13 @@ function PublicFormPage() {
     queryKey: ["public-form", formId],
     queryFn: () => getFormDetails({ data: { id: formId } } as any),
     enabled: !!formId,
+  });
+
+  // Fetch the landing page to get logo and back URL
+  const { data: landingPage } = useQuery({
+    queryKey: ["workspace-page-slug", paymentSlug],
+    queryFn: () => getWorkspacePageBySlug({ data: { slug: paymentSlug } } as any),
+    enabled: !!paymentSlug,
   });
 
   // Use form's own workspace_id as authoritative fallback (form.workspace_id resolves after query)
@@ -234,37 +242,81 @@ function PublicFormPage() {
     );
   }
 
+  const themeColor = paymentColor || "var(--primary)";
+  const pageTitle = (isPaymentMode && paymentLabel) ? paymentLabel : form.title;
+  const pageDescription = (isPaymentMode && paymentDescription) ? paymentDescription : form.description;
+
+  // Back URL: if we came from a page builder slug, navigate back there
+  const backUrl = paymentSlug
+    ? (typeof window !== "undefined"
+        ? `${window.location.protocol}//${paymentSlug}.${window.location.host.replace(/^[^.]+\./, "")}`
+        : "/")
+    : "/";
+
+  const logoUrl = landingPage?.logo_url || "";
+
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-secondary/30 p-4">
-        <div className="bg-card p-12 rounded-2xl shadow-sm border border-border/60 max-w-md w-full text-center animate-in zoom-in-95 duration-500">
-          <div className="h-20 w-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="h-10 w-10" />
+      <div className="min-h-screen flex flex-col bg-secondary/20">
+        {/* Branded header */}
+        {isPaymentMode && (
+          <div
+            className="w-full px-4 py-3 flex items-center justify-between border-b border-border/40 bg-card/80 backdrop-blur-sm sticky top-0 z-10"
+          >
+            <a
+              href={backUrl}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to page
+            </a>
+            {logoUrl && (
+              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Thank You!</h1>
-          <p className="text-muted-foreground mt-2">
-            {isPaymentMode
-              ? "Your payment and registration have been successfully recorded."
-              : "Your response has been successfully recorded."}
-          </p>
+        )}
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <div
+            className="bg-card p-12 rounded-2xl shadow-sm border border-border/60 max-w-md w-full text-center animate-in zoom-in-95 duration-500"
+          >
+            <div
+              className="h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6"
+              style={{ backgroundColor: `${themeColor}20`, color: themeColor }}
+            >
+              <CheckCircle2 className="h-10 w-10" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">Thank You!</h1>
+            <p className="text-muted-foreground mt-2">
+              {isPaymentMode
+                ? "Your payment and registration have been successfully recorded."
+                : "Your response has been successfully recorded."}
+            </p>
+            {isPaymentMode && paymentSlug && (
+              <a
+                href={backUrl}
+                className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ backgroundColor: themeColor }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to {paymentSlug}
+              </a>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
-  const themeColor = paymentColor || "var(--primary)";
-  const pageTitle = (isPaymentMode && paymentLabel) ? paymentLabel : form.title;
-  const pageDescription = (isPaymentMode && paymentDescription) ? paymentDescription : form.description;
-
   return (
     <>
-      {/* Full-screen "Check Your Phone" overlay */}
-      {isPollingPawaPay && (
+      {/* Full-screen "Check Your Phone" overlay — show immediately when processing starts */}
+      {(isPollingPawaPay || isProcessingPayment) && (
         <CheckYourPhone
           amount={Number(paymentAmount) || undefined}
           themeColor={themeColor}
           onCancel={async () => {
             setIsPollingPawaPay(false);
+            setIsProcessingPayment(false);
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
@@ -277,6 +329,21 @@ function PublicFormPage() {
       )}
 
       <div className="min-h-screen bg-secondary/20 pb-20">
+        {/* Branded sticky header */}
+        {isPaymentMode && (
+          <div className="w-full px-4 py-3 flex items-center justify-between border-b border-border/40 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
+            <a
+              href={backUrl}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to page
+            </a>
+            {logoUrl && (
+              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
+            )}
+          </div>
+        )}
         <div className="w-full h-48 md:h-64 lg:h-80 relative">
           <img
             src={form.cover_image_url || "/default-form-cover.png"}

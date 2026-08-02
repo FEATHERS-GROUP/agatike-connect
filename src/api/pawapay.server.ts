@@ -19,35 +19,15 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
     const providerStatus = body.status;
 
     if (providerReference) {
-      // 0. Idempotency Check: Prevent processing already completed transactions multiple times
-      const txCheckQuery = `
-        query CheckWalletTransaction($provider_reference: String!) {
-          wallet_transactions(where: { provider_reference: { _eq: $provider_reference } }) {
-            id
-            status
-          }
-        }
-      `;
-      const txCheckRes = await hasuraRequest<{ wallet_transactions: any[] }>(txCheckQuery, {
-        provider_reference: providerReference,
-      });
-      const existingTx = txCheckRes.wallet_transactions?.[0];
-
-      if (existingTx && existingTx.status === "completed" && providerStatus === "COMPLETED") {
-        console.log(
-          `[PawaPay Webhook] Transaction ${providerReference} is already completed. Skipping duplicate processing.`,
-        );
-        return new Response(JSON.stringify({ received: true, message: "Already completed" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      // 1. Update the wallet transaction status
+      // Atomic idempotency: only update if NOT already in a terminal state.
+      // If affected_rows === 0, this webhook is a duplicate and we skip processing.
       const updateQuery = `
         mutation UpdateWalletTransaction($provider_reference: String!, $provider_status: String!, $status: String!, $raw_callback_data: jsonb) {
           update_wallet_transactions(
-            where: { provider_reference: { _eq: $provider_reference } }, 
+            where: { 
+              provider_reference: { _eq: $provider_reference },
+              status: { _nin: ["completed", "failed"] }
+            }, 
             _set: { 
               provider_status: $provider_status, 
               status: $status,
@@ -55,6 +35,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               updated_at: "now()"
             }
           ) {
+            affected_rows
             returning {
               id
               status
@@ -80,7 +61,21 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         raw_callback_data: body,
       });
 
+      const affectedRows = res.update_wallet_transactions?.affected_rows ?? 0;
+
+      if (affectedRows === 0) {
+        // Either already completed/failed, or unknown reference — skip duplicate processing
+        console.log(
+          `[PawaPay Webhook] Transaction ${providerReference} already processed or not found. Skipping.`,
+        );
+        return new Response(JSON.stringify({ received: true, message: "Already processed" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       const tx = res.update_wallet_transactions?.returning?.[0];
+
 
       let wsSlug = "";
       let wsName = "";

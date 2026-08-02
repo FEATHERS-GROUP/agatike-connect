@@ -235,12 +235,13 @@ export function EmbeddedForm({
     );
   }
 
-  if (isPollingPawaPay) {
+  if (isPollingPawaPay || isProcessingPayment) {
     return (
       <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
         <CheckYourPhone
           onCancel={async () => {
             setIsPollingPawaPay(false);
+            setIsProcessingPayment(false);
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
