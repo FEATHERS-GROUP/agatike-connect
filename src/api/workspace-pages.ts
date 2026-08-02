@@ -63,7 +63,67 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
   `;
 
   const data = await hasuraRequest<{ workspace_pages: any[] }>(query, { slug });
-  return data.workspace_pages[0] || null;
+  const page = data.workspace_pages[0] || null;
+
+  if (page && page.workspace_id) {
+    const orgQuery = `
+      query GetOrganizerSub($workspace_id: uuid!) {
+        workspaces_by_pk(id: $workspace_id) {
+          orgnizer_id
+        }
+      }
+    `;
+    try {
+      const wsData = await hasuraRequest<{ workspaces_by_pk: any }>(orgQuery, {
+        workspace_id: page.workspace_id,
+      });
+      const orgId = wsData.workspaces_by_pk?.orgnizer_id;
+
+      if (orgId) {
+        const subQuery = `
+          query GetSub {
+            organizers_by_pk(id: "${orgId}") {
+              active
+            }
+            subscriptions(
+              where: { organizer_id: { _eq: "${orgId}" }, status: { _eq: "active" } }
+              order_by: { created_at: desc }
+              limit: 1
+            ) {
+              created_at
+              amount
+              next_billing_date
+            }
+          }
+        `;
+        const subRes = await hasuraRequest<any>(subQuery);
+        page.organizer_active = subRes.organizers_by_pk?.active ?? true;
+        page.is_expired = false;
+
+        const activeSub = subRes.subscriptions?.[0];
+        if (activeSub) {
+          if (activeSub.amount === 0) {
+            const subDate = new Date(activeSub.created_at);
+            const now = new Date();
+            const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
+            if (diffDays > 14) {
+              page.is_expired = true;
+            }
+          } else if (activeSub.next_billing_date) {
+            const billingDate = new Date(activeSub.next_billing_date);
+            const now = new Date();
+            if (now.getTime() > billingDate.getTime()) {
+              page.is_expired = true;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch page subscription info", err);
+    }
+  }
+
+  return page;
 });
 
 export const checkWorkspacePageSlugAvailability = createServerFn({ method: "GET" }).handler(
