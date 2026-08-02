@@ -82,9 +82,9 @@ export function MerchVariantModal({
                 Choose your variant options.
               </DialogDescription>
               {m.description && (
-                <div 
+                <div
                   className="text-sm text-muted-foreground mt-2 leading-relaxed [&_p]:mb-2 last:[&_p]:mb-0 break-words"
-                  dangerouslySetInnerHTML={{ __html: m.description.replace(/&nbsp;/g, ' ') }} 
+                  dangerouslySetInnerHTML={{ __html: m.description.replace(/&nbsp;/g, " ") }}
                 />
               )}
 
@@ -155,7 +155,9 @@ export function MerchVariantModal({
               <div className="flex flex-col gap-4 pt-4 border-t mt-2">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-col">
-                    <span className="font-bold text-xl">{formatCurrency(m.price, currencyCode)}</span>
+                    <span className="font-bold text-xl">
+                      {formatCurrency(m.price, currencyCode)}
+                    </span>
                     {(qty > 0 || globalQty > 0) && (
                       <span className="text-xs text-muted-foreground mt-0.5">
                         {qty > 0 ? `${qty} selected` : `${globalQty} total in cart`}
@@ -194,9 +196,9 @@ export function MerchVariantModal({
                     </div>
                   ) : null}
                 </div>
-                
+
                 {setCart && (
-                  <Button 
+                  <Button
                     className="w-full rounded-2xl h-12 text-base font-bold shadow-md mt-2 text-white bg-primary hover:bg-primary/90 transition-all"
                     disabled={!canAdd && qty === 0}
                     onClick={() => {

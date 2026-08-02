@@ -25,10 +25,14 @@ export const generateFallbackReceipt = async (options: {
     type = "default",
   } = options;
 
-  let displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "Valid Anytime";
+  let displayDate =
+    dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "Valid Anytime";
   let displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "Open Hours";
-  let displayLocation = locationStr && locationStr !== "TBD" && locationStr.trim() !== "" ? locationStr : "Location on file";
-  
+  let displayLocation =
+    locationStr && locationStr !== "TBD" && locationStr.trim() !== ""
+      ? locationStr
+      : "Location on file";
+
   if (type === "event" || type === "movie") {
     displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "TBA";
     displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "TBA";
@@ -48,19 +52,26 @@ export const generateFallbackReceipt = async (options: {
   pdf.rect(0, 0, 300, 480, "F");
 
   // Top colored bar depending on type
-  if (type === "event" || type === "movie") pdf.setFillColor(236, 72, 153); // pink-500
-  else if (type === "facility") pdf.setFillColor(59, 130, 246); // blue-500
-  else if (type === "venue") pdf.setFillColor(16, 185, 129); // emerald-500
+  if (type === "event" || type === "movie")
+    pdf.setFillColor(236, 72, 153); // pink-500
+  else if (type === "facility")
+    pdf.setFillColor(59, 130, 246); // blue-500
+  else if (type === "venue")
+    pdf.setFillColor(16, 185, 129); // emerald-500
   else pdf.setFillColor(100, 116, 139); // slate-500
-  
+
   pdf.rect(0, 0, 300, 8, "F");
 
   // Ticket Type Header
-  const typeLabel = 
-    type === "venue" ? "VENUE ENTRANCE PASS" : 
-    type === "facility" ? "FACILITY BOOKING" : 
-    type === "movie" ? "CINEMA TICKET" : "EVENT TICKET";
-  
+  const typeLabel =
+    type === "venue"
+      ? "VENUE ENTRANCE PASS"
+      : type === "facility"
+        ? "FACILITY BOOKING"
+        : type === "movie"
+          ? "CINEMA TICKET"
+          : "EVENT TICKET";
+
   pdf.setFontSize(10);
   pdf.setTextColor(150, 150, 150);
   pdf.text(typeLabel, 150, 25, { align: "center" });
@@ -80,7 +91,8 @@ export const generateFallbackReceipt = async (options: {
   // Times row
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  const timeLabel = type === "facility" ? "Booking Time" : type === "venue" ? "Valid Hours" : "Start Time";
+  const timeLabel =
+    type === "facility" ? "Booking Time" : type === "venue" ? "Valid Hours" : "Start Time";
   pdf.text(timeLabel, 20, 95);
   pdf.text("Duration", 150, 95, { align: "center" });
   const dateLabel = type === "facility" ? "Booking Date" : "Date";
@@ -107,7 +119,8 @@ export const generateFallbackReceipt = async (options: {
 
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  const entityLabel = type === "facility" ? "Facility Name" : type === "venue" ? "Venue Name" : "Event / Movie";
+  const entityLabel =
+    type === "facility" ? "Facility Name" : type === "venue" ? "Venue Name" : "Event / Movie";
   pdf.text(entityLabel, 20, 170);
   const locLabel = type === "facility" ? "Venue Location" : "Location";
   pdf.text(locLabel, 280, 170, { align: "right" });
@@ -125,7 +138,8 @@ export const generateFallbackReceipt = async (options: {
   // Details Row
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  const tierLabel = type === "facility" ? "Access Type" : type === "venue" ? "Pass Type" : "Ticket Tier";
+  const tierLabel =
+    type === "facility" ? "Access Type" : type === "venue" ? "Pass Type" : "Ticket Tier";
   pdf.text(tierLabel, 20, 250);
   pdf.text("Qty", 150, 250, { align: "center" });
   pdf.text("Status", 280, 250, { align: "right" });

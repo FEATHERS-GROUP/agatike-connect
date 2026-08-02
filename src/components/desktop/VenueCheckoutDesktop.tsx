@@ -583,7 +583,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             Please wait while we prepare your tickets. This will only take a moment.
             <br />
             <br />
-            <strong className="text-foreground">Processing... Please don't close this window!</strong>
+            <strong className="text-foreground">
+              Processing... Please don't close this window!
+            </strong>
           </p>
         </div>
         {/* Hidden Ticket Renderer so html-to-image can find it */}
@@ -611,8 +613,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                   price={
                     t.tier === "Standard Entry"
                       ? venue?.entrance_fee?.toString() || "0"
-                      : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
-                        total.toString()
+                      : venue.pricing_tiers
+                          ?.find((pt: any) => pt.name === t.tier)
+                          ?.amount?.toString() || total.toString()
                   }
                   currency={venue.currency}
                   cover={venueProject.coverImage || ""}
@@ -1207,8 +1210,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
                 price={
                   t.tier === "Standard Entry"
                     ? venue?.entrance_fee?.toString() || "0"
-                    : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
-                      total.toString()
+                    : venue.pricing_tiers
+                        ?.find((pt: any) => pt.name === t.tier)
+                        ?.amount?.toString() || total.toString()
                 }
                 currency={venue.currency}
                 cover={venueProject.coverImage || ""}

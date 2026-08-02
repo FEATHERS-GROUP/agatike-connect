@@ -9,7 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Accordion,
@@ -53,20 +60,106 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 const GOOGLE_FONTS = [
-  "Inter", "Roboto", "Open Sans", "Montserrat", "Lato", "Poppins", "Nunito", "Playfair Display",
-  "Merriweather", "Raleway", "Rubik", "Oswald", "Ubuntu", "PT Sans", "Work Sans", "Noto Sans",
-  "Quicksand", "Karla", "Lora", "Fira Sans", "Mulish", "Inconsolata", "Barlow", "Josefin Sans",
-  "Cabin", "Heebo", "Mukta", "Dosis", "Arimo", "Titillium Web", "PT Serif", "Bitter", "Anton",
-  "Hind", "Varela Round", "Assistant", "Oxygen", "Nanum Gothic", "Teko", "Abel", "Yanone Kaffeesatz",
-  "Signika", "Righteous", "Pacifico", "Dancing Script", "Bebas Neue", "Caveat", "Satisfy", "Courgette",
-  "Great Vibes", "Sacramento", "Play", "Questrial", "Asap", "Rokkitt", "Zilla Slab", "Crimson Text",
-  "Domine", "Cardo", "Alfa Slab One", "Cinzel", "Exo 2", "Rajdhani", "Jost", "Kanit", "Tauri",
-  "Sarabun", "Fjalla One", "Prompt", "Manrope", "Sen", "Spartan", "Syne", "Outfit", "Plus Jakarta Sans",
-  "DM Sans", "Be Vietnam Pro", "Public Sans", "Space Grotesk", "Space Mono", "JetBrains Mono",
-  "IBM Plex Sans", "IBM Plex Serif", "IBM Plex Mono", "Overpass", "Fira Code", "Blinker", "Literata",
-  "Merriweather Sans", "Source Sans Pro", "Source Serif Pro", "Source Code Pro", "Noto Serif",
-  "Slabo 27px", "Cormorant Garamond", "Libre Baskerville", "Playfair Display SC", "Vollkorn",
-  "Alegreya", "Alegreya Sans"
+  "Inter",
+  "Roboto",
+  "Open Sans",
+  "Montserrat",
+  "Lato",
+  "Poppins",
+  "Nunito",
+  "Playfair Display",
+  "Merriweather",
+  "Raleway",
+  "Rubik",
+  "Oswald",
+  "Ubuntu",
+  "PT Sans",
+  "Work Sans",
+  "Noto Sans",
+  "Quicksand",
+  "Karla",
+  "Lora",
+  "Fira Sans",
+  "Mulish",
+  "Inconsolata",
+  "Barlow",
+  "Josefin Sans",
+  "Cabin",
+  "Heebo",
+  "Mukta",
+  "Dosis",
+  "Arimo",
+  "Titillium Web",
+  "PT Serif",
+  "Bitter",
+  "Anton",
+  "Hind",
+  "Varela Round",
+  "Assistant",
+  "Oxygen",
+  "Nanum Gothic",
+  "Teko",
+  "Abel",
+  "Yanone Kaffeesatz",
+  "Signika",
+  "Righteous",
+  "Pacifico",
+  "Dancing Script",
+  "Bebas Neue",
+  "Caveat",
+  "Satisfy",
+  "Courgette",
+  "Great Vibes",
+  "Sacramento",
+  "Play",
+  "Questrial",
+  "Asap",
+  "Rokkitt",
+  "Zilla Slab",
+  "Crimson Text",
+  "Domine",
+  "Cardo",
+  "Alfa Slab One",
+  "Cinzel",
+  "Exo 2",
+  "Rajdhani",
+  "Jost",
+  "Kanit",
+  "Tauri",
+  "Sarabun",
+  "Fjalla One",
+  "Prompt",
+  "Manrope",
+  "Sen",
+  "Spartan",
+  "Syne",
+  "Outfit",
+  "Plus Jakarta Sans",
+  "DM Sans",
+  "Be Vietnam Pro",
+  "Public Sans",
+  "Space Grotesk",
+  "Space Mono",
+  "JetBrains Mono",
+  "IBM Plex Sans",
+  "IBM Plex Serif",
+  "IBM Plex Mono",
+  "Overpass",
+  "Fira Code",
+  "Blinker",
+  "Literata",
+  "Merriweather Sans",
+  "Source Sans Pro",
+  "Source Serif Pro",
+  "Source Code Pro",
+  "Noto Serif",
+  "Slabo 27px",
+  "Cormorant Garamond",
+  "Libre Baskerville",
+  "Playfair Display SC",
+  "Vollkorn",
+  "Alegreya",
+  "Alegreya Sans",
 ];
 
 export function PageSettingsPanel({
@@ -88,20 +181,25 @@ export function PageSettingsPanel({
 }) {
   const [openFontDropdown, setOpenFontDropdown] = React.useState(false);
   const [openPageFontDropdown, setOpenPageFontDropdown] = React.useState(false);
-  const parentId = selectedElementId?.split('__')[0];
-  const subKey = selectedElementId?.split('__')[1] || "";
+  const parentId = selectedElementId?.split("__")[0];
+  const subKey = selectedElementId?.split("__")[1] || "";
   const selectedIndex = editorState.components.findIndex((c: any) => c.id === parentId);
   const selectedComp = selectedIndex >= 0 ? editorState.components[selectedIndex] : null;
 
-  const parentPage = editorState.parent_id ? allPages.find((p: any) => p.id === editorState.parent_id) : null;
+  const parentPage = editorState.parent_id
+    ? allPages.find((p: any) => p.id === editorState.parent_id)
+    : null;
   const parentSlugPrefix = parentPage?.slug ? `${parentPage.slug}/` : "";
-  
-  const displaySlug = (editorState.slug || "").startsWith(parentSlugPrefix) 
-    ? (editorState.slug || "").substring(parentSlugPrefix.length) 
-    : (editorState.slug || "");
+
+  const displaySlug = (editorState.slug || "").startsWith(parentSlugPrefix)
+    ? (editorState.slug || "").substring(parentSlugPrefix.length)
+    : editorState.slug || "";
 
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawVal = e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-/]/g, "");
+    const rawVal = e.target.value
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-/]/g, "");
     set("slug")(parentSlugPrefix + rawVal);
   };
 
@@ -127,8 +225,10 @@ export function PageSettingsPanel({
     <div className="flex flex-col h-full bg-card">
       <ScrollArea className="flex-1">
         <div className="p-3">
-          <Accordion type="multiple" defaultValue={["link", "position", "size", "layout", "styles", "page"]}>
-            
+          <Accordion
+            type="multiple"
+            defaultValue={["link", "position", "size", "layout", "styles", "page"]}
+          >
             {!selectedComp && (
               <AccordionItem value="page" className="border-border/60">
                 <AccordionTrigger className="py-2.5 text-xs font-semibold hover:no-underline px-1">
@@ -201,7 +301,14 @@ export function PageSettingsPanel({
                                     className="text-xs"
                                     style={{ fontFamily: `'${font}', sans-serif` }}
                                   >
-                                    <Check className={cn("mr-2 h-3 w-3", editorState.fontFamily === font ? "opacity-100" : "opacity-0")} />
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-3 w-3",
+                                        editorState.fontFamily === font
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
                                     {font}
                                   </CommandItem>
                                 ))}
@@ -214,7 +321,9 @@ export function PageSettingsPanel({
                   </div>
 
                   <div className="space-y-1.5 flex flex-col">
-                    <Label className="text-[10px] text-muted-foreground">Page Background Color</Label>
+                    <Label className="text-[10px] text-muted-foreground">
+                      Page Background Color
+                    </Label>
                     <div className="flex items-center gap-2">
                       <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
                         <Input
@@ -252,11 +361,15 @@ export function PageSettingsPanel({
                   </div>
 
                   <div className="space-y-1.5 flex flex-col pt-2 border-t border-border/40">
-                    <Label className="text-[10px] text-muted-foreground font-semibold">Navbar Appearance</Label>
-                    
+                    <Label className="text-[10px] text-muted-foreground font-semibold">
+                      Navbar Appearance
+                    </Label>
+
                     <div className="pt-1 space-y-3">
                       <div className="space-y-1.5 flex flex-col">
-                        <Label className="text-[10px] text-muted-foreground">Background Color (Solid Navbar)</Label>
+                        <Label className="text-[10px] text-muted-foreground">
+                          Background Color (Solid Navbar)
+                        </Label>
                         <div className="flex items-center gap-2">
                           <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
                             <Input
@@ -297,14 +410,23 @@ export function PageSettingsPanel({
 
                       <div className="space-y-1.5 flex flex-col">
                         <Label className="text-[10px] text-muted-foreground">Links Alignment</Label>
-                        <Select value={editorState.navbarAlignment || "right"} onValueChange={set("navbarAlignment")}>
+                        <Select
+                          value={editorState.navbarAlignment || "right"}
+                          onValueChange={set("navbarAlignment")}
+                        >
                           <SelectTrigger className="h-7 text-xs bg-secondary/30 border-border/60">
                             <SelectValue placeholder="Align Right" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="left" className="text-xs">Left Align</SelectItem>
-                            <SelectItem value="center" className="text-xs">Center Align</SelectItem>
-                            <SelectItem value="right" className="text-xs">Right Align</SelectItem>
+                            <SelectItem value="left" className="text-xs">
+                              Left Align
+                            </SelectItem>
+                            <SelectItem value="center" className="text-xs">
+                              Center Align
+                            </SelectItem>
+                            <SelectItem value="right" className="text-xs">
+                              Right Align
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -312,7 +434,9 @@ export function PageSettingsPanel({
                   </div>
 
                   <div className="space-y-1.5 flex flex-col">
-                    <Label className="text-[10px] text-muted-foreground">Page Background Image</Label>
+                    <Label className="text-[10px] text-muted-foreground">
+                      Page Background Image
+                    </Label>
                     {editorState.pageBackgroundImageUrl ? (
                       <div className="relative w-full h-16 rounded-md border border-border/60 overflow-hidden group bg-black/5">
                         <img
@@ -400,14 +524,15 @@ export function PageSettingsPanel({
                   <AccordionContent className="px-1 pb-4">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] text-muted-foreground">URL</Label>
-                      <Input 
+                      <Input
                         value={getVal("url") || getVal("button_url") || ""}
                         onChange={(e) => {
-                          if (getVal("button_url") !== undefined) updateSelected("button_url", e.target.value);
+                          if (getVal("button_url") !== undefined)
+                            updateSelected("button_url", e.target.value);
                           else updateSelected("url", e.target.value);
                         }}
-                        placeholder="https://..." 
-                        className="h-8 text-xs bg-secondary/30 border-border/60" 
+                        placeholder="https://..."
+                        className="h-8 text-xs bg-secondary/30 border-border/60"
                       />
                     </div>
                   </AccordionContent>
@@ -422,18 +547,18 @@ export function PageSettingsPanel({
                     <div className="flex gap-2">
                       <div className="flex-1 flex items-center bg-secondary/30 rounded-md border border-border/60 px-2 h-8 focus-within:border-primary/50">
                         <span className="text-[10px] text-muted-foreground w-4">W</span>
-                        <Input 
-                          value={getVal("width") || "100%"} 
+                        <Input
+                          value={getVal("width") || "100%"}
                           onChange={(e) => updateSelected("width", e.target.value)}
-                          className="h-6 px-1 border-0 bg-transparent text-xs text-right focus-visible:ring-0" 
+                          className="h-6 px-1 border-0 bg-transparent text-xs text-right focus-visible:ring-0"
                         />
                       </div>
                       <div className="flex-1 flex items-center bg-secondary/30 rounded-md border border-border/60 px-2 h-8 focus-within:border-primary/50">
                         <span className="text-[10px] text-muted-foreground w-4">H</span>
-                        <Input 
-                          value={getVal("height") || "auto"} 
+                        <Input
+                          value={getVal("height") || "auto"}
                           onChange={(e) => updateSelected("height", e.target.value)}
-                          className="h-6 px-1 border-0 bg-transparent text-xs text-right focus-visible:ring-0" 
+                          className="h-6 px-1 border-0 bg-transparent text-xs text-right focus-visible:ring-0"
                         />
                       </div>
                     </div>
@@ -449,23 +574,32 @@ export function PageSettingsPanel({
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Padding</span>
                       <div className="flex gap-1 items-center">
-                        <Input 
-                          value={getVal("padding") || "4"} 
+                        <Input
+                          value={getVal("padding") || "4"}
                           onChange={(e) => updateSelected("padding", e.target.value)}
-                          className="w-12 h-7 text-xs text-center bg-secondary/30 border-border/60" 
+                          className="w-12 h-7 text-xs text-center bg-secondary/30 border-border/60"
                         />
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Align</span>
-                      <Select value={getVal("alignment") || "center"} onValueChange={(val) => updateSelected("alignment", val)}>
+                      <Select
+                        value={getVal("alignment") || "center"}
+                        onValueChange={(val) => updateSelected("alignment", val)}
+                      >
                         <SelectTrigger className="h-7 w-24 text-xs bg-secondary/30 border-border/60">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="start" className="text-xs">Left</SelectItem>
-                          <SelectItem value="center" className="text-xs">Center</SelectItem>
-                          <SelectItem value="end" className="text-xs">Right</SelectItem>
+                          <SelectItem value="start" className="text-xs">
+                            Left
+                          </SelectItem>
+                          <SelectItem value="center" className="text-xs">
+                            Center
+                          </SelectItem>
+                          <SelectItem value="end" className="text-xs">
+                            Right
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -483,7 +617,7 @@ export function PageSettingsPanel({
                         Background
                       </div>
                       <div className="flex items-center gap-2 relative">
-                        <Input 
+                        <Input
                           type="color"
                           value={getVal("backgroundColor") || "#ffffff"}
                           onChange={(e) => updateSelected("backgroundColor", e.target.value)}
@@ -495,18 +629,23 @@ export function PageSettingsPanel({
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         Radius
                       </div>
-                      <Input 
-                        value={getVal("borderRadius") || "16"} 
+                      <Input
+                        value={getVal("borderRadius") || "16"}
                         onChange={(e) => updateSelected("borderRadius", e.target.value)}
-                        className="w-16 h-7 text-xs text-center bg-secondary/30 border-border/60" 
+                        className="w-16 h-7 text-xs text-center bg-secondary/30 border-border/60"
                       />
                     </div>
                     <div className="border-b border-border/40 pb-4 mb-4">
-                      <div className="flex items-center justify-between mb-3 cursor-pointer" onClick={() => {
-                        const el = document.getElementById('typography-section');
-                        if (el) el.classList.toggle('hidden');
-                      }}>
-                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Typography</h3>
+                      <div
+                        className="flex items-center justify-between mb-3 cursor-pointer"
+                        onClick={() => {
+                          const el = document.getElementById("typography-section");
+                          if (el) el.classList.toggle("hidden");
+                        }}
+                      >
+                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Typography
+                        </h3>
                         <div className="w-4 h-4 rounded-full bg-secondary flex items-center justify-center">
                           <span className="text-[10px] leading-none">+</span>
                         </div>
@@ -528,7 +667,10 @@ export function PageSettingsPanel({
                             </PopoverTrigger>
                             <PopoverContent className="w-[200px] p-0" align="end">
                               <Command>
-                                <CommandInput placeholder="Search font..." className="h-8 text-xs" />
+                                <CommandInput
+                                  placeholder="Search font..."
+                                  className="h-8 text-xs"
+                                />
                                 <CommandList>
                                   <CommandEmpty>No font found.</CommandEmpty>
                                   <CommandGroup>
@@ -541,7 +683,12 @@ export function PageSettingsPanel({
                                         }}
                                         className="text-xs"
                                       >
-                                        <Check className={cn("mr-2 h-3 w-3", !getVal("fontFamily") ? "opacity-100" : "opacity-0")} />
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-3 w-3",
+                                            !getVal("fontFamily") ? "opacity-100" : "opacity-0",
+                                          )}
+                                        />
                                         Inherit
                                       </CommandItem>
                                       {GOOGLE_FONTS.map((font) => (
@@ -555,7 +702,14 @@ export function PageSettingsPanel({
                                           className="text-xs"
                                           style={{ fontFamily: `'${font}', sans-serif` }}
                                         >
-                                          <Check className={cn("mr-2 h-3 w-3", getVal("fontFamily") === font ? "opacity-100" : "opacity-0")} />
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-3 w-3",
+                                              getVal("fontFamily") === font
+                                                ? "opacity-100"
+                                                : "opacity-0",
+                                            )}
+                                          />
                                           {font}
                                         </CommandItem>
                                       ))}
@@ -568,16 +722,16 @@ export function PageSettingsPanel({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">Size (px)</span>
-                          <Input 
-                            value={getVal("fontSize") || ""} 
+                          <Input
+                            value={getVal("fontSize") || ""}
                             onChange={(e) => updateSelected("fontSize", e.target.value)}
                             placeholder="Inherit"
-                            className="w-16 h-7 text-xs text-center bg-secondary/30 border-border/60" 
+                            className="w-16 h-7 text-xs text-center bg-secondary/30 border-border/60"
                           />
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">Color</span>
-                          <Input 
+                          <Input
                             type="color"
                             value={getVal("color") || "#000000"}
                             onChange={(e) => updateSelected("color", e.target.value)}
@@ -586,7 +740,12 @@ export function PageSettingsPanel({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">Weight</span>
-                          <Select value={getVal("fontWeight") || ""} onValueChange={(val) => updateSelected("fontWeight", val === "normal" ? "" : val)}>
+                          <Select
+                            value={getVal("fontWeight") || ""}
+                            onValueChange={(val) =>
+                              updateSelected("fontWeight", val === "normal" ? "" : val)
+                            }
+                          >
                             <SelectTrigger className="h-7 w-24 text-xs bg-secondary/30 border-border/60">
                               <SelectValue placeholder="Inherit" />
                             </SelectTrigger>
@@ -600,7 +759,12 @@ export function PageSettingsPanel({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-muted-foreground">Decoration</span>
-                          <Select value={getVal("textDecoration") || ""} onValueChange={(val) => updateSelected("textDecoration", val === "none" ? "" : val)}>
+                          <Select
+                            value={getVal("textDecoration") || ""}
+                            onValueChange={(val) =>
+                              updateSelected("textDecoration", val === "none" ? "" : val)
+                            }
+                          >
                             <SelectTrigger className="h-7 w-24 text-xs bg-secondary/30 border-border/60">
                               <SelectValue placeholder="None" />
                             </SelectTrigger>
@@ -617,7 +781,6 @@ export function PageSettingsPanel({
                 </AccordionItem>
               </>
             )}
-            
           </Accordion>
         </div>
       </ScrollArea>

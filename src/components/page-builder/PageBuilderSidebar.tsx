@@ -46,7 +46,9 @@ export function PageBuilderSidebar({
   allPages: any[];
   activeWorkspace: any;
 }) {
-  const [activeTab, setActiveTab] = useState<"elements" | "pages" | "sections" | "navigations" | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    "elements" | "pages" | "sections" | "navigations" | null
+  >(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const basicsItems = [
@@ -126,7 +128,9 @@ export function PageBuilderSidebar({
                         className={`h-4 w-4 ${activeTab === item.type ? "text-primary" : "text-muted-foreground"}`}
                       />
                       <span>{item.label}</span>
-                      <ChevronRight className={`w-4 h-4 ml-auto transition-transform ${activeTab === item.type ? "opacity-100" : "opacity-50"}`} />
+                      <ChevronRight
+                        className={`w-4 h-4 ml-auto transition-transform ${activeTab === item.type ? "opacity-100" : "opacity-50"}`}
+                      />
                     </Button>
                   ))}
                 </div>
@@ -189,7 +193,12 @@ export function PageBuilderSidebar({
         <div className="absolute top-0 left-full h-full w-[280px] bg-card border-r border-border/60 shadow-[4px_0_24px_rgba(0,0,0,0.05)] z-20 flex flex-col">
           <div className="p-4 border-b border-border/60 flex items-center justify-between">
             <h3 className="font-semibold text-sm">Pages & Templates</h3>
-            <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => setActiveTab(null)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6"
+              onClick={() => setActiveTab(null)}
+            >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Button>
           </div>
@@ -201,7 +210,12 @@ export function PageBuilderSidebar({
                   <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Your Pages
                   </h4>
-                  <Button variant="ghost" size="icon" className="w-6 h-6 hover:bg-secondary/40" asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-6 h-6 hover:bg-secondary/40"
+                    asChild
+                  >
                     <Link
                       to="/dashboard/$workspaceSlug/page-builder/editor"
                       params={{ workspaceSlug: activeWorkspace?.slug || "" }}
@@ -243,7 +257,12 @@ export function PageBuilderSidebar({
                                   </div>
                                 </Link>
                               </Button>
-                              <Button variant="ghost" size="icon" className="w-8 h-8 shrink-0 hover:bg-secondary/40" asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="w-8 h-8 shrink-0 hover:bg-secondary/40"
+                                asChild
+                              >
                                 <Link
                                   to="/dashboard/$workspaceSlug/page-builder/editor"
                                   params={{ workspaceSlug: activeWorkspace?.slug || "" }}
@@ -293,7 +312,8 @@ export function PageBuilderSidebar({
                     No pages yet. Click + to create one!
                   </div>
                 )}
-              </div>              {/* Templates */}
+              </div>{" "}
+              {/* Templates */}
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
                   Templates
@@ -336,7 +356,12 @@ export function PageBuilderSidebar({
         <div className="absolute top-0 left-full h-full w-[280px] bg-card border-r border-border/60 shadow-[4px_0_24px_rgba(0,0,0,0.05)] z-20 flex flex-col">
           <div className="p-4 border-b border-border/60 flex items-center justify-between">
             <h3 className="font-semibold text-sm">Sections Library</h3>
-            <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => setActiveTab(null)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6"
+              onClick={() => setActiveTab(null)}
+            >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Button>
           </div>
@@ -347,20 +372,30 @@ export function PageBuilderSidebar({
                   name: "Split Feature",
                   icon: Columns,
                   desc: "Image next to text block",
-                  components: [{ type: "split_block", title: "Amazing Feature", content: "Describe this feature.", imagePosition: "right" }]
+                  components: [
+                    {
+                      type: "split_block",
+                      title: "Amazing Feature",
+                      content: "Describe this feature.",
+                      imagePosition: "right",
+                    },
+                  ],
                 },
                 {
                   name: "Call to Action",
                   icon: Link2,
                   desc: "Text banner with button",
-                  components: [{ type: "text", content: "<h2 style='text-align:center'>Ready to start?</h2>" }, { type: "button", label: "Get Started", alignment: "center" }]
+                  components: [
+                    { type: "text", content: "<h2 style='text-align:center'>Ready to start?</h2>" },
+                    { type: "button", label: "Get Started", alignment: "center" },
+                  ],
                 },
                 {
                   name: "Logo Grid",
                   icon: Users2,
                   desc: "Trusted by section",
-                  components: [{ type: "sponsor_logos", title: "Trusted by the Best", logos: [] }]
-                }
+                  components: [{ type: "sponsor_logos", title: "Trusted by the Best", logos: [] }],
+                },
               ].map((section, i) => (
                 <div
                   key={i}
@@ -375,9 +410,15 @@ export function PageBuilderSidebar({
                   </div>
                   <div className="flex flex-col flex-1 min-w-0 justify-center">
                     <span className="text-sm font-semibold truncate">{section.name}</span>
-                    <span className="text-[10px] text-muted-foreground truncate">{section.desc}</span>
+                    <span className="text-[10px] text-muted-foreground truncate">
+                      {section.desc}
+                    </span>
                   </div>
-                  <Button variant="ghost" size="icon" className="w-6 h-6 self-center opacity-0 group-hover:opacity-100 -mr-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-6 h-6 self-center opacity-0 group-hover:opacity-100 -mr-1 shrink-0"
+                  >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -392,7 +433,12 @@ export function PageBuilderSidebar({
         <div className="absolute top-0 left-full h-full w-[280px] bg-card border-r border-border/60 shadow-[4px_0_24px_rgba(0,0,0,0.05)] z-20 flex flex-col">
           <div className="p-4 border-b border-border/60 flex items-center justify-between">
             <h3 className="font-semibold text-sm">Navigations</h3>
-            <Button variant="ghost" size="icon" className="w-6 h-6" onClick={() => setActiveTab(null)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-6 h-6"
+              onClick={() => setActiveTab(null)}
+            >
               <ChevronRight className="w-4 h-4 rotate-180" />
             </Button>
           </div>
@@ -403,15 +449,17 @@ export function PageBuilderSidebar({
                   name: "Simple Links",
                   icon: Menu,
                   desc: "Horizontal link row",
-                  components: [{ 
-                    type: "navigations", 
-                    links: [
-                      { label: "Home", url: "/" },
-                      { label: "About", url: "/about" },
-                      { label: "Contact", url: "/contact" }
-                    ]
-                  }]
-                }
+                  components: [
+                    {
+                      type: "navigations",
+                      links: [
+                        { label: "Home", url: "/" },
+                        { label: "About", url: "/about" },
+                        { label: "Contact", url: "/contact" },
+                      ],
+                    },
+                  ],
+                },
               ].map((section, i) => (
                 <div
                   key={i}
@@ -426,9 +474,15 @@ export function PageBuilderSidebar({
                   </div>
                   <div className="flex flex-col flex-1 min-w-0 justify-center">
                     <span className="text-sm font-semibold truncate">{section.name}</span>
-                    <span className="text-[10px] text-muted-foreground truncate">{section.desc}</span>
+                    <span className="text-[10px] text-muted-foreground truncate">
+                      {section.desc}
+                    </span>
                   </div>
-                  <Button variant="ghost" size="icon" className="w-6 h-6 self-center opacity-0 group-hover:opacity-100 -mr-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-6 h-6 self-center opacity-0 group-hover:opacity-100 -mr-1 shrink-0"
+                  >
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>

@@ -40,7 +40,7 @@ export function VoucherCard({
         <span className="uppercase tracking-widest text-[9px] font-semibold opacity-90 mb-1.5">
           {voucher.category || "Voucher"}
         </span>
-        
+
         {voucher.value_amount ? (
           <>
             <h3 className="text-2xl font-bold tracking-tight mb-0.5">
@@ -48,15 +48,21 @@ export function VoucherCard({
                 ? voucher.value_amount
                 : formatCurrency(voucher.value_amount, currencyCode)}
             </h3>
-            <span className="text-[9px] font-bold tracking-widest uppercase opacity-75 mb-2">Value</span>
-            <p className="text-xs font-medium tracking-tight opacity-90 leading-snug px-2 line-clamp-2">{voucher.name}</p>
+            <span className="text-[9px] font-bold tracking-widest uppercase opacity-75 mb-2">
+              Value
+            </span>
+            <p className="text-xs font-medium tracking-tight opacity-90 leading-snug px-2 line-clamp-2">
+              {voucher.name}
+            </p>
           </>
         ) : (
           <>
             <h3 className="text-2xl font-bold tracking-tight mb-2">
               {formatCurrency(voucher.price, currencyCode)}
             </h3>
-            <p className="text-xs font-medium tracking-tight opacity-90 leading-snug px-2 line-clamp-2">{voucher.name}</p>
+            <p className="text-xs font-medium tracking-tight opacity-90 leading-snug px-2 line-clamp-2">
+              {voucher.name}
+            </p>
           </>
         )}
       </div>
@@ -86,11 +92,13 @@ export function VoucherCard({
       <div className="flex flex-col items-center justify-center pt-5 pb-5 px-3 text-center">
         {voucher.value_amount && (
           <div className="flex items-center gap-1.5 text-sm font-semibold tracking-tight bg-white/20 px-2.5 py-1 rounded-full mb-3 shadow-sm border border-white/10">
-            <span className="opacity-90 font-medium text-[11px] uppercase tracking-wider">Price:</span>
+            <span className="opacity-90 font-medium text-[11px] uppercase tracking-wider">
+              Price:
+            </span>
             <span>{formatCurrency(voucher.price, currencyCode)}</span>
           </div>
         )}
-        
+
         {showCartControls ? (
           <div className="flex flex-col items-center gap-1.5 w-full">
             {availableStock !== undefined && (

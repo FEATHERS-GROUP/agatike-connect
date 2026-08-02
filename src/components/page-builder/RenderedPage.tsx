@@ -251,25 +251,32 @@ export function RenderedPage({
   }
 
   const { title, description, header_image_url } = page;
-  
+
   // Uniform branding: inherit theme and logo from parent
   const theme_color = page.parent?.theme_color || page.theme_color || "#000000";
   const logo_url = page.parent?.logo_url || page.logo_url;
 
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
   const parentSettingsBlock = page.parent?.components?.find((c: any) => c.type === "page_settings");
-  
+
   // Uniform navbar & background: inherit style, font, and bg from parent
   const logoPosition = parentSettingsBlock?.logoPosition || settingsBlock?.logoPosition || "hero";
-  const navbarStyle = parentSettingsBlock?.navbarStyle || settingsBlock?.navbarStyle || "transparent";
-  const navbarBackgroundColor = parentSettingsBlock?.navbarBackgroundColor || settingsBlock?.navbarBackgroundColor || "";
-  const navbarTextColor = parentSettingsBlock?.navbarTextColor || settingsBlock?.navbarTextColor || "";
-  const navbarAlignment = parentSettingsBlock?.navbarAlignment || settingsBlock?.navbarAlignment || "right";
+  const navbarStyle =
+    parentSettingsBlock?.navbarStyle || settingsBlock?.navbarStyle || "transparent";
+  const navbarBackgroundColor =
+    parentSettingsBlock?.navbarBackgroundColor || settingsBlock?.navbarBackgroundColor || "";
+  const navbarTextColor =
+    parentSettingsBlock?.navbarTextColor || settingsBlock?.navbarTextColor || "";
+  const navbarAlignment =
+    parentSettingsBlock?.navbarAlignment || settingsBlock?.navbarAlignment || "right";
   const fontFamily = parentSettingsBlock?.fontFamily || settingsBlock?.fontFamily || "Inter";
-  const pageBackgroundColor = parentSettingsBlock?.pageBackgroundColor || settingsBlock?.pageBackgroundColor || "#ffffff";
-  const pageBackgroundImageUrl = parentSettingsBlock?.pageBackgroundImageUrl || settingsBlock?.pageBackgroundImageUrl || "";
-  const pageTextColor = parentSettingsBlock?.pageTextColor || settingsBlock?.pageTextColor || "#000000";
-  
+  const pageBackgroundColor =
+    parentSettingsBlock?.pageBackgroundColor || settingsBlock?.pageBackgroundColor || "#ffffff";
+  const pageBackgroundImageUrl =
+    parentSettingsBlock?.pageBackgroundImageUrl || settingsBlock?.pageBackgroundImageUrl || "";
+  const pageTextColor =
+    parentSettingsBlock?.pageTextColor || settingsBlock?.pageTextColor || "#000000";
+
   // Hero settings remain specific to the sub-page
   const heroAlign = settingsBlock?.heroAlign || "center";
   const heroOverlayColor = settingsBlock?.heroOverlayColor || "#000000";
@@ -359,9 +366,15 @@ export function RenderedPage({
                 ? "absolute top-0 left-0 right-0 z-50 w-full bg-transparent border-b border-white/10"
                 : "sticky top-0 z-50 w-full backdrop-blur-xl border-b border-border/40 shadow-sm transition-all"
             }
-            style={navbarStyle !== "transparent" && navbarBackgroundColor ? { backgroundColor: navbarBackgroundColor } : {}}
+            style={
+              navbarStyle !== "transparent" && navbarBackgroundColor
+                ? { backgroundColor: navbarBackgroundColor }
+                : {}
+            }
           >
-            <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center ${navbarAlignment === "center" ? "justify-between relative" : "justify-between"}`}>
+            <div
+              className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center ${navbarAlignment === "center" ? "justify-between relative" : "justify-between"}`}
+            >
               {/* Logo */}
               <div className="flex-shrink-0 flex items-center z-10">
                 {logoPosition === "navbar" && logo_url ? (
@@ -372,7 +385,12 @@ export function RenderedPage({
                   <a
                     href={siteLinks.length > 0 ? siteLinks[0].url : "#"}
                     className={`font-bold text-xl tracking-tight truncate max-w-[200px] transition-colors`}
-                    style={{ color: navbarStyle !== "transparent" && navbarTextColor ? navbarTextColor : undefined }}
+                    style={{
+                      color:
+                        navbarStyle !== "transparent" && navbarTextColor
+                          ? navbarTextColor
+                          : undefined,
+                    }}
                   >
                     {siteTitle}
                   </a>
@@ -382,12 +400,12 @@ export function RenderedPage({
               </div>
 
               {/* Menu Links - Desktop */}
-              <div 
+              <div
                 className={`hidden md:flex items-center gap-6 z-10 ${
-                  navbarAlignment === "center" 
-                    ? "absolute left-1/2 -translate-x-1/2" 
-                    : navbarAlignment === "left" 
-                      ? "flex-1 ml-8 justify-start" 
+                  navbarAlignment === "center"
+                    ? "absolute left-1/2 -translate-x-1/2"
+                    : navbarAlignment === "left"
+                      ? "flex-1 ml-8 justify-start"
                       : "flex-1 justify-end"
                 }`}
               >
@@ -396,10 +414,13 @@ export function RenderedPage({
                     key={link.url}
                     href={link.url}
                     className={`text-sm font-medium transition-colors whitespace-nowrap`}
-                    style={{ 
-                      color: navbarStyle !== "transparent" && navbarTextColor 
-                        ? navbarTextColor 
-                        : navbarStyle === "transparent" ? "rgba(255,255,255,0.9)" : "inherit"
+                    style={{
+                      color:
+                        navbarStyle !== "transparent" && navbarTextColor
+                          ? navbarTextColor
+                          : navbarStyle === "transparent"
+                            ? "rgba(255,255,255,0.9)"
+                            : "inherit",
                     }}
                   >
                     {link.name}
@@ -407,7 +428,15 @@ export function RenderedPage({
                 ))}
 
                 {menuLinks.length > 0 && siteLinks.length > 0 && (
-                  <div className="w-px h-4 mx-2" style={{ backgroundColor: navbarStyle !== "transparent" && navbarTextColor ? navbarTextColor : 'rgba(0,0,0,0.2)' }} />
+                  <div
+                    className="w-px h-4 mx-2"
+                    style={{
+                      backgroundColor:
+                        navbarStyle !== "transparent" && navbarTextColor
+                          ? navbarTextColor
+                          : "rgba(0,0,0,0.2)",
+                    }}
+                  />
                 )}
 
                 {menuLinks.map((link: any) => (
@@ -415,10 +444,13 @@ export function RenderedPage({
                     key={link.id}
                     onClick={() => scrollToSection(link.id)}
                     className={`text-sm font-medium transition-colors whitespace-nowrap`}
-                    style={{ 
-                      color: navbarStyle !== "transparent" && navbarTextColor 
-                        ? navbarTextColor 
-                        : navbarStyle === "transparent" ? "rgba(255,255,255,0.9)" : "inherit"
+                    style={{
+                      color:
+                        navbarStyle !== "transparent" && navbarTextColor
+                          ? navbarTextColor
+                          : navbarStyle === "transparent"
+                            ? "rgba(255,255,255,0.9)"
+                            : "inherit",
                     }}
                   >
                     {link.name}
@@ -433,8 +465,17 @@ export function RenderedPage({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={navbarStyle === "transparent" ? "text-white hover:text-white hover:bg-white/10" : ""}
-                      style={{ color: navbarStyle !== "transparent" && navbarTextColor ? navbarTextColor : undefined }}
+                      className={
+                        navbarStyle === "transparent"
+                          ? "text-white hover:text-white hover:bg-white/10"
+                          : ""
+                      }
+                      style={{
+                        color:
+                          navbarStyle !== "transparent" && navbarTextColor
+                            ? navbarTextColor
+                            : undefined,
+                      }}
                     >
                       <Menu className="h-6 w-6" />
                     </Button>
@@ -449,7 +490,9 @@ export function RenderedPage({
                           key={link.url}
                           href={link.url}
                           className={`text-lg font-medium transition-colors ${
-                            link.isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                            link.isActive
+                              ? "text-primary"
+                              : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
                           {link.name}
@@ -662,7 +705,15 @@ export function RenderedPage({
             <div className="space-y-16 md:space-y-24">
               {!hideComponents &&
                 actualComponents?.map((comp: any) => {
-                  const wrap = (subKey: string, child: React.ReactNode, defaultWidth = "100%", defaultHeight = "auto", defaultPadding = "0px", defaultRadius = "0px", defaultBackgroundColor?: string) => {
+                  const wrap = (
+                    subKey: string,
+                    child: React.ReactNode,
+                    defaultWidth = "100%",
+                    defaultHeight = "auto",
+                    defaultPadding = "0px",
+                    defaultRadius = "0px",
+                    defaultBackgroundColor?: string,
+                  ) => {
                     return (
                       <StaticSubElement
                         comp={comp}
@@ -682,11 +733,16 @@ export function RenderedPage({
                     if (comp.type === "text") {
                       return (
                         <div key={comp.id} className="w-full">
-                          {wrap('text', 
+                          {wrap(
+                            "text",
                             <div className="w-full h-full text-base md:text-lg">
                               <p className="whitespace-pre-wrap m-0">{comp.content}</p>
                             </div>,
-                          "100%", "auto", "24px", "16px")}
+                            "100%",
+                            "auto",
+                            "24px",
+                            "16px",
+                          )}
                         </div>
                       );
                     }
@@ -694,9 +750,17 @@ export function RenderedPage({
                     if (comp.type === "image" && comp.url) {
                       return (
                         <div key={comp.id} className="w-full">
-                          {wrap('img',
-                            <img src={comp.url} alt="Content" className="w-full h-full object-cover" />,
-                            "100%", "400px", "0px", "16px"
+                          {wrap(
+                            "img",
+                            <img
+                              src={comp.url}
+                              alt="Content"
+                              className="w-full h-full object-cover"
+                            />,
+                            "100%",
+                            "400px",
+                            "0px",
+                            "16px",
                           )}
                         </div>
                       );
@@ -705,26 +769,48 @@ export function RenderedPage({
                     if (comp.type === "split_block") {
                       return (
                         <div key={comp.id} className="w-full relative group">
-                          {wrap('split_wrapper',
-                            <div className={`flex flex-col md:flex-row gap-4 items-center w-full h-full ${comp.imagePosition === 'right' ? 'md:flex-row-reverse' : ''}`}>
+                          {wrap(
+                            "split_wrapper",
+                            <div
+                              className={`flex flex-col md:flex-row gap-4 items-center w-full h-full ${comp.imagePosition === "right" ? "md:flex-row-reverse" : ""}`}
+                            >
                               {comp.imageUrl && (
                                 <div className="flex-1 w-full h-full">
-                                  {wrap('split_image', 
-                                    <img src={comp.imageUrl} alt="Split Content" className="w-full h-full object-cover" />,
-                                  "100%", "100%", "0px", "16px")}
+                                  {wrap(
+                                    "split_image",
+                                    <img
+                                      src={comp.imageUrl}
+                                      alt="Split Content"
+                                      className="w-full h-full object-cover"
+                                    />,
+                                    "100%",
+                                    "100%",
+                                    "0px",
+                                    "16px",
+                                  )}
                                 </div>
                               )}
                               {comp.text && (
                                 <div className="flex-1 w-full h-full">
-                                  {wrap('split_text',
+                                  {wrap(
+                                    "split_text",
                                     <div className="w-full h-full flex flex-col justify-center text-sm md:text-base">
                                       <p className="whitespace-pre-wrap m-0">{comp.text}</p>
                                     </div>,
-                                  "100%", "100%", "24px", "0px")}
+                                    "100%",
+                                    "100%",
+                                    "24px",
+                                    "0px",
+                                  )}
                                 </div>
                               )}
                             </div>,
-                          "100%", "auto", "16px", "16px", "#ffffff")}
+                            "100%",
+                            "auto",
+                            "16px",
+                            "16px",
+                            "#ffffff",
+                          )}
                         </div>
                       );
                     }
@@ -732,13 +818,23 @@ export function RenderedPage({
                     if (comp.type === "button") {
                       return (
                         <div key={comp.id} className="w-full flex justify-center py-4">
-                          {wrap('button',
-                            <Button asChild size="lg" className="w-full h-full shadow-lg text-white">
+                          {wrap(
+                            "button",
+                            <Button
+                              asChild
+                              size="lg"
+                              className="w-full h-full shadow-lg text-white"
+                            >
                               <a href={comp.url} target="_blank" rel="noreferrer">
                                 {comp.label || "Click Here"}
                               </a>
                             </Button>,
-                          "200px", "56px", "0px", "9999px", theme_color)}
+                            "200px",
+                            "56px",
+                            "0px",
+                            "9999px",
+                            theme_color,
+                          )}
                         </div>
                       );
                     }
@@ -747,18 +843,42 @@ export function RenderedPage({
                       const c = parseInt(comp.columns) || 2;
                       let gridCols = "grid-cols-1 md:grid-cols-2";
                       switch (c) {
-                        case 1: gridCols = "grid-cols-1"; break;
-                        case 2: gridCols = "grid-cols-1 md:grid-cols-2"; break;
-                        case 3: gridCols = "grid-cols-1 md:grid-cols-3"; break;
-                        case 4: gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"; break;
-                        case 5: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5"; break;
-                        case 6: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6"; break;
-                        case 7: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7"; break;
-                        case 8: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8"; break;
-                        case 9: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9"; break;
-                        case 10: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10"; break;
-                        case 11: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11"; break;
-                        case 12: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12"; break;
+                        case 1:
+                          gridCols = "grid-cols-1";
+                          break;
+                        case 2:
+                          gridCols = "grid-cols-1 md:grid-cols-2";
+                          break;
+                        case 3:
+                          gridCols = "grid-cols-1 md:grid-cols-3";
+                          break;
+                        case 4:
+                          gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
+                          break;
+                        case 5:
+                          gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5";
+                          break;
+                        case 6:
+                          gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6";
+                          break;
+                        case 7:
+                          gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7";
+                          break;
+                        case 8:
+                          gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8";
+                          break;
+                        case 9:
+                          gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9";
+                          break;
+                        case 10:
+                          gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10";
+                          break;
+                        case 11:
+                          gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11";
+                          break;
+                        case 12:
+                          gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12";
+                          break;
                       }
 
                       return (
@@ -778,7 +898,8 @@ export function RenderedPage({
 
                             return (
                               <div key={idx} className="flex h-full">
-                                {wrap('card_item', 
+                                {wrap(
+                                  "card_item",
                                   <div
                                     className={`border border-border/60 p-6 hover:border-primary/50 transition-all duration-300 flex flex-col h-full group ${elementShape}`}
                                     style={{
@@ -787,49 +908,63 @@ export function RenderedPage({
                                     }}
                                   >
                                     <div className="flex items-start justify-between mb-4 w-full">
-                                      {wrap('card_item_title',
+                                      {wrap(
+                                        "card_item_title",
                                         <h3 className="text-2xl font-bold group-hover:opacity-80 transition-opacity m-0">
                                           {card.customTitle || linkedForm.title}
                                         </h3>,
-                                        "100%", "auto", "0px", "0px"
+                                        "100%",
+                                        "auto",
+                                        "0px",
+                                        "0px",
                                       )}
-                                      {linkedForm.cover_image_url && (
-                                        wrap('card_item_image',
-                                          <div className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}>
+                                      {linkedForm.cover_image_url &&
+                                        wrap(
+                                          "card_item_image",
+                                          <div
+                                            className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}
+                                          >
                                             <img
                                               src={linkedForm.cover_image_url}
                                               alt={linkedForm.title}
                                               className="w-full h-full object-cover"
                                             />
                                           </div>,
-                                          "64px", "64px", "0px", "0px"
-                                        )
-                                      )}
+                                          "64px",
+                                          "64px",
+                                          "0px",
+                                          "0px",
+                                        )}
                                     </div>
 
                                     {card.bulletPoints ? (
-                                      wrap('card_item_desc',
-                                        <div
-                                          className="prose prose-sm dark:prose-invert mb-8 flex-1 whitespace-pre-wrap w-full"
-                                        >
+                                      wrap(
+                                        "card_item_desc",
+                                        <div className="prose prose-sm dark:prose-invert mb-8 flex-1 whitespace-pre-wrap w-full">
                                           {card.bulletPoints}
                                         </div>,
-                                        "100%", "auto", "0px", "0px"
+                                        "100%",
+                                        "auto",
+                                        "0px",
+                                        "0px",
                                       )
                                     ) : linkedForm.description ? (
-                                      wrap('card_item_desc',
-                                        <p
-                                          className="line-clamp-3 mb-8 flex-1 w-full m-0"
-                                        >
+                                      wrap(
+                                        "card_item_desc",
+                                        <p className="line-clamp-3 mb-8 flex-1 w-full m-0">
                                           {linkedForm.description}
                                         </p>,
-                                        "100%", "auto", "0px", "0px"
+                                        "100%",
+                                        "auto",
+                                        "0px",
+                                        "0px",
                                       )
                                     ) : (
                                       <div className="flex-1" />
                                     )}
 
-                                    {wrap('card_item_button',
+                                    {wrap(
+                                      "card_item_button",
                                       comp.openAction === "modal" ? (
                                         <Dialog>
                                           <DialogTrigger asChild>
@@ -881,10 +1016,18 @@ export function RenderedPage({
                                           </Link>
                                         </Button>
                                       ),
-                                      "100%", "auto", "0px", "9999px", theme_color
+                                      "100%",
+                                      "auto",
+                                      "0px",
+                                      "9999px",
+                                      theme_color,
                                     )}
                                   </div>,
-                                  "100%", "100%", "0px", "16px", comp.cardBgColor || "var(--card)"
+                                  "100%",
+                                  "100%",
+                                  "0px",
+                                  "16px",
+                                  comp.cardBgColor || "var(--card)",
                                 )}
                               </div>
                             );
@@ -918,7 +1061,10 @@ export function RenderedPage({
                     }
 
                     const isFormLink = comp.type === "form_link" && comp.content;
-                    const isPaymentForm = comp.type === "payment_button" && comp.connectedFormId && comp.connectedFormId !== "none";
+                    const isPaymentForm =
+                      comp.type === "payment_button" &&
+                      comp.connectedFormId &&
+                      comp.connectedFormId !== "none";
 
                     if (isFormLink || isPaymentForm) {
                       const targetFormId = isPaymentForm ? comp.connectedFormId : comp.content;
@@ -935,14 +1081,16 @@ export function RenderedPage({
 
                       if (!linkedForm) return null;
 
-                      const paymentConfig = isPaymentForm ? {
-                        amount: comp.amount,
-                        label: comp.label || "Pay & Register",
-                        description: comp.description,
-                        workspace_id: workspace_id,
-                        theme_color: theme_color,
-                        slug: slug
-                      } : undefined;
+                      const paymentConfig = isPaymentForm
+                        ? {
+                            amount: comp.amount,
+                            label: comp.label || "Pay & Register",
+                            description: comp.description,
+                            workspace_id: workspace_id,
+                            theme_color: theme_color,
+                            slug: slug,
+                          }
+                        : undefined;
 
                       const embeddedFormProps = {
                         formId: linkedForm.id,
@@ -950,8 +1098,8 @@ export function RenderedPage({
                         styleConfig: {
                           cardBgColor: comp.cardBgColor,
                           cardTextColor: comp.cardTextColor,
-                          columns: comp.columns
-                        }
+                          columns: comp.columns,
+                        },
                       };
 
                       if (comp.design === "embedded") {
@@ -962,15 +1110,20 @@ export function RenderedPage({
                         );
                       }
 
-                      const actualOpenAction = isPaymentForm && (comp.openAction === "page" || !comp.openAction) ? "page" : (comp.openAction || "page");
+                      const actualOpenAction =
+                        isPaymentForm && (comp.openAction === "page" || !comp.openAction)
+                          ? "page"
+                          : comp.openAction || "page";
 
                       // Build query string for payment config when navigating to a new page
                       const paymentQueryString = isPaymentForm
                         ? `?pay=1&amount=${encodeURIComponent(comp.amount || "")}&label=${encodeURIComponent(comp.label || "")}&description=${encodeURIComponent(comp.description || "")}&workspace_id=${encodeURIComponent(workspace_id || "")}&color=${encodeURIComponent(theme_color || "")}&slug=${encodeURIComponent(slug || "")}`
                         : "";
 
-                      const displayTitle = (isPaymentForm ? (comp.label || comp.title) : null) || linkedForm.title;
-                      const displayDesc = (isPaymentForm ? comp.description : null) || linkedForm.description;
+                      const displayTitle =
+                        (isPaymentForm ? comp.label || comp.title : null) || linkedForm.title;
+                      const displayDesc =
+                        (isPaymentForm ? comp.description : null) || linkedForm.description;
 
                       if (comp.design === "button") {
                         const buttonContent = (
@@ -979,8 +1132,7 @@ export function RenderedPage({
                             className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center cursor-pointer"
                             style={{ background: theme_color }}
                           >
-                            {displayTitle}{" "}
-                            <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
+                            {displayTitle} <ArrowRight className="w-5 h-5 ml-2 md:ml-3 shrink-0" />
                           </Button>
                         );
 
@@ -1035,54 +1187,72 @@ export function RenderedPage({
                             color: comp.color || undefined,
                           }}
                         >
-                          {linkedForm.cover_image_url ? (
-                            wrap('form_image',
-                              <div
-                                className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}
-                              >
-                                <img
-                                  src={linkedForm.cover_image_url}
-                                  alt={linkedForm.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                              </div>,
-                              "192px", "128px", "0px", "0px"
-                            )
-                          ) : (
-                            wrap('form_image',
-                              <div
-                                className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}
-                              >
-                                <span className="text-4xl font-bold text-primary/30">
-                                  {linkedForm.title.charAt(0)}
-                                </span>
-                              </div>,
-                              "192px", "128px", "0px", "0px"
-                            )
-                          )}
+                          {linkedForm.cover_image_url
+                            ? wrap(
+                                "form_image",
+                                <div
+                                  className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}
+                                >
+                                  <img
+                                    src={linkedForm.cover_image_url}
+                                    alt={linkedForm.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                </div>,
+                                "192px",
+                                "128px",
+                                "0px",
+                                "0px",
+                              )
+                            : wrap(
+                                "form_image",
+                                <div
+                                  className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}
+                                >
+                                  <span className="text-4xl font-bold text-primary/30">
+                                    {linkedForm.title.charAt(0)}
+                                  </span>
+                                </div>,
+                                "192px",
+                                "128px",
+                                "0px",
+                                "0px",
+                              )}
                           <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full min-w-0">
-                            {wrap('form_title',
+                            {wrap(
+                              "form_title",
                               <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors m-0 w-full">
                                 {displayTitle}
                               </h3>,
-                              "100%", "auto", "0px", "0px"
+                              "100%",
+                              "auto",
+                              "0px",
+                              "0px",
                             )}
-                            {displayDesc && (
-                              wrap('form_desc',
+                            {displayDesc &&
+                              wrap(
+                                "form_desc",
                                 <p className="text-muted-foreground line-clamp-2 mb-4 w-full m-0">
                                   {displayDesc}
                                 </p>,
-                                "100%", "auto", "0px", "0px"
-                              )
-                            )}
-                            {wrap('form_button',
+                                "100%",
+                                "auto",
+                                "0px",
+                                "0px",
+                              )}
+                            {wrap(
+                              "form_button",
                               <Button
                                 className="mt-4 md:mt-auto !rounded-full w-fit md:w-full px-8 py-2"
                                 style={{ background: theme_color }}
                               >
                                 Fill Form <ArrowRight className="w-4 h-4 ml-2 shrink-0" />
                               </Button>,
-                              "auto", "auto", "0px", "9999px", theme_color
+                              "auto",
+                              "auto",
+                              "0px",
+                              "9999px",
+                              theme_color,
                             )}
                           </div>
                         </div>
@@ -1148,10 +1318,17 @@ export function RenderedPage({
                       }
                     }
 
-                    if (comp.type === "payment_button" && (!comp.connectedFormId || comp.connectedFormId === "none")) {
+                    if (
+                      comp.type === "payment_button" &&
+                      (!comp.connectedFormId || comp.connectedFormId === "none")
+                    ) {
                       return (
-                        <div key={comp.id} className="flex flex-col items-center justify-center w-full px-4 py-8">
-                          {wrap('payment_btn',
+                        <div
+                          key={comp.id}
+                          className="flex flex-col items-center justify-center w-full px-4 py-8"
+                        >
+                          {wrap(
+                            "payment_btn",
                             comp.paymentLink ? (
                               <a
                                 href={comp.paymentLink}
@@ -1182,14 +1359,23 @@ export function RenderedPage({
                                 )}
                               </Button>
                             ),
-                          "250px", "64px", "0px", "9999px", theme_color)}
-                          {comp.description && (
-                            wrap('payment_desc',
+                            "250px",
+                            "64px",
+                            "0px",
+                            "9999px",
+                            theme_color,
+                          )}
+                          {comp.description &&
+                            wrap(
+                              "payment_desc",
                               <p className="mt-6 text-base text-muted-foreground text-center w-full m-0">
                                 {comp.description}
                               </p>,
-                            "100%", "auto", "0px", "0px")
-                          )}
+                              "100%",
+                              "auto",
+                              "0px",
+                              "0px",
+                            )}
                         </div>
                       );
                     }
@@ -1197,19 +1383,33 @@ export function RenderedPage({
                     if (comp.type === "qr_code") {
                       const size = comp.size || 192;
                       return (
-                        <div key={comp.id} className="flex flex-col items-center justify-center w-full py-12 gap-6">
-                          {wrap('qr_container',
-                            <div className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow w-full h-full flex items-center justify-center ${elementShape}`}>
+                        <div
+                          key={comp.id}
+                          className="flex flex-col items-center justify-center w-full py-12 gap-6"
+                        >
+                          {wrap(
+                            "qr_container",
+                            <div
+                              className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow w-full h-full flex items-center justify-center ${elementShape}`}
+                            >
                               <QRCode value={comp.content || "https://agatike.com"} size={size} />
                             </div>,
-                          "256px", "256px", "0px", "16px")}
-                          {comp.title && (
-                            wrap('qr_title',
+                            "256px",
+                            "256px",
+                            "0px",
+                            "16px",
+                          )}
+                          {comp.title &&
+                            wrap(
+                              "qr_title",
                               <p className="text-lg font-medium text-center w-full m-0">
                                 {comp.title}
                               </p>,
-                            "100%", "auto", "0px", "0px")
-                          )}
+                              "100%",
+                              "auto",
+                              "0px",
+                              "0px",
+                            )}
                         </div>
                       );
                     }
@@ -1396,18 +1596,42 @@ export function RenderedPage({
                       if (isGrid) {
                         const c = parseInt(comp.columns) || 4; // default to 4 for inventory
                         switch (c) {
-                          case 1: gridCols = "grid-cols-1"; break;
-                          case 2: gridCols = "grid-cols-1 md:grid-cols-2"; break;
-                          case 3: gridCols = "grid-cols-1 md:grid-cols-3"; break;
-                          case 4: gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"; break;
-                          case 5: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5"; break;
-                          case 6: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6"; break;
-                          case 7: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7"; break;
-                          case 8: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8"; break;
-                          case 9: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9"; break;
-                          case 10: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10"; break;
-                          case 11: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11"; break;
-                          case 12: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12"; break;
+                          case 1:
+                            gridCols = "grid-cols-1";
+                            break;
+                          case 2:
+                            gridCols = "grid-cols-1 md:grid-cols-2";
+                            break;
+                          case 3:
+                            gridCols = "grid-cols-1 md:grid-cols-3";
+                            break;
+                          case 4:
+                            gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
+                            break;
+                          case 5:
+                            gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5";
+                            break;
+                          case 6:
+                            gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6";
+                            break;
+                          case 7:
+                            gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7";
+                            break;
+                          case 8:
+                            gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8";
+                            break;
+                          case 9:
+                            gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9";
+                            break;
+                          case 10:
+                            gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10";
+                            break;
+                          case 11:
+                            gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11";
+                            break;
+                          case 12:
+                            gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12";
+                            break;
                         }
                       } else {
                         gridCols = "grid-cols-1 max-w-4xl mx-auto";
@@ -1418,9 +1642,7 @@ export function RenderedPage({
                           {comp.title && (
                             <h3 className="text-2xl font-bold text-center mb-8">{comp.title}</h3>
                           )}
-                          <div
-                            className={`grid gap-6 ${gridCols}`}
-                          >
+                          <div className={`grid gap-6 ${gridCols}`}>
                             {items.map((item: any, itemIdx: number) => {
                               const isProduct = comp.type === "product_list";
                               const isVenueType = comp.type === "venue_list";
@@ -1440,13 +1662,31 @@ export function RenderedPage({
                                   {...(wrapperProps as any)}
                                   className={`h-full flex flex-col group ${!isProduct && comp.allowSelling !== false ? "cursor-pointer block" : ""}`}
                                 >
-                                  {wrap('inv_item',
-                                    <div className={`bg-card border border-border/40 overflow-hidden shadow-sm hover:shadow-md transition-all flex h-full w-full ${isGrid ? "flex-col" : "flex-col sm:flex-row"}`}>
-                                      {wrap('inv_item_image',
-                                        <div className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}>
-                                          {item.image_url || item.cover || item.cover_url || item.cover_image || item.poster_url || item.images?.[0] ? (
+                                  {wrap(
+                                    "inv_item",
+                                    <div
+                                      className={`bg-card border border-border/40 overflow-hidden shadow-sm hover:shadow-md transition-all flex h-full w-full ${isGrid ? "flex-col" : "flex-col sm:flex-row"}`}
+                                    >
+                                      {wrap(
+                                        "inv_item_image",
+                                        <div
+                                          className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
+                                        >
+                                          {item.image_url ||
+                                          item.cover ||
+                                          item.cover_url ||
+                                          item.cover_image ||
+                                          item.poster_url ||
+                                          item.images?.[0] ? (
                                             <img
-                                              src={item.image_url || item.cover || item.cover_url || item.cover_image || item.poster_url || item.images?.[0]}
+                                              src={
+                                                item.image_url ||
+                                                item.cover ||
+                                                item.cover_url ||
+                                                item.cover_image ||
+                                                item.poster_url ||
+                                                item.images?.[0]
+                                              }
                                               alt=""
                                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
@@ -1456,82 +1696,141 @@ export function RenderedPage({
                                             </div>
                                           )}
                                         </div>,
-                                        "100%", "auto", "0px", "0px"
+                                        "100%",
+                                        "auto",
+                                        "0px",
+                                        "0px",
                                       )}
                                       <div className="p-5 flex-1 flex flex-col min-w-0">
-                                        {wrap('inv_item_title',
-                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors m-0 w-full">{item.name || item.title}</h4>,
-                                          "100%", "auto", "0px", "0px"
+                                        {wrap(
+                                          "inv_item_title",
+                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors m-0 w-full">
+                                            {item.name || item.title}
+                                          </h4>,
+                                          "100%",
+                                          "auto",
+                                          "0px",
+                                          "0px",
                                         )}
                                         {isVenueType && (item.city || item.address) && (
                                           <div className="flex items-center text-xs text-muted-foreground mb-1 gap-1">
                                             <MapPin className="h-3 w-3" />
-                                            <span>{item.city}{item.city && item.address ? ", " : ""}{item.address}</span>
+                                            <span>
+                                              {item.city}
+                                              {item.city && item.address ? ", " : ""}
+                                              {item.address}
+                                            </span>
                                           </div>
                                         )}
-                                        {wrap('inv_item_desc',
-                                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 w-full m-0">{item.description || item.synopsis || (comp.type === "venue_list" ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests` : "No details provided.")}</p>,
-                                          "100%", "auto", "0px", "0px"
+                                        {wrap(
+                                          "inv_item_desc",
+                                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 w-full m-0">
+                                            {item.description ||
+                                              item.synopsis ||
+                                              (comp.type === "venue_list"
+                                                ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests`
+                                                : "No details provided.")}
+                                          </p>,
+                                          "100%",
+                                          "auto",
+                                          "0px",
+                                          "0px",
                                         )}
                                         <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
-                                          {wrap('inv_item_price',
+                                          {wrap(
+                                            "inv_item_price",
                                             <span className="font-semibold truncate mr-2 text-sm w-full">
                                               {(() => {
-                                                if (item.price) return `${Number(item.price).toLocaleString()} RWF`;
+                                                if (item.price)
+                                                  return `${Number(item.price).toLocaleString()} RWF`;
                                                 if (comp.type === "event_list") {
-                                                  if (item.event_tickets && item.event_tickets.length > 0) {
-                                                    const minPrice = Math.min(...item.event_tickets.map((t: any) => t.cost || 0));
-                                                    return minPrice === 0 ? "Free" : `From ${minPrice.toLocaleString()} RWF`;
+                                                  if (
+                                                    item.event_tickets &&
+                                                    item.event_tickets.length > 0
+                                                  ) {
+                                                    const minPrice = Math.min(
+                                                      ...item.event_tickets.map(
+                                                        (t: any) => t.cost || 0,
+                                                      ),
+                                                    );
+                                                    return minPrice === 0
+                                                      ? "Free"
+                                                      : `From ${minPrice.toLocaleString()} RWF`;
                                                   }
                                                   return "Free";
                                                 }
-                                                if (comp.type === "space_list" || comp.type === "venue_list") return "Check Availability";
+                                                if (
+                                                  comp.type === "space_list" ||
+                                                  comp.type === "venue_list"
+                                                )
+                                                  return "Check Availability";
                                                 return "";
                                               })()}
                                             </span>,
-                                            "auto", "auto", "0px", "0px"
+                                            "auto",
+                                            "auto",
+                                            "0px",
+                                            "0px",
                                           )}
-                                          {comp.allowSelling !== false && (isProduct || isVenueType ? (
-                                            wrap('inv_item_button',
-                                              <Button
-                                                size="sm"
-                                                className="shrink-0 text-white shadow-md"
-                                                style={{ background: theme_color }}
-                                                onClick={(e) => {
-                                                  e.preventDefault();
-                                                  if (isProduct) {
-                                                    setSelectedProductForCheckout(item);
-                                                    setSelectedPaymentBlock(comp);
-                                                    setProductCheckoutSheetOpen(true);
-                                                  } else if (isVenueType) {
-                                                    if (item.is_facility) {
-                                                      const originalVenue = venues.find((v) => v.id === item.venue_id);
-                                                      setSelectedFacilityVenue(originalVenue);
-                                                      setSelectedFacilityForCheckout(item);
-                                                      setFacilityCheckoutSheetOpen(true);
-                                                    } else {
-                                                      setSelectedVenueForCheckout(item);
-                                                      setVenueCheckoutSheetOpen(true);
-                                                    }
-                                                  }
-                                                }}
-                                              >
-                                                {item.is_facility ? "Book Space" : btnLabel}
-                                              </Button>,
-                                              "auto", "auto", "0px", "9999px", theme_color
-                                            )
-                                          ) : (
-                                            wrap('inv_item_button',
-                                              <Button size="sm" className="shrink-0 text-white shadow-md pointer-events-none" style={{ background: theme_color }}>
-                                                {item.is_facility ? "Book Space" : btnLabel}
-                                              </Button>,
-                                              "auto", "auto", "0px", "9999px", theme_color
-                                            )
-                                          ))}
+                                          {comp.allowSelling !== false &&
+                                            (isProduct || isVenueType
+                                              ? wrap(
+                                                  "inv_item_button",
+                                                  <Button
+                                                    size="sm"
+                                                    className="shrink-0 text-white shadow-md"
+                                                    style={{ background: theme_color }}
+                                                    onClick={(e) => {
+                                                      e.preventDefault();
+                                                      if (isProduct) {
+                                                        setSelectedProductForCheckout(item);
+                                                        setSelectedPaymentBlock(comp);
+                                                        setProductCheckoutSheetOpen(true);
+                                                      } else if (isVenueType) {
+                                                        if (item.is_facility) {
+                                                          const originalVenue = venues.find(
+                                                            (v) => v.id === item.venue_id,
+                                                          );
+                                                          setSelectedFacilityVenue(originalVenue);
+                                                          setSelectedFacilityForCheckout(item);
+                                                          setFacilityCheckoutSheetOpen(true);
+                                                        } else {
+                                                          setSelectedVenueForCheckout(item);
+                                                          setVenueCheckoutSheetOpen(true);
+                                                        }
+                                                      }
+                                                    }}
+                                                  >
+                                                    {item.is_facility ? "Book Space" : btnLabel}
+                                                  </Button>,
+                                                  "auto",
+                                                  "auto",
+                                                  "0px",
+                                                  "9999px",
+                                                  theme_color,
+                                                )
+                                              : wrap(
+                                                  "inv_item_button",
+                                                  <Button
+                                                    size="sm"
+                                                    className="shrink-0 text-white shadow-md pointer-events-none"
+                                                    style={{ background: theme_color }}
+                                                  >
+                                                    {item.is_facility ? "Book Space" : btnLabel}
+                                                  </Button>,
+                                                  "auto",
+                                                  "auto",
+                                                  "0px",
+                                                  "9999px",
+                                                  theme_color,
+                                                ))}
                                         </div>
                                       </div>
                                     </div>,
-                                    "100%", "auto", "0px", "16px"
+                                    "100%",
+                                    "auto",
+                                    "0px",
+                                    "16px",
                                   )}
                                 </CardWrapper>
                               );

@@ -76,7 +76,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       const tx = res.update_wallet_transactions?.returning?.[0];
 
-
       let wsSlug = "";
       let wsName = "";
       let wsCity = "";
@@ -604,7 +603,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                        rentable_venue { name address city facilities_data opening_hours closing_hours } 
                      } 
                    }`,
-                  { id: bookingId }
+                  { id: bookingId },
                 );
                 const bk = bData?.venue_bookings_by_pk;
                 if (bk) {
@@ -616,37 +615,50 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       fName = fac.name;
                     }
                   }
-                  
+
                   const vName = bk.rentable_venue?.name || "Venue";
                   const bRef = bk.tickets_data?.booking_ref || "";
                   const sDate = new Date(bk.start_time);
                   const eDate = new Date(bk.end_time);
-                  
-                  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+                  const monthNames = [
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ];
                   const dateStr = `${monthNames[sDate.getMonth()]} ${sDate.getDate()}`;
-                  
+
                   const formatTime = (d: Date) => {
                     let h = d.getHours();
-                    const m = (d.getMinutes()<10?'0':'') + d.getMinutes();
-                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const m = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+                    const ampm = h >= 12 ? "PM" : "AM";
                     h = h % 12;
                     h = h ? h : 12;
                     return `${h}:${m} ${ampm}`;
                   };
-                  
+
                   let sTime = formatTime(sDate);
                   let eTime = formatTime(eDate);
-                  
+
                   if (!fName && bk.rentable_venue) {
                     const parseHour = (hStr: string) => {
                       if (!hStr) return null;
                       const [hh, mm] = hStr.split(":");
                       if (!hh) return null;
                       let h = parseInt(hh, 10);
-                      const ampm = h >= 12 ? 'PM' : 'AM';
+                      const ampm = h >= 12 ? "PM" : "AM";
                       h = h % 12;
                       h = h ? h : 12;
-                      return `${h}:${mm || '00'} ${ampm}`;
+                      return `${h}:${mm || "00"} ${ampm}`;
                     };
                     const open = parseHour(bk.rentable_venue.opening_hours);
                     const close = parseHour(bk.rentable_venue.closing_hours);
@@ -655,9 +667,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       eTime = close;
                     }
                   }
-                  
+
                   const loc = bk.rentable_venue?.address || bk.rentable_venue?.city || "Venue";
-                  
+
                   const what = fName ? `${fName} at ${vName}` : vName;
                   msg = `Payment ${amountDisplay} received. Confirmed: ${what}. Code: ${bRef}. Time: ${dateStr}, ${sTime}-${eTime}. Loc: ${loc}`;
                 }

@@ -1,6 +1,6 @@
-const fs = require('fs');
-const file = 'src/components/page-builder/PreviewComponent.tsx';
-let code = fs.readFileSync(file, 'utf8');
+const fs = require("fs");
+const file = "src/components/page-builder/PreviewComponent.tsx";
+let code = fs.readFileSync(file, "utf8");
 
 // Add import
 code = 'import { ResizableSubElement } from "./ResizableSubElement";\n' + code;
@@ -64,7 +64,7 @@ code = code.replace(
         <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none bg-card w-full h-full">
           <p className="whitespace-pre-wrap">{comp.content}</p>
         </div>,
-      "100%", "auto", "24px", "16px")}`
+      "100%", "auto", "24px", "16px")}`,
 );
 
 // Image
@@ -75,7 +75,7 @@ code = code.replace(
   `      {wrap('image',
         <img src={comp.url} alt="Content" className="w-full h-full object-cover" />,
         "100%", "auto", "0px", "16px"
-      )}`
+      )}`,
 );
 
 // Split block image and text
@@ -98,7 +98,7 @@ code = code.replace(
             />,
             "100%", "300px", "0px", "16px"
           )
-        )}`
+        )}`,
 );
 
 code = code.replace(
@@ -114,7 +114,7 @@ code = code.replace(
             </div>,
             "100%", "auto", "0px", "0px"
           )
-        )}`
+        )}`,
 );
 
 // Button
@@ -137,7 +137,7 @@ code = code.replace(
           </div>,
           "auto", "auto", "16px", "9999px"
         )}
-      </div>`
+      </div>`,
 );
 
 // Form grid card
@@ -158,7 +158,7 @@ code = code.replace(
                     backgroundColor: comp.cardBgColor || "var(--card)",
                     color: comp.cardTextColor || "inherit",
                   }}
-                >`
+                >`,
 );
 code = code.replace(
   `              <div
@@ -175,7 +175,7 @@ code = code.replace(
                 {card.buttonLabel || "Register"}
               </div>
             </div>, "100%", "100%", "0px", "16px")}
-            </div>`
+            </div>`,
 );
 
 fs.writeFileSync(file, code);

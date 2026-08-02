@@ -995,6 +995,7 @@ This creates the full end-to-end funnel: **Page Builder → Public Page → Form
 The Page Builder also supports a **Payment Button** block (`payment_button`), which allows organizers to create custom checkout flows linked to their workspace wallets.
 
 **Checkout Flow & Routing:**
+
 - If a Payment Button is configured to open a form in a "New Page", it navigates to the standalone public form route (`/f/$formId`).
 - To maintain the checkout context, the `RenderedPage` component passes all payment configurations (amount, label, workspace_id, color, slug) as **URL query parameters** (e.g., `?pay=1&amount=500&...`).
 - The standalone route (`src/routes/f/$formId.tsx`) detects `isPaymentMode` from the URL. It automatically swaps the generic "Submit" flow for a full **"Pay & Register"** checkout, reusing the `PaymentModal` and `CheckYourPhone` components.
@@ -1002,8 +1003,9 @@ The Page Builder also supports a **Payment Button** block (`payment_button`), wh
 
 **Idempotent PawaPay Webhooks:**
 Because Mobile Money payments involve background polling and delayed USSD approvals, the checkout relies on PawaPay webhooks (`/api/pawapay/deposits`).
+
 - To prevent duplicate form submissions, double-charging, or looping email receipts when PawaPay retries webhooks, the system uses a **database-level atomic lock**.
-- The webhook handler performs a single atomic `UPDATE wallet_transactions ... WHERE provider_reference = $ref AND status NOT IN ('completed', 'failed')`. 
+- The webhook handler performs a single atomic `UPDATE wallet_transactions ... WHERE provider_reference = $ref AND status NOT IN ('completed', 'failed')`.
 - By checking `affected_rows === 0`, it instantly detects if another concurrent webhook already processed the payment, discarding duplicates safely.
 
 ---
@@ -2738,6 +2740,7 @@ flowchart TD
 ## 31. Dynamic Fallback Ticket Generation
 
 **Logic:**
+
 - To ensure customers always receive a professional booking receipt even when an organizer has not created a custom ticket design, the system employs a dynamic fallback ticket generator (`src/lib/pdf-receipt.ts`).
 - **Context-Aware Styling:** The `generateFallbackReceipt` function accepts a `type` parameter (`venue`, `facility`, `event`, or `movie`). It dynamically alters the PDF layout, border colors, and text labels (e.g., "VENUE ENTRANCE PASS" vs. "FACILITY BOOKING") based on this type.
 - **Graceful "TBD" Handling:** To avoid presenting confusing placeholders to customers, the generator intelligently processes missing dates and times based on context:
@@ -2751,19 +2754,20 @@ flowchart TD
 ## 32. Storefront Page Builder Architecture
 
 **Logic:**
+
 - The Page Builder is a comprehensive drag-and-drop website editor that allows organizers to construct full custom storefronts and landing pages.
 - **Unified Styling Engine (`wrap`):** All components on the live page and the preview editor are wrapped in a central `wrap()` helper. This helper reads dynamic style keys (e.g. `comp["inv_item_backgroundColor"]`) from the JSON payload.
   - **Fallback Adapters:** When we migrated the builder from index-based keys (`card_1`, `card_2`) to unified class-based keys (`card_item`, `inv_item`), a fallback mechanism was introduced. The `getValue()` helper intelligently checks for the unified key, and if missing, falls back to the legacy keys to ensure no organizer loses their previous custom designs.
-- **Root Styles vs. Sub-Element Styles:** 
-  - **Root Component:** The main wrapper (e.g., the section card itself) reads styles directly from the component payload (`comp.backgroundColor`, `comp.padding`, `comp.borderRadius`). 
+- **Root Styles vs. Sub-Element Styles:**
+  - **Root Component:** The main wrapper (e.g., the section card itself) reads styles directly from the component payload (`comp.backgroundColor`, `comp.padding`, `comp.borderRadius`).
   - **Sub-Elements:** Inner items (buttons, text, images) are styled dynamically via the `wrap` function and the Sidebar Settings UI.
 - **Dynamic Grid Layouts (1-12 Columns):** The builder supports deep structural customization. For components like `form_grid` (Cards) and inventory lists (`product_list`, `venue_list`, `event_list`), organizers can choose the exact number of columns (from 1 to 12).
   - A robust switch statement dynamically injects the appropriate `grid-cols-[1-12]` Tailwind classes.
   - Mobile responsiveness is preserved implicitly (always collapsing to 1 column on mobile, utilizing `sm:` and `md:` breakpoints, and expanding to the full N columns on desktop).
 - **Hydration Mismatch Avoidance:** Server-Side Rendering (SSR) poses challenges for dynamically generated Workspace URLs (since `window.location` is undefined on the server but defined on the client). To bypass React hydration errors, link actions (like the 'Play' preview button in the topbar) use `onClick` JavaScript handlers to generate their URLs entirely on the client side instead of using raw `<a href="...">` tags.
 - **Component Synchronization:** Code logic for live rendering (`RenderedPage.tsx`) and the WYSIWYG editor (`PreviewComponent.tsx` and `ComponentBlock.tsx`) are completely synchronized, guaranteeing a 1:1 "What You See Is What You Get" experience for the organizer.
-- **Navigation & Smooth Scrolling:** 
-  - Each component block allows the organizer to define a `navLabel`. 
+- **Navigation & Smooth Scrolling:**
+  - Each component block allows the organizer to define a `navLabel`.
   - The live page (`RenderedPage.tsx`) automatically scans all components in the payload and extracts any block with a `navLabel`. These labels are dynamically mapped into the header navigation bar.
   - When an attendee clicks a link in the navigation bar, the page performs a smooth scroll directly to the `id` of that specific component section.
 - **Section Selection Engine:**

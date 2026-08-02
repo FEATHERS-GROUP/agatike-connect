@@ -268,7 +268,9 @@ function PageBuilder() {
     onError: (err: any) => {
       const msg = err.message || "";
       if (msg.includes("workspace_pages_slug_key") || msg.includes("Uniqueness violation")) {
-        toast.error(`The URL slug "${editorState.slug}" is already taken. Please choose a different one.`);
+        toast.error(
+          `The URL slug "${editorState.slug}" is already taken. Please choose a different one.`,
+        );
       } else {
         toast.error(msg || "Failed to save page.");
       }
@@ -378,7 +380,7 @@ function PageBuilder() {
   };
 
   const addComponents = (comps: any[]) => {
-    const newComps = comps.map(c => ({
+    const newComps = comps.map((c) => ({
       ...c,
       id: Math.random().toString(36).substr(2, 9),
     }));
@@ -481,8 +483,8 @@ function PageBuilder() {
         />
 
         {/* Builder Content Area (The Canvas) */}
-        <div 
-          className={`flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8 ${isSpaceDown ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        <div
+          className={`flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8 ${isSpaceDown ? "cursor-grab active:cursor-grabbing" : ""}`}
           onPointerDown={handlePointerDown}
         >
           {isLoadingPage && !!activePageId ? (
@@ -490,7 +492,7 @@ function PageBuilder() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <div 
+            <div
               className="w-full flex justify-center origin-top transition-transform duration-75"
               style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
             >
@@ -513,7 +515,11 @@ function PageBuilder() {
           )}
         </div>
         {!isLoadingPage && (
-          <EditorFloatingToolbar zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} activeWorkspace={activeWorkspace} />
+          <EditorFloatingToolbar
+            zoomLevel={zoomLevel}
+            setZoomLevel={setZoomLevel}
+            activeWorkspace={activeWorkspace}
+          />
         )}
       </div>
 

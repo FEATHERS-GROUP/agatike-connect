@@ -19,7 +19,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
-import { initiatePawaPayDeposit, getPawaPayDepositStatus, cancelPendingPayment } from "@/api/pawapay";
+import {
+  initiatePawaPayDeposit,
+  getPawaPayDepositStatus,
+  cancelPendingPayment,
+} from "@/api/pawapay";
 import { useEffect, useRef } from "react";
 
 export interface EmbeddedFormPaymentConfig {
@@ -37,18 +41,18 @@ export interface EmbeddedFormStyleConfig {
   columns?: string | number;
 }
 
-export function EmbeddedForm({ 
-  formId, 
+export function EmbeddedForm({
+  formId,
   paymentConfig,
-  styleConfig
-}: { 
-  formId: string; 
+  styleConfig,
+}: {
+  formId: string;
   paymentConfig?: EmbeddedFormPaymentConfig;
   styleConfig?: EmbeddedFormStyleConfig;
 }) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   // Payment State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("MTN_MOMO_RWA");
@@ -127,7 +131,7 @@ export function EmbeddedForm({
       });
       return;
     }
-    
+
     if (paymentConfig) {
       setIsPaymentModalOpen(true);
     } else {
@@ -268,32 +272,38 @@ export function EmbeddedForm({
   }
 
   return (
-    <div 
+    <div
       className="bg-card rounded-2xl shadow-sm border border-border/60 overflow-hidden relative"
-      style={{ 
-        backgroundColor: styleConfig?.cardBgColor, 
-        color: styleConfig?.cardTextColor 
+      style={{
+        backgroundColor: styleConfig?.cardBgColor,
+        color: styleConfig?.cardTextColor,
       }}
     >
-      <div 
+      <div
         className="p-6 border-b border-border/60 relative overflow-hidden bg-secondary/20"
-        style={{ backgroundColor: styleConfig?.cardBgColor ? 'rgba(0,0,0,0.05)' : undefined }}
+        style={{ backgroundColor: styleConfig?.cardBgColor ? "rgba(0,0,0,0.05)" : undefined }}
       >
-        <h3 className="text-2xl font-bold tracking-tight" style={{ color: styleConfig?.cardTextColor }}>
+        <h3
+          className="text-2xl font-bold tracking-tight"
+          style={{ color: styleConfig?.cardTextColor }}
+        >
           {paymentConfig?.label || form.title}
         </h3>
         {(paymentConfig?.description || form.description) && (
-          <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed opacity-90" style={{ color: styleConfig?.cardTextColor }}>
+          <p
+            className="text-sm mt-2 whitespace-pre-wrap leading-relaxed opacity-90"
+            style={{ color: styleConfig?.cardTextColor }}
+          >
             {paymentConfig?.description || form.description}
           </p>
         )}
       </div>
 
-      <form 
-        onSubmit={handleSubmit} 
+      <form
+        onSubmit={handleSubmit}
         className="p-6 grid gap-6"
-        style={{ 
-          gridTemplateColumns: `repeat(${styleConfig?.columns || 1}, minmax(0, 1fr))` 
+        style={{
+          gridTemplateColumns: `repeat(${styleConfig?.columns || 1}, minmax(0, 1fr))`,
         }}
       >
         {form.form_fields.map((field: any) => {
@@ -487,15 +497,15 @@ export function EmbeddedForm({
           );
         })}
 
-        <div className="pt-4 mt-4 border-t border-border/60" style={{ gridColumn: '1 / -1' }}>
+        <div className="pt-4 mt-4 border-t border-border/60" style={{ gridColumn: "1 / -1" }}>
           {!isPreview && !canCreateRsvp() ? (
             <div className="text-center p-3 bg-destructive/10 text-destructive rounded-lg text-sm font-semibold mb-4">
               This form has reached its maximum response capacity.
             </div>
           ) : (
-            <Button 
-              type="submit" 
-              className="w-full text-white shadow-lg" 
+            <Button
+              type="submit"
+              className="w-full text-white shadow-lg"
               disabled={mutation.isPending || isProcessingPayment || isPollingPawaPay}
               style={{ background: paymentConfig?.theme_color }}
             >

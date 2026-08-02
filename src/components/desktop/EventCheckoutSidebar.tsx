@@ -292,58 +292,62 @@ export function EventCheckoutSidebar({
                   })}
                 </div>
 
-                    {(() => {
-                      const t = totalTickets;
-                      let physicalQty = 0;
-                      let voucherQty = 0;
-                      
-                      Object.entries(cart).forEach(([key, qty]) => {
-                        if (key.startsWith("merch_")) {
-                          const merchId = key.split("_")[1];
-                          const merch = activeMerch?.find((m: any) => String(m.id) === String(merchId));
-                          if (merch?.type === "voucher" || merch?.category === "gift_card" || merch?.type === "gift_card") {
-                            voucherQty += qty;
-                          } else {
-                            physicalQty += qty;
-                          }
-                        }
-                      });
+                {(() => {
+                  const t = totalTickets;
+                  let physicalQty = 0;
+                  let voucherQty = 0;
 
-                      return (
-                        <div className="mt-5 flex flex-col gap-2 text-sm border-t border-border/50 pt-4 w-full">
-                          {t > 0 && (
-                            <div className="flex items-center justify-between text-muted-foreground">
-                              <span>Tickets</span>
-                              <span className="font-medium text-foreground">{t}</span>
-                            </div>
-                          )}
-                          {physicalQty > 0 && (
-                            <div className="flex items-center justify-between text-muted-foreground">
-                              <span>Physical Products</span>
-                              <span className="font-medium text-foreground">{physicalQty}</span>
-                            </div>
-                          )}
-                          {voucherQty > 0 && (
-                            <div className="flex items-center justify-between text-muted-foreground">
-                              <span>Voucher Products</span>
-                              <span className="font-medium text-foreground">{voucherQty}</span>
-                            </div>
-                          )}
-                          {(t === 0 && physicalQty === 0 && voucherQty === 0) && (
-                             <div className="flex items-center justify-between text-muted-foreground">
-                               <span>Tickets</span>
-                               <span className="font-medium text-foreground">0</span>
-                             </div>
-                          )}
-                          <div className="flex items-center justify-between mt-1 pt-3 border-t border-border/30">
-                            <span className="font-semibold text-foreground">Total</span>
-                            <span className="text-lg font-bold text-primary">
-                              {formatCurrency(total, currencyCode)}
-                            </span>
-                          </div>
+                  Object.entries(cart).forEach(([key, qty]) => {
+                    if (key.startsWith("merch_")) {
+                      const merchId = key.split("_")[1];
+                      const merch = activeMerch?.find((m: any) => String(m.id) === String(merchId));
+                      if (
+                        merch?.type === "voucher" ||
+                        merch?.category === "gift_card" ||
+                        merch?.type === "gift_card"
+                      ) {
+                        voucherQty += qty;
+                      } else {
+                        physicalQty += qty;
+                      }
+                    }
+                  });
+
+                  return (
+                    <div className="mt-5 flex flex-col gap-2 text-sm border-t border-border/50 pt-4 w-full">
+                      {t > 0 && (
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <span>Tickets</span>
+                          <span className="font-medium text-foreground">{t}</span>
                         </div>
-                      );
-                    })()}
+                      )}
+                      {physicalQty > 0 && (
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <span>Physical Products</span>
+                          <span className="font-medium text-foreground">{physicalQty}</span>
+                        </div>
+                      )}
+                      {voucherQty > 0 && (
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <span>Voucher Products</span>
+                          <span className="font-medium text-foreground">{voucherQty}</span>
+                        </div>
+                      )}
+                      {t === 0 && physicalQty === 0 && voucherQty === 0 && (
+                        <div className="flex items-center justify-between text-muted-foreground">
+                          <span>Tickets</span>
+                          <span className="font-medium text-foreground">0</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between mt-1 pt-3 border-t border-border/30">
+                        <span className="font-semibold text-foreground">Total</span>
+                        <span className="text-lg font-bold text-primary">
+                          {formatCurrency(total, currencyCode)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             )}
 

@@ -102,7 +102,8 @@ function FacilityCheckoutPage() {
       getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id } } as any),
     enabled: !!venue?.workspace_id,
   });
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
+  const venueProject =
+    ticketProjects?.find((p: any) => p.venueId === venue?.id) || ticketProjects?.[0];
 
   const [date, setDate] = useState<DateRange | undefined>();
   const [quantity, setQuantity] = useState(1);
@@ -621,7 +622,7 @@ function FacilityCheckoutPage() {
                 isSharedAccess || selectedSlots.length === 0
                   ? "Full Day"
                   : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
-                  
+
               const fallbackPdf = await generateFallbackReceipt({
                 entityName: facility?.name || "Facility",
                 ticket,
@@ -1223,7 +1224,9 @@ function FacilityCheckoutPage() {
         isOpen={isAuthModalOpen}
         onOpenChange={setIsAuthModalOpen}
         onSkip={handleContinueAsGuest}
-        redirectPath={typeof window !== 'undefined' ? window.location.pathname + window.location.search : ''}
+        redirectPath={
+          typeof window !== "undefined" ? window.location.pathname + window.location.search : ""
+        }
       />
 
       <Footer />
@@ -1248,8 +1251,9 @@ function FacilityCheckoutPage() {
                 price={
                   ticket.tier === "Standard Entry"
                     ? venue?.entrance_fee?.toString() || "0"
-                    : venue.pricing_tiers?.find((pt: any) => pt.name === ticket.tier)?.amount?.toString() ||
-                      totalAmount.toString()
+                    : venue.pricing_tiers
+                        ?.find((pt: any) => pt.name === ticket.tier)
+                        ?.amount?.toString() || totalAmount.toString()
                 }
                 currency={currency}
                 cover={venueProject.coverImage || ""}

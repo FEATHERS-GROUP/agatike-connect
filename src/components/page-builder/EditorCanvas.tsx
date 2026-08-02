@@ -24,9 +24,11 @@ export function EditorCanvas({
       style={{ transform: `scale(${zoomLevel / 100})` }}
       onClick={() => setSelectedElementId("page")}
     >
-      <div 
+      <div
         className={`border rounded-2xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col transition-all min-h-[800px] ${
-          selectedElementId === "page" ? "ring-2 ring-primary border-primary" : "border-border/40 ring-1 ring-black/5"
+          selectedElementId === "page"
+            ? "ring-2 ring-primary border-primary"
+            : "border-border/40 ring-1 ring-black/5"
         }`}
         style={
           {
@@ -35,7 +37,9 @@ export function EditorCanvas({
             "--custom-theme-color": editorState.themeColor || "#000000",
             fontFamily: `'${editorState.fontFamily || "Inter"}', sans-serif`,
             backgroundColor: editorState.pageBackgroundColor || "#ffffff",
-            backgroundImage: editorState.pageBackgroundImageUrl ? `url(${editorState.pageBackgroundImageUrl})` : "none",
+            backgroundImage: editorState.pageBackgroundImageUrl
+              ? `url(${editorState.pageBackgroundImageUrl})`
+              : "none",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundAttachment: "fixed",
@@ -62,9 +66,11 @@ export function EditorCanvas({
         {/* Solid Navbar Style */}
         {editorState.navbarStyle === "solid" &&
           (editorState.logoPosition === "navbar" || editorState.navbarBackgroundColor) && (
-            <div 
+            <div
               className={`w-full border-b border-border/40 p-4 px-8 z-10 flex items-center ${
-                editorState.navbarAlignment === "center" ? "justify-between relative" : "justify-between"
+                editorState.navbarAlignment === "center"
+                  ? "justify-between relative"
+                  : "justify-between"
               }`}
               style={{
                 backgroundColor: editorState.navbarBackgroundColor || "var(--background)",
@@ -77,35 +83,37 @@ export function EditorCanvas({
                     alt="Logo"
                     className="h-8 max-w-[150px] object-contain"
                   />
-                ) : editorState.logoPosition === "navbar" && (
-                  <div 
-                    className="font-bold text-lg truncate max-w-[150px]"
-                    style={{ color: editorState.navbarTextColor || "inherit" }}
-                  >
-                    Site Title
-                  </div>
+                ) : (
+                  editorState.logoPosition === "navbar" && (
+                    <div
+                      className="font-bold text-lg truncate max-w-[150px]"
+                      style={{ color: editorState.navbarTextColor || "inherit" }}
+                    >
+                      Site Title
+                    </div>
+                  )
                 )}
               </div>
-              
-              <div 
+
+              <div
                 className={`hidden md:flex items-center gap-4 z-10 ${
-                  editorState.navbarAlignment === "center" 
-                    ? "absolute left-1/2 -translate-x-1/2" 
-                    : editorState.navbarAlignment === "left" 
-                      ? "flex-1 ml-6 justify-start" 
+                  editorState.navbarAlignment === "center"
+                    ? "absolute left-1/2 -translate-x-1/2"
+                    : editorState.navbarAlignment === "left"
+                      ? "flex-1 ml-6 justify-start"
                       : "flex-1 justify-end"
                 }`}
               >
-                <div 
-                  className="h-1.5 w-12 rounded-full opacity-30" 
+                <div
+                  className="h-1.5 w-12 rounded-full opacity-30"
                   style={{ backgroundColor: editorState.navbarTextColor || "currentColor" }}
                 />
-                <div 
-                  className="h-1.5 w-16 rounded-full opacity-30" 
+                <div
+                  className="h-1.5 w-16 rounded-full opacity-30"
                   style={{ backgroundColor: editorState.navbarTextColor || "currentColor" }}
                 />
-                <div 
-                  className="h-1.5 w-10 rounded-full opacity-30" 
+                <div
+                  className="h-1.5 w-10 rounded-full opacity-30"
                   style={{ backgroundColor: editorState.navbarTextColor || "currentColor" }}
                 />
               </div>

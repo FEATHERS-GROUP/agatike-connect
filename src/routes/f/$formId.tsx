@@ -37,7 +37,10 @@ function PublicFormPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Read payment config from URL query params (stable, won't change)
-  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const searchParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
   const isPaymentMode = searchParams.get("pay") === "1";
   const paymentAmount = searchParams.get("amount") || "";
   const paymentLabel = searchParams.get("label") || "";
@@ -45,7 +48,6 @@ function PublicFormPage() {
   const paymentWorkspaceIdFromUrl = searchParams.get("workspace_id") || "";
   const paymentColor = searchParams.get("color") || "";
   const paymentSlug = searchParams.get("slug") || "";
-
 
   // Payment state
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -243,14 +245,15 @@ function PublicFormPage() {
   }
 
   const themeColor = paymentColor || "var(--primary)";
-  const pageTitle = (isPaymentMode && paymentLabel) ? paymentLabel : form.title;
-  const pageDescription = (isPaymentMode && paymentDescription) ? paymentDescription : form.description;
+  const pageTitle = isPaymentMode && paymentLabel ? paymentLabel : form.title;
+  const pageDescription =
+    isPaymentMode && paymentDescription ? paymentDescription : form.description;
 
   // Back URL: if we came from a page builder slug, navigate back there
   const backUrl = paymentSlug
-    ? (typeof window !== "undefined"
-        ? `${window.location.protocol}//${paymentSlug}.${window.location.host.replace(/^[^.]+\./, "")}`
-        : "/")
+    ? typeof window !== "undefined"
+      ? `${window.location.protocol}//${paymentSlug}.${window.location.host.replace(/^[^.]+\./, "")}`
+      : "/"
     : "/";
 
   const logoUrl = landingPage?.logo_url || "";
@@ -260,9 +263,7 @@ function PublicFormPage() {
       <div className="min-h-screen flex flex-col bg-secondary/20">
         {/* Branded header */}
         {isPaymentMode && (
-          <div
-            className="w-full px-4 py-3 flex items-center justify-between border-b border-border/40 bg-card/80 backdrop-blur-sm sticky top-0 z-10"
-          >
+          <div className="w-full px-4 py-3 flex items-center justify-between border-b border-border/40 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
             <a
               href={backUrl}
               className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -270,15 +271,11 @@ function PublicFormPage() {
               <ArrowLeft className="w-4 h-4" />
               Back to page
             </a>
-            {logoUrl && (
-              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
-            )}
+            {logoUrl && <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />}
           </div>
         )}
         <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <div
-            className="bg-card p-12 rounded-2xl shadow-sm border border-border/60 max-w-md w-full text-center animate-in zoom-in-95 duration-500"
-          >
+          <div className="bg-card p-12 rounded-2xl shadow-sm border border-border/60 max-w-md w-full text-center animate-in zoom-in-95 duration-500">
             <div
               className="h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6"
               style={{ backgroundColor: `${themeColor}20`, color: themeColor }}
@@ -339,9 +336,7 @@ function PublicFormPage() {
               <ArrowLeft className="w-4 h-4" />
               Back to page
             </a>
-            {logoUrl && (
-              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
-            )}
+            {logoUrl && <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />}
           </div>
         )}
         <div className="w-full h-48 md:h-64 lg:h-80 relative">

@@ -483,48 +483,52 @@ export function EventCheckoutDrawer({
                   </div>
                 )}
 
-                {(() => {
-                  const t = totalTickets;
-                  let physicalQty = 0;
-                  let voucherQty = 0;
-                  
-                  Object.entries(cart).forEach(([key, qty]) => {
-                    if (key.startsWith("merch_")) {
-                      const merchId = key.split("_")[1];
-                      const merch = activeMerch?.find((m: any) => String(m.id) === String(merchId));
-                      if (merch?.type === "voucher" || merch?.category === "gift_card" || merch?.type === "gift_card") {
-                        voucherQty += qty;
-                      } else {
-                        physicalQty += qty;
-                      }
+              {(() => {
+                const t = totalTickets;
+                let physicalQty = 0;
+                let voucherQty = 0;
+
+                Object.entries(cart).forEach(([key, qty]) => {
+                  if (key.startsWith("merch_")) {
+                    const merchId = key.split("_")[1];
+                    const merch = activeMerch?.find((m: any) => String(m.id) === String(merchId));
+                    if (
+                      merch?.type === "voucher" ||
+                      merch?.category === "gift_card" ||
+                      merch?.type === "gift_card"
+                    ) {
+                      voucherQty += qty;
+                    } else {
+                      physicalQty += qty;
                     }
-                  });
+                  }
+                });
 
-                  if (t === 0 && physicalQty === 0 && voucherQty === 0) return null;
+                if (t === 0 && physicalQty === 0 && voucherQty === 0) return null;
 
-                  return (
-                    <div className="mt-4 flex flex-col gap-1.5 text-xs text-muted-foreground border-t border-border/40 pt-3">
-                      {t > 0 && (
-                        <div className="flex justify-between">
-                          <span>Tickets</span>
-                          <span className="font-medium text-foreground">{t}</span>
-                        </div>
-                      )}
-                      {physicalQty > 0 && (
-                        <div className="flex justify-between">
-                          <span>Physical Products</span>
-                          <span className="font-medium text-foreground">{physicalQty}</span>
-                        </div>
-                      )}
-                      {voucherQty > 0 && (
-                        <div className="flex justify-between">
-                          <span>Voucher Products</span>
-                          <span className="font-medium text-foreground">{voucherQty}</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                return (
+                  <div className="mt-4 flex flex-col gap-1.5 text-xs text-muted-foreground border-t border-border/40 pt-3">
+                    {t > 0 && (
+                      <div className="flex justify-between">
+                        <span>Tickets</span>
+                        <span className="font-medium text-foreground">{t}</span>
+                      </div>
+                    )}
+                    {physicalQty > 0 && (
+                      <div className="flex justify-between">
+                        <span>Physical Products</span>
+                        <span className="font-medium text-foreground">{physicalQty}</span>
+                      </div>
+                    )}
+                    {voucherQty > 0 && (
+                      <div className="flex justify-between">
+                        <span>Voucher Products</span>
+                        <span className="font-medium text-foreground">{voucherQty}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Action Row */}
               <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-border/30">
