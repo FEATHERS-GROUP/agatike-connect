@@ -25,9 +25,23 @@ export function EditorCanvas({
       onClick={() => setSelectedElementId("page")}
     >
       <div 
-        className={`bg-background border rounded-2xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col transition-all ${
+        className={`border rounded-2xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col transition-all min-h-[800px] ${
           selectedElementId === "page" ? "ring-2 ring-primary border-primary" : "border-border/40 ring-1 ring-black/5"
         }`}
+        style={
+          {
+            "--primary": editorState.themeColor || "#000000",
+            "--primary-foreground": "#fff",
+            "--custom-theme-color": editorState.themeColor || "#000000",
+            fontFamily: `'${editorState.fontFamily || "Inter"}', sans-serif`,
+            backgroundColor: editorState.pageBackgroundColor || "#ffffff",
+            backgroundImage: editorState.pageBackgroundImageUrl ? `url(${editorState.pageBackgroundImageUrl})` : "none",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+            color: editorState.pageTextColor || "#000000",
+          } as React.CSSProperties
+        }
       >
         {/* Browser Mockup Top Bar */}
         <div className="bg-secondary/40 border-b border-border/40 px-4 py-3 flex items-center gap-4">

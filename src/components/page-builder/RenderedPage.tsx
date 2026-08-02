@@ -259,10 +259,13 @@ export function RenderedPage({
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
   const parentSettingsBlock = page.parent?.components?.find((c: any) => c.type === "page_settings");
   
-  // Uniform navbar: inherit navbar style and font from parent
+  // Uniform navbar & background: inherit style, font, and bg from parent
   const logoPosition = parentSettingsBlock?.logoPosition || settingsBlock?.logoPosition || "hero";
   const navbarStyle = parentSettingsBlock?.navbarStyle || settingsBlock?.navbarStyle || "transparent";
   const fontFamily = parentSettingsBlock?.fontFamily || settingsBlock?.fontFamily || "Inter";
+  const pageBackgroundColor = parentSettingsBlock?.pageBackgroundColor || settingsBlock?.pageBackgroundColor || "#ffffff";
+  const pageBackgroundImageUrl = parentSettingsBlock?.pageBackgroundImageUrl || settingsBlock?.pageBackgroundImageUrl || "";
+  const pageTextColor = parentSettingsBlock?.pageTextColor || settingsBlock?.pageTextColor || "#000000";
   
   // Hero settings remain specific to the sub-page
   const heroAlign = settingsBlock?.heroAlign || "center";
@@ -329,13 +332,19 @@ export function RenderedPage({
       <style>{`@import url('${googleFontUrl}');`}</style>
       <DynamicFontLoader components={actualComponents} />
       <div
-        className="min-h-screen bg-background"
+        className="min-h-screen"
         style={
           {
             "--primary": theme_color,
             "--primary-foreground": "#fff",
             "--custom-theme-color": theme_color,
             fontFamily: `'${fontFamily}', sans-serif`,
+            backgroundColor: pageBackgroundColor,
+            backgroundImage: pageBackgroundImageUrl ? `url(${pageBackgroundImageUrl})` : "none",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed",
+            color: pageTextColor,
           } as React.CSSProperties
         }
       >
@@ -666,8 +675,8 @@ export function RenderedPage({
                       return (
                         <div key={comp.id} className="w-full">
                           {wrap('text', 
-                            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none bg-card w-full h-full">
-                              <p className="whitespace-pre-wrap">{comp.content}</p>
+                            <div className="w-full h-full text-base md:text-lg">
+                              <p className="whitespace-pre-wrap m-0">{comp.content}</p>
                             </div>,
                           "100%", "auto", "24px", "16px")}
                         </div>
@@ -700,8 +709,8 @@ export function RenderedPage({
                               {comp.text && (
                                 <div className="flex-1 w-full h-full">
                                   {wrap('split_text',
-                                    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none w-full h-full flex flex-col justify-center">
-                                      <p className="whitespace-pre-wrap">{comp.text}</p>
+                                    <div className="w-full h-full flex flex-col justify-center text-sm md:text-base">
+                                      <p className="whitespace-pre-wrap m-0">{comp.text}</p>
                                     </div>,
                                   "100%", "100%", "24px", "0px")}
                                 </div>
@@ -1188,7 +1197,7 @@ export function RenderedPage({
                           "256px", "256px", "0px", "16px")}
                           {comp.title && (
                             wrap('qr_title',
-                              <p className="text-lg font-medium text-center text-foreground w-full m-0">
+                              <p className="text-lg font-medium text-center w-full m-0">
                                 {comp.title}
                               </p>,
                             "100%", "auto", "0px", "0px")

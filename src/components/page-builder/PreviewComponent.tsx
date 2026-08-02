@@ -61,20 +61,25 @@ export function PreviewComponent({
   if (comp.type === "text") {
     return (
       <div className="w-full">
-        {wrap('text', 
-          <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none bg-card w-full h-full">
-            <p className="whitespace-pre-wrap">{comp.content}</p>
+        {wrap('text',
+          <div className="w-full h-full text-base md:text-lg">
+            <p className="whitespace-pre-wrap m-0">{comp.content}</p>
           </div>,
-        "100%", "auto", "24px", "16px")}
+          "100%", "auto", "24px", "16px"
+        )}
       </div>
     );
   }
 
   if (comp.type === "image" && comp.url) {
     return (
-      <div className="w-full overflow-hidden shadow-sm flex items-center justify-center">
-        {wrap('image',
-          <img src={comp.url} alt="Content" className="w-full h-full object-cover" />,
+      <div className="w-full">
+        {wrap('img',
+          <img
+            src={comp.url}
+            alt="Content"
+            className="w-full h-full object-cover"
+          />,
           "100%", "400px", "0px", "16px"
         )}
       </div>
@@ -84,7 +89,7 @@ export function PreviewComponent({
   if (comp.type === "split_block") {
     return (
       <div
-        className={`flex flex-col md:flex-row gap-6 items-center ${
+        className={`w-full flex flex-col md:flex-row items-center gap-4 ${
           comp.imagePosition === "right" ? "md:flex-row-reverse" : ""
         }`}
       >
@@ -103,8 +108,8 @@ export function PreviewComponent({
         {comp.text && (
           <div className="w-full md:w-1/2 flex items-center">
             {wrap('split_text',
-              <div className="w-full h-full prose prose-sm dark:prose-invert">
-                <p className="whitespace-pre-wrap">{comp.text}</p>
+              <div className="w-full h-full text-sm md:text-base flex flex-col justify-center">
+                <p className="whitespace-pre-wrap m-0">{comp.text}</p>
               </div>,
               "100%", "auto", "0px", "0px"
             )}

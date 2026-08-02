@@ -87,6 +87,7 @@ export function PageSettingsPanel({
   allPages?: any[];
 }) {
   const [openFontDropdown, setOpenFontDropdown] = React.useState(false);
+  const [openPageFontDropdown, setOpenPageFontDropdown] = React.useState(false);
   const parentId = selectedElementId?.split('__')[0];
   const subKey = selectedElementId?.split('__')[1] || "";
   const selectedIndex = editorState.components.findIndex((c: any) => c.id === parentId);
@@ -166,6 +167,126 @@ export function PageSettingsPanel({
                         className="h-7 text-xs font-mono bg-secondary/30 border-border/60 uppercase"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col">
+                    <Label className="text-[10px] text-muted-foreground">Theme Font</Label>
+                    <Popover open={openPageFontDropdown} onOpenChange={setOpenPageFontDropdown}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openPageFontDropdown}
+                          className="h-7 w-full justify-between text-xs bg-secondary/30 border-border/60 font-normal px-2"
+                        >
+                          {editorState.fontFamily || "Inter"}
+                          <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0" align="end">
+                        <Command>
+                          <CommandInput placeholder="Search font..." className="h-8 text-xs" />
+                          <CommandList>
+                            <CommandEmpty>No font found.</CommandEmpty>
+                            <CommandGroup>
+                              <ScrollArea className="h-48">
+                                {GOOGLE_FONTS.map((font) => (
+                                  <CommandItem
+                                    key={font}
+                                    value={font}
+                                    onSelect={() => {
+                                      set("fontFamily")(font);
+                                      setOpenPageFontDropdown(false);
+                                    }}
+                                    className="text-xs"
+                                    style={{ fontFamily: `'${font}', sans-serif` }}
+                                  >
+                                    <Check className={cn("mr-2 h-3 w-3", editorState.fontFamily === font ? "opacity-100" : "opacity-0")} />
+                                    {font}
+                                  </CommandItem>
+                                ))}
+                              </ScrollArea>
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col">
+                    <Label className="text-[10px] text-muted-foreground">Page Background Color</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
+                        <Input
+                          type="color"
+                          value={editorState.pageBackgroundColor || "#ffffff"}
+                          onChange={(e) => set("pageBackgroundColor")(e.target.value)}
+                          className="absolute -inset-4 w-16 h-16 cursor-pointer"
+                        />
+                      </div>
+                      <Input
+                        value={editorState.pageBackgroundColor || "#ffffff"}
+                        onChange={(e) => set("pageBackgroundColor")(e.target.value)}
+                        className="h-7 text-xs font-mono bg-secondary/30 border-border/60 uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col">
+                    <Label className="text-[10px] text-muted-foreground">Page Text Color</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
+                        <Input
+                          type="color"
+                          value={editorState.pageTextColor || "#000000"}
+                          onChange={(e) => set("pageTextColor")(e.target.value)}
+                          className="absolute -inset-4 w-16 h-16 cursor-pointer"
+                        />
+                      </div>
+                      <Input
+                        value={editorState.pageTextColor || "#000000"}
+                        onChange={(e) => set("pageTextColor")(e.target.value)}
+                        className="h-7 text-xs font-mono bg-secondary/30 border-border/60 uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 flex flex-col">
+                    <Label className="text-[10px] text-muted-foreground">Page Background Image</Label>
+                    {editorState.pageBackgroundImageUrl ? (
+                      <div className="relative w-full h-16 rounded-md border border-border/60 overflow-hidden group bg-black/5">
+                        <img
+                          src={editorState.pageBackgroundImageUrl}
+                          alt="Bg"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                          <Trash2
+                            className="w-4 h-4 text-white cursor-pointer hover:text-red-400 transition-colors"
+                            onClick={() => set("pageBackgroundImageUrl")("")}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer block w-full">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files?.[0]) {
+                              if (e.target.files[0].size > 2 * 1024 * 1024)
+                                return alert("File too large (max 2MB)");
+                              handleImageUpload(e.target.files[0], set("pageBackgroundImageUrl"));
+                            }
+                          }}
+                        />
+                        <div className="border border-dashed border-border/60 rounded-md p-3 text-center bg-secondary/20 hover:bg-secondary/40 transition-colors flex flex-col items-center justify-center h-16 gap-1">
+                          <UploadCloud className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Upload Bg</span>
+                        </div>
+                      </label>
+                    )}
                   </div>
 
                   <div className="space-y-1.5 flex flex-col">
