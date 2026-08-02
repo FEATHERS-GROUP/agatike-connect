@@ -248,6 +248,22 @@ export function RenderedPage({
   const heroButtonActionType = settingsBlock?.heroButtonActionType || "url";
   const heroButtonLink = settingsBlock?.heroButtonLink || "";
   const heroForegroundImageUrl = settingsBlock?.heroForegroundImageUrl || "";
+  const shouldHideHero = hideHero || settingsBlock?.hideHero || false;
+
+  useEffect(() => {
+    if (page) {
+      document.title = page.title || "Page Builder";
+      if (page.logo_url) {
+        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = "icon";
+          document.head.appendChild(link);
+        }
+        link.href = page.logo_url;
+      }
+    }
+  }, [page]);
   const heroForegroundPosition = settingsBlock?.heroForegroundPosition || "right";
   const elementShape = settingsBlock?.elementShape || "rounded-2xl";
 
@@ -406,7 +422,7 @@ export function RenderedPage({
         )}
 
         {/* Header Overlay Section */}
-        {!hideHero && (
+        {!shouldHideHero && (
           <div
             className={`relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary overflow-hidden flex flex-col p-8 md:p-16 ${
               heroAlign === "top-left"
