@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { EditorTopbar } from "@/components/page-builder/EditorTopbar";
 import { EditorCanvas } from "@/components/page-builder/EditorCanvas";
 import { PageSettingsPanel } from "@/components/page-builder/PageSettingsPanel";
+import { PageBuilderSidebar } from "@/components/page-builder/PageBuilderSidebar";
+import { EditorFloatingToolbar } from "@/components/page-builder/EditorFloatingToolbar";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllWorkspacePages,
@@ -125,6 +127,8 @@ function PageBuilder() {
   const [activePageId, setActivePageId] = useState<string | null>(pageId || null);
   const [editorState, setEditorState] = useState(makeBlankPage());
   const [isInitialized, setIsInitialized] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>("page");
 
   // ── Sync URL params to local state ────────────────────────────────────────
   useEffect(() => {
@@ -337,6 +341,14 @@ function PageBuilder() {
     setEditorState((prev) => ({ ...prev, components: [...prev.components, newComp] }));
   };
 
+  const addComponents = (comps: any[]) => {
+    const newComps = comps.map(c => ({
+      ...c,
+      id: Math.random().toString(36).substr(2, 9),
+    }));
+    setEditorState((prev) => ({ ...prev, components: [...prev.components, ...newComps] }));
+  };
+
   const updateComponent = (index: number, key: string, value: any) => {
     const newComps = [...editorState.components];
     newComps[index] = { ...newComps[index], [key]: value };
@@ -362,20 +374,33 @@ function PageBuilder() {
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
-      {/* Top Bar */}
-      <EditorTopbar
-        activeWorkspace={activeWorkspace}
-        editorState={editorState}
-        workspace_id={workspace_id}
-        allPages={allPages}
-        handleCopyLink={handleCopyLink}
-        deleteMutation={deleteMutation}
-        handlePublish={handlePublish}
-        saveMutation={saveMutation}
-      />
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+      {/* Left Sidebar */}
+      {!isLoadingPage && (
+        <div className="w-72 shrink-0 border-r border-border/60 bg-card overflow-visible z-10 hidden md:flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] relative">
+          <PageBuilderSidebar
+            addComponent={addComponent}
+            addComponents={addComponents}
+            allPages={allPages}
+            activeWorkspace={activeWorkspace}
+          />
+        </div>
+      )}
 
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main Center Area */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+        {/* Top Bar */}
+        <EditorTopbar
+          activeWorkspace={activeWorkspace}
+          editorState={editorState}
+          workspace_id={workspace_id}
+          allPages={allPages}
+          handleCopyLink={handleCopyLink}
+          deleteMutation={deleteMutation}
+          handlePublish={handlePublish}
+          saveMutation={saveMutation}
+        />
+
         {/* Builder Content Area (The Canvas) */}
         <div className="flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8">
           {isLoadingPage && !!activePageId ? (
@@ -383,33 +408,40 @@ function PageBuilder() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <EditorCanvas
-              addComponent={addComponent}
-              editorState={editorState}
-              set={set}
-              handleImageUpload={handleImageUpload}
-              allPages={allPages}
-              forms={forms}
-              workspace_id={workspace_id}
-              updateComponent={updateComponent}
-              removeComponent={removeComponent}
-              moveComponent={moveComponent}
-            />
+            <>
+              <EditorCanvas
+                addComponent={addComponent}
+                editorState={editorState}
+                set={set}
+                handleImageUpload={handleImageUpload}
+                allPages={allPages}
+                forms={forms}
+                workspace_id={workspace_id}
+                updateComponent={updateComponent}
+                removeComponent={removeComponent}
+                moveComponent={moveComponent}
+                zoomLevel={zoomLevel}
+                selectedElementId={selectedElementId}
+                setSelectedElementId={setSelectedElementId}
+              />
+              <EditorFloatingToolbar zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
+            </>
           )}
         </div>
-
-        {/* Right Sidebar: Settings + Toolbox */}
-        {!isLoadingPage && (
-          <div className="w-80 shrink-0 border-l border-border/60 bg-card overflow-y-auto z-10 flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.02)] hidden md:flex">
-            <PageSettingsPanel
-              addComponent={addComponent}
-              editorState={editorState}
-              set={set}
-              handleImageUpload={handleImageUpload}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Right Sidebar: Settings */}
+      {!isLoadingPage && (
+        <div className="w-[280px] shrink-0 border-l border-border/60 bg-card overflow-y-auto z-10 flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.02)] hidden md:flex">
+          <PageSettingsPanel
+            addComponent={addComponent}
+            editorState={editorState}
+            set={set}
+            handleImageUpload={handleImageUpload}
+            selectedElementId={selectedElementId}
+          />
+        </div>
+      )}
     </div>
   );
 }

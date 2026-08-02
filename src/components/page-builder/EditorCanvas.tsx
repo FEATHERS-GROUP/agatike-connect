@@ -14,10 +14,21 @@ export function EditorCanvas({
   updateComponent,
   removeComponent,
   moveComponent,
+  zoomLevel,
+  selectedElementId,
+  setSelectedElementId,
 }: any) {
   return (
-    <div className="w-full max-w-6xl mx-auto flex-1 min-w-0 mb-24 transition-all duration-300 group/canvas">
-      <div className="bg-background border border-border/40 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 ring-1 ring-black/5 flex flex-col">
+    <div
+      className="w-full max-w-6xl mx-auto flex-1 min-w-0 mb-24 transition-all duration-300 group/canvas origin-top"
+      style={{ transform: `scale(${zoomLevel / 100})` }}
+      onClick={() => setSelectedElementId("page")}
+    >
+      <div 
+        className={`bg-background border rounded-2xl overflow-hidden shadow-2xl shadow-black/10 flex flex-col transition-all ${
+          selectedElementId === "page" ? "ring-2 ring-primary border-primary" : "border-border/40 ring-1 ring-black/5"
+        }`}
+      >
         {/* Browser Mockup Top Bar */}
         <div className="bg-secondary/40 border-b border-border/40 px-4 py-3 flex items-center gap-4">
           <div className="flex gap-2 shrink-0">
@@ -382,6 +393,8 @@ export function EditorCanvas({
               canMoveDown={idx < editorState.components.length - 1}
               eventId={undefined}
               themeColor={editorState.themeColor}
+              selectedElementId={selectedElementId}
+              setSelectedElementId={setSelectedElementId}
             />
           ))}
         </div>

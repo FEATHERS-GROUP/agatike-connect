@@ -33,11 +33,22 @@ export function ComponentBlock({
   canMoveDown,
   eventId,
   themeColor,
+  selectedElementId,
+  setSelectedElementId,
 }: any) {
   const [isEditing, setIsEditing] = useState(false);
+  const isSelected = selectedElementId === comp.id;
 
   return (
-    <div className="relative group border border-border/40 rounded-xl p-4 bg-secondary/20 hover:border-primary/40 transition-colors">
+    <div 
+      className={`relative group border rounded-xl p-4 transition-all cursor-pointer ${
+        isSelected ? "border-primary ring-2 ring-primary/20 bg-background" : "border-border/40 bg-secondary/20 hover:border-primary/40"
+      }`}
+      onClick={(e) => {
+        e.stopPropagation();
+        setSelectedElementId(comp.id);
+      }}
+    >
       {/* Move / delete controls */}
       <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {canMoveUp && (
