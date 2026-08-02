@@ -16,6 +16,8 @@ import {
   AlignLeft,
   AlignRight,
   Plus,
+  Pencil,
+  Check,
 } from "lucide-react";
 import { PreviewComponent } from "./PreviewComponent";
 import { InventorySelector } from "./InventorySelector";
@@ -142,29 +144,42 @@ export function ComponentBlock({
       </button>
 
       {/* Block header */}
-      <div className="mb-4 flex items-center justify-between border-b border-border/40 pb-3">
+      <div className="mb-5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-card border border-border/60 py-2 px-3 rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] z-20 relative">
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {comp.type.replace(/_/g, " ")}
-          </span>
+          <div className="bg-primary/10 text-primary px-2.5 py-1 rounded-md shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-wider block translate-y-[0.5px]">
+              {comp.type.replace(/_/g, " ")}
+            </span>
+          </div>
+          <div className="h-4 w-[1px] bg-border/80 shrink-0" />
           <Button
-            size="sm"
-            variant={isEditing ? "default" : "outline"}
-            className="h-7 text-xs"
-            onClick={() => setIsEditing(!isEditing)}
+            size="icon"
+            variant="ghost"
+            className={`h-7 w-7 rounded-md transition-colors shrink-0 ${
+              isEditing 
+                ? "bg-orange-500 text-white hover:bg-orange-600" 
+                : "text-orange-500 hover:bg-orange-500/10"
+            }`}
+            title={isEditing ? "Done Editing" : "Edit Settings"}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditing(!isEditing);
+            }}
           >
-            {isEditing ? "Done Editing" : "Edit Settings"}
+            {isEditing ? <Check className="w-4 h-4" /> : <Pencil className="w-3.5 h-3.5" />}
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-[10px] uppercase text-muted-foreground whitespace-nowrap">
+
+        <div className="flex items-center gap-2 bg-secondary/30 border border-border/60 px-2.5 py-1 rounded-lg shrink-0 transition-colors focus-within:border-primary/40 focus-within:bg-background">
+          <Label className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap m-0 cursor-pointer">
             Nav Label
           </Label>
           <Input
             placeholder="e.g. About"
             value={comp.menuName || ""}
             onChange={(e) => updateComponent(idx, "menuName", e.target.value)}
-            className="h-6 text-xs w-28 bg-background"
+            onClick={(e) => e.stopPropagation()}
+            className="h-6 text-xs w-28 bg-transparent border-none shadow-none focus-visible:ring-0 px-1 font-medium text-foreground placeholder:text-muted-foreground/50"
           />
         </div>
       </div>
@@ -180,7 +195,7 @@ export function ComponentBlock({
           setSelectedElementId={setSelectedElementId}
         />
       ) : (
-        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 bg-card text-foreground p-4 rounded-xl border border-border/40 shadow-sm">
           {/* TEXT */}
           {comp.type === "text" && (
             <textarea

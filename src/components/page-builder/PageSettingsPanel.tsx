@@ -251,6 +251,66 @@ export function PageSettingsPanel({
                     </div>
                   </div>
 
+                  <div className="space-y-1.5 flex flex-col pt-2 border-t border-border/40">
+                    <Label className="text-[10px] text-muted-foreground font-semibold">Navbar Appearance</Label>
+                    
+                    <div className="pt-1 space-y-3">
+                      <div className="space-y-1.5 flex flex-col">
+                        <Label className="text-[10px] text-muted-foreground">Background Color (Solid Navbar)</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
+                            <Input
+                              type="color"
+                              value={editorState.navbarBackgroundColor || "#ffffff"}
+                              onChange={(e) => set("navbarBackgroundColor")(e.target.value)}
+                              className="absolute -inset-4 w-16 h-16 cursor-pointer"
+                            />
+                          </div>
+                          <Input
+                            value={editorState.navbarBackgroundColor || ""}
+                            onChange={(e) => set("navbarBackgroundColor")(e.target.value)}
+                            placeholder="Default (Theme)"
+                            className="h-7 text-xs font-mono bg-secondary/30 border-border/60 uppercase"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 flex flex-col">
+                        <Label className="text-[10px] text-muted-foreground">Text Color</Label>
+                        <div className="flex items-center gap-2">
+                          <div className="relative w-6 h-6 rounded-md overflow-hidden border border-border/60 shrink-0 cursor-pointer group">
+                            <Input
+                              type="color"
+                              value={editorState.navbarTextColor || "#000000"}
+                              onChange={(e) => set("navbarTextColor")(e.target.value)}
+                              className="absolute -inset-4 w-16 h-16 cursor-pointer"
+                            />
+                          </div>
+                          <Input
+                            value={editorState.navbarTextColor || ""}
+                            onChange={(e) => set("navbarTextColor")(e.target.value)}
+                            placeholder="Default"
+                            className="h-7 text-xs font-mono bg-secondary/30 border-border/60 uppercase"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 flex flex-col">
+                        <Label className="text-[10px] text-muted-foreground">Links Alignment</Label>
+                        <Select value={editorState.navbarAlignment || "right"} onValueChange={set("navbarAlignment")}>
+                          <SelectTrigger className="h-7 text-xs bg-secondary/30 border-border/60">
+                            <SelectValue placeholder="Align Right" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left" className="text-xs">Left Align</SelectItem>
+                            <SelectItem value="center" className="text-xs">Center Align</SelectItem>
+                            <SelectItem value="right" className="text-xs">Right Align</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5 flex flex-col">
                     <Label className="text-[10px] text-muted-foreground">Page Background Image</Label>
                     {editorState.pageBackgroundImageUrl ? (

@@ -262,6 +262,9 @@ export function RenderedPage({
   // Uniform navbar & background: inherit style, font, and bg from parent
   const logoPosition = parentSettingsBlock?.logoPosition || settingsBlock?.logoPosition || "hero";
   const navbarStyle = parentSettingsBlock?.navbarStyle || settingsBlock?.navbarStyle || "transparent";
+  const navbarBackgroundColor = parentSettingsBlock?.navbarBackgroundColor || settingsBlock?.navbarBackgroundColor || "";
+  const navbarTextColor = parentSettingsBlock?.navbarTextColor || settingsBlock?.navbarTextColor || "";
+  const navbarAlignment = parentSettingsBlock?.navbarAlignment || settingsBlock?.navbarAlignment || "right";
   const fontFamily = parentSettingsBlock?.fontFamily || settingsBlock?.fontFamily || "Inter";
   const pageBackgroundColor = parentSettingsBlock?.pageBackgroundColor || settingsBlock?.pageBackgroundColor || "#ffffff";
   const pageBackgroundImageUrl = parentSettingsBlock?.pageBackgroundImageUrl || settingsBlock?.pageBackgroundImageUrl || "";
@@ -354,12 +357,13 @@ export function RenderedPage({
             className={
               navbarStyle === "transparent"
                 ? "absolute top-0 left-0 right-0 z-50 w-full bg-transparent border-b border-white/10"
-                : "sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm transition-all"
+                : "sticky top-0 z-50 w-full backdrop-blur-xl border-b border-border/40 shadow-sm transition-all"
             }
+            style={navbarStyle !== "transparent" && navbarBackgroundColor ? { backgroundColor: navbarBackgroundColor } : {}}
           >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
+            <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center ${navbarAlignment === "center" ? "justify-between relative" : "justify-between"}`}>
               {/* Logo */}
-              <div className="flex-shrink-0 flex items-center">
+              <div className="flex-shrink-0 flex items-center z-10">
                 {logoPosition === "navbar" && logo_url ? (
                   <a href={siteLinks.length > 0 ? siteLinks[0].url : "#"}>
                     <img src={logo_url} alt="Logo" className="h-10 w-auto object-contain rounded" />
@@ -367,11 +371,8 @@ export function RenderedPage({
                 ) : logoPosition === "navbar" && siteTitle ? (
                   <a
                     href={siteLinks.length > 0 ? siteLinks[0].url : "#"}
-                    className={`font-bold text-xl tracking-tight truncate max-w-[200px] transition-colors ${
-                      navbarStyle === "transparent"
-                        ? "text-white hover:text-white/80"
-                        : "text-foreground hover:text-primary"
-                    }`}
+                    className={`font-bold text-xl tracking-tight truncate max-w-[200px] transition-colors`}
+                    style={{ color: navbarStyle !== "transparent" && navbarTextColor ? navbarTextColor : undefined }}
                   >
                     {siteTitle}
                   </a>
@@ -381,38 +382,44 @@ export function RenderedPage({
               </div>
 
               {/* Menu Links - Desktop */}
-              <div className="hidden md:flex items-center gap-6">
+              <div 
+                className={`hidden md:flex items-center gap-6 z-10 ${
+                  navbarAlignment === "center" 
+                    ? "absolute left-1/2 -translate-x-1/2" 
+                    : navbarAlignment === "left" 
+                      ? "flex-1 ml-8 justify-start" 
+                      : "flex-1 justify-end"
+                }`}
+              >
                 {siteLinks.map((link: any) => (
                   <a
                     key={link.url}
                     href={link.url}
-                    className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                      link.isActive
-                        ? navbarStyle === "transparent"
-                          ? "text-white"
-                          : "text-primary"
-                        : navbarStyle === "transparent"
-                          ? "text-white/70 hover:text-white"
-                          : "text-muted-foreground hover:text-primary"
-                    }`}
+                    className={`text-sm font-medium transition-colors whitespace-nowrap`}
+                    style={{ 
+                      color: navbarStyle !== "transparent" && navbarTextColor 
+                        ? navbarTextColor 
+                        : navbarStyle === "transparent" ? "rgba(255,255,255,0.9)" : "inherit"
+                    }}
                   >
                     {link.name}
                   </a>
                 ))}
 
                 {menuLinks.length > 0 && siteLinks.length > 0 && (
-                  <div className="w-px h-4 bg-border/60 mx-2" />
+                  <div className="w-px h-4 mx-2" style={{ backgroundColor: navbarStyle !== "transparent" && navbarTextColor ? navbarTextColor : 'rgba(0,0,0,0.2)' }} />
                 )}
 
                 {menuLinks.map((link: any) => (
                   <button
                     key={link.id}
                     onClick={() => scrollToSection(link.id)}
-                    className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                      navbarStyle === "transparent"
-                        ? "text-white/70 hover:text-white"
-                        : "text-muted-foreground hover:text-primary"
-                    }`}
+                    className={`text-sm font-medium transition-colors whitespace-nowrap`}
+                    style={{ 
+                      color: navbarStyle !== "transparent" && navbarTextColor 
+                        ? navbarTextColor 
+                        : navbarStyle === "transparent" ? "rgba(255,255,255,0.9)" : "inherit"
+                    }}
                   >
                     {link.name}
                   </button>
@@ -420,13 +427,14 @@ export function RenderedPage({
               </div>
 
               {/* Menu Links - Mobile */}
-              <div className="md:hidden flex items-center">
+              <div className="md:hidden flex items-center z-10">
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={navbarStyle === "transparent" ? "text-white hover:text-white hover:bg-white/10" : "text-foreground"}
+                      className={navbarStyle === "transparent" ? "text-white hover:text-white hover:bg-white/10" : ""}
+                      style={{ color: navbarStyle !== "transparent" && navbarTextColor ? navbarTextColor : undefined }}
                     >
                       <Menu className="h-6 w-6" />
                     </Button>

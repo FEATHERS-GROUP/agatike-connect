@@ -95,6 +95,9 @@ function makeBlankPage() {
     logoUrl: "",
     logoPosition: "hero" as "hero" | "navbar",
     navbarStyle: "transparent" as "transparent" | "solid",
+    navbarBackgroundColor: "",
+    navbarTextColor: "",
+    navbarAlignment: "right" as "left" | "center" | "right",
     fontFamily: "Inter",
     heroAlign: "center" as
       | "center"
@@ -181,6 +184,9 @@ function PageBuilder() {
         logoUrl: pageData.logo_url || "",
         logoPosition: settingsBlock?.logoPosition || "hero",
         navbarStyle: settingsBlock?.navbarStyle || "transparent",
+        navbarBackgroundColor: settingsBlock?.navbarBackgroundColor || "",
+        navbarTextColor: settingsBlock?.navbarTextColor || "",
+        navbarAlignment: settingsBlock?.navbarAlignment || "right",
         fontFamily: settingsBlock?.fontFamily || "Inter",
         heroAlign: settingsBlock?.heroAlign || "center",
         heroOverlayColor: settingsBlock?.heroOverlayColor || "#000000",
@@ -211,6 +217,9 @@ function PageBuilder() {
           logoUrl: "",
           logoPosition: template.logoPosition,
           navbarStyle: "transparent",
+          navbarBackgroundColor: "",
+          navbarTextColor: "",
+          navbarAlignment: "right",
           fontFamily: template.fontFamily,
           heroAlign: "center",
           heroOverlayColor: "#000000",
@@ -222,7 +231,7 @@ function PageBuilder() {
           heroForegroundPosition: "right",
           elementShape: "rounded-2xl",
           parent_id: parentId || null,
-          components: JSON.parse(JSON.stringify(template.components)), // Deep copy
+          components: JSON.parse(JSON.stringify(template.components)) as any[], // Deep copy
         });
       }
       setIsInitialized(true);
