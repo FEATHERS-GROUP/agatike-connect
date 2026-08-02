@@ -22,13 +22,12 @@ export function useTelemetry() {
     }
 
     const sendHeartbeat = () => {
-      // Exclude admin panel from telemetry tracking
-      // Use location.pathname (from TanStack Router) for the route check
+      // Admin panel must never be recorded in telemetry
       if (location.pathname.includes("/internal/control/admin")) return;
 
       if (sessionIdRef.current) {
-        // Use window.location.href for the real full URL (TanStack Router's
-        // useLocation() returns { pathname, search, hash } — it has no .href)
+        // Use window.location.href for the real full URL
+        // (TanStack Router's useLocation() returns { pathname, search, hash } — no .href)
         recordHeartbeat({
           data: {
             sessionId: sessionIdRef.current,
@@ -58,5 +57,5 @@ export function useTelemetry() {
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [location.pathname]); // Re-run effect when pathname changes, not location.href
+  }, [location.pathname]); // Re-run when pathname changes
 }

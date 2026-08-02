@@ -34,6 +34,7 @@ import {
   LayoutGrid,
   BookOpen,
   Search,
+  Filter,
 } from "lucide-react";
 import readmeRaw from "../../../../../../README.md?raw";
 
@@ -380,12 +381,49 @@ function BulkDeleteModal({
   );
 }
 
+// Deterministic avatar colour from a string seed
+function avatarColor(seed: string) {
+  const palette = [
+    "bg-violet-500", "bg-blue-500", "bg-sky-500", "bg-teal-500",
+    "bg-emerald-500", "bg-amber-500", "bg-orange-500", "bg-rose-500",
+    "bg-pink-500", "bg-indigo-500",
+  ];
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) & 0xffff;
+  return palette[h % palette.length];
+}
+
+function Initials({ name, size = "h-7 w-7" }: { name: string; size?: string }) {
+  const parts = (name || "?").trim().split(/\s+/);
+  const letters = parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : (name[0] || "?").toUpperCase();
+  return (
+    <div className={`${size} rounded-full ${avatarColor(name)} flex items-center justify-center text-white text-[10px] font-bold shrink-0`}>
+      {letters}
+    </div>
+  );
+}
+
+const PRIORITY_FLAG: Record<string, { color: string; label: string }> = {
+  low:      { color: "text-gray-400",   label: "Low" },
+  normal:   { color: "text-blue-500",   label: "Medium" },
+  high:     { color: "text-red-500",    label: "High" },
+  urgent:   { color: "text-orange-500", label: "Urgent" },
+  critical: { color: "text-red-600",    label: "Critical" },
+};
+
+const PAGE_SIZE = 15;
+
 function AdminSupportPage() {
   const [activeTab, setActiveTab] = useState<Tab>("unassigned");
   const [activeDocTopic, setActiveDocTopic] = useState<number>(0);
   const [docSearchQuery, setDocSearchQuery] = useState("");
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "table">("list");
+  const [viewMode, setViewMode] = useState<"list" | "table">("table");
+  const [tableSearch, setTableSearch] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
   const router = useRouter();
 
   const tabToStatus = (tab: Tab) => {
@@ -458,17 +496,17 @@ function AdminSupportPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-4 gap-3 mb-4 shrink-0">
           {[
-            { label: "Total", value: stats?.total ?? "—", color: "text-gray-900 dark:text-white" },
-            { label: "Open", value: stats?.open ?? "—", color: "text-amber-400" },
-            { label: "Unassigned", value: stats?.unassigned ?? "—", color: "text-red-400" },
-            { label: "Solved / Closed", value: stats?.closed ?? "—", color: "text-green-400" },
+            { label: "Total Tickets", value: stats?.total ?? "—", color: "text-gray-900 dark:text-white", border: "border-l-gray-400", bg: "" },
+            { label: "Open", value: stats?.open ?? "—", color: "text-amber-500", border: "border-l-amber-400", bg: "" },
+            { label: "Unassigned", value: stats?.unassigned ?? "—", color: "text-red-500", border: "border-l-red-400", bg: "" },
+            { label: "Solved / Closed", value: stats?.closed ?? "—", color: "text-green-500", border: "border-l-green-400", bg: "" },
           ].map((s) => (
             <div
               key={s.label}
-              className="bg-gray-50 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded p-3"
+              className={`bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] border-l-2 ${s.border} rounded-lg p-4 flex flex-col gap-1`}
             >
-              <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-[11px] text-gray-500 dark:text-[#666] mt-0.5">{s.label}</div>
+              <div className={`text-2xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
+              <div className="text-[11px] text-gray-500 dark:text-[#666] font-medium">{s.label}</div>
             </div>
           ))}
         </div>
@@ -637,44 +675,47 @@ function AdminSupportPage() {
               <p className="text-gray-500 dark:text-[#888] text-sm">No tickets in this category</p>
             </div>
           ) : viewMode === "list" ? (
-            <div className="divide-y divide-gray-200 dark:divide-[#2a2a2a]">
+            <div className="divide-y divide-gray-100 dark:divide-[#232323]">
               {tickets.map((ticket: any) => {
                 const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
                 const StatusIcon = statusCfg.icon;
+                const priorityDot: Record<string,string> = {
+                  low: "bg-gray-400",
+                  normal: "bg-blue-400",
+                  high: "bg-amber-400",
+                  urgent: "bg-red-500 animate-pulse",
+                };
 
                 return (
                   <Link
                     key={ticket.id}
                     to="/internal/control/admin/support/$ticketId"
                     params={{ ticketId: ticket.id }}
-                    className={`w-full text-left px-4 py-3 transition-colors flex gap-3 items-start hover:bg-gray-100 dark:bg-[#1a1a1a]`}
+                    className="group flex gap-3 items-start px-4 py-3.5 hover:bg-orange-50/40 dark:hover:bg-[#1e1a18] transition-colors border-l-2 border-transparent hover:border-[#f97316] cursor-pointer"
                   >
-                    <StatusIcon className={`h-4 w-4 shrink-0 mt-0.5 ${statusCfg.color}`} />
+                    {/* Priority dot */}
+                    <span
+                      className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${priorityDot[ticket.priority] || "bg-gray-400"}`}
+                      title={ticket.priority}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <span className="text-[13px] font-medium text-gray-900 dark:text-[#e0e0e0] truncate">
+                        <span className="text-[13px] font-semibold text-gray-900 dark:text-[#e8e8e8] truncate group-hover:text-[#f97316] transition-colors">
                           {ticket.subject}
                         </span>
-                        <span className="text-[11px] text-gray-500 dark:text-[#555] shrink-0">
+                        <span className="text-[11px] text-gray-400 dark:text-[#555] shrink-0 tabular-nums">
                           {formatRelative(ticket.created_at)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* Category */}
-                        <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${
-                            CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other
-                          }`}
-                        >
-                          {CATEGORY_LABELS[ticket.category] || ticket.category}
+                        {/* Status pill */}
+                        <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-medium ${statusCfg.bg} ${statusCfg.color}`}>
+                          <StatusIcon className="h-2.5 w-2.5" />
+                          {statusCfg.label}
                         </span>
-                        {/* Priority */}
-                        <span
-                          className={`text-[10px] font-semibold uppercase ${
-                            PRIORITY_COLORS[ticket.priority] || ""
-                          }`}
-                        >
-                          {ticket.priority}
+                        {/* Category */}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}>
+                          {CATEGORY_LABELS[ticket.category] || ticket.category}
                         </span>
                         {/* Plan */}
                         {ticket.subscription_plan_name && (
@@ -685,129 +726,297 @@ function AdminSupportPage() {
                         )}
                         {/* Organizer */}
                         {ticket.organizer && (
-                          <span className="text-[10px] text-gray-500 dark:text-[#666]">
+                          <span className="text-[10px] text-gray-500 dark:text-[#666] flex items-center gap-1">
+                            <UserCheck className="h-3 w-3" />
                             {ticket.organizer.name || ticket.organizer.email}
                           </span>
                         )}
                       </div>
                       {/* Last comment preview */}
                       {ticket.lastComment && (
-                        <p className="text-[11px] text-gray-500 dark:text-[#555] mt-1.5 truncate">
-                          {ticket.lastComment.author_type === "admin" ? "▸ " : "← "}
+                        <p className="text-[11px] text-gray-400 dark:text-[#555] mt-1.5 truncate italic">
+                          {ticket.lastComment.author_type === "admin" ? "You: " : "← "}
                           {ticket.lastComment.body}
                         </p>
                       )}
-                      {/* Assignment */}
-                      <div className="mt-1.5 flex items-center gap-1">
+                      {/* Assignment + comment count */}
+                      <div className="mt-1.5 flex items-center gap-2">
                         {ticket.assigned_to ? (
-                          <span className="text-[10px] text-gray-500 dark:text-[#555] flex items-center gap-1">
+                          <span className="text-[10px] text-gray-500 dark:text-[#666] flex items-center gap-1">
                             <UserCheck className="h-3 w-3 text-green-500" />
-                            {ticket.assignedAdmin?.email || "Assigned"}
+                            {ticket.assignedAdmin?.email?.split("@")[0] || "Assigned"}
                           </span>
                         ) : (
-                          <span className="text-[10px] text-red-400/70 flex items-center gap-1">
+                          <span className="text-[10px] text-red-400 flex items-center gap-1">
                             <AlertCircle className="h-3 w-3" />
                             Unassigned
                           </span>
                         )}
-                        <span className="text-[10px] text-gray-500 dark:text-[#555] ml-auto flex items-center gap-0.5">
+                        <span className="ml-auto flex items-center gap-1 text-[10px] text-gray-400 dark:text-[#555]">
                           <MessageSquare className="h-3 w-3" />
                           {ticket.commentCount || 0}
                         </span>
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#444] mt-0.5 transition-transform" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 dark:text-[#444] mt-1 group-hover:text-[#f97316] transition-colors" />
                   </Link>
                 );
               })}
             </div>
-          ) : (
-            <div className="w-full overflow-x-auto pb-6">
-              <table className="w-full text-left text-sm text-gray-900 dark:text-[#e0e0e0] border-collapse">
-                <thead className="text-[11px] uppercase bg-white dark:bg-[#111] border-b border-gray-200 dark:border-[#333] text-gray-500 dark:text-[#888] sticky top-0 z-10 shadow-sm">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold w-12 text-center">Status</th>
-                    <th className="px-4 py-3 font-semibold">Subject</th>
-                    <th className="px-4 py-3 font-semibold">Category</th>
-                    <th className="px-4 py-3 font-semibold">Priority</th>
-                    <th className="px-4 py-3 font-semibold">Assignee</th>
-                    <th className="px-4 py-3 font-semibold">Organizer</th>
-                    <th className="px-4 py-3 font-semibold text-right">Created</th>
+          ) : (() => {
+            // Search + paginate
+            const filtered = (tickets as any[]).filter((t) => {
+              if (!tableSearch) return true;
+              const q = tableSearch.toLowerCase();
+              return (
+                t.subject?.toLowerCase().includes(q) ||
+                t.organizer?.name?.toLowerCase().includes(q) ||
+                t.organizer?.email?.toLowerCase().includes(q) ||
+                t.id?.toLowerCase().includes(q)
+              );
+            });
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            const safePage = Math.min(page, totalPages);
+            const pageTickets = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+            const allSelected = pageTickets.length > 0 && pageTickets.every((t) => selectedIds.has(t.id));
+
+            const toggleAll = () => {
+              if (allSelected) {
+                setSelectedIds((prev) => { const s = new Set(prev); pageTickets.forEach((t) => s.delete(t.id)); return s; });
+              } else {
+                setSelectedIds((prev) => { const s = new Set(prev); pageTickets.forEach((t) => s.add(t.id)); return s; });
+              }
+            };
+
+            return (
+            <div className="flex flex-col border border-gray-200 dark:border-[#2a2a2a] rounded-lg overflow-hidden">
+              {/* Toolbar */}
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-white dark:bg-[#111] border-b border-gray-200 dark:border-[#2a2a2a] flex-wrap">
+                {/* Search */}
+                <div className="relative flex-1 min-w-[160px] max-w-[260px]">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search Tickets"
+                    value={tableSearch}
+                    onChange={(e) => { setTableSearch(e.target.value); setPage(1); }}
+                    className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#333] rounded-md outline-none focus:border-blue-400 dark:focus:border-blue-500 text-gray-900 dark:text-white placeholder:text-gray-400"
+                  />
+                </div>
+
+                <div className="h-4 w-px bg-gray-200 dark:bg-[#333]" />
+
+                {/* Date sort */}
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#222] rounded-md border border-gray-200 dark:border-[#333] transition-colors">
+                  <Clock className="h-3.5 w-3.5" />
+                  Date Created
+                  <ChevronRight className="h-3 w-3 rotate-90" />
+                </button>
+
+                {/* Filter */}
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#222] rounded-md border border-gray-200 dark:border-[#333] transition-colors">
+                  <Filter className="h-3.5 w-3.5" />
+                  Filter
+                </button>
+
+                {/* Export */}
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#222] rounded-md border border-gray-200 dark:border-[#333] transition-colors">
+                  <Send className="h-3.5 w-3.5" />
+                  Export
+                </button>
+
+                {/* Manage Columns */}
+                <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] text-gray-600 dark:text-[#aaa] hover:bg-gray-100 dark:hover:bg-[#222] rounded-md border border-gray-200 dark:border-[#333] transition-colors">
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  Manage Columns
+                </button>
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Pagination */}
+                <div className="flex items-center gap-1 text-[12px] text-gray-500 dark:text-[#666]">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#222] disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5 rotate-180" />
+                  </button>
+                  <span className="tabular-nums px-1">
+                    {safePage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={safePage >= totalPages}
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#222] disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-[#161616] border-b border-gray-200 dark:border-[#2a2a2a]">
+                    {/* Checkbox */}
+                    <th className="w-10 px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleAll}
+                        className="h-3.5 w-3.5 rounded border-gray-300 dark:border-[#444] accent-blue-500 cursor-pointer"
+                      />
+                    </th>
+                    {["Ticket ID", "Title", "Customer Name", "Priority", "Status", "Assigned To", "Created At"].map((h) => (
+                      <th key={h} className="px-3 py-3 text-[11px] font-semibold text-gray-500 dark:text-[#888] whitespace-nowrap tracking-wide">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-[#2a2a2a] bg-transparent">
-                  {tickets.map((ticket: any) => {
+                <tbody className="divide-y divide-gray-100 dark:divide-[#1e1e1e] bg-white dark:bg-[#111]">
+                  {pageTickets.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-sm text-gray-400">
+                        No tickets found.
+                      </td>
+                    </tr>
+                  ) : pageTickets.map((ticket: any) => {
                     const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
-                    const StatusIcon = statusCfg.icon;
+                    const pFlag = PRIORITY_FLAG[ticket.priority] || PRIORITY_FLAG.normal;
+                    const customerName = ticket.organizer?.name || ticket.organizer?.email?.split("@")[0] || "—";
+                    const assigneeName = ticket.assignedAdmin
+                      ? (ticket.assignedAdmin.name || ticket.assignedAdmin.email?.split("@")[0] || "Admin")
+                      : null;
+                    const isSelected = selectedIds.has(ticket.id);
+                    const ticketNum = String(ticket.id).slice(-5).toUpperCase();
 
                     return (
                       <tr
                         key={ticket.id}
-                        onClick={() =>
-                          router.navigate({
-                            to: "/internal/control/admin/support/$ticketId",
-                            params: { ticketId: ticket.id },
-                          })
-                        }
-                        className="hover:bg-gray-100 dark:bg-[#1a1a1a] transition-colors cursor-pointer group"
+                        className={`group transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-blue-50 dark:bg-blue-950/20"
+                            : "hover:bg-gray-50 dark:hover:bg-[#161616]"
+                        }`}
                       >
-                        <td className="px-4 py-3.5 text-center">
-                          <div
-                            className={`inline-flex items-center justify-center h-7 w-7 rounded border ${statusCfg.bg}`}
-                            title={statusCfg.label}
-                          >
-                            <StatusIcon className={`h-4 w-4 ${statusCfg.color}`} />
-                          </div>
+                        {/* Checkbox */}
+                        <td className="w-10 px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedIds((prev) => {
+                                const s = new Set(prev);
+                                isSelected ? s.delete(ticket.id) : s.add(ticket.id);
+                                return s;
+                              });
+                            }}
+                            className="h-3.5 w-3.5 rounded border-gray-300 dark:border-[#444] accent-blue-500 cursor-pointer"
+                          />
                         </td>
-                        <td className="px-4 py-3.5 max-w-[200px]">
-                          <div className="font-medium text-[13px] truncate group-hover:text-[#f97316] transition-colors">
+
+                        {/* Ticket ID */}
+                        <td
+                          className="px-3 py-3"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400 hover:underline tabular-nums">
+                            {ticketNum}
+                          </span>
+                        </td>
+
+                        {/* Title */}
+                        <td
+                          className="px-3 py-3 max-w-[280px]"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          <span className="text-[13px] text-blue-600 dark:text-blue-400 hover:underline font-medium truncate block">
                             {ticket.subject}
-                          </div>
-                          <div className="text-[11px] text-gray-500 dark:text-[#666] font-mono mt-0.5 truncate">
-                            #{ticket.id.slice(0, 8).toUpperCase()}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5">
-                          <span
-                            className={`inline-block text-[10px] px-1.5 py-0.5 rounded border font-medium whitespace-nowrap ${CATEGORY_COLORS[ticket.category] || CATEGORY_COLORS.other}`}
-                          >
-                            {CATEGORY_LABELS[ticket.category] || ticket.category}
                           </span>
                         </td>
-                        <td className="px-4 py-3.5">
-                          <span
-                            className={`text-[10px] font-semibold uppercase ${PRIORITY_COLORS[ticket.priority] || ""}`}
-                          >
-                            {ticket.priority}
-                          </span>
+
+                        {/* Customer Name */}
+                        <td
+                          className="px-3 py-3"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Initials name={customerName} />
+                            <span className="text-[12px] text-gray-700 dark:text-[#ccc] whitespace-nowrap">{customerName}</span>
+                          </div>
                         </td>
-                        <td className="px-4 py-3.5">
-                          {ticket.assigned_to ? (
-                            <div className="flex items-center gap-1.5">
-                              <UserCheck className="h-3.5 w-3.5 text-green-500" />
-                              <span className="text-[11px] text-gray-600 dark:text-[#aaa]">
-                                {ticket.assignedAdmin?.email?.split("@")[0] || "Assigned"}
-                              </span>
+
+                        {/* Priority */}
+                        <td
+                          className="px-3 py-3"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            {/* Flag icon */}
+                            <svg className={`h-3.5 w-3.5 shrink-0 ${pFlag.color}`} viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M2 2a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 .354.146l.5.5A.5.5 0 0 1 10 2.5v6a.5.5 0 0 1-.5.5H3v4.5a.5.5 0 0 1-1 0V2zm1 6h6V3H3v5z"/>
+                            </svg>
+                            <span className={`text-[12px] font-medium ${pFlag.color}`}>{pFlag.label}</span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td
+                          className="px-3 py-3"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          <div className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border ${statusCfg.bg} ${statusCfg.color} cursor-default`}>
+                            {statusCfg.label}
+                            <ChevronRight className="h-2.5 w-2.5 rotate-90 opacity-60" />
+                          </div>
+                        </td>
+
+                        {/* Assigned To */}
+                        <td
+                          className="px-3 py-3"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          {assigneeName ? (
+                            <div className="flex items-center gap-2">
+                              <Initials name={assigneeName} />
+                              <span className="text-[12px] text-gray-700 dark:text-[#ccc] whitespace-nowrap">{assigneeName}</span>
                             </div>
                           ) : (
-                            <span className="text-[11px] px-1.5 py-0.5 rounded border border-red-500/20 bg-red-500/10 text-red-400">
-                              Unassigned
-                            </span>
+                            <span className="text-[11px] text-gray-400 dark:text-[#555] italic">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3.5 text-[11px] text-gray-600 dark:text-[#aaa]">
-                          {ticket.organizer?.name || ticket.organizer?.email || "—"}
-                        </td>
-                        <td className="px-4 py-3.5 text-right text-[11px] text-gray-600 dark:text-[#777] whitespace-nowrap">
-                          {formatRelative(ticket.created_at)}
+
+                        {/* Created At */}
+                        <td
+                          className="px-3 py-3 text-[12px] text-gray-500 dark:text-[#888] whitespace-nowrap tabular-nums"
+                          onClick={() => router.navigate({ to: "/internal/control/admin/support/$ticketId", params: { ticketId: ticket.id } })}
+                        >
+                          {ticket.created_at
+                            ? new Date(ticket.created_at).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              }) + ", " +
+                              new Date(ticket.created_at).toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })
+                            : "—"}
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
-          )}
+            );
+          })()}
         </div>
       </div>
       <BulkDeleteModal
