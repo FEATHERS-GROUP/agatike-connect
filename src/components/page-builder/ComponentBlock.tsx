@@ -558,6 +558,26 @@ export function ComponentBlock({
                     </SelectContent>
                   </Select>
                 </div>
+                {comp.layout !== "list" && (
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs">Columns</Label>
+                    <Select
+                      value={comp.columns || "4"}
+                      onValueChange={(val) => updateComponent(idx, "columns", val)}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((num) => (
+                          <SelectItem key={num} value={num.toString()}>
+                            {num}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg border border-border/40">
                 <div className="space-y-0.5">

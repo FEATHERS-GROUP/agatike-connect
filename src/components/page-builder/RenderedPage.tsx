@@ -1277,13 +1277,34 @@ export function RenderedPage({
 
                       if (items.length === 0) return null;
 
+                      let gridCols = "grid-cols-1 md:grid-cols-4";
+                      if (isGrid) {
+                        const c = parseInt(comp.columns) || 4; // default to 4 for inventory
+                        switch (c) {
+                          case 1: gridCols = "grid-cols-1"; break;
+                          case 2: gridCols = "grid-cols-1 md:grid-cols-2"; break;
+                          case 3: gridCols = "grid-cols-1 md:grid-cols-3"; break;
+                          case 4: gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"; break;
+                          case 5: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5"; break;
+                          case 6: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6"; break;
+                          case 7: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7"; break;
+                          case 8: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8"; break;
+                          case 9: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9"; break;
+                          case 10: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10"; break;
+                          case 11: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11"; break;
+                          case 12: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12"; break;
+                        }
+                      } else {
+                        gridCols = "grid-cols-1 max-w-4xl mx-auto";
+                      }
+
                       return (
                         <div key={comp.id} className="py-8 w-full max-w-6xl mx-auto px-4">
                           {comp.title && (
                             <h3 className="text-2xl font-bold text-center mb-8">{comp.title}</h3>
                           )}
                           <div
-                            className={`grid gap-6 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 max-w-4xl mx-auto"}`}
+                            className={`grid gap-6 ${gridCols}`}
                           >
                             {items.map((item: any, itemIdx: number) => {
                               const isProduct = comp.type === "product_list";

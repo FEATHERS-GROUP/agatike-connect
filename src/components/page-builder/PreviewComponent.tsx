@@ -393,11 +393,32 @@ export function PreviewComponent({
       movie_list: "Book Tickets",
     };
 
+    let gridCols = "grid-cols-1 md:grid-cols-3";
+    if (isGrid) {
+      const c = parseInt(comp.columns) || 4; // default to 4 for inventory
+      switch (c) {
+        case 1: gridCols = "grid-cols-1"; break;
+        case 2: gridCols = "grid-cols-1 md:grid-cols-2"; break;
+        case 3: gridCols = "grid-cols-1 md:grid-cols-3"; break;
+        case 4: gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"; break;
+        case 5: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-5"; break;
+        case 6: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-6"; break;
+        case 7: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-7"; break;
+        case 8: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-8"; break;
+        case 9: gridCols = "grid-cols-1 sm:grid-cols-3 lg:grid-cols-9"; break;
+        case 10: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-10"; break;
+        case 11: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-11"; break;
+        case 12: gridCols = "grid-cols-1 sm:grid-cols-4 lg:grid-cols-12"; break;
+      }
+    } else {
+      gridCols = "grid-cols-1";
+    }
+
     return (
       <div className="space-y-6 opacity-80">
         {comp.title && <h3 className="text-xl font-bold text-center">{comp.title}</h3>}
         <div
-          className={`grid gap-4 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1"}`}
+          className={`grid gap-4 ${gridCols}`}
         >
           {[1, 2, 3].map((i) => (
               <div key={i} className="flex h-full">
