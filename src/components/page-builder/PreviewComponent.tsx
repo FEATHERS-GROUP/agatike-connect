@@ -342,9 +342,10 @@ export function PreviewComponent({
           )}
           {wrap('form_button',
             <div
-              className="mt-auto rounded-full w-full h-full text-sm font-medium text-white flex items-center justify-center py-1.5"
+              className="mt-4 md:mt-auto !rounded-full w-fit px-8 text-sm font-medium text-white flex items-center justify-center py-2"
+              style={{ background: themeColor }}
             >
-              Fill Form <ArrowRight className="w-4 h-4 ml-2" />
+              Fill Form <ArrowRight className="w-4 h-4 ml-2 shrink-0" />
             </div>,
             "auto", "auto", "0px", "9999px", themeColor
           )}

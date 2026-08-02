@@ -7,7 +7,7 @@ import { getWorkspaceEvents } from "@/api/events";
 import { getSpaces } from "@/api/spaces";
 import { getRentableVenues } from "@/api/rentable_venues";
 import { getMovies } from "@/api/cinema_management";
-import { Loader2, ArrowRight, Package, X, MapPin } from "lucide-react";
+import { Loader2, ArrowRight, Package, X, MapPin, Menu } from "lucide-react";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -210,6 +210,21 @@ export function RenderedPage({
 
   // isPollingPawaPay will be rendered as an overlay to prevent full page remounts
 
+  useEffect(() => {
+    if (page) {
+      document.title = page.title || "Page Builder";
+      if (page.logo_url) {
+        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = "icon";
+          document.head.appendChild(link);
+        }
+        link.href = page.logo_url;
+      }
+    }
+  }, [page]);
+
   if (isLoadingPage && !isPreview) {
     if (children) {
       return <div className="min-h-screen bg-background">{children}</div>;
@@ -249,21 +264,6 @@ export function RenderedPage({
   const heroButtonLink = settingsBlock?.heroButtonLink || "";
   const heroForegroundImageUrl = settingsBlock?.heroForegroundImageUrl || "";
   const shouldHideHero = hideHero || settingsBlock?.hideHero || false;
-
-  useEffect(() => {
-    if (page) {
-      document.title = page.title || "Page Builder";
-      if (page.logo_url) {
-        let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-        if (!link) {
-          link = document.createElement("link");
-          link.rel = "icon";
-          document.head.appendChild(link);
-        }
-        link.href = page.logo_url;
-      }
-    }
-  }, [page]);
   const heroForegroundPosition = settingsBlock?.heroForegroundPosition || "right";
   const elementShape = settingsBlock?.elementShape || "rounded-2xl";
 
@@ -362,8 +362,8 @@ export function RenderedPage({
                 )}
               </div>
 
-              {/* Menu Links */}
-              <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+              {/* Menu Links - Desktop */}
+              <div className="hidden md:flex items-center gap-6">
                 {siteLinks.map((link: any) => (
                   <a
                     key={link.url}
@@ -399,6 +399,51 @@ export function RenderedPage({
                     {link.name}
                   </button>
                 ))}
+              </div>
+
+              {/* Menu Links - Mobile */}
+              <div className="md:hidden flex items-center">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={navbarStyle === "transparent" ? "text-white hover:text-white hover:bg-white/10" : "text-foreground"}
+                    >
+                      <Menu className="h-6 w-6" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[85vw] max-w-[350px] p-6">
+                    <SheetTitle className="text-lg font-bold mb-6 text-left">
+                      {siteTitle || "Menu"}
+                    </SheetTitle>
+                    <div className="flex flex-col gap-6">
+                      {siteLinks.map((link: any) => (
+                        <a
+                          key={link.url}
+                          href={link.url}
+                          className={`text-lg font-medium transition-colors ${
+                            link.isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {link.name}
+                        </a>
+                      ))}
+                      {menuLinks.length > 0 && siteLinks.length > 0 && (
+                        <div className="h-px w-full bg-border" />
+                      )}
+                      {menuLinks.map((link: any) => (
+                        <button
+                          key={link.id}
+                          onClick={() => scrollToSection(link.id)}
+                          className="text-lg font-medium transition-colors text-left text-muted-foreground hover:text-foreground"
+                        >
+                          {link.name}
+                        </button>
+                      ))}
+                    </div>
+                  </SheetContent>
+                </Sheet>
               </div>
             </div>
           </nav>
@@ -1006,10 +1051,10 @@ export function RenderedPage({
                             )}
                             {wrap('form_button',
                               <Button
-                                className="mt-auto rounded-full w-full h-full"
+                                className="mt-4 md:mt-auto !rounded-full w-fit px-8 py-2"
                                 style={{ background: theme_color }}
                               >
-                                Fill Form <ArrowRight className="w-4 h-4 ml-2" />
+                                Fill Form <ArrowRight className="w-4 h-4 ml-2 shrink-0" />
                               </Button>,
                               "auto", "auto", "0px", "9999px", theme_color
                             )}
