@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,17 +38,89 @@ export function ComponentBlock({
 }: any) {
   const [isEditing, setIsEditing] = useState(false);
   const isSelected = selectedElementId === comp.id;
+  const blockRef = useRef<HTMLDivElement>(null);
+
+  const startDrag = (e: React.PointerEvent, type: 'width' | 'height' | 'both' | 'radius') => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    target.setPointerCapture(e.pointerId);
+    
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = blockRef.current?.offsetWidth || 0;
+    const startHeight = blockRef.current?.offsetHeight || 0;
+    const startRadius = parseInt(comp.borderRadius || "16");
+
+    const onMove = (moveEvent: PointerEvent) => {
+      if (type === 'width' || type === 'both') {
+        const newWidth = startWidth + (moveEvent.clientX - startX);
+        updateComponent(idx, "width", `${Math.max(100, newWidth)}px`);
+      }
+      if (type === 'height' || type === 'both') {
+        const newHeight = startHeight + (moveEvent.clientY - startY);
+        updateComponent(idx, "height", `${Math.max(50, newHeight)}px`);
+      }
+      if (type === 'radius') {
+        const newRadius = startRadius + (moveEvent.clientX - startX);
+        updateComponent(idx, "borderRadius", `${Math.max(0, newRadius)}`);
+      }
+    };
+
+    const onUp = (upEvent: PointerEvent) => {
+      target.releasePointerCapture(upEvent.pointerId);
+      target.removeEventListener('pointermove', onMove);
+      target.removeEventListener('pointerup', onUp);
+    };
+
+    target.addEventListener('pointermove', onMove);
+    target.addEventListener('pointerup', onUp);
+  };
 
   return (
     <div 
-      className={`relative group border rounded-xl p-4 transition-all cursor-pointer ${
-        isSelected ? "border-primary ring-2 ring-primary/20 bg-background" : "border-border/40 bg-secondary/20 hover:border-primary/40"
+      ref={blockRef}
+      className={`relative group border transition-all cursor-pointer ${
+        isSelected ? "border-primary ring-2 ring-primary/20" : "border-border/40 hover:border-primary/40"
       }`}
+      style={{
+        width: comp.width || "100%",
+        height: comp.height || "auto",
+        padding: comp.padding ? `${comp.padding}px` : "16px",
+        backgroundColor: comp.backgroundColor || (isSelected ? "hsl(var(--background))" : "hsl(var(--secondary) / 0.2)"),
+        borderRadius: comp.borderRadius ? `${comp.borderRadius}px` : "16px",
+        alignSelf: comp.alignment === 'start' ? 'flex-start' : comp.alignment === 'end' ? 'flex-end' : 'center',
+      }}
       onClick={(e) => {
         e.stopPropagation();
         setSelectedElementId(comp.id);
       }}
     >
+      {isSelected && (
+        <>
+          {/* Right Width Handle */}
+          <div 
+            className="absolute top-1/2 -right-1.5 w-3 h-6 bg-primary rounded-sm -translate-y-1/2 cursor-ew-resize z-30 shadow-sm"
+            onPointerDown={(e) => startDrag(e, 'width')}
+          />
+          {/* Bottom Height Handle */}
+          <div 
+            className="absolute bottom-[-6px] left-1/2 w-6 h-3 bg-primary rounded-sm -translate-x-1/2 cursor-ns-resize z-30 shadow-sm"
+            onPointerDown={(e) => startDrag(e, 'height')}
+          />
+          {/* Bottom Right Both Handle */}
+          <div 
+            className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-primary rounded-full cursor-nwse-resize z-30 shadow-sm"
+            onPointerDown={(e) => startDrag(e, 'both')}
+          />
+          {/* Top Left Border Radius Handle */}
+          <div 
+            className="absolute top-2 left-2 w-3 h-3 bg-background border-2 border-primary rounded-full cursor-nwse-resize z-30 shadow-sm"
+            title="Drag to change border radius"
+            onPointerDown={(e) => startDrag(e, 'radius')}
+          />
+        </>
+      )}
       {/* Move / delete controls */}
       <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {canMoveUp && (
@@ -98,7 +170,15 @@ export function ComponentBlock({
       </div>
 
       {!isEditing ? (
-        <PreviewComponent comp={comp} themeColor={themeColor} activeForms={forms} />
+        <PreviewComponent 
+          comp={comp} 
+          themeColor={themeColor} 
+          activeForms={forms} 
+          idx={idx}
+          updateComponent={updateComponent}
+          selectedElementId={selectedElementId}
+          setSelectedElementId={setSelectedElementId}
+        />
       ) : (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
           {/* TEXT */}
@@ -678,7 +758,78 @@ export function ComponentBlock({
             </div>
           )}
 
-          {/* FORM GRID */}
+          {/* NAVIGATIONS */}
+          {comp.type === "navigations" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Navigation Links</Label>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-7 text-[10px]"
+                  onClick={() => {
+                    const currentLinks = comp.links || [];
+                    updateComponent(idx, "links", [...currentLinks, { label: "New Link", url: "#" }]);
+                  }}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add Link
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {(comp.links || []).map((link: any, linkIdx: number) => (
+                  <div key={linkIdx} className="flex items-center gap-2 bg-background p-2 rounded-md border border-border/60">
+                    <Input 
+                      value={link.label}
+                      onChange={(e) => {
+                        const newLinks = [...comp.links];
+                        newLinks[linkIdx].label = e.target.value;
+                        updateComponent(idx, "links", newLinks);
+                      }}
+                      className="h-7 text-xs"
+                      placeholder="Label"
+                    />
+                    <Input 
+                      value={link.url}
+                      onChange={(e) => {
+                        const newLinks = [...comp.links];
+                        newLinks[linkIdx].url = e.target.value;
+                        updateComponent(idx, "links", newLinks);
+                      }}
+                      className="h-7 text-xs"
+                      placeholder="URL or /p/slug"
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
+                      onClick={() => {
+                        const newLinks = [...comp.links];
+                        newLinks.splice(linkIdx, 1);
+                        updateComponent(idx, "links", newLinks);
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                {(!comp.links || comp.links.length === 0) && (
+                  <div className="text-center p-4 border border-dashed border-border/60 rounded-md text-xs text-muted-foreground">
+                    No links added yet.
+                  </div>
+                )}
+              </div>
+              <div className="pt-4 mt-4 border-t border-border/60">
+                <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Preview</p>
+                <div className="flex gap-4 items-center justify-center py-2" style={{ backgroundColor: comp.backgroundColor, borderRadius: comp.borderRadius + 'px' }}>
+                  {(comp.links || []).map((link: any, i: number) => (
+                    <a key={i} href={link.url} className="text-sm font-medium hover:opacity-70 transition-opacity">
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           {comp.type === "form_grid" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">

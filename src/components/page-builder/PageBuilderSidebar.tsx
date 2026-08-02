@@ -341,7 +341,14 @@ export function PageBuilderSidebar({
                   name: "Simple Links",
                   icon: Menu,
                   desc: "Horizontal link row",
-                  components: [{ type: "text", content: "<div style='display:flex;gap:24px;justify-content:center;padding:24px 0'><b>Home</b> <b>About Us</b> <b>Contact</b></div>" }]
+                  components: [{ 
+                    type: "navigations", 
+                    links: [
+                      { label: "Home", url: "/" },
+                      { label: "About", url: "/about" },
+                      { label: "Contact", url: "/contact" }
+                    ]
+                  }]
                 }
               ].map((section, i) => (
                 <div

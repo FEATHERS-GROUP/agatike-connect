@@ -424,7 +424,7 @@ function PageBuilder() {
                 selectedElementId={selectedElementId}
                 setSelectedElementId={setSelectedElementId}
               />
-              <EditorFloatingToolbar zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} />
+              <EditorFloatingToolbar zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} activeWorkspace={activeWorkspace} />
             </>
           )}
         </div>
@@ -439,6 +439,7 @@ function PageBuilder() {
             set={set}
             handleImageUpload={handleImageUpload}
             selectedElementId={selectedElementId}
+            updateComponent={updateComponent}
           />
         </div>
       )}
