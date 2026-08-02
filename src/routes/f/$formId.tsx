@@ -35,17 +35,16 @@ function PublicFormPage() {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Read payment config from URL query params
-  const searchParams = new URLSearchParams(
-    typeof window !== "undefined" ? window.location.search : ""
-  );
+  // Read payment config from URL query params (stable, won't change)
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
   const isPaymentMode = searchParams.get("pay") === "1";
   const paymentAmount = searchParams.get("amount") || "";
   const paymentLabel = searchParams.get("label") || "";
   const paymentDescription = searchParams.get("description") || "";
-  const paymentWorkspaceId = searchParams.get("workspace_id") || "";
+  const paymentWorkspaceIdFromUrl = searchParams.get("workspace_id") || "";
   const paymentColor = searchParams.get("color") || "";
   const paymentSlug = searchParams.get("slug") || "";
+
 
   // Payment state
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -60,6 +59,9 @@ function PublicFormPage() {
     queryFn: () => getFormDetails({ data: { id: formId } } as any),
     enabled: !!formId,
   });
+
+  // Use form's own workspace_id as authoritative fallback (form.workspace_id resolves after query)
+  const paymentWorkspaceId = paymentWorkspaceIdFromUrl || form?.workspace_id || "";
 
   const { canCreateRsvp } = useSubscriptionLimits(form?.workspace?.orgnizer_id, form?.workspace_id);
 
@@ -538,7 +540,7 @@ function PublicFormPage() {
       </div>
 
       {/* Payment Modal */}
-      {isPaymentMode && (
+      {isPaymentMode && form && (
         <PaymentModal
           isOpen={isPaymentModalOpen}
           onOpenChange={setIsPaymentModalOpen}
@@ -549,7 +551,7 @@ function PublicFormPage() {
           baseCurrency="RWF"
           itemLabel={paymentLabel || form.title}
           themeColor={themeColor}
-          workspaceId={paymentWorkspaceId}
+          workspaceId={form.workspace_id || paymentWorkspaceId}
           isProcessing={isProcessingPayment}
           isGenerating={false}
         />

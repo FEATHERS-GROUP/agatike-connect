@@ -120,14 +120,18 @@ export function PaymentModal({
     queryKey: ["profitableNetworks", workspaceId, baseAmount, supportedNetworks],
     queryFn: () =>
       getProfitableNetworks({
-        data: { workspaceId, baseAmount, networks: supportedNetworks },
+        data: { workspaceId, baseAmount: baseAmount || 1, networks: supportedNetworks },
       } as any),
-    enabled: isOpen && !!workspaceId && supportedNetworks.length > 0 && !!baseAmount,
+    enabled: isOpen && !!workspaceId && supportedNetworks.length > 0,
   });
 
   const availableNetworks = useMemo(() => {
-    if (!supportedNetworks || supportedNetworks.length === 0 || !profitableNetworksData) return [];
-    return ALL_NETWORKS.filter((n) => profitableNetworksData.includes(n.value));
+    if (!supportedNetworks || supportedNetworks.length === 0) return [];
+    // If profitability data loaded, filter to profitable networks; otherwise show all supported
+    if (profitableNetworksData) {
+      return ALL_NETWORKS.filter((n) => profitableNetworksData.includes(n.value));
+    }
+    return ALL_NETWORKS.filter((n) => supportedNetworks.includes(n.value));
   }, [supportedNetworks, profitableNetworksData]);
 
   const selectedNetworkObj = useMemo(
