@@ -88,6 +88,15 @@ export function PageBuilderSidebar({
   return (
     <div className="flex h-full relative">
       <div className="flex flex-col w-full h-full bg-card">
+        {/* Logo */}
+        <div className="flex items-center justify-center px-4 py-3 border-b border-border/60 shrink-0">
+          <img
+            src="/src/assets/logo/Agatike Icon.png"
+            alt="Agatike"
+            className="h-8 w-auto object-contain"
+          />
+        </div>
+
         {/* Search */}
         <div className="p-4 border-b border-border/60 shrink-0">
           <div className="relative">
