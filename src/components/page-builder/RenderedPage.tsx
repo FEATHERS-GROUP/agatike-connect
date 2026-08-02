@@ -408,7 +408,7 @@ export function RenderedPage({
         {/* Header Overlay Section */}
         {!hideHero && (
           <div
-            className={`relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary flex flex-col p-8 md:p-16 ${
+            className={`relative w-full min-h-[50vh] md:min-h-[60vh] bg-secondary overflow-hidden flex flex-col p-8 md:p-16 ${
               heroAlign === "top-left"
                 ? "justify-start items-start text-left"
                 : heroAlign === "top-center"
@@ -432,7 +432,7 @@ export function RenderedPage({
               <img
                 src={header_image_url}
                 alt="Cover"
-                className="absolute inset-0 w-full h-full object-cover transform scale-105"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary/40" />
