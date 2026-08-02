@@ -203,7 +203,9 @@ export function PageBuilderSidebar({
                   </h4>
                   <Button variant="ghost" size="icon" className="w-6 h-6 hover:bg-secondary/40" asChild>
                     <Link
-                      to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                      to="/dashboard/$workspaceSlug/page-builder/editor"
+                      params={{ workspaceSlug: activeWorkspace?.slug || "" }}
+                      search={{}}
                       onClick={() => setActiveTab(null)}
                     >
                       <Plus className="w-4 h-4" />
@@ -225,7 +227,8 @@ export function PageBuilderSidebar({
                                 asChild
                               >
                                 <Link
-                                  to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                                  to="/dashboard/$workspaceSlug/page-builder/editor"
+                                  params={{ workspaceSlug: activeWorkspace?.slug || "" }}
                                   search={{ pageId: page.id }}
                                   onClick={() => setActiveTab(null)}
                                 >
@@ -242,7 +245,8 @@ export function PageBuilderSidebar({
                               </Button>
                               <Button variant="ghost" size="icon" className="w-8 h-8 shrink-0 hover:bg-secondary/40" asChild>
                                 <Link
-                                  to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                                  to="/dashboard/$workspaceSlug/page-builder/editor"
+                                  params={{ workspaceSlug: activeWorkspace?.slug || "" }}
                                   search={{ parentId: page.id }}
                                   onClick={() => setActiveTab(null)}
                                   title="Add Sub-page"
@@ -261,7 +265,8 @@ export function PageBuilderSidebar({
                                     asChild
                                   >
                                     <Link
-                                      to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                                      to="/dashboard/$workspaceSlug/page-builder/editor"
+                                      params={{ workspaceSlug: activeWorkspace?.slug || "" }}
                                       search={{ pageId: subPage.id }}
                                       onClick={() => setActiveTab(null)}
                                     >
@@ -300,7 +305,8 @@ export function PageBuilderSidebar({
                       className="group border border-border/60 rounded-xl overflow-hidden bg-card hover:border-primary/50 transition-colors cursor-pointer"
                     >
                       <Link
-                        to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                        to="/dashboard/$workspaceSlug/page-builder/editor"
+                        params={{ workspaceSlug: activeWorkspace?.slug || "" }}
                         search={{ templateId: template.id }}
                         onClick={() => setActiveTab(null)}
                       >

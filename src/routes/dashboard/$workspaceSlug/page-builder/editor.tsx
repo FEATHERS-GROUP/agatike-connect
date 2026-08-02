@@ -68,8 +68,15 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { PAGE_TEMPLATES } from "@/lib/page-templates";
 
+type EditorSearch = {
+  pageId?: string;
+  templateId?: string;
+  parentId?: string;
+  slug?: string;
+};
+
 export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/editor")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): EditorSearch => {
     return {
       pageId: search.pageId as string | undefined,
       templateId: search.templateId as string | undefined,
