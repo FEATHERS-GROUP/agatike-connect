@@ -538,8 +538,8 @@ export function PaymentModal({
                   (paymentMethod === "momo" &&
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
-                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide md:!bg-background md:!text-primary hover:md:!bg-background/90 md:!shadow-xl"
-                style={{ background: themeColor || "var(--gradient-primary)", color: "#fff" }}
+                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide hover:opacity-90 md:shadow-xl"
+                style={{ backgroundColor: "#ffffff", color: themeColor || "var(--primary)" }}
               >
                 {isGenerating
                   ? "Generating..."
