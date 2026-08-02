@@ -1,7 +1,9 @@
 import QRCode from "react-qr-code";
+import React from "react";
 import { EmbeddedForm } from "./EmbeddedForm";
 import { SpreadsheetEntryForm } from "./SpreadsheetEntryForm";
 import { ResizableSubElement } from "./ResizableSubElement";
+import { StaticSubElement } from "./StaticSubElement";
 
 export function PreviewComponent({
   comp,
@@ -22,13 +24,20 @@ export function PreviewComponent({
 }) {
   const wrap = (subKey: string, child: React.ReactNode, defaultWidth = "100%", defaultHeight = "auto", defaultPadding = "0px", defaultRadius = "0px", defaultBackgroundColor?: string) => {
     if (!updateComponent || !setSelectedElementId || typeof idx === 'undefined') {
-      // If we are in real preview, we need to apply the default background color if present
-      if (defaultBackgroundColor && React.isValidElement(child)) {
-         return React.cloneElement(child, {
-           style: { ...(child.props.style || {}), backgroundColor: defaultBackgroundColor }
-         });
-      }
-      return child;
+      // In preview mode (no edit props), we use StaticSubElement to apply styles without edit handles
+      return (
+        <StaticSubElement
+          comp={comp}
+          subKey={subKey}
+          defaultWidth={defaultWidth}
+          defaultHeight={defaultHeight}
+          defaultPadding={defaultPadding}
+          defaultRadius={defaultRadius}
+          defaultBackgroundColor={defaultBackgroundColor}
+        >
+          {child}
+        </StaticSubElement>
+      );
     }
     return (
       <ResizableSubElement
@@ -140,7 +149,7 @@ export function PreviewComponent({
           }
           return (
             <div key={idx} className="flex h-full">
-              {wrap(`card_${idx}`, 
+              {wrap('card_item', 
                 <div
                   className="border border-border/60 p-5 flex flex-col h-full w-full"
                   style={{
@@ -149,12 +158,12 @@ export function PreviewComponent({
                   }}
                 >
                   <div className="flex items-start justify-between mb-3 w-full">
-                    {wrap(`card_${idx}_title`,
+                    {wrap('card_item_title',
                       <h3 className="text-xl font-bold">{card.customTitle || linkedForm.title}</h3>,
                       "100%", "auto", "0px", "0px"
                     )}
                     {linkedForm.cover_image_url && (
-                      wrap(`card_${idx}_image`,
+                      wrap('card_item_image',
                         <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 ml-3">
                           <img
                             src={linkedForm.cover_image_url}
@@ -167,7 +176,7 @@ export function PreviewComponent({
                     )}
                   </div>
                   {card.bulletPoints ? (
-                    wrap(`card_${idx}_desc`,
+                    wrap('card_item_desc',
                       <div
                         className="prose prose-xs dark:prose-invert mb-6 flex-1 whitespace-pre-wrap w-full"
                       >
@@ -176,7 +185,7 @@ export function PreviewComponent({
                       "100%", "auto", "0px", "0px"
                     )
                   ) : linkedForm.description ? (
-                    wrap(`card_${idx}_desc`,
+                    wrap('card_item_desc',
                       <p
                         className="line-clamp-3 mb-6 flex-1 text-sm w-full"
                       >
@@ -187,7 +196,7 @@ export function PreviewComponent({
                   ) : (
                     <div className="flex-1" />
                   )}
-                  {wrap(`card_${idx}_button`,
+                  {wrap('card_item_button',
                     <div
                       className="w-full rounded-full py-2 text-center text-white text-sm font-medium mt-auto flex items-center justify-center"
                     >
@@ -371,12 +380,12 @@ export function PreviewComponent({
           className={`grid gap-4 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1"}`}
         >
           {[1, 2, 3].map((i) => (
-              <div key={i} className="flex">
-                {wrap(`inv_${i}`,
+              <div key={i} className="flex h-full">
+                {wrap('inv_item',
                   <div
                     className={`bg-card border border-border/40 overflow-hidden shadow-sm flex w-full h-full ${isGrid ? "flex-col" : "flex-row"}`}
                   >
-                    {wrap(`inv_${i}_image`,
+                    {wrap('inv_item_image',
                       <div
                         className={`bg-secondary ${isGrid ? "w-full aspect-[4/3]" : "w-32 h-full min-h-[120px]"} flex items-center justify-center shrink-0`}
                       >
@@ -387,11 +396,11 @@ export function PreviewComponent({
                       "100%", "auto", "0px", "0px"
                     )}
                     <div className="p-4 flex-1 flex flex-col w-full">
-                      {wrap(`inv_${i}_title`,
+                      {wrap('inv_item_title',
                         <h4 className="font-semibold mb-1">Sample {typeLabels[comp.type]}</h4>,
                         "100%", "auto", "0px", "0px"
                       )}
-                      {wrap(`inv_${i}_desc`,
+                      {wrap('inv_item_desc',
                         <p className="text-xs text-muted-foreground mb-4 line-clamp-2">
                           This is a placeholder for your workspace {typeLabels[comp.type].toLowerCase()}. It
                           will be populated with real data on the live page.
@@ -399,12 +408,12 @@ export function PreviewComponent({
                         "100%", "auto", "0px", "0px"
                       )}
                       <div className="mt-auto flex items-center justify-between pt-2 w-full">
-                        {wrap(`inv_${i}_price`,
+                        {wrap('inv_item_price',
                           <span className="text-sm font-medium">$0.00</span>,
                           "auto", "auto", "0px", "0px"
                         )}
                         {comp.allowSelling !== false && (
-                          wrap(`inv_${i}_button`,
+                          wrap('inv_item_button',
                             <div
                               className="px-3 py-1.5 text-xs font-bold text-white flex items-center justify-center"
                             >

@@ -15,6 +15,7 @@ import QRCode from "react-qr-code";
 import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
 import { SpreadsheetEntryForm } from "@/components/page-builder/SpreadsheetEntryForm";
 import { DynamicFontLoader } from "./DynamicFontLoader";
+import { StaticSubElement } from "./StaticSubElement";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useMutation } from "@tanstack/react-query";
@@ -579,71 +580,83 @@ export function RenderedPage({
             <div className="space-y-16 md:space-y-24">
               {!hideComponents &&
                 actualComponents?.map((comp: any) => {
+                  const wrap = (subKey: string, child: React.ReactNode, defaultWidth = "100%", defaultHeight = "auto", defaultPadding = "0px", defaultRadius = "0px", defaultBackgroundColor?: string) => {
+                    return (
+                      <StaticSubElement
+                        comp={comp}
+                        subKey={subKey}
+                        defaultWidth={defaultWidth}
+                        defaultHeight={defaultHeight}
+                        defaultPadding={defaultPadding}
+                        defaultRadius={defaultRadius}
+                        defaultBackgroundColor={defaultBackgroundColor}
+                      >
+                        {child}
+                      </StaticSubElement>
+                    );
+                  };
+
                   const renderComponent = () => {
                     if (comp.type === "text") {
                       return (
-                        <div
-                          className={`prose prose-lg dark:prose-invert max-w-none bg-card p-8 shadow-sm ${elementShape}`}
-                        >
-                          <p className="whitespace-pre-wrap">{comp.content}</p>
+                        <div key={comp.id} className="w-full">
+                          {wrap('text', 
+                            <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none bg-card w-full h-full">
+                              <p className="whitespace-pre-wrap">{comp.content}</p>
+                            </div>,
+                          "100%", "auto", "24px", "16px")}
                         </div>
                       );
                     }
 
                     if (comp.type === "image" && comp.url) {
                       return (
-                        <div
-                          key={comp.id}
-                          className={`w-full overflow-hidden shadow-sm ${elementShape}`}
-                        >
-                          <img
-                            src={comp.url}
-                            alt="Content"
-                            className="w-full h-auto max-h-[600px] object-cover"
-                          />
+                        <div key={comp.id} className="w-full">
+                          {wrap('img',
+                            <img src={comp.url} alt="Content" className="w-full h-full object-cover" />,
+                            "100%", "400px", "0px", "16px"
+                          )}
                         </div>
                       );
                     }
 
                     if (comp.type === "split_block") {
                       return (
-                        <div
-                          key={comp.id}
-                          className={`flex flex-col md:flex-row gap-8 items-center ${comp.imagePosition === "right" ? "md:flex-row-reverse" : ""}`}
-                        >
-                          {comp.imageUrl && (
-                            <div
-                              className={`w-full md:w-1/2 overflow-hidden shadow-sm ${elementShape}`}
-                            >
-                              <img
-                                src={comp.imageUrl}
-                                alt="Split Content"
-                                className="w-full h-auto max-h-[500px] object-cover"
-                              />
-                            </div>
-                          )}
-                          {comp.text && (
-                            <div className="w-full md:w-1/2 prose prose-lg dark:prose-invert">
-                              <p className="whitespace-pre-wrap text-lg">{comp.text}</p>
-                            </div>
-                          )}
+                        <div key={comp.id} className="w-full relative group">
+                          {wrap('split_wrapper',
+                            <div className={`flex flex-col md:flex-row gap-4 items-center w-full h-full ${comp.imagePosition === 'right' ? 'md:flex-row-reverse' : ''}`}>
+                              {comp.imageUrl && (
+                                <div className="flex-1 w-full h-full">
+                                  {wrap('split_image', 
+                                    <img src={comp.imageUrl} alt="Split Content" className="w-full h-full object-cover" />,
+                                  "100%", "100%", "0px", "16px")}
+                                </div>
+                              )}
+                              {comp.text && (
+                                <div className="flex-1 w-full h-full">
+                                  {wrap('split_text',
+                                    <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none w-full h-full flex flex-col justify-center">
+                                      <p className="whitespace-pre-wrap">{comp.text}</p>
+                                    </div>,
+                                  "100%", "100%", "24px", "0px")}
+                                </div>
+                              )}
+                            </div>,
+                          "100%", "auto", "16px", "16px", "#ffffff")}
                         </div>
                       );
                     }
 
                     if (comp.type === "button") {
                       return (
-                        <div key={comp.id} className="flex justify-center w-full px-4">
-                          <Button
-                            asChild
-                            size="lg"
-                            className="rounded-full px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto text-center"
-                            style={{ background: theme_color }}
-                          >
-                            <a href={comp.url} target="_blank" rel="noreferrer">
-                              {comp.label || "Click Here"}
-                            </a>
-                          </Button>
+                        <div key={comp.id} className="w-full flex justify-center py-4">
+                          {wrap('button',
+                            <Button asChild size="lg" className="w-full h-full shadow-lg text-white">
+                              <a href={comp.url} target="_blank" rel="noreferrer">
+                                {comp.label || "Click Here"}
+                              </a>
+                            </Button>,
+                          "200px", "56px", "0px", "9999px", theme_color)}
                         </div>
                       );
                     }
@@ -672,103 +685,114 @@ export function RenderedPage({
                             if (!linkedForm) return null;
 
                             return (
-                              <div
-                                key={idx}
-                                className={`border border-border/60 p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col h-full group ${elementShape}`}
-                                style={{
-                                  backgroundColor: comp.cardBgColor || "var(--card)",
-                                  color: comp.cardTextColor || "inherit",
-                                }}
-                              >
-                                <div className="flex items-start justify-between mb-4">
-                                  <h3 className="text-2xl font-bold group-hover:opacity-80 transition-opacity">
-                                    {card.customTitle || linkedForm.title}
-                                  </h3>
-                                  {linkedForm.cover_image_url && (
-                                    <div
-                                      className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}
-                                    >
-                                      <img
-                                        src={linkedForm.cover_image_url}
-                                        alt={linkedForm.title}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-
-                                {card.bulletPoints ? (
+                              <div key={idx} className="flex h-full">
+                                {wrap('card_item', 
                                   <div
-                                    className="prose prose-sm dark:prose-invert mb-8 flex-1 whitespace-pre-wrap"
+                                    className={`border border-border/60 p-6 hover:border-primary/50 transition-all duration-300 flex flex-col h-full group ${elementShape}`}
                                     style={{
-                                      color: comp.cardTextColor || "var(--muted-foreground)",
+                                      backgroundColor: comp.cardBgColor || "var(--card)",
+                                      color: comp.cardTextColor || "inherit",
                                     }}
                                   >
-                                    {card.bulletPoints}
-                                  </div>
-                                ) : linkedForm.description ? (
-                                  <p
-                                    className="line-clamp-3 mb-8 flex-1"
-                                    style={{
-                                      color: comp.cardTextColor || "var(--muted-foreground)",
-                                    }}
-                                  >
-                                    {linkedForm.description}
-                                  </p>
-                                ) : (
-                                  <div className="flex-1" />
-                                )}
+                                    <div className="flex items-start justify-between mb-4 w-full">
+                                      {wrap('card_item_title',
+                                        <h3 className="text-2xl font-bold group-hover:opacity-80 transition-opacity m-0">
+                                          {card.customTitle || linkedForm.title}
+                                        </h3>,
+                                        "100%", "auto", "0px", "0px"
+                                      )}
+                                      {linkedForm.cover_image_url && (
+                                        wrap('card_item_image',
+                                          <div className={`w-16 h-16 overflow-hidden shrink-0 ml-4 hidden sm:block ${elementShape}`}>
+                                            <img
+                                              src={linkedForm.cover_image_url}
+                                              alt={linkedForm.title}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </div>,
+                                          "64px", "64px", "0px", "0px"
+                                        )
+                                      )}
+                                    </div>
 
-                                {comp.openAction === "modal" ? (
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button
-                                        className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
-                                        style={{ background: theme_color }}
-                                      >
-                                        {card.buttonLabel || "Register"}{" "}
-                                        <ArrowRight className="w-4 h-4 ml-2" />
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
-                                      <DialogTitle className="sr-only">Form</DialogTitle>
-                                      <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
-                                        <EmbeddedForm formId={linkedForm.id} />
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-                                ) : comp.openAction === "drawer" ? (
-                                  <Sheet>
-                                    <SheetTrigger asChild>
-                                      <Button
-                                        className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
-                                        style={{ background: theme_color }}
-                                      >
-                                        {card.buttonLabel || "Register"}{" "}
-                                        <ArrowRight className="w-4 h-4 ml-2" />
-                                      </Button>
-                                    </SheetTrigger>
-                                    <SheetContent
-                                      side="right"
-                                      className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0"
-                                    >
-                                      <SheetTitle className="sr-only">Form</SheetTitle>
-                                      <div className="h-full relative bg-background">
-                                        <EmbeddedForm formId={linkedForm.id} />
-                                      </div>
-                                    </SheetContent>
-                                  </Sheet>
-                                ) : (
-                                  <Button
-                                    asChild
-                                    className="w-full rounded-full mt-auto group-hover:shadow-md transition-all"
-                                    style={{ background: theme_color }}
-                                  >
-                                    <Link to={`/f/${linkedForm.id}` as any}>
-                                      {card.buttonLabel || "Register"}{" "}
-                                      <ArrowRight className="w-4 h-4 ml-2" />
-                                    </Link>
-                                  </Button>
+                                    {card.bulletPoints ? (
+                                      wrap('card_item_desc',
+                                        <div
+                                          className="prose prose-sm dark:prose-invert mb-8 flex-1 whitespace-pre-wrap w-full"
+                                        >
+                                          {card.bulletPoints}
+                                        </div>,
+                                        "100%", "auto", "0px", "0px"
+                                      )
+                                    ) : linkedForm.description ? (
+                                      wrap('card_item_desc',
+                                        <p
+                                          className="line-clamp-3 mb-8 flex-1 w-full m-0"
+                                        >
+                                          {linkedForm.description}
+                                        </p>,
+                                        "100%", "auto", "0px", "0px"
+                                      )
+                                    ) : (
+                                      <div className="flex-1" />
+                                    )}
+
+                                    {wrap('card_item_button',
+                                      comp.openAction === "modal" ? (
+                                        <Dialog>
+                                          <DialogTrigger asChild>
+                                            <Button
+                                              className="w-full rounded-full mt-auto group-hover:shadow-md transition-all text-white"
+                                              style={{ background: theme_color }}
+                                            >
+                                              {card.buttonLabel || "Register"}{" "}
+                                              <ArrowRight className="w-4 h-4 ml-2" />
+                                            </Button>
+                                          </DialogTrigger>
+                                          <DialogContent className="max-w-3xl w-full h-[85vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+                                            <DialogTitle className="sr-only">Form</DialogTitle>
+                                            <div className="bg-background rounded-xl overflow-hidden shadow-2xl h-full relative">
+                                              <EmbeddedForm formId={linkedForm.id} />
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
+                                      ) : comp.openAction === "drawer" ? (
+                                        <Sheet>
+                                          <SheetTrigger asChild>
+                                            <Button
+                                              className="w-full rounded-full mt-auto group-hover:shadow-md transition-all text-white"
+                                              style={{ background: theme_color }}
+                                            >
+                                              {card.buttonLabel || "Register"}{" "}
+                                              <ArrowRight className="w-4 h-4 ml-2" />
+                                            </Button>
+                                          </SheetTrigger>
+                                          <SheetContent
+                                            side="right"
+                                            className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto p-0"
+                                          >
+                                            <SheetTitle className="sr-only">Form</SheetTitle>
+                                            <div className="h-full relative bg-background">
+                                              <EmbeddedForm formId={linkedForm.id} />
+                                            </div>
+                                          </SheetContent>
+                                        </Sheet>
+                                      ) : (
+                                        <Button
+                                          asChild
+                                          className="w-full rounded-full mt-auto group-hover:shadow-md transition-all text-white"
+                                          style={{ background: theme_color }}
+                                        >
+                                          <Link to={`/f/${linkedForm.id}` as any}>
+                                            {card.buttonLabel || "Register"}{" "}
+                                            <ArrowRight className="w-4 h-4 ml-2" />
+                                          </Link>
+                                        </Button>
+                                      ),
+                                      "100%", "auto", "0px", "9999px", theme_color
+                                    )}
+                                  </div>,
+                                  "100%", "100%", "0px", "16px", comp.cardBgColor || "var(--card)"
                                 )}
                               </div>
                             );
@@ -881,39 +905,54 @@ export function RenderedPage({
                           className={`bg-card border border-border/60 p-6 md:p-8 hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row items-center gap-6 ${elementShape} cursor-pointer w-full text-left`}
                         >
                           {linkedForm.cover_image_url ? (
-                            <div
-                              className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}
-                            >
-                              <img
-                                src={linkedForm.cover_image_url}
-                                alt={linkedForm.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                            </div>
+                            wrap('form_image',
+                              <div
+                                className={`w-full md:w-48 h-32 overflow-hidden shrink-0 ${elementShape}`}
+                              >
+                                <img
+                                  src={linkedForm.cover_image_url}
+                                  alt={linkedForm.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              </div>,
+                              "192px", "128px", "0px", "0px"
+                            )
                           ) : (
-                            <div
-                              className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}
-                            >
-                              <span className="text-4xl font-bold text-primary/30">
-                                {linkedForm.title.charAt(0)}
-                              </span>
-                            </div>
+                            wrap('form_image',
+                              <div
+                                className={`w-full md:w-48 h-32 bg-primary/10 flex items-center justify-center shrink-0 ${elementShape}`}
+                              >
+                                <span className="text-4xl font-bold text-primary/30">
+                                  {linkedForm.title.charAt(0)}
+                                </span>
+                              </div>,
+                              "192px", "128px", "0px", "0px"
+                            )
                           )}
-                          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full">
-                            <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors">
-                              {linkedForm.title}
-                            </h3>
-                            {linkedForm.description && (
-                              <p className="text-muted-foreground line-clamp-2 mb-4">
-                                {linkedForm.description}
-                              </p>
+                          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full min-w-0">
+                            {wrap('form_title',
+                              <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors m-0 w-full">
+                                {linkedForm.title}
+                              </h3>,
+                              "100%", "auto", "0px", "0px"
                             )}
-                            <Button
-                              className="mt-auto rounded-full w-full md:w-auto"
-                              style={{ background: theme_color }}
-                            >
-                              Fill Form <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
+                            {linkedForm.description && (
+                              wrap('form_desc',
+                                <p className="text-muted-foreground line-clamp-2 mb-4 w-full m-0">
+                                  {linkedForm.description}
+                                </p>,
+                                "100%", "auto", "0px", "0px"
+                              )
+                            )}
+                            {wrap('form_btn',
+                              <Button
+                                className="mt-auto rounded-full w-full h-full"
+                                style={{ background: theme_color }}
+                              >
+                                Fill Form <ArrowRight className="w-4 h-4 ml-2" />
+                              </Button>,
+                              "auto", "auto", "0px", "9999px", theme_color
+                            )}
                           </div>
                         </div>
                       );
@@ -980,45 +1019,45 @@ export function RenderedPage({
 
                     if (comp.type === "payment_button") {
                       return (
-                        <div
-                          key={comp.id}
-                          className="flex flex-col items-center justify-center w-full px-4 py-8"
-                        >
-                          {comp.paymentLink ? (
-                            <a
-                              href={comp.paymentLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="rounded-full px-12 py-5 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center gap-1 block"
-                              style={{ background: theme_color }}
-                            >
-                              <span>{comp.label || "Pay Now"}</span>
-                              {comp.amount && (
-                                <span className="text-sm opacity-90">{comp.amount} RWF</span>
-                              )}
-                            </a>
-                          ) : (
-                            <Button
-                              size="lg"
-                              className="rounded-full px-12 py-8 text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center gap-1 h-auto"
-                              style={{ background: theme_color }}
-                              onClick={() => {
-                                setSelectedPaymentBlock(comp);
-                                setPaymentModalOpen(true);
-                              }}
-                            >
-                              <span>{comp.label || "Pay Now"}</span>
-                              {comp.amount && (
-                                <span className="text-sm font-normal opacity-90">
-                                  {comp.amount} RWF
-                                </span>
-                              )}
-                            </Button>
-                          )}
+                        <div key={comp.id} className="flex flex-col items-center justify-center w-full px-4 py-8">
+                          {wrap('payment_btn',
+                            comp.paymentLink ? (
+                              <a
+                                href={comp.paymentLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full h-full text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center justify-center gap-1 block"
+                                style={{ background: theme_color }}
+                              >
+                                <span>{comp.label || "Pay Now"}</span>
+                                {comp.amount && (
+                                  <span className="text-sm opacity-90">{comp.amount} RWF</span>
+                                )}
+                              </a>
+                            ) : (
+                              <Button
+                                className="w-full h-full text-lg font-bold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white text-center flex flex-col items-center justify-center gap-1"
+                                style={{ background: theme_color }}
+                                onClick={() => {
+                                  setSelectedPaymentBlock(comp);
+                                  setPaymentModalOpen(true);
+                                }}
+                              >
+                                <span>{comp.label || "Pay Now"}</span>
+                                {comp.amount && (
+                                  <span className="text-sm font-normal opacity-90">
+                                    {comp.amount} RWF
+                                  </span>
+                                )}
+                              </Button>
+                            ),
+                          "250px", "64px", "0px", "9999px", theme_color)}
                           {comp.description && (
-                            <p className="mt-6 text-base text-muted-foreground text-center max-w-md">
-                              {comp.description}
-                            </p>
+                            wrap('payment_desc',
+                              <p className="mt-6 text-base text-muted-foreground text-center w-full m-0">
+                                {comp.description}
+                              </p>,
+                            "100%", "auto", "0px", "0px")
                           )}
                         </div>
                       );
@@ -1027,16 +1066,18 @@ export function RenderedPage({
                     if (comp.type === "qr_code") {
                       const size = comp.size || 192;
                       return (
-                        <div className="flex flex-col items-center justify-center w-full py-12 gap-6">
-                          <div
-                            className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow ${elementShape}`}
-                          >
-                            <QRCode value={comp.content || "https://agatike.com"} size={size} />
-                          </div>
+                        <div key={comp.id} className="flex flex-col items-center justify-center w-full py-12 gap-6">
+                          {wrap('qr_container',
+                            <div className={`bg-white p-6 shadow-lg border border-border/60 hover:shadow-xl transition-shadow w-full h-full flex items-center justify-center ${elementShape}`}>
+                              <QRCode value={comp.content || "https://agatike.com"} size={size} />
+                            </div>,
+                          "256px", "256px", "0px", "16px")}
                           {comp.title && (
-                            <p className="text-lg font-medium text-center text-foreground">
-                              {comp.title}
-                            </p>
+                            wrap('qr_title',
+                              <p className="text-lg font-medium text-center text-foreground w-full m-0">
+                                {comp.title}
+                              </p>,
+                            "100%", "auto", "0px", "0px")
                           )}
                         </div>
                       );
@@ -1228,7 +1269,7 @@ export function RenderedPage({
                           <div
                             className={`grid gap-6 ${isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "grid-cols-1 max-w-4xl mx-auto"}`}
                           >
-                            {items.map((item: any) => {
+                            {items.map((item: any, itemIdx: number) => {
                               const isProduct = comp.type === "product_list";
                               const isVenueType = comp.type === "venue_list";
                               const CardWrapper = isProduct || isVenueType ? "div" : "a";
@@ -1245,123 +1286,101 @@ export function RenderedPage({
                                 <CardWrapper
                                   key={item.id}
                                   {...(wrapperProps as any)}
-                                  className={`bg-card border border-border/40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex ${isGrid ? "flex-col" : "flex-col sm:flex-row"} group ${!isProduct && comp.allowSelling !== false ? "cursor-pointer block" : ""}`}
+                                  className={`h-full flex flex-col group ${!isProduct && comp.allowSelling !== false ? "cursor-pointer block" : ""}`}
                                 >
-                                  <div
-                                    className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
-                                  >
-                                    {item.image_url ||
-                                    item.cover ||
-                                    item.cover_url ||
-                                    item.cover_image ||
-                                    item.poster_url ||
-                                    item.images?.[0] ? (
-                                      <img
-                                        src={
-                                          item.image_url ||
-                                          item.cover ||
-                                          item.cover_url ||
-                                          item.cover_image ||
-                                          item.poster_url ||
-                                          item.images?.[0]
-                                        }
-                                        alt=""
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center opacity-50">
-                                        <Package className="w-8 h-8 text-muted-foreground" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="p-5 flex-1 flex flex-col min-w-0">
-                                    <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">
-                                      {item.name || item.title}
-                                    </h4>
-                                    {isVenueType && (item.city || item.address) && (
-                                      <div className="flex items-center text-xs text-muted-foreground mb-1 gap-1">
-                                        <MapPin className="h-3 w-3" />
-                                        <span>
-                                          {item.city}
-                                          {item.city && item.address ? ", " : ""}
-                                          {item.address}
-                                        </span>
-                                      </div>
-                                    )}
-                                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                                      {item.description ||
-                                        item.synopsis ||
-                                        (comp.type === "venue_list"
-                                          ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests`
-                                          : "No details provided.")}
-                                    </p>
-                                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
-                                      <span className="font-semibold truncate mr-2">
-                                        {(() => {
-                                          if (item.price)
-                                            return `${Number(item.price).toLocaleString()} RWF`;
-                                          if (comp.type === "event_list") {
-                                            if (
-                                              item.event_tickets &&
-                                              item.event_tickets.length > 0
-                                            ) {
-                                              const minPrice = Math.min(
-                                                ...item.event_tickets.map((t: any) => t.cost || 0),
-                                              );
-                                              return minPrice === 0
-                                                ? "Free"
-                                                : `From ${minPrice.toLocaleString()} RWF`;
-                                            }
-                                            return "Free";
-                                          }
-                                          if (
-                                            comp.type === "space_list" ||
-                                            comp.type === "venue_list"
-                                          )
-                                            return "Check Availability";
-                                          return "";
-                                        })()}
-                                      </span>
-                                      {comp.allowSelling !== false &&
-                                        (isProduct || isVenueType ? (
-                                          <Button
-                                            size="sm"
-                                            className="rounded-full shrink-0"
-                                            style={{ background: theme_color }}
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              if (isProduct) {
-                                                setSelectedProductForCheckout(item);
-                                                setSelectedPaymentBlock(comp);
-                                                setProductCheckoutSheetOpen(true);
-                                              } else if (isVenueType) {
-                                                if (item.is_facility) {
-                                                  const originalVenue = venues.find(
-                                                    (v) => v.id === item.venue_id,
-                                                  );
-                                                  setSelectedFacilityVenue(originalVenue);
-                                                  setSelectedFacilityForCheckout(item);
-                                                  setFacilityCheckoutSheetOpen(true);
-                                                } else {
-                                                  setSelectedVenueForCheckout(item);
-                                                  setVenueCheckoutSheetOpen(true);
+                                  {wrap('inv_item',
+                                    <div className={`bg-card border border-border/40 overflow-hidden shadow-sm hover:shadow-md transition-all flex h-full w-full ${isGrid ? "flex-col" : "flex-col sm:flex-row"}`}>
+                                      {wrap('inv_item_image',
+                                        <div className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}>
+                                          {item.image_url || item.cover || item.cover_url || item.cover_image || item.poster_url || item.images?.[0] ? (
+                                            <img
+                                              src={item.image_url || item.cover || item.cover_url || item.cover_image || item.poster_url || item.images?.[0]}
+                                              alt=""
+                                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center opacity-50">
+                                              <Package className="w-8 h-8 text-muted-foreground" />
+                                            </div>
+                                          )}
+                                        </div>,
+                                        "100%", "auto", "0px", "0px"
+                                      )}
+                                      <div className="p-5 flex-1 flex flex-col min-w-0">
+                                        {wrap('inv_item_title',
+                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors m-0 w-full">{item.name || item.title}</h4>,
+                                          "100%", "auto", "0px", "0px"
+                                        )}
+                                        {isVenueType && (item.city || item.address) && (
+                                          <div className="flex items-center text-xs text-muted-foreground mb-1 gap-1">
+                                            <MapPin className="h-3 w-3" />
+                                            <span>{item.city}{item.city && item.address ? ", " : ""}{item.address}</span>
+                                          </div>
+                                        )}
+                                        {wrap('inv_item_desc',
+                                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 w-full m-0">{item.description || item.synopsis || (comp.type === "venue_list" ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests` : "No details provided.")}</p>,
+                                          "100%", "auto", "0px", "0px"
+                                        )}
+                                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
+                                          {wrap('inv_item_price',
+                                            <span className="font-semibold truncate mr-2 text-sm w-full">
+                                              {(() => {
+                                                if (item.price) return `${Number(item.price).toLocaleString()} RWF`;
+                                                if (comp.type === "event_list") {
+                                                  if (item.event_tickets && item.event_tickets.length > 0) {
+                                                    const minPrice = Math.min(...item.event_tickets.map((t: any) => t.cost || 0));
+                                                    return minPrice === 0 ? "Free" : `From ${minPrice.toLocaleString()} RWF`;
+                                                  }
+                                                  return "Free";
                                                 }
-                                              }
-                                            }}
-                                          >
-                                            {item.is_facility ? "Book Space" : btnLabel}
-                                          </Button>
-                                        ) : (
-                                          <Button
-                                            size="sm"
-                                            className="rounded-full shrink-0 pointer-events-none"
-                                            style={{ background: theme_color }}
-                                          >
-                                            {item.is_facility ? "Book Space" : btnLabel}
-                                          </Button>
-                                        ))}
-                                    </div>
-                                  </div>
+                                                if (comp.type === "space_list" || comp.type === "venue_list") return "Check Availability";
+                                                return "";
+                                              })()}
+                                            </span>,
+                                            "auto", "auto", "0px", "0px"
+                                          )}
+                                          {comp.allowSelling !== false && (isProduct || isVenueType ? (
+                                            wrap('inv_item_button',
+                                              <Button
+                                                size="sm"
+                                                className="shrink-0 text-white shadow-md"
+                                                style={{ background: theme_color }}
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  if (isProduct) {
+                                                    setSelectedProductForCheckout(item);
+                                                    setSelectedPaymentBlock(comp);
+                                                    setProductCheckoutSheetOpen(true);
+                                                  } else if (isVenueType) {
+                                                    if (item.is_facility) {
+                                                      const originalVenue = venues.find((v) => v.id === item.venue_id);
+                                                      setSelectedFacilityVenue(originalVenue);
+                                                      setSelectedFacilityForCheckout(item);
+                                                      setFacilityCheckoutSheetOpen(true);
+                                                    } else {
+                                                      setSelectedVenueForCheckout(item);
+                                                      setVenueCheckoutSheetOpen(true);
+                                                    }
+                                                  }
+                                                }}
+                                              >
+                                                {item.is_facility ? "Book Space" : btnLabel}
+                                              </Button>,
+                                              "auto", "auto", "0px", "9999px", theme_color
+                                            )
+                                          ) : (
+                                            wrap('inv_item_button',
+                                              <Button size="sm" className="shrink-0 text-white shadow-md pointer-events-none" style={{ background: theme_color }}>
+                                                {item.is_facility ? "Book Space" : btnLabel}
+                                              </Button>,
+                                              "auto", "auto", "0px", "9999px", theme_color
+                                            )
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>,
+                                    "100%", "auto", "0px", "16px"
+                                  )}
                                 </CardWrapper>
                               );
                             })}
