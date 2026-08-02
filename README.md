@@ -2732,4 +2732,29 @@ flowchart TD
 
 ---
 
+## 32. Storefront Page Builder Architecture
+
+**Logic:**
+- The Page Builder is a comprehensive drag-and-drop website editor that allows organizers to construct full custom storefronts and landing pages.
+- **Unified Styling Engine (`wrap`):** All components on the live page and the preview editor are wrapped in a central `wrap()` helper. This helper reads dynamic style keys (e.g. `comp["inv_item_backgroundColor"]`) from the JSON payload.
+  - **Fallback Adapters:** When we migrated the builder from index-based keys (`card_1`, `card_2`) to unified class-based keys (`card_item`, `inv_item`), a fallback mechanism was introduced. The `getValue()` helper intelligently checks for the unified key, and if missing, falls back to the legacy keys to ensure no organizer loses their previous custom designs.
+- **Root Styles vs. Sub-Element Styles:** 
+  - **Root Component:** The main wrapper (e.g., the section card itself) reads styles directly from the component payload (`comp.backgroundColor`, `comp.padding`, `comp.borderRadius`). 
+  - **Sub-Elements:** Inner items (buttons, text, images) are styled dynamically via the `wrap` function and the Sidebar Settings UI.
+- **Dynamic Grid Layouts (1-12 Columns):** The builder supports deep structural customization. For components like `form_grid` (Cards) and inventory lists (`product_list`, `venue_list`, `event_list`), organizers can choose the exact number of columns (from 1 to 12).
+  - A robust switch statement dynamically injects the appropriate `grid-cols-[1-12]` Tailwind classes.
+  - Mobile responsiveness is preserved implicitly (always collapsing to 1 column on mobile, utilizing `sm:` and `md:` breakpoints, and expanding to the full N columns on desktop).
+- **Hydration Mismatch Avoidance:** Server-Side Rendering (SSR) poses challenges for dynamically generated Workspace URLs (since `window.location` is undefined on the server but defined on the client). To bypass React hydration errors, link actions (like the 'Play' preview button in the topbar) use `onClick` JavaScript handlers to generate their URLs entirely on the client side instead of using raw `<a href="...">` tags.
+- **Component Synchronization:** Code logic for live rendering (`RenderedPage.tsx`) and the WYSIWYG editor (`PreviewComponent.tsx` and `ComponentBlock.tsx`) are completely synchronized, guaranteeing a 1:1 "What You See Is What You Get" experience for the organizer.
+- **Navigation & Smooth Scrolling:** 
+  - Each component block allows the organizer to define a `navLabel`. 
+  - The live page (`RenderedPage.tsx`) automatically scans all components in the payload and extracts any block with a `navLabel`. These labels are dynamically mapped into the header navigation bar.
+  - When an attendee clicks a link in the navigation bar, the page performs a smooth scroll directly to the `id` of that specific component section.
+- **Section Selection Engine:**
+  - The editor implements a two-way binding for section selection.
+  - Clicking on a component inside the live visual canvas automatically updates the `selectedElementId` state, which in turn expands the exact property panel for that element in the right-hand sidebar.
+  - Conversely, clicking a section title in the "Sections" sidebar highlights and auto-scrolls the visual canvas directly to that block, ensuring seamless orientation within complex, long-form landing pages.
+
+---
+
 _Last updated: August 2026 — Agatike Connect_
