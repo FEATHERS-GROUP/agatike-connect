@@ -16,6 +16,7 @@ import { EmbeddedForm } from "@/components/page-builder/EmbeddedForm";
 import { SpreadsheetEntryForm } from "@/components/page-builder/SpreadsheetEntryForm";
 import { DynamicFontLoader } from "./DynamicFontLoader";
 import { StaticSubElement } from "./StaticSubElement";
+import { PageNotFound } from "./PageNotFound";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useMutation } from "@tanstack/react-query";
@@ -236,18 +237,14 @@ export function RenderedPage({
     );
   }
 
-  if (!page) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-secondary/30">
-        <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
-        <p className="text-muted-foreground">
-          This company page does not exist or is not published.
-        </p>
-        <Button asChild className="mt-6">
-          <Link to="/">Return Home</Link>
-        </Button>
-      </div>
-    );
+  // Prevent direct access to subpages as if they were parent pages
+  if (!page || (!isPreview && page.parent_id && !slug?.includes("/"))) {
+    return <PageNotFound />;
+  }
+
+  // Prevent access if the organizer is blocked or subscription is expired (unless in preview)
+  if (!isPreview && (page.organizer_active === false || page.is_expired === true)) {
+    return <PageNotFound isBlocked={page.organizer_active === false} isExpired={page.is_expired === true} />;
   }
 
   const { title, description, header_image_url } = page;

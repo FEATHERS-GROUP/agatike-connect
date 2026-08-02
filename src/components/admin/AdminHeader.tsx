@@ -1,4 +1,4 @@
-import { Bell, Search, Settings, HelpCircle, Grid, Filter, LogOut } from "lucide-react";
+import { Bell, Search, Settings, HelpCircle, Filter, LogOut } from "lucide-react";
 import { useRouter, Link } from "@tanstack/react-router";
 import { logoutAdmin } from "@/api/admin_auth";
 import { Moon, Sun } from "lucide-react";
@@ -20,12 +20,11 @@ export function AdminHeader() {
           to="/internal/control/admin"
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <div className="text-[#f97316]">
-            <Grid className="h-5 w-5" />
-          </div>
-          <span className="font-semibold text-gray-900 dark:text-white tracking-tight">
-            Agatike
-          </span>
+          <img
+            src="/src/assets/logo/Agatike Icon.png"
+            alt="Agatike"
+            className="h-7 w-auto object-contain"
+          />
           <span className="text-gray-700 dark:text-[#cccccc] text-xs px-2 border-l border-gray-200 dark:border-[#333333] ml-2">
             Master Control
           </span>
