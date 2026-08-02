@@ -402,6 +402,48 @@ function PageBuilder() {
   const set = (field: string) => (value: any) =>
     setEditorState((prev) => ({ ...prev, [field]: value }));
 
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isSpaceDown, setIsSpaceDown] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && e.target === document.body) {
+        e.preventDefault();
+        setIsSpaceDown(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") setIsSpaceDown(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button === 1 || isSpaceDown) {
+      e.preventDefault();
+      const startX = e.clientX - pan.x;
+      const startY = e.clientY - pan.y;
+
+      const onMove = (moveEvent: PointerEvent) => {
+        setPan({
+          x: moveEvent.clientX - startX,
+          y: moveEvent.clientY - startY,
+        });
+      };
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       <DynamicFontLoader components={editorState.components} />
@@ -432,13 +474,19 @@ function PageBuilder() {
         />
 
         {/* Builder Content Area (The Canvas) */}
-        <div className="flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8">
+        <div 
+          className={`flex-1 overflow-y-auto bg-secondary/30 relative flex flex-col items-center p-4 md:p-8 ${isSpaceDown ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          onPointerDown={handlePointerDown}
+        >
           {isLoadingPage && !!activePageId ? (
             <div className="flex-1 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <>
+            <div 
+              className="w-full flex justify-center origin-top transition-transform duration-75"
+              style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
+            >
               <EditorCanvas
                 addComponent={addComponent}
                 editorState={editorState}
@@ -454,7 +502,7 @@ function PageBuilder() {
                 selectedElementId={selectedElementId}
                 setSelectedElementId={setSelectedElementId}
               />
-            </>
+            </div>
           )}
         </div>
         {!isLoadingPage && (
