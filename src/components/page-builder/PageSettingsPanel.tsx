@@ -76,6 +76,7 @@ export function PageSettingsPanel({
   handleImageUpload,
   selectedElementId,
   updateComponent,
+  allPages = [],
 }: {
   addComponent: (type: string) => void;
   editorState: any;
@@ -83,12 +84,25 @@ export function PageSettingsPanel({
   handleImageUpload: (file: File, callback: (url: string) => void) => void;
   selectedElementId?: string | null;
   updateComponent?: (index: number, key: string, value: any) => void;
+  allPages?: any[];
 }) {
   const [openFontDropdown, setOpenFontDropdown] = React.useState(false);
   const parentId = selectedElementId?.split('__')[0];
   const subKey = selectedElementId?.split('__')[1] || "";
   const selectedIndex = editorState.components.findIndex((c: any) => c.id === parentId);
   const selectedComp = selectedIndex >= 0 ? editorState.components[selectedIndex] : null;
+
+  const parentPage = editorState.parent_id ? allPages.find((p: any) => p.id === editorState.parent_id) : null;
+  const parentSlugPrefix = parentPage?.slug ? `${parentPage.slug}/` : "";
+  
+  const displaySlug = (editorState.slug || "").startsWith(parentSlugPrefix) 
+    ? (editorState.slug || "").substring(parentSlugPrefix.length) 
+    : (editorState.slug || "");
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-/]/g, "");
+    set("slug")(parentSlugPrefix + rawVal);
+  };
 
   const getVal = (key: string) => {
     if (!selectedComp) return undefined;
@@ -122,22 +136,15 @@ export function PageSettingsPanel({
                 <AccordionContent className="px-1 pb-4 pt-1 space-y-4">
                   <div className="space-y-1.5 flex flex-col">
                     <Label className="text-[10px] text-muted-foreground">URL Slug</Label>
-                    <div className="flex items-center bg-secondary/30 rounded-md border border-border/60 focus-within:border-primary/50 transition-all">
-                      <span className="px-2 text-xs text-muted-foreground border-r border-border/40 select-none">
-                        /p/
+                    <div className="flex items-center bg-secondary/30 rounded-md border border-border/60 focus-within:border-primary/50 transition-all overflow-hidden">
+                      <span className="px-2 py-1.5 text-xs text-muted-foreground border-r border-border/40 select-none bg-secondary/40 whitespace-nowrap">
+                        /p/{parentSlugPrefix}
                       </span>
                       <Input
-                        value={editorState.slug}
-                        onChange={(e) =>
-                          set("slug")(
-                            e.target.value
-                              .toLowerCase()
-                              .replace(/\s+/g, "-")
-                              .replace(/[^a-z0-9-]/g, ""),
-                          )
-                        }
-                        placeholder="my-page"
-                        className="h-7 text-xs rounded-none border-0 bg-transparent focus-visible:ring-0 px-2"
+                        value={displaySlug}
+                        onChange={handleSlugChange}
+                        placeholder={parentPage ? "sub-page-name" : "my-page"}
+                        className="h-7 text-xs rounded-none border-0 bg-transparent focus-visible:ring-0 px-2 min-w-0 flex-1"
                       />
                     </div>
                   </div>

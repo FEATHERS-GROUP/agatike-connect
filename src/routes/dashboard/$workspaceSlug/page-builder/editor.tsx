@@ -240,7 +240,14 @@ function PageBuilder() {
       queryClient.invalidateQueries({ queryKey: ["all-workspace-pages", workspace_id] });
       queryClient.invalidateQueries({ queryKey: ["workspace-page", activePageId] });
     },
-    onError: (err: any) => toast.error(err.message || "Failed to save page."),
+    onError: (err: any) => {
+      const msg = err.message || "";
+      if (msg.includes("workspace_pages_slug_key") || msg.includes("Uniqueness violation")) {
+        toast.error(`The URL slug "${editorState.slug}" is already taken. Please choose a different one.`);
+      } else {
+        toast.error(msg || "Failed to save page.");
+      }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -444,6 +451,7 @@ function PageBuilder() {
             handleImageUpload={handleImageUpload}
             selectedElementId={selectedElementId}
             updateComponent={updateComponent}
+            allPages={allPages}
           />
         </div>
       )}

@@ -250,12 +250,21 @@ export function RenderedPage({
     );
   }
 
-  const { title, description, header_image_url, logo_url, theme_color } = page;
+  const { title, description, header_image_url } = page;
+  
+  // Uniform branding: inherit theme and logo from parent
+  const theme_color = page.parent?.theme_color || page.theme_color || "#000000";
+  const logo_url = page.parent?.logo_url || page.logo_url;
 
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
-  const logoPosition = settingsBlock?.logoPosition || "hero";
-  const navbarStyle = settingsBlock?.navbarStyle || "transparent";
-  const fontFamily = settingsBlock?.fontFamily || "Inter";
+  const parentSettingsBlock = page.parent?.components?.find((c: any) => c.type === "page_settings");
+  
+  // Uniform navbar: inherit navbar style and font from parent
+  const logoPosition = parentSettingsBlock?.logoPosition || settingsBlock?.logoPosition || "hero";
+  const navbarStyle = parentSettingsBlock?.navbarStyle || settingsBlock?.navbarStyle || "transparent";
+  const fontFamily = parentSettingsBlock?.fontFamily || settingsBlock?.fontFamily || "Inter";
+  
+  // Hero settings remain specific to the sub-page
   const heroAlign = settingsBlock?.heroAlign || "center";
   const heroOverlayColor = settingsBlock?.heroOverlayColor || "#000000";
   const heroOverlayOpacity = settingsBlock?.heroOverlayOpacity ?? 40;

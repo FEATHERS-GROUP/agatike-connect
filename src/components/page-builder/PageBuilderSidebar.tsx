@@ -196,43 +196,99 @@ export function PageBuilderSidebar({
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-6">
               {/* Existing Pages */}
-              {allPages.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Your Pages
                   </h4>
+                  <Button variant="ghost" size="icon" className="w-6 h-6 hover:bg-secondary/40" asChild>
+                    <Link
+                      to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                      onClick={() => setActiveTab(null)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
+                {allPages.length > 0 ? (
                   <div className="space-y-2">
                     {allPages
                       .filter((p) => !p.parent_id)
-                      .map((page) => (
-                        <Button
-                          key={page.id}
-                          variant="outline"
-                          className="w-full justify-start h-auto p-3 bg-secondary/20"
-                          asChild
-                        >
-                          <Link
-                            to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
-                            search={{ pageId: page.id }}
-                            onClick={() => setActiveTab(null)}
-                          >
-                            <FileText className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
-                            <div className="flex flex-col items-start min-w-0">
-                              <span className="truncate font-medium w-full text-left">
-                                {page.title || "Untitled"}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground truncate w-full text-left">
-                                /p/{page.slug}
-                              </span>
+                      .map((page) => {
+                        const subPages = allPages.filter((p) => p.parent_id === page.id);
+                        return (
+                          <div key={page.id} className="space-y-1">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                className="flex-1 justify-start h-auto p-3 bg-secondary/20 min-w-0"
+                                asChild
+                              >
+                                <Link
+                                  to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                                  search={{ pageId: page.id }}
+                                  onClick={() => setActiveTab(null)}
+                                >
+                                  <FileText className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                                  <div className="flex flex-col items-start min-w-0 flex-1">
+                                    <span className="truncate font-medium w-full text-left">
+                                      {page.title || "Untitled"}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground truncate w-full text-left">
+                                      /p/{page.slug}
+                                    </span>
+                                  </div>
+                                </Link>
+                              </Button>
+                              <Button variant="ghost" size="icon" className="w-8 h-8 shrink-0 hover:bg-secondary/40" asChild>
+                                <Link
+                                  to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                                  search={{ parentId: page.id }}
+                                  onClick={() => setActiveTab(null)}
+                                  title="Add Sub-page"
+                                >
+                                  <Plus className="w-4 h-4 text-muted-foreground" />
+                                </Link>
+                              </Button>
                             </div>
-                          </Link>
-                        </Button>
-                      ))}
+                            {subPages.length > 0 && (
+                              <div className="pl-4 space-y-1 mt-1 border-l border-border/40 ml-2">
+                                {subPages.map((subPage) => (
+                                  <Button
+                                    key={subPage.id}
+                                    variant="ghost"
+                                    className="w-full justify-start h-auto p-2 hover:bg-secondary/40"
+                                    asChild
+                                  >
+                                    <Link
+                                      to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor`}
+                                      search={{ pageId: subPage.id }}
+                                      onClick={() => setActiveTab(null)}
+                                    >
+                                      <FileText className="w-3.5 h-3.5 mr-2 text-muted-foreground shrink-0" />
+                                      <div className="flex flex-col items-start min-w-0">
+                                        <span className="truncate font-medium w-full text-left text-xs">
+                                          {subPage.title || "Untitled"}
+                                        </span>
+                                        <span className="text-[9px] text-muted-foreground truncate w-full text-left">
+                                          /p/{subPage.slug}
+                                        </span>
+                                      </div>
+                                    </Link>
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                   </div>
-                </div>
-              )}
-
-              {/* Templates */}
+                ) : (
+                  <div className="text-xs text-muted-foreground text-center py-4 bg-secondary/10 rounded-md border border-dashed border-border/40">
+                    No pages yet. Click + to create one!
+                  </div>
+                )}
+              </div>              {/* Templates */}
               <div>
                 <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
                   Templates

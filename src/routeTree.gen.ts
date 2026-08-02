@@ -41,7 +41,7 @@ import { Route as VenuesVenueIdRouteImport } from './routes/venues/$venueId'
 import { Route as VTicketOtpRouteImport } from './routes/v/$ticketOtp'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket/$ticketId'
 import { Route as SpacesSpaceIdRouteImport } from './routes/spaces/$spaceId'
-import { Route as PSlugRouteImport } from './routes/p/$slug'
+import { Route as PSplatRouteImport } from './routes/p/$'
 import { Route as FFormIdRouteImport } from './routes/f/$formId'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard/workspaces'
@@ -384,9 +384,9 @@ const SpacesSpaceIdRoute = SpacesSpaceIdRouteImport.update({
   path: '/spaces/$spaceId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PSlugRoute = PSlugRouteImport.update({
-  id: '/p/$slug',
-  path: '/p/$slug',
+const PSplatRoute = PSplatRouteImport.update({
+  id: '/p/$',
+  path: '/p/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FFormIdRoute = FFormIdRouteImport.update({
@@ -1496,7 +1496,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
-  '/p/$slug': typeof PSlugRoute
+  '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/v/$ticketOtp': typeof VTicketOtpRoute
@@ -1712,7 +1712,7 @@ export interface FileRoutesByTo {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
-  '/p/$slug': typeof PSlugRoute
+  '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/v/$ticketOtp': typeof VTicketOtpRoute
@@ -1925,7 +1925,7 @@ export interface FileRoutesById {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
-  '/p/$slug': typeof PSlugRoute
+  '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/v/$ticketOtp': typeof VTicketOtpRoute
@@ -2143,7 +2143,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
-    | '/p/$slug'
+    | '/p/$'
     | '/spaces/$spaceId'
     | '/ticket/$ticketId'
     | '/v/$ticketOtp'
@@ -2359,7 +2359,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
-    | '/p/$slug'
+    | '/p/$'
     | '/spaces/$spaceId'
     | '/ticket/$ticketId'
     | '/v/$ticketOtp'
@@ -2571,7 +2571,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
-    | '/p/$slug'
+    | '/p/$'
     | '/spaces/$spaceId'
     | '/ticket/$ticketId'
     | '/v/$ticketOtp'
@@ -2780,7 +2780,7 @@ export interface RootRouteChildren {
   CinemasCinemaIdRoute: typeof CinemasCinemaIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
-  PSlugRoute: typeof PSlugRoute
+  PSplatRoute: typeof PSplatRoute
   SpacesSpaceIdRoute: typeof SpacesSpaceIdRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
   VTicketOtpRoute: typeof VTicketOtpRoute
@@ -3027,11 +3027,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpacesSpaceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/p/$slug': {
-      id: '/p/$slug'
-      path: '/p/$slug'
-      fullPath: '/p/$slug'
-      preLoaderRoute: typeof PSlugRouteImport
+    '/p/$': {
+      id: '/p/$'
+      path: '/p/$'
+      fullPath: '/p/$'
+      preLoaderRoute: typeof PSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/f/$formId': {
@@ -4848,7 +4848,7 @@ const rootRouteChildren: RootRouteChildren = {
   CinemasCinemaIdRoute: CinemasCinemaIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
-  PSlugRoute: PSlugRoute,
+  PSplatRoute: PSplatRoute,
   SpacesSpaceIdRoute: SpacesSpaceIdRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
   VTicketOtpRoute: VTicketOtpRoute,
