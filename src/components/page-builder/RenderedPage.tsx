@@ -236,7 +236,8 @@ export function RenderedPage({
     );
   }
 
-  if (!page) {
+  // Prevent direct access to subpages as if they were parent pages
+  if (!page || (!isPreview && page.parent_id && !slug?.includes("/"))) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-secondary/30">
         <h1 className="text-2xl font-bold mb-2">Page Not Found</h1>
