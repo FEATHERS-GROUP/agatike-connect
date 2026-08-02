@@ -3,6 +3,7 @@ import { useRouter, Link } from "@tanstack/react-router";
 import { logoutAdmin } from "@/api/admin_auth";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 
 export function AdminHeader() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export function AdminHeader() {
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <img
-            src="/src/assets/logo/Agatike Icon.png"
+            src={agatikeIcon}
             alt="Agatike"
             className="h-7 w-auto object-contain"
           />

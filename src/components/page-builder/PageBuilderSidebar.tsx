@@ -1,4 +1,5 @@
 import { useState } from "react";
+import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -91,7 +92,7 @@ export function PageBuilderSidebar({
         {/* Logo */}
         <div className="flex items-center justify-center px-4 py-3 border-b border-border/60 shrink-0">
           <img
-            src="/src/assets/logo/Agatike Icon.png"
+            src={agatikeIcon}
             alt="Agatike"
             className="h-8 w-auto object-contain"
           />
