@@ -36,11 +36,6 @@ export function BillingBanner({ isSidebar }: { isSidebar?: boolean } = {}) {
   const diffTime = nextBillingDateOnly.getTime() - nowDateOnly.getTime();
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-  console.log("BillingBanner Debug:", {
-    nextBilling: sub.next_billing_date,
-    daysLeft,
-    WARNING_THRESHOLD_DAYS
-  });
 
   // Only show if within the warning threshold
   if (daysLeft > WARNING_THRESHOLD_DAYS) return null;
