@@ -529,9 +529,13 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 price
                 billing_cycle
                 start_date
+                booking_type
+                team_members
+                space_id
                 space {
                   name
                   description
+                  currency
                 }
               }
             }`,
@@ -540,30 +544,142 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           const sub = activateSubRes?.update_space_subscriptions_by_pk;
 
-          // Send rich SMS to subscriber
-          const subPhone = body?.payer?.address?.value || sub?.customer_phone;
-          if (subPhone && sub) {
-            const currency = body?.currency || "";
-            const localAmount = body?.requestedAmount || body?.depositedAmount || tx.amount;
-            const spaceName = sub.space?.name || "the space";
-            const planName = sub.plan_name || "your plan";
-            const startDate = sub.start_date
-              ? new Date(sub.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-              : "today";
-
-            const smsText =
-              `Booking Confirmed! Hi ${sub.customer_name || "there"}, your subscription to ${spaceName} is now active.\n` +
-              `Plan: ${planName}\n` +
-              `Start Date: ${startDate}\n` +
-              `Amount Paid: ${localAmount} ${currency}\n` +
-              `Thank you for choosing ${wsName || spaceName}!`;
-
+          if (sub) {
+            // Generate Invoice & Send Emails (just like Checkout does)
             try {
-              const { sendSMS } = await import("./pindo.server");
-              await sendSMS(subPhone, smsText);
-              console.log(`[Pindo SMS] Space subscription confirmation sent to ${subPhone}`);
-            } catch (e) {
-              console.error("[Pindo SMS] Failed to send space subscription SMS:", e);
+              const { createInvoiceRecord } = await import("./invoices");
+              const { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail, sendCompanyRosterEmail, sendMemberWelcomeEmail } = await import("./email");
+
+              const currency = sub.space?.currency || body?.currency || "RWF";
+              const priceDisplay = `${currency} ${Number(sub.price || 0).toLocaleString()}`;
+              const groupPlanName = sub.booking_type === "group" && sub.team_members
+                ? `${sub.plan_name} (Group of ${sub.team_members.length})`
+                : sub.plan_name;
+
+              const invoice = await createInvoiceRecord({
+                data: {
+                  spaceName: sub.space?.name || "Our Space",
+                  customerName: sub.customer_name,
+                  customerEmail: sub.customer_email,
+                  planName: groupPlanName,
+                  amount: String(sub.price || 0),
+                  currency,
+                  billingCycle: sub.billing_cycle,
+                  startDate: sub.start_date,
+                  spaceId: sub.space_id,
+                  referenceId: sub.id,
+                }
+              } as any);
+
+              const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
+              const pdfBase64 = invoice?.pdfBase64 || null;
+              const invoiceDate = new Date().toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              });
+
+              const formattedStart = sub.start_date
+                ? new Date(sub.start_date).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : sub.start_date;
+
+              if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
+                // Send group company email
+                await sendCompanyRosterEmail({
+                  data: {
+                    to: sub.customer_email,
+                    companyName: sub.customer_name,
+                    spaceName: sub.space?.name || "Our Space",
+                    planName: groupPlanName,
+                    price: priceDisplay,
+                    billingCycle: sub.billing_cycle,
+                    startDate: formattedStart,
+                    invoiceNumber,
+                    invoiceDate,
+                    memberCount: sub.team_members.length,
+                    members: sub.team_members,
+                    pdfBase64,
+                  }
+                } as any);
+
+                // Welcome each member
+                for (const m of sub.team_members) {
+                  if (m.email) {
+                    await sendMemberWelcomeEmail({
+                      data: {
+                        to: m.email,
+                        memberName: m.name,
+                        companyName: sub.customer_name,
+                        spaceName: sub.space?.name || "Our Space",
+                        planName: sub.plan_name,
+                        startDate: formattedStart,
+                        membershipId: m.membership_id || "—",
+                      }
+                    } as any).catch(e => console.error("Error sending welcome email to group member:", e));
+                  }
+                }
+              } else {
+                // Individual Booking
+                await sendSubscriptionConfirmationEmail({
+                  data: {
+                    to: sub.customer_email,
+                    customerName: sub.customer_name,
+                    spaceName: sub.space?.name || "Our Space",
+                    planName: sub.plan_name,
+                    price: priceDisplay,
+                    billingCycle: sub.billing_cycle,
+                    startDate: sub.start_date,
+                  }
+                } as any);
+
+                await sendSubscriptionInvoiceEmail({
+                  data: {
+                    to: sub.customer_email,
+                    customerName: sub.customer_name,
+                    spaceName: sub.space?.name || "Our Space",
+                    planName: sub.plan_name,
+                    price: priceDisplay,
+                    billingCycle: sub.billing_cycle,
+                    invoiceDate,
+                    invoiceNumber,
+                    startDate: sub.start_date,
+                    pdfBase64,
+                  }
+                } as any);
+              }
+            } catch (err) {
+              console.error("[PawaPay Webhook] Failed to process/send subscription emails:", err);
+            }
+
+            // Send rich SMS to subscriber
+            const subPhone = body?.payer?.address?.value || sub?.customer_phone;
+            if (subPhone) {
+              const currency = body?.currency || "";
+              const localAmount = body?.requestedAmount || body?.depositedAmount || tx.amount;
+              const spaceName = sub.space?.name || "the space";
+              const planName = sub.plan_name || "your plan";
+              const startDate = sub.start_date
+                ? new Date(sub.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+                : "today";
+
+              const smsText =
+                `Booking Confirmed! Hi ${sub.customer_name || "there"}, your subscription to ${spaceName} is now active.\n` +
+                `Plan: ${planName}\n` +
+                `Start Date: ${startDate}\n` +
+                `Amount Paid: ${localAmount} ${currency}\n` +
+                `Thank you for choosing ${wsName || spaceName}!`;
+
+              try {
+                const { sendSMS } = await import("./pindo.server");
+                await sendSMS(subPhone, smsText);
+                console.log(`[Pindo SMS] Space subscription confirmation sent to ${subPhone}`);
+              } catch (e) {
+                console.error("[Pindo SMS] Failed to send space subscription SMS:", e);
+              }
             }
           }
         } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
