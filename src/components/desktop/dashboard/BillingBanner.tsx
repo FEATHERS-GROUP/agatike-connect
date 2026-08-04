@@ -5,8 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// How many days before expiry to start showing the warning
-const WARNING_THRESHOLD_DAYS = 15;
+const WARNING_THRESHOLD_DAYS = 5;
 
 export function BillingBanner({ isSidebar }: { isSidebar?: boolean } = {}) {
   const { activeWorkspace } = useWorkspace() as any;
