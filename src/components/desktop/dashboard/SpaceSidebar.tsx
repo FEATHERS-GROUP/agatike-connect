@@ -11,6 +11,8 @@ import {
   Box,
   Calendar,
   Building,
+  Dumbbell,
+  CalendarDays,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
@@ -70,6 +72,8 @@ export function SpaceSidebar() {
     nav.push(
       { label: "Structure Builder", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/resources`, icon: Box },
       { label: "Schedule", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/calendar`, icon: Calendar },
+      { label: "Classes", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/classes`, icon: Dumbbell },
+      { label: "Sessions", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/sessions`, icon: CalendarDays },
       { label: "Tenants", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/leases`, icon: Building }
     );
   }
