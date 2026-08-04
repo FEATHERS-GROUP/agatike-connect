@@ -6,6 +6,7 @@ import {
   getPromotionalRules,
   upgradeSubscription,
   PricingPlan,
+  checkLaunchPromoEligibility,
 } from "@/api/billing";
 import {
   getPawaPayNetworks,
@@ -83,6 +84,7 @@ function CheckoutPage() {
 
   // Calculate pricing
   const [finalUSDPrice, setFinalUSDPrice] = useState(0);
+  const [isPromoEligible, setIsPromoEligible] = useState(false);
   const userCurrency = activeWorkspace?.currency;
   const [selectedCurrency, setSelectedCurrency] = useState(userCurrency);
 
@@ -115,13 +117,17 @@ function CheckoutPage() {
   useEffect(() => {
     async function fetchDetails() {
       try {
-        const [plans, rules, networks] = await Promise.all([
+        const [plans, rules, networks, promoEligible] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
           getPawaPayNetworks(),
+          checkLaunchPromoEligibility({
+            data: { organizer_id: activeWorkspace?.orgnizer_id },
+          } as any),
         ]);
 
         setPawaPayNetworks(networks);
+        setIsPromoEligible(promoEligible);
 
         const selectedPlan = plans.find((p) => p.id === planId);
         if (!selectedPlan) {
@@ -142,6 +148,8 @@ function CheckoutPage() {
         let calculatedPrice = basePrice;
 
         if (
+          promoEligible &&
+          !isRenewal &&
           basePrice > 0 &&
           launchPromo &&
           launchPromo.applies_to_cycles.includes(isAnnually ? "annually" : "monthly")
@@ -360,19 +368,39 @@ function CheckoutPage() {
                 <span className="text-muted-foreground">
                   Base Price ({isAnnually ? "Year" : "Month"})
                 </span>
-                <span>
-                  {formatCurrency(getConvertedAmount(isAnnually ? plan.price * 12 : plan.price))}
-                </span>
+                <div className="text-right">
+                  <div className="font-medium">
+                    {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                      isAnnually ? plan.price * 12 : plan.price,
+                    )}
+                  </div>
+                  {selectedCurrency !== "USD" && (
+                    <div className="text-xs text-muted-foreground">
+                      ≈ {formatCurrency(getConvertedAmount(isAnnually ? plan.price * 12 : plan.price))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {isAnnually && plan.price > 0 && (
                 <div className="flex justify-between text-sm text-green-500">
                   <span>Annual Discount (20%)</span>
-                  <span>-{formatCurrency(getConvertedAmount(plan.price * 12 * 0.2))}</span>
+                  <div className="text-right">
+                    <div className="font-medium">
+                      -{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                        plan.price * 12 * 0.2,
+                      )}
+                    </div>
+                    {selectedCurrency !== "USD" && (
+                      <div className="text-xs opacity-80">
+                        ≈ -{formatCurrency(getConvertedAmount(plan.price * 12 * 0.2))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {finalUSDPrice < (isAnnually ? plan.price * 12 * 0.8 : plan.price) && (
+              {isPromoEligible && !isRenewal && finalUSDPrice < (isAnnually ? plan.price * 12 * 0.8 : plan.price) && (
                 <div className="flex justify-between text-sm text-primary font-medium">
                   <span>Launch Promo (50% off first 3 mos)</span>
                   <span>Applied</span>
@@ -381,8 +409,19 @@ function CheckoutPage() {
 
               <div className="border-t pt-4 mt-4 flex flex-col gap-3">
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>{formatCurrency(getConvertedAmount(finalUSDPrice))}</span>
+                  <span>Total Due</span>
+                  <div className="text-right">
+                    <div>
+                      {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                        finalUSDPrice,
+                      )}
+                    </div>
+                    {selectedCurrency !== "USD" && (
+                      <div className="text-sm text-muted-foreground font-normal mt-1">
+                        ≈ {formatCurrency(getConvertedAmount(finalUSDPrice))} {selectedCurrency}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>

@@ -239,6 +239,42 @@ export const getPromotionalRules = createServerFn({ method: "GET" }).handler(asy
   return res.promotional_rules;
 });
 
+const GET_FIRST_PAID_INVOICE = `
+  query GetFirstPaidInvoice($organizer_id: String!) {
+    organizer_invoices(
+      where: { organizer_id: { _eq: $organizer_id }, amount: { _gt: 0 }, status: { _eq: "paid" } }, 
+      order_by: { created_at: asc }, 
+      limit: 1
+    ) {
+      created_at
+    }
+  }
+`;
+
+export const checkLaunchPromoEligibility = createServerFn({ method: "POST" })
+  .validator((d: { organizer_id: string }) => d)
+  .handler(async (ctx) => {
+    if (!ctx.data.organizer_id) return false;
+    
+    const res = await hasuraRequest<{ organizer_invoices: { created_at: string }[] }>(GET_FIRST_PAID_INVOICE, {
+      organizer_id: ctx.data.organizer_id,
+    });
+    
+    // If they have never had a paid invoice, they are eligible
+    if (!res.organizer_invoices || res.organizer_invoices.length === 0) return true;
+    
+    // Check if their first paid invoice was less than 3 months ago
+    const firstPaymentDate = new Date(res.organizer_invoices[0].created_at);
+    const now = new Date();
+    
+    // Add 3 months to the first payment date to find the cutoff date
+    const cutoffDate = new Date(firstPaymentDate);
+    cutoffDate.setMonth(cutoffDate.getMonth() + 3);
+    
+    // If today is past the cutoff date, they are no longer eligible for the 3-month launch promo
+    return now <= cutoffDate;
+  });
+
 export const upgradeSubscription = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
