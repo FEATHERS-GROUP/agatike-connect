@@ -514,17 +514,58 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             }
           } // End of Notifications block
         } else if (tx.type === "space_subscription") {
-          const activateSubQuery = `
-            mutation ActivateSpaceSubscription($id: uuid!) {
+          // Activate the subscription
+          const activateSubRes = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(
+            `mutation ActivateSpaceSubscription($id: uuid!) {
               update_space_subscriptions_by_pk(
                 pk_columns: { id: $id },
                 _set: { status: "active" }
               ) {
                 id
+                customer_name
+                customer_email
+                customer_phone
+                plan_name
+                price
+                billing_cycle
+                start_date
+                space {
+                  name
+                  description
+                }
               }
+            }`,
+            { id: tx.reference_id }
+          );
+
+          const sub = activateSubRes?.update_space_subscriptions_by_pk;
+
+          // Send rich SMS to subscriber
+          const subPhone = body?.payer?.address?.value || sub?.customer_phone;
+          if (subPhone && sub) {
+            const currency = body?.currency || "";
+            const localAmount = body?.requestedAmount || body?.depositedAmount || tx.amount;
+            const spaceName = sub.space?.name || "the space";
+            const planName = sub.plan_name || "your plan";
+            const startDate = sub.start_date
+              ? new Date(sub.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+              : "today";
+
+            const smsText =
+              `Booking Confirmed! Hi ${sub.customer_name || "there"}, your subscription to ${spaceName} is now active.\n` +
+              `Plan: ${planName}\n` +
+              `Start Date: ${startDate}\n` +
+              `Amount Paid: ${localAmount} ${currency}\n` +
+              `Thank you for choosing ${wsName || spaceName}!`;
+
+            try {
+              const { sendSMS } = await import("./pindo.server");
+              await sendSMS(subPhone, smsText);
+              console.log(`[Pindo SMS] Space subscription confirmation sent to ${subPhone}`);
+            } catch (e) {
+              console.error("[Pindo SMS] Failed to send space subscription SMS:", e);
             }
-          `;
-          await hasuraRequest(activateSubQuery, { id: tx.reference_id });
+          }
         } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
           const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
             tx.reference_id,
