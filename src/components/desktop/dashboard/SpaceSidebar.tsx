@@ -64,7 +64,7 @@ export function SpaceSidebar() {
     },
   ];
 
-  const isAdvancedSpace = space && ["Private Office", "Work Cafe", "Creative Studio", "Co-working Space", "Gym"].includes(space.type);
+  const isAdvancedSpace = space && ["Coworking", "Gym", "Office", "Studio", "Cafe", "Other"].includes(space.type);
 
   if (isAdvancedSpace) {
     nav.push(

@@ -133,6 +133,31 @@ export const createSpaceResourceBooking = createServerFn({ method: "POST" })
     return res.insert_space_resource_bookings_one;
   });
 
+const CREATE_SPACE_RESOURCE_BOOKINGS_BULK = `
+  mutation CreateSpaceResourceBookingsBulk($objects: [space_resource_bookings_insert_input!]!) {
+    insert_space_resource_bookings(objects: $objects) {
+      affected_rows
+      returning {
+        id
+        title
+        start_time
+        end_time
+      }
+    }
+  }
+`;
+
+export const createSpaceResourceBookingsBulk = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { objects } = ctx.data;
+    const res = await hasuraRequest<{ insert_space_resource_bookings: any }>(
+      CREATE_SPACE_RESOURCE_BOOKINGS_BULK,
+      { objects },
+    );
+    return res.insert_space_resource_bookings;
+  });
+
 const GET_SPACE_RESOURCE_BOOKINGS = `
   query GetSpaceResourceBookings($space_id: uuid!) {
     space_resource_bookings(
