@@ -623,7 +623,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   }
                 }
               } else {
-                // Individual Booking
+                // Individual Booking — send confirmation with invoice PDF attached
                 await sendSubscriptionConfirmationEmail({
                   data: {
                     to: sub.customer_email,
@@ -633,21 +633,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     price: priceDisplay,
                     billingCycle: sub.billing_cycle,
                     startDate: sub.start_date,
-                  }
-                } as any);
-
-                await sendSubscriptionInvoiceEmail({
-                  data: {
-                    to: sub.customer_email,
-                    customerName: sub.customer_name,
-                    spaceName: sub.space?.name || "Our Space",
-                    planName: sub.plan_name,
-                    price: priceDisplay,
-                    billingCycle: sub.billing_cycle,
-                    invoiceDate,
+                    pdfBase64, // attach invoice PDF directly
                     invoiceNumber,
-                    startDate: sub.start_date,
-                    pdfBase64,
                   }
                 } as any);
               }

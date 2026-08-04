@@ -489,7 +489,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
 export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const { to, customerName, spaceName, planName, price, billingCycle, startDate } =
+    const { to, customerName, spaceName, planName, price, billingCycle, startDate, pdfBase64, invoiceNumber } =
       ctx.data as any;
 
     const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -519,6 +519,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
           <p style="margin: 8px 0;"><strong>Price:</strong> ${price}</p>
           ${startDate ? `<p style="margin: 8px 0;"><strong>Start Date:</strong> ${startDate}</p>` : ""}
         </div>
+        ${pdfBase64 ? `<p style="color: #64748b; font-size: 14px;">📎 Your invoice PDF is attached to this email.</p>` : ""}
         <p>If you have any questions, feel free to contact the space organizer.</p>
         <div style="margin-top: 32px;">
           <a href="${baseUrl}/spaces/${spaceName.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}" style="background-color: #f2571d; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">View Space</a>
@@ -531,18 +532,28 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
     </div>
   `;
 
+    const emailPayload: any = {
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Booking Confirmed: ${spaceName}`,
+      html: html,
+      attachments: [],
+    };
+
+    if (pdfBase64) {
+      emailPayload.attachments.push({
+        filename: `Invoice-${invoiceNumber || "Receipt"}.pdf`,
+        content: pdfBase64,
+      });
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + process.env.RESEND_API_KEY,
       },
-      body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
-        to: [to],
-        subject: `Booking Confirmed: ${spaceName}`,
-        html: html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const data = await res.json();
