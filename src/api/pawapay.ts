@@ -278,9 +278,12 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         address: { value: phone },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`)
-        .replace(/[^a-zA-Z0-9 ]/g, "")
-        .substring(0, 22),
+      statementDescription: (() => {
+        const cleaned = (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`)
+          .replace(/[^a-zA-Z0-9 ]/g, "");
+        const formatted = `AGT ${cleaned}`.substring(0, 22).trim();
+        return formatted.length >= 4 ? formatted : "Agatike Payment";
+      })(),
     };
 
     const baseUrl = process.env.PAWAPAY_API_URL;
