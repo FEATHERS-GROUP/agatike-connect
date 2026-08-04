@@ -61,7 +61,7 @@ export function BillingBanner({ isSidebar }: { isSidebar?: boolean } = {}) {
     cycle: "monthly",
     renew: "true",
     currentNextBillingDate: sub.next_billing_date,
-  };
+  } as any;
 
   if (isSidebar) {
     return (
