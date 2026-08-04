@@ -560,6 +560,12 @@ const GET_SPACE_SUBSCRIPTIONS = `
       customer_phone
       team_members
       created_at
+      resource_id
+      resource {
+        id
+        name
+        type
+      }
       space {
         name
       }

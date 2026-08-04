@@ -8,6 +8,9 @@ import {
   CreditCard,
   ListChecks,
   Link as LinkIcon,
+  Box,
+  Calendar,
+  Building,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaceById } from "@/api/spaces";
@@ -60,6 +63,16 @@ export function SpaceSidebar() {
       icon: Settings,
     },
   ];
+
+  const isAdvancedSpace = space && ["Private Office", "Work Cafe", "Creative Studio", "Co-working Space", "Gym"].includes(space.type);
+
+  if (isAdvancedSpace) {
+    nav.push(
+      { label: "Structure Builder", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/resources`, icon: Box },
+      { label: "Schedule", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/calendar`, icon: Calendar },
+      { label: "Tenants", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/leases`, icon: Building }
+    );
+  }
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-border/60 bg-background p-4 md:flex flex-col">
