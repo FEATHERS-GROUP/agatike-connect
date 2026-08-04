@@ -33,6 +33,7 @@ const GET_SPACE_RESOURCES = `
   query GetSpaceResources($space_id: uuid!) {
     space_resources(where: { space_id: { _eq: $space_id } }, order_by: { created_at: asc }) {
       id
+      space_id
       parent_resource_id
       name
       type
@@ -41,13 +42,6 @@ const GET_SPACE_RESOURCES = `
       rules
       status
       created_at
-      subscriptions {
-        id
-        customer_name
-        status
-        start_date
-        end_date
-      }
     }
   }
 `;
@@ -176,6 +170,7 @@ const GET_SPACE_RESOURCE_BOOKINGS = `
       resource {
         name
         type
+        space_id
       }
     }
   }
