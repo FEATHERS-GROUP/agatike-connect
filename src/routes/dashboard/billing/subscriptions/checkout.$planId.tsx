@@ -56,6 +56,9 @@ function CheckoutPage() {
   const { planId } = Route.useParams();
   const search: any = Route.useSearch();
   const isAnnually = search.cycle === "annually";
+  // renew=true means this is a renewal of an existing plan; preserve remaining days
+  const isRenewal = search.renew === "true";
+  const currentNextBillingDate: string | undefined = search.currentNextBillingDate;
 
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
@@ -183,6 +186,9 @@ function CheckoutPage() {
             amount: finalUSDPrice,
             insertEarnings: paymentMethod === "card",
             network: "Card",
+            // Pass renewFromDate so the server extends from the current billing date,
+            // preserving any days the user already paid for
+            renewFromDate: isRenewal && currentNextBillingDate ? currentNextBillingDate : undefined,
           },
         });
 
@@ -204,9 +210,15 @@ function CheckoutPage() {
           amount: finalUSDPrice,
           insertEarnings: paymentMethod === "card",
           network: "Card",
+          // Preserve remaining days: extend from next_billing_date, not today
+          renewFromDate: isRenewal && currentNextBillingDate ? currentNextBillingDate : undefined,
         },
       });
-      toast.success(`Successfully subscribed to ${plan!.name}!`);
+      toast.success(
+        isRenewal
+          ? `Subscription renewed! Your remaining days have been carried over.`
+          : `Successfully subscribed to ${plan!.name}!`,
+      );
       navigate({ to: "/dashboard/billing/subscriptions" });
     }
   };
@@ -313,12 +325,29 @@ function CheckoutPage() {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Order Summary */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
+          <h2 className="text-2xl font-bold mb-6">
+            {isRenewal ? "Renew Subscription" : "Order Summary"}
+          </h2>
           <Card className="bg-secondary/20 border-border/50">
             <CardHeader>
               <CardTitle>{plan.name} Plan</CardTitle>
               <CardDescription>Billed {isAnnually ? "Annually" : "Monthly"}</CardDescription>
-              {plan.name.toLowerCase().includes("basic") && (
+              {isRenewal && currentNextBillingDate && (
+                <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                  <span className="block font-bold mb-1">✅ Your remaining days are safe</span>
+                  Your current subscription expires on{" "}
+                  <strong>
+                    {new Date(currentNextBillingDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </strong>
+                  . Your new billing cycle will start from that date — you won't lose any days you
+                  already paid for.
+                </div>
+              )}
+              {!isRenewal && plan.name.toLowerCase().includes("basic") && (
                 <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs text-primary font-medium">
                   <span className="block font-bold mb-1">🎁 14-Day Free Trial</span>
                   Get 14 days of full access to all premium modules (limit 1 creation per module).

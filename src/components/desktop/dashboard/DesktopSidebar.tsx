@@ -401,8 +401,8 @@ export function DesktopSidebar() {
 
       {/* Add Billing Banner to the bottom of the sidebar */}
       {currentUser?.role === "organizer" && (
-        <div className="mt-4 px-2 shrink-0">
-          <BillingBanner />
+        <div className="mt-4 shrink-0">
+          <BillingBanner isSidebar />
         </div>
       )}
     </aside>

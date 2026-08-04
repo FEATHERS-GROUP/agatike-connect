@@ -72,7 +72,7 @@ export const getPricingPlans = createServerFn({ method: "GET" }).handler(async (
 
 const GET_ACTIVE_SUB = `
   query GetActiveSub($organizer_id: uuid!) {
-    subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }, limit: 1) {
+    subscriptions(where: { organizer_id: { _eq: $organizer_id }, status: { _eq: "active" } }, order_by: { created_at: desc }, limit: 1) {
       id
       plan_id
       status
@@ -242,7 +242,7 @@ export const getPromotionalRules = createServerFn({ method: "GET" }).handler(asy
 export const upgradeSubscription = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const { organizer_id, plan_id, amount, insertEarnings, network } = ctx.data;
+    const { organizer_id, plan_id, amount, insertEarnings, network, renewFromDate } = ctx.data;
 
     // 1. Cancel existing
     const activeSubRes = await hasuraRequest<{ subscriptions: { id: string }[] }>(GET_ACTIVE_SUB, {
@@ -276,9 +276,18 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
         // Very first time
         nextBillingDate.setDate(nextBillingDate.getDate() + 14);
       }
+    } else if (renewFromDate) {
+      // Renewal: extend from the existing next_billing_date so the user
+      // doesn't lose days they already paid for. If that date is in the past,
+      // fall back to today to avoid a backdated billing date.
+      const renewBase = new Date(renewFromDate);
+      const baseDate = renewBase > nextBillingDate ? renewBase : nextBillingDate;
+      baseDate.setMonth(baseDate.getMonth() + 1);
+      nextBillingDate = baseDate;
     } else {
       nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
     }
+
 
     // 2. Fetch all workspace IDs for this organizer
     const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;
