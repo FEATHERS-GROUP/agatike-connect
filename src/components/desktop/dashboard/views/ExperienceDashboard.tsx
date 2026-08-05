@@ -20,6 +20,8 @@ import {
 import { Suspense, lazy } from "react";
 const Calendar = lazy(() => import("@/components/lazy/LazyCalendar"));
 import { formatCurrency } from "@/lib/currency";
+import { format } from "date-fns";
+import "temporal-polyfill/global";
 
 export function ExperienceDashboard() {
   const { activeWorkspace } = useWorkspace();
@@ -127,8 +129,8 @@ export function ExperienceDashboard() {
           evs.push({
             id: `${e.id}-${idx}`,
             title: `${e.title}${stops.length > 1 ? ` (Stop ${idx + 1})` : ""}`,
-            start: startDate,
-            end: endDate,
+            start: (window as any).Temporal.Instant.from(startDate.toISOString()).toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId()),
+            end: (window as any).Temporal.Instant.from(endDate.toISOString()).toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId()),
             allDay: false,
           });
         }

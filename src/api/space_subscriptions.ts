@@ -422,6 +422,9 @@ export const getSubscriptionById = createServerFn({ method: "POST" })
               description
               cover_url
               currency
+              type
+              locations
+              socials
             }
             invoices(order_by: { created_at: desc }) {
               id

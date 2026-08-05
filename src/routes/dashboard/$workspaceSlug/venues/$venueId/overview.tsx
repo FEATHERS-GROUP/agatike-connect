@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CalendarDays, Plus, Clock, User, Mail, Phone, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,25 +14,22 @@ import { ManualBookingDialog } from "@/components/desktop/dashboard/ManualBookin
 import { BlockDateDialog } from "@/components/desktop/dashboard/BlockDateDialog";
 import { SponsoredVouchersPanel } from "@/components/shared/SponsoredVouchersPanel";
 import { getVenueSponsoredVoucherBatches } from "@/api/vouchers";
-import { Calendar, dateFnsLocalizer, View } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
-import { enUS } from "date-fns/locale";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import { useNextCalendarApp, ScheduleXCalendar } from "@schedule-x/react";
+import {
+  createViewDay,
+  createViewWeek,
+  createViewMonthGrid,
+  createViewMonthAgenda,
+} from "@schedule-x/calendar";
+import { createEventsServicePlugin } from "@schedule-x/events-service";
+import "@schedule-x/theme-default/dist/index.css";
+import { format } from "date-fns";
+import "temporal-polyfill/global";
 
 // Stubbed mock data
 const rentableVenues: any[] = [];
 
-const locales = {
-  "en-US": enUS,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
+// Removed react-big-calendar localizer
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/overview")({
   component: VenueOverviewPage,
@@ -40,7 +37,6 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/
 
 function VenueOverviewPage() {
   const { venueId, workspaceSlug } = useParams({ strict: false }) as any;
-  const [currentView, setCurrentView] = useState<View>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [facilityFilter, setFacilityFilter] = useState<string>("ALL");
@@ -60,54 +56,89 @@ function VenueOverviewPage() {
     enabled: !!venueId,
   });
 
-  const myEvents = bookings
-    .filter((b: any) => {
-      if (facilityFilter === "ALL") return true;
-      if (facilityFilter === "GENERAL") return !b.facility_id;
-      return b.facility_id === facilityFilter;
-    })
-    .map((b: any) => {
-      return {
-        title: b.customer_name,
-        start: new Date(b.start_time),
-        end: new Date(b.end_time),
-        allDay: false, // Could compute this if needed
-        data: {
-          paymentStatus: b.payment_status,
-          status: b.status,
-        },
-      };
-    });
+  const myEvents = useMemo(() => {
+    return bookings
+      .filter((b: any) => {
+        if (facilityFilter === "ALL") return true;
+        if (facilityFilter === "GENERAL") return !b.facility_id;
+        return b.facility_id === facilityFilter;
+      })
+      .map((b: any) => {
+        const startDate = new Date(b.start_time);
+        const endDate = new Date(b.end_time);
+        return {
+          id: String(b.id || b.customer_name + b.start_time),
+          title: b.customer_name || 'Booking',
+          start: (window as any).Temporal.ZonedDateTime.from(startDate.toISOString().replace(/\.\d{3}/, '') + '[UTC]'),
+          end: (window as any).Temporal.ZonedDateTime.from(endDate.toISOString().replace(/\.\d{3}/, '') + '[UTC]'),
+          data: {
+            paymentStatus: b.payment_status,
+            status: b.status,
+            customerName: b.customer_name,
+            customerEmail: b.customer_email,
+            customerPhone: b.customer_phone,
+            date: b.date || format(new Date(b.start_time), 'yyyy-MM-dd'),
+            timeStart: b.timeStart || format(new Date(b.start_time), 'HH:mm'),
+            timeEnd: b.timeEnd || format(new Date(b.end_time), 'HH:mm'),
+            isAllDay: false,
+          },
+        };
+      });
+  }, [bookings, facilityFilter]);
 
-  const CustomEvent = ({ event }: any) => {
-    const isPaid = event.data.paymentStatus === "Paid";
-    const isBlocked = event.data.status === "Blocked";
+  const CustomEvent = ({ calendarEvent }: any) => {
+    const isPaid = calendarEvent.data?.paymentStatus === "Paid";
+    const isBlocked = calendarEvent.data?.status === "Blocked";
 
     if (isBlocked) {
       return (
-        <div className="flex flex-col justify-center h-full gap-0.5 p-1 bg-red-500/10 text-red-500 rounded-md border border-red-500/20">
+        <div className="flex flex-col justify-center h-full gap-0.5 p-1 bg-red-500/10 text-red-500 rounded-md border border-red-500/20 w-full">
           <span className="font-bold text-xs leading-tight truncate">❌ Blocked</span>
-          <span className="text-[10px] truncate">{event.title}</span>
+          <span className="text-[10px] truncate">{calendarEvent.title}</span>
         </div>
       );
     }
 
     return (
-      <div className="flex flex-col gap-0.5 p-0.5">
-        <span className="font-semibold text-xs leading-tight truncate">{event.title}</span>
-        <div className="flex items-center gap-1 mt-0.5">
+      <div className="flex flex-col gap-0.5 p-1 w-full h-full overflow-hidden text-white" style={{ background: "var(--gradient-primary)", borderRadius: "4px" }}>
+        <span className="font-semibold text-xs leading-tight truncate">{calendarEvent.title}</span>
+        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
           <span className="px-1.5 py-0.5 rounded-[4px] bg-white/20 text-[9px] uppercase tracking-wider font-bold">
-            {event.data.status}
+            {calendarEvent.data?.status}
           </span>
           <span
             className={`px-1.5 py-0.5 rounded-[4px] text-[9px] uppercase tracking-wider font-bold ${isPaid ? "bg-green-400/20 text-green-100" : "bg-red-400/20 text-red-100"}`}
           >
-            {event.data.paymentStatus}
+            {calendarEvent.data?.paymentStatus}
           </span>
         </div>
       </div>
     );
   };
+
+  console.log("overview.tsx render myEvents:", myEvents);
+  
+  const [eventsService] = useState(() => createEventsServicePlugin());
+
+  const calendar = useNextCalendarApp({
+    views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
+    events: myEvents,
+    defaultView: 'month-grid',
+    callbacks: {
+      onEventClick: (event) => setSelectedEvent(event)
+    },
+    plugins: [eventsService],
+  });
+
+  console.log("overview.tsx calendar instance:", calendar);
+
+  // Re-sync events to calendar state if they change
+  useEffect(() => {
+    if (myEvents) {
+       console.log("overview.tsx calling eventsService.set with:", myEvents);
+       eventsService.set(myEvents);
+    }
+  }, [myEvents, eventsService]);
 
   if (isLoading)
     return <div className="p-8 text-center text-muted-foreground">Loading venue details...</div>;
@@ -162,107 +193,13 @@ function VenueOverviewPage() {
               </select>
             )}
           </div>
-          <div className="flex-1 bg-background/50 rounded-2xl p-4 overflow-hidden border border-border/60 shadow-inner">
-            {/* Custom styles to make react-big-calendar match our premium theme */}
-            <style>{`
-              .rbc-calendar { font-family: inherit; }
-              .rbc-btn-group button { 
-                color: hsl(var(--muted-foreground)); 
-                border-color: hsl(var(--border)/0.6); 
-                transition: all 0.2s;
-              }
-              .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
-                background-color: hsl(var(--primary)); 
-                color: hsl(var(--primary-foreground)); 
-                border-color: hsl(var(--primary));
-                box-shadow: 0 4px 12px hsl(var(--primary)/0.3);
-              }
-              .rbc-toolbar button:hover:not(.rbc-active) { 
-                background-color: hsl(var(--secondary)); 
-                color: hsl(var(--foreground));
-              }
-              .rbc-header { 
-                padding: 12px 8px; 
-                font-weight: 600; 
-                font-size: 0.85rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: hsl(var(--muted-foreground));
-                border-bottom: 1px solid hsl(var(--border)/0.6); 
-                border-left: 1px solid hsl(var(--border)/0.6); 
-              }
-              .rbc-month-view, .rbc-time-view, .rbc-agenda-view { 
-                border: 1px solid hsl(var(--border)/0.6); 
-                border-radius: 12px; 
-                overflow: hidden; 
-                background: hsl(var(--card));
-              }
-              .rbc-month-row, .rbc-day-bg, .rbc-time-header-content { 
-                border-color: hsl(var(--border)/0.6); 
-              }
-              .rbc-off-range-bg { background: hsl(var(--secondary)/0.1); }
-              .rbc-today { background: hsl(var(--primary)/0.05); }
-              .rbc-event { 
-                background: var(--gradient-primary, linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)))); 
-                border: none;
-                border-radius: 8px; 
-                padding: 4px; 
-                box-shadow: 0 2px 4px hsl(var(--primary)/0.2);
-              }
-              .rbc-event.rbc-selected {
-                background: var(--gradient-primary);
-                filter: brightness(1.1);
-              }
-              .rbc-date-cell { padding: 4px 8px; font-weight: 500; font-size: 0.9rem; }
-              
-              /* Day/Week Time View Enhancements */
-              .rbc-time-view .rbc-header { border-bottom: none; }
-              .rbc-time-content { border-top: 1px solid hsl(var(--border)/0.6); }
-              .rbc-timeslot-group { border-bottom: 1px solid hsl(var(--border)/0.3); min-height: 60px; }
-              .rbc-time-gutter .rbc-timeslot-group { border-right: 1px solid hsl(var(--border)/0.6); background: hsl(var(--secondary)/0.1); }
-              .rbc-time-header-content { border-left: 1px solid hsl(var(--border)/0.6); }
-              .rbc-allday-cell { background: hsl(var(--secondary)/0.2); border-bottom: 1px solid hsl(var(--border)/0.6); }
-              .rbc-day-slot .rbc-events-container { margin-right: 8px; }
-              .rbc-day-slot .rbc-event { border: 1px solid hsl(var(--card)); }
-              
-              /* Agenda View Premium Styling */
-              .rbc-agenda-view table.rbc-agenda-table { 
-                border-collapse: separate; 
-                border-spacing: 0; 
-              }
-              .rbc-agenda-view table.rbc-agenda-table thead > tr > th { 
-                padding: 16px; 
-                text-align: left; 
-                background: hsl(var(--secondary)/0.3); 
-                border-bottom: 2px solid hsl(var(--border)/0.6);
-                font-size: 0.8rem;
-              }
-              .rbc-agenda-view table.rbc-agenda-table tbody > tr > td { 
-                padding: 16px; 
-                border-bottom: 1px solid hsl(var(--border)/0.3);
-                vertical-align: middle;
-              }
-              .rbc-agenda-view table.rbc-agenda-table tbody > tr:hover > td {
-                background: hsl(var(--secondary)/0.1);
-              }
-              .rbc-agenda-date-cell { font-weight: 600; color: hsl(var(--foreground)); width: 15%; }
-              .rbc-agenda-time-cell { font-weight: 500; color: hsl(var(--muted-foreground)); width: 20%; }
-              .rbc-agenda-event-cell { font-weight: 500; }
-            `}</style>
-            <Calendar
-              localizer={localizer}
-              events={myEvents}
-              startAccessor="start"
-              endAccessor="end"
-              view={currentView}
-              onView={(view) => setCurrentView(view)}
-              date={currentDate}
-              onNavigate={(date) => setCurrentDate(date)}
-              onSelectEvent={(event) => setSelectedEvent(event)}
-              views={["month", "week", "day", "agenda"]}
-              style={{ height: "100%" }}
-              components={{
-                event: CustomEvent,
+          <div className="flex-1 rounded-2xl overflow-hidden shadow-inner sx-react-calendar-wrapper" style={{ minHeight: "500px" }}>
+            <ScheduleXCalendar 
+              calendarApp={calendar} 
+              customComponents={{
+                timeGridEvent: CustomEvent,
+                dateGridEvent: CustomEvent,
+                monthGridEvent: CustomEvent
               }}
             />
           </div>

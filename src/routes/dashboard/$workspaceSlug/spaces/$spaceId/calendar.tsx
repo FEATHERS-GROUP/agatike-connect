@@ -6,7 +6,7 @@ import { getWorkspaceUsers } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar as CalendarIcon, Plus, Trash2, Clock, MapPin, User, Repeat, ChevronDown, X } from "lucide-react";
-import { useState, lazy, Suspense, useRef, useEffect } from "react";
+import { useState, lazy, Suspense, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -16,7 +16,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import { format } from "date-fns";
+import "temporal-polyfill/global";
 
 const LazyCalendar = lazy(() => import("@/components/lazy/LazyCalendar"));
 
@@ -206,15 +207,24 @@ function SchedulePage() {
   // All resources in the space can be scheduled
   const schedulableResources = resources;
 
-  const events = bookings.map((b: any) => ({
-    id: b.id,
-    title: b.title,
-    start: new Date(b.start_time),
-    end: new Date(b.end_time),
-    resourceId: b.resource_id,
-    resourceName: b.resource?.name,
-    organizerName: b.organizer_name,
-  }));
+  const events = useMemo(() => {
+    if (!bookings) return [];
+    
+    const getLocalZdt = (dateStr: string) => {
+      const instant = (window as any).Temporal.Instant.from(new Date(dateStr).toISOString());
+      return instant.toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId());
+    };
+
+    return bookings.map((b: any) => ({
+      id: b.id,
+      title: b.title,
+      start: getLocalZdt(b.start_time),
+      end: getLocalZdt(b.end_time),
+      resourceId: b.resource_id,
+      resourceName: b.resource?.name,
+      organizerName: b.organizer_name,
+    }));
+  }, [bookings]);
 
   return (
     <div className="space-y-8 pb-12">
@@ -382,39 +392,15 @@ function SchedulePage() {
       <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm overflow-hidden min-h-[700px]">
         <h3 className="font-bold text-lg mb-4">Calendar</h3>
         
-        {/* We add global overrides for react-big-calendar toolbar text colors so they appear correctly in both themes */}
-        <style dangerouslySetInnerHTML={{__html: `
-          .rbc-toolbar button { color: var(--foreground) !important; border-color: var(--border) !important; }
-          .rbc-toolbar button.rbc-active { background-color: var(--secondary) !important; }
-          .rbc-toolbar button:hover { background-color: var(--accent) !important; }
-          .rbc-header { padding: 8px !important; font-weight: 600 !important; }
-          .rbc-today { background-color: rgba(249,115,22, 0.05) !important; }
-          .rbc-off-range-bg { background-color: var(--secondary) !important; opacity: 0.3 !important; }
-        `}} />
-
         {bookingsLoading ? (
           <div className="flex justify-center items-center h-64 text-muted-foreground">
             Loading calendar...
           </div>
         ) : (
-          <div className="h-[650px]">
+          <div className="h-[650px] relative">
             <Suspense fallback={<div className="h-full flex items-center justify-center text-muted-foreground">Loading calendar view...</div>}>
               <LazyCalendar
                 events={events}
-                startAccessor="start"
-                endAccessor="end"
-                views={['month', 'week', 'day', 'agenda']}
-                defaultView="month"
-                popup
-                style={{ height: "100%", background: "var(--background)", color: "var(--foreground)" }}
-                eventPropGetter={() => ({
-                  style: {
-                    backgroundColor: "var(--primary)",
-                    color: "var(--primary-foreground)",
-                    border: "none",
-                    borderRadius: "6px",
-                  }
-                })}
                 onSelectEvent={(event: any) => setSelectedEvent(event)}
               />
             </Suspense>
@@ -447,10 +433,10 @@ function SchedulePage() {
                     <Clock className="h-4 w-4 shrink-0 text-orange-500" />
                     <div className="flex flex-col">
                       <span className="font-medium text-foreground">
-                        {selectedEvent.start.toLocaleDateString()}
+                        {new Date(selectedEvent.start.epochMilliseconds ?? selectedEvent.start).toLocaleDateString()}
                       </span>
                       <span>
-                        {selectedEvent.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {selectedEvent.end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(selectedEvent.start.epochMilliseconds ?? selectedEvent.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(selectedEvent.end.epochMilliseconds ?? selectedEvent.end).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </span>
                     </div>
                   </div>

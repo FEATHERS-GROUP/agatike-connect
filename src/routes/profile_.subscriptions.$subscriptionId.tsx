@@ -10,12 +10,13 @@ import { getSpaceClasses, getSessionBookings, getSpaceSessions } from "@/api/spa
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User } from "lucide-react";
+import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User, Phone, Instagram, MessageCircle, Building2 } from "lucide-react";
 import { format, addHours, startOfHour } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LazyCalendar from "@/components/lazy/LazyCalendar";
+import "temporal-polyfill/global";
 export const Route = createFileRoute("/profile_/subscriptions/$subscriptionId")({
   head: () => ({
     meta: [{ title: "Subscriber Portal — Agatike" }],
@@ -78,13 +79,19 @@ function SubscriberPortal() {
   });
 
   const calendarEvents = React.useMemo(() => {
+    const getLocalZdt = (dateStr: string) => {
+      const instant = (window as any).Temporal.Instant.from(new Date(dateStr).toISOString());
+      return instant.toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId());
+    };
+    
     const evts: any[] = [];
     if (sessions) {
       sessions.forEach((s: any) => {
         evts.push({
+          id: String(s.id),
           title: `Class: ${s.class?.name || "Session"}`,
-          start: new Date(s.start_time),
-          end: new Date(s.end_time),
+          start: getLocalZdt(s.start_time),
+          end: getLocalZdt(s.end_time),
           allDay: false,
           resource: s,
           type: "session"
@@ -93,10 +100,12 @@ function SubscriberPortal() {
     }
     if (resourceBookings) {
       resourceBookings.forEach((b: any) => {
+        const isMine = b.customer_id === user?.id;
         evts.push({
-          title: `Booked: ${b.resource?.name || "Resource"}`,
-          start: new Date(b.start_time),
-          end: new Date(b.end_time),
+          id: String(b.id),
+          title: isMine ? `My Booking: ${b.resource?.name || "Resource"}` : `Booked: ${b.resource?.name || "Resource"}`,
+          start: getLocalZdt(b.start_time),
+          end: getLocalZdt(b.end_time),
           allDay: false,
           resource: b,
           type: "booking"
@@ -104,7 +113,7 @@ function SubscriberPortal() {
       });
     }
     return evts;
-  }, [sessions, resourceBookings]);
+  }, [sessions, resourceBookings, user?.id]);
 
   if (isSubLoading) {
     return (
@@ -235,9 +244,64 @@ function SubscriberPortal() {
                       </div>
                       Space Information
                     </h3>
-                    <p className="text-muted-foreground text-sm leading-loose whitespace-pre-wrap">
-                      {space?.description || "No description provided."}
-                    </p>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <p className="text-muted-foreground text-sm leading-loose whitespace-pre-wrap">
+                          {space?.description || "No description provided."}
+                        </p>
+                      </div>
+
+                      {space?.type && (
+                        <div className="pt-4 border-t border-border/40">
+                          <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Facility Type</h4>
+                          <div className="flex items-center gap-2 text-sm font-medium">
+                            <Building2 className="h-4 w-4 text-primary" />
+                            <span className="capitalize">{space.type.replace(/_/g, " ")}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {space?.locations && space.locations.length > 0 && (
+                        <div className="pt-4 border-t border-border/40">
+                          <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Locations</h4>
+                          <div className="space-y-3">
+                            {space.locations.map((loc: any, i: number) => (
+                              <div key={i} className="flex items-start gap-2 text-sm font-medium">
+                                <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                <span>{[loc.address, loc.city, loc.country].filter(Boolean).join(", ")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {space?.socials && Object.keys(space.socials).length > 0 && (
+                        <div className="pt-4 border-t border-border/40">
+                          <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Contact & Socials</h4>
+                          <div className="flex flex-wrap gap-4">
+                            {space.socials.phone && (
+                              <div className="flex items-center gap-2 text-sm font-medium">
+                                <Phone className="h-4 w-4 text-primary" />
+                                <span>{space.socials.phone}</span>
+                              </div>
+                            )}
+                            {space.socials.whatsapp && (
+                              <div className="flex items-center gap-2 text-sm font-medium">
+                                <MessageCircle className="h-4 w-4 text-primary" />
+                                <span>{space.socials.whatsapp}</span>
+                              </div>
+                            )}
+                            {space.socials.instagram && (
+                              <div className="flex items-center gap-2 text-sm font-medium">
+                                <Instagram className="h-4 w-4 text-primary" />
+                                <span>{space.socials.instagram}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -531,11 +595,11 @@ function SubscriberPortal() {
           <div className="py-4 space-y-4">
              <div className="space-y-1">
                <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Start</p>
-               <p className="font-semibold text-foreground">{selectedCalendarEvent?.start ? format(selectedCalendarEvent.start, "MMMM d, yyyy h:mm a") : ""}</p>
+               <p className="font-semibold text-foreground">{selectedCalendarEvent?.start ? format(new Date(selectedCalendarEvent.start.epochMilliseconds ?? selectedCalendarEvent.start), "MMMM d, yyyy h:mm a") : ""}</p>
              </div>
              <div className="space-y-1">
                <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">End</p>
-               <p className="font-semibold text-foreground">{selectedCalendarEvent?.end ? format(selectedCalendarEvent.end, "MMMM d, yyyy h:mm a") : ""}</p>
+               <p className="font-semibold text-foreground">{selectedCalendarEvent?.end ? format(new Date(selectedCalendarEvent.end.epochMilliseconds ?? selectedCalendarEvent.end), "MMMM d, yyyy h:mm a") : ""}</p>
              </div>
              {selectedCalendarEvent?.resource?.resource?.name && (
                <div className="space-y-1">

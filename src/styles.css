@@ -419,3 +419,24 @@
 .recharts-active-dot circle {
   filter: drop-shadow(0 0 6px oklch(0.65 0.25 35 / 0.7));
 }
+
+/* ─── Schedule-X Theme Customization ─────────────────────────────────────── */
+.sx-react-calendar-wrapper {
+  --sx-color-primary: var(--primary);
+  --sx-color-on-primary: var(--primary-foreground);
+  --sx-color-primary-container: var(--secondary);
+  --sx-color-on-primary-container: var(--secondary-foreground);
+  --sx-color-secondary: var(--secondary);
+  --sx-color-on-secondary: var(--secondary-foreground);
+  --sx-color-secondary-container: var(--muted);
+  --sx-color-on-secondary-container: var(--muted-foreground);
+  --sx-color-surface: var(--card);
+  --sx-color-surface-dim: var(--background);
+  --sx-color-on-surface: var(--foreground);
+  --sx-color-outline: var(--border);
+  --sx-color-outline-variant: var(--border);
+  --sx-internal-color-text: var(--foreground);
+  
+  background-color: var(--card);
+  border-radius: var(--radius);
+}
