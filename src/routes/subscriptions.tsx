@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { ArrowLeft, MapPin, CalendarDays, Building2, Plus, Unlink } from "lucide-react";
+import { ArrowLeft, MapPin, CalendarDays, Building2, Plus, Unlink, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -156,9 +156,10 @@ function SubscriptionCard({
 
   return (
     <>
-      <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-[var(--shadow-card)] flex flex-col mb-4">
-        <div
-          className="flex gap-3 p-3 border-b border-border/40 cursor-pointer hover:bg-secondary/20 transition-colors"
+      <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm flex flex-col mb-4 transition-all hover:border-primary/40 hover:shadow-md md:rounded-[20px]">
+        {/* Top Cover Section */}
+        <div 
+          className="relative h-24 md:h-32 w-full cursor-pointer"
           onClick={() => setShowQR(true)}
         >
           <img
@@ -167,65 +168,113 @@ function SubscriptionCard({
               "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=400&auto=format&fit=crop"
             }
             alt={sub.plan_name}
-            className="w-16 h-16 object-cover rounded-2xl shrink-0"
+            className="w-full h-full object-cover"
           />
-          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
             <div>
-              <div className="flex justify-between items-start mb-0.5">
-                <p className="font-bold text-sm leading-tight">{sub.plan_name}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-white font-bold text-sm md:text-base leading-tight drop-shadow-md">
+                  {sub.plan_name}
+                </p>
                 {isGroupSub && (
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/60 px-1.5 py-0.5 rounded-full ml-2 shrink-0">
+                  <span className="flex items-center gap-1 text-[10px] text-white/90 bg-white/20 backdrop-blur-sm px-1.5 py-0.5 rounded-full shrink-0 shadow-sm border border-white/10">
                     <Building2 className="h-2.5 w-2.5" />
                     {isTeamMemberOnly ? "Team Member" : "Company"}
                   </span>
                 )}
               </div>
-              <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap inline-block mb-1 ${validity.color}`}
-              >
-                {validity.label}
-              </span>
-              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                {sub.space?.name || "Unknown Venue"}
+              <p className="text-white/80 text-xs flex items-center gap-1 mt-0.5 md:text-sm">
+                <MapPin className="h-3 w-3 md:h-4 md:w-4" /> {sub.space?.name || "Unknown Venue"}
               </p>
-              {isTeamMemberOnly && matchedMember && (
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  via <span className="font-semibold">{sub.customer_name}</span>
-                </p>
-              )}
             </div>
-            {!isGroupSub && (
-              <div className="text-xs font-bold text-primary mt-1.5">
+            <span
+              className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm backdrop-blur-sm ${validity.color.replace('bg-', 'bg-white/90 text-').replace('/10', '')}`}
+              style={{
+                backgroundColor: validity.label === 'Active' ? 'rgba(34, 197, 94, 0.9)' : validity.label === 'Expiring Soon' ? 'rgba(245, 158, 11, 0.9)' : 'rgba(239, 68, 68, 0.9)',
+                color: '#fff'
+              }}
+            >
+              {validity.label}
+            </span>
+          </div>
+        </div>
+
+        {/* Details Section */}
+        <div 
+          className="p-3 md:p-4 flex flex-col gap-3 cursor-pointer hover:bg-secondary/20 transition-colors"
+          onClick={() => setShowQR(true)}
+        >
+          {/* Price & Customer Info */}
+          <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-2">
+            {!isGroupSub ? (
+              <div className="text-sm md:text-base font-bold text-primary">
                 {sub.price} {currency}{" "}
-                <span className="text-muted-foreground font-normal text-[10px]">
+                <span className="text-muted-foreground font-normal text-xs md:text-sm">
                   / {sub.billing_cycle}
                 </span>
               </div>
+            ) : (
+              <div className="text-sm md:text-base font-bold text-foreground">
+                Group Subscription
+              </div>
+            )}
+            
+            {isTeamMemberOnly && matchedMember && (
+              <div className="text-xs text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
+                Purchased by <span className="font-semibold text-foreground">{sub.customer_name}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Desktop/Tablet Detailed Grid */}
+          <div className="hidden sm:grid grid-cols-2 gap-3 pt-3 border-t border-border/40">
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
+                {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" || isGroupSub 
+                  ? (isTeamMemberOnly ? "Member Since" : "Start Date") 
+                  : "Start Date"}
+              </p>
+              <p className="text-xs font-medium flex items-center gap-1.5 text-foreground">
+                <CalendarDays className="h-3 w-3 text-muted-foreground" /> {formatDate(sub.start_date)}
+              </p>
+            </div>
+            {!(sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" || isGroupSub) && (
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Next Billing</p>
+                <p className="text-xs font-medium flex items-center gap-1.5 text-foreground">
+                  <CalendarDays className="h-3 w-3 text-primary" /> {nextBillingDisplay}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Only Dates Row */}
+          <div className="sm:hidden pt-2 border-t border-border/40 text-xs flex justify-between items-center text-muted-foreground">
+            {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" ? (
+              <span>Start: <span className="font-semibold text-foreground">{formatDate(sub.start_date)}</span></span>
+            ) : isGroupSub ? (
+              <span>{isTeamMemberOnly ? "Since" : "Start"}: <span className="font-semibold text-foreground">{formatDate(sub.start_date)}</span></span>
+            ) : (
+              <span>Next billing: <span className="font-semibold text-foreground">{nextBillingDisplay}</span></span>
             )}
           </div>
         </div>
-        <div className="bg-secondary/20 p-3 flex flex-row items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {sub.billing_cycle?.toLowerCase() === "one-time" ||
-            sub.billing_cycle?.toLowerCase() === "onetime" ? (
-              <>
-                Start date:{" "}
-                <span className="font-bold text-foreground">{formatDate(sub.start_date)}</span>
-              </>
-            ) : isGroupSub ? (
-              <>
-                {isTeamMemberOnly ? "Member since" : "Start date"}:{" "}
-                <span className="font-bold text-foreground">{formatDate(sub.start_date)}</span>
-              </>
-            ) : (
-              <>
-                Next billing:{" "}
-                <span className="font-bold text-foreground">{nextBillingDisplay}</span>
-              </>
-            )}
-          </div>
+
+        {/* Actions Section */}
+        <div className="bg-secondary/20 p-3 md:p-4 flex items-center justify-between border-t border-border/40">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 md:h-8 text-xs font-semibold rounded-lg px-2 text-primary hover:bg-primary/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQR(true);
+            }}
+          >
+            <QrCode className="h-4 w-4 mr-1.5" /> Show Pass
+          </Button>
+          
           <div className="flex gap-2">
             {!isGroupSub && (
               <>
@@ -233,7 +282,7 @@ function SubscriptionCard({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs font-semibold rounded-xl px-3"
+                    className="h-7 md:h-8 text-xs font-semibold rounded-lg px-3 bg-card"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowInvoice(true);
@@ -245,7 +294,7 @@ function SubscriptionCard({
                 {(!validity.isValid || validity.label === "Expiring Soon") && (
                   <Button
                     size="sm"
-                    className="h-8 text-xs font-semibold rounded-xl px-3 bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="h-7 md:h-8 text-xs font-bold rounded-lg px-4 shadow-sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowRenew(true);
@@ -260,7 +309,7 @@ function SubscriptionCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs font-semibold rounded-xl px-3 text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20"
+                className="h-7 md:h-8 text-xs font-semibold rounded-lg px-3 text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20 bg-card"
                 onClick={handleUnlink}
                 disabled={isUnlinking}
               >
