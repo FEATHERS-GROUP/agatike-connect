@@ -12,10 +12,20 @@ import { useEffect, useState } from 'react';
 export default function LazyCalendar(props: any) {
   const [eventsService] = useState(() => createEventsServicePlugin());
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const getResponsiveView = () => {
+    if (props.defaultView) {
+      if (props.defaultView === 'month') return isMobile ? 'month-agenda' : 'month-grid';
+      if (props.defaultView === 'week' && isMobile) return 'month-agenda';
+      return props.defaultView;
+    }
+    return isMobile ? 'month-agenda' : 'month-grid';
+  };
+
   const calendar = useNextCalendarApp({
     views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
     events: props.events || [],
-    defaultView: props.defaultView === 'month' ? 'month-grid' : (props.defaultView || 'month-grid'),
+    defaultView: getResponsiveView(),
     callbacks: {
       onEventClick: (calendarEvent) => {
         if (props.onSelectEvent) props.onSelectEvent(calendarEvent);

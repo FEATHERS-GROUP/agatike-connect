@@ -443,3 +443,63 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+/* ─── Premium Calendar Aesthetics ───────────────────────────────────────── */
+.sx__calendar {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.sx__calendar-header {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 16px 20px !important;
+  background: transparent !important;
+}
+
+.sx__view-container {
+  background: var(--background) !important;
+}
+
+.sx__time-grid-event {
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sx__time-grid-event:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+  z-index: 10;
+}
+
+.sx__date-picker-popup {
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid var(--border) !important;
+  overflow: hidden;
+}
+
+.sx__month-agenda-day--active .sx__month-agenda-day-number {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: 50% !important;
+  font-weight: 700 !important;
+}
+
+.sx__month-grid-day--today {
+  background: rgba(var(--primary-rgb), 0.05) !important;
+}
+
+.sx__month-grid-day--today .sx__month-grid-day-number {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+}
