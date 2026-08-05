@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { TicketCard } from "./TicketCard";
 import { HistoryCard } from "./HistoryCard";
 import { SubscriptionCard } from "./SubscriptionCard";
+import { ProfileBadges } from "./ProfileBadges";
 
 export function ProfileMobile({
   user,
@@ -41,30 +42,6 @@ export function ProfileMobile({
 
   return (
     <div className="md:hidden min-h-screen bg-background pb-24 text-foreground">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/40 backdrop-blur-2xl border-none pt-safe-top relative">
-        <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
-        <div className="flex items-center justify-between px-4 py-3 relative z-10">
-          <h1 className="font-bold text-lg tracking-tight">My Profile</h1>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/dashboard"
-              className="p-2 rounded-full hover:bg-secondary/80 transition-colors"
-            >
-              <ScanLine className="h-5 w-5" />
-            </Link>
-            <button className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
-              <Bell className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setShowLogoutModal(true)}
-              className="p-2 rounded-full hover:bg-red-500/10 text-red-500 transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Profile Hero */}
       <div className="relative px-4 pt-4 pb-4">
@@ -115,7 +92,7 @@ export function ProfileMobile({
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2 relative z-10">
+        <div className="flex relative z-10">
           <Button
             variant="secondary"
             className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
@@ -123,13 +100,16 @@ export function ProfileMobile({
           >
             Edit profile
           </Button>
-          <Button
-            variant="secondary"
-            className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
-          >
-            Share profile
-          </Button>
         </div>
+      </div>
+
+      <div className="mt-6 border-b border-border/40 pb-5">
+        <ProfileBadges 
+          historyCount={historyTicketsList.length} 
+          upcomingCount={upcomingTicketsList.length}
+          followingCount={followedOrganizers.length}
+          subscriptionsCount={subscriptions?.length || 0}
+        />
       </div>
 
       {/* Favorite Categories */}

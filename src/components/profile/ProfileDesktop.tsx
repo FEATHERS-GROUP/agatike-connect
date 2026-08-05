@@ -9,6 +9,7 @@ import { Footer } from "@/components/site/Footer";
 import { TicketCard } from "./TicketCard";
 import { HistoryCard } from "./HistoryCard";
 import { SubscriptionCard } from "./SubscriptionCard";
+import { ProfileBadges } from "./ProfileBadges";
 
 function HistoryTableRow({ eventGroup, navigate }: { eventGroup: any; navigate: any }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -196,7 +197,6 @@ export function ProfileDesktop({
                 </div>
               </div>
               
-              {/* About me */}
               <div>
                 <h2 className="text-lg font-bold text-foreground mb-3">About me</h2>
                 <div className="text-sm text-muted-foreground leading-relaxed space-y-4">
@@ -210,6 +210,16 @@ export function ProfileDesktop({
                     <li><strong className="font-semibold text-foreground">Community Builder:</strong> Following {followedOrganizers.length} amazing organizers to stay updated on their latest activities.</li>
                   </ol>
                 </div>
+              </div>
+
+              {/* Badges Section */}
+              <div className="pt-4 border-t border-border/40">
+                <ProfileBadges 
+                  historyCount={historyTicketsList.length} 
+                  upcomingCount={upcomingTicketsList.length}
+                  followingCount={followedOrganizers.length}
+                  subscriptionsCount={subscriptions?.length || 0}
+                />
               </div>
             </div>
           </div>
