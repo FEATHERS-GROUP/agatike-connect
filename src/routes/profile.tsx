@@ -123,7 +123,7 @@ function ProfilePage() {
     today.setHours(0, 0, 0, 0);
     eventDate.setHours(0, 0, 0, 0);
     return eventDate < today;
-  });
+  }).slice(0, 20);
 
   const handleLogout = async () => {
     await signOut();

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Ticket, Calendar, ChevronRight, Heart, LogOut, User, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { TicketCard } from "./TicketCard";
@@ -143,10 +144,69 @@ export function ProfileDesktop({
               {/* EVENT HISTORY TAB */}
               <TabsContent value="history" className="mt-0">
                 {historyTicketsList.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {historyTicketsList.map((t: any) => (
-                      <HistoryCard key={t.id} ticket={t} />
-                    ))}
+                  <div className="rounded-2xl border border-border/40 overflow-hidden bg-card shadow-sm">
+                    <Table>
+                      <TableHeader className="bg-secondary/20">
+                        <TableRow>
+                          <TableHead className="w-[80px]">Event</TableHead>
+                          <TableHead>Details</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {historyTicketsList.map((t: any) => {
+                          const hasEventId = !!t.eventId;
+                          return (
+                            <TableRow 
+                              key={t.id} 
+                              className={hasEventId ? "cursor-pointer group hover:bg-secondary/30 transition-colors" : ""}
+                              onClick={() => {
+                                if (hasEventId) {
+                                  navigate({ to: '/events/$eventId', params: { eventId: t.eventId } });
+                                }
+                              }}
+                            >
+                              <TableCell className="p-3">
+                                <img
+                                  src={t.cover || "/placeholder-event.png"}
+                                  alt={t.title}
+                                  className="w-14 h-14 object-cover rounded-xl shadow-sm"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <p className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                                  {t.title}
+                                </p>
+                              </TableCell>
+                              <TableCell className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                                {t.date || "Past Event"}
+                              </TableCell>
+                              <TableCell className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                                {t.city || "Online"}
+                              </TableCell>
+                              <TableCell className="text-right p-3">
+                                {!t.rated && (
+                                  <Button 
+                                    size="sm" 
+                                    className="rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (t.eventId) {
+                                        window.location.href = `/f/${t.eventId}/review`;
+                                      }
+                                    }}
+                                  >
+                                    Rate Event
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 ) : (
                   <div className="text-center py-12 border border-dashed border-border/60 rounded-2xl bg-secondary/10">

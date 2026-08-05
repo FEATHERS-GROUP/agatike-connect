@@ -282,6 +282,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       isVenueBooking: false,
       status: att.status || "Confirmed",
       eventDate: stop?.date || event?.schedules?.[0]?.start_date || att.created_at,
+      eventId: event?.id || null,
       design,
     });
   }
