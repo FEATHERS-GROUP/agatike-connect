@@ -6,7 +6,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSubscriptionById } from "@/api/space_subscriptions";
 import { getSpaceResources, getSpaceResourceBookings, createSpaceResourceBooking } from "@/api/space_resources";
-import { getSpaceClasses, getSessionBookings } from "@/api/space_classes";
+import { getSpaceClasses, getSessionBookings, getSpaceSessions } from "@/api/space_classes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +15,7 @@ import { format, addHours, startOfHour } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import LazyCalendar from "@/components/lazy/LazyCalendar";
 export const Route = createFileRoute("/profile_/subscriptions/$subscriptionId")({
   head: () => ({
     meta: [{ title: "Subscriber Portal — Agatike" }],
@@ -34,6 +34,7 @@ function SubscriberPortal() {
   const [bookingDate, setBookingDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [bookingTime, setBookingTime] = useState<string>(format(startOfHour(addHours(new Date(), 1)), "HH:mm"));
   const [bookingDuration, setBookingDuration] = useState<number>(1);
+  const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<any>(null);
 
   const createBooking = useMutation({
     mutationFn: (data: any) => createSpaceResourceBooking({ data }),
@@ -69,6 +70,41 @@ function SubscriberPortal() {
     queryFn: () => getSpaceResourceBookings({ data: { space_id: spaceId } }),
     enabled: !!spaceId,
   });
+
+  const { data: sessions } = useQuery({
+    queryKey: ["space_sessions", spaceId],
+    queryFn: () => getSpaceSessions({ data: { space_id: spaceId } }),
+    enabled: !!spaceId,
+  });
+
+  const calendarEvents = React.useMemo(() => {
+    const evts: any[] = [];
+    if (sessions) {
+      sessions.forEach((s: any) => {
+        evts.push({
+          title: `Class: ${s.class?.name || "Session"}`,
+          start: new Date(s.start_time),
+          end: new Date(s.end_time),
+          allDay: false,
+          resource: s,
+          type: "session"
+        });
+      });
+    }
+    if (resourceBookings) {
+      resourceBookings.forEach((b: any) => {
+        evts.push({
+          title: `Booked: ${b.resource?.name || "Resource"}`,
+          start: new Date(b.start_time),
+          end: new Date(b.end_time),
+          allDay: false,
+          resource: b,
+          type: "booking"
+        });
+      });
+    }
+    return evts;
+  }, [sessions, resourceBookings]);
 
   if (isSubLoading) {
     return (
@@ -110,7 +146,7 @@ function SubscriberPortal() {
       
       <main className="flex-1 w-full pb-24 animate-in fade-in duration-700">
         {/* Header Hero */}
-        <div className="relative w-full h-[40vh] min-h-[320px] shadow-sm">
+        <div className="relative w-full h-[55vh] min-h-[450px] shadow-sm">
           {space?.cover_url ? (
             <img src={space.cover_url} alt={space.name} className="w-full h-full object-cover" />
           ) : (
@@ -118,32 +154,54 @@ function SubscriberPortal() {
               <MapPin className="h-16 w-16 text-muted-foreground/20" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/10" />
           
-          <div className="absolute inset-0 max-w-6xl mx-auto px-4 md:px-8 flex flex-col justify-end pb-8">
+          <div className="absolute inset-0 max-w-6xl mx-auto px-4 md:px-8 flex flex-col justify-end pb-12">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate({ to: "/profile" })}
-              className="w-fit mb-6 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="w-fit mb-8 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
             </Button>
             
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-3 tracking-tight">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+              <div className="flex-1">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-foreground mb-4 tracking-tight drop-shadow-md">
                   {space?.name}
                 </h1>
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="bg-primary/10 text-primary border border-primary/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <span className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
                     {subscription.status}
                   </span>
-                  <span className="text-muted-foreground font-medium flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40"></span>
-                    {subscription.plan_name}
-                  </span>
                 </div>
+                
+                {/* Subscription Details in Header */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8 bg-background/50 backdrop-blur-md border border-border/30 p-6 rounded-3xl max-w-3xl shadow-sm">
+                   <div className="space-y-1.5">
+                     <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Plan</p>
+                     <p className="font-semibold text-lg">{subscription.plan_name}</p>
+                   </div>
+                   <div className="space-y-1.5">
+                     <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Price</p>
+                     <p className="font-semibold text-lg text-primary">{subscription.price?.toLocaleString()} {space?.currency || "RWF"} <span className="text-xs text-muted-foreground font-medium">/ {subscription.billing_cycle}</span></p>
+                   </div>
+                   <div className="space-y-1.5">
+                     <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Start Date</p>
+                     <p className="font-semibold text-base">{subscription.start_date ? format(new Date(subscription.start_date), "MMM d, yyyy") : "-"}</p>
+                   </div>
+                   <div className="space-y-1.5">
+                     <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Next Billing</p>
+                     <p className="font-semibold text-base">{subscription.next_billing_date ? format(new Date(subscription.next_billing_date), "MMM d, yyyy") : "-"}</p>
+                   </div>
+                </div>
+              </div>
+              
+              <div className="shrink-0">
+                <Button className="rounded-2xl px-10 font-bold shadow-md h-14 text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
+                  Manage Subscription
+                </Button>
               </div>
             </div>
           </div>
@@ -167,46 +225,8 @@ function SubscriberPortal() {
             {/* OVERVIEW TAB */}
             <TabsContent value="overview" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Billing Info */}
+                {/* Space Info */}
                 <div className="md:col-span-2 space-y-8">
-                  <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                    {/* Decorative background element */}
-                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-                    
-                    <h3 className="text-xl font-bold flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-primary/10 rounded-xl">
-                        <CreditCard className="h-5 w-5 text-primary" />
-                      </div>
-                      Subscription Details
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="bg-secondary/20 p-5 rounded-2xl">
-                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Plan Name</p>
-                        <p className="font-semibold text-lg">{subscription.plan_name}</p>
-                      </div>
-                      <div className="bg-secondary/20 p-5 rounded-2xl">
-                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Price</p>
-                        <p className="font-semibold text-lg text-primary">
-                          {subscription.price?.toLocaleString()} {space?.currency || "RWF"} <span className="text-sm text-muted-foreground font-medium">/ {subscription.billing_cycle}</span>
-                        </p>
-                      </div>
-                      <div className="bg-secondary/20 p-5 rounded-2xl">
-                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Start Date</p>
-                        <p className="font-semibold text-base">{subscription.start_date ? format(new Date(subscription.start_date), "MMMM d, yyyy") : "-"}</p>
-                      </div>
-                      <div className="bg-secondary/20 p-5 rounded-2xl">
-                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Next Billing</p>
-                        <p className="font-semibold text-base">{subscription.next_billing_date ? format(new Date(subscription.next_billing_date), "MMMM d, yyyy") : "-"}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-8 pt-8 border-t border-border/40 flex justify-end">
-                      <Button className="rounded-xl px-8 font-bold shadow-sm h-12">
-                        Manage Subscription
-                      </Button>
-                    </div>
-                  </div>
 
                   <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow">
                     <h3 className="text-xl font-bold flex items-center gap-3 mb-6">
@@ -250,6 +270,36 @@ function SubscriberPortal() {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* Overview Calendar */}
+              <div className="mt-8 bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow">
+                <div className="mb-6 max-w-xl">
+                  <h3 className="text-xl font-bold flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-primary/10 rounded-xl">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    Space Schedule
+                  </h3>
+                  <p className="text-muted-foreground text-sm">View upcoming classes, sessions, and resource bookings going on at {space?.name}.</p>
+                </div>
+                <div className="h-[550px] w-full rounded-2xl overflow-hidden border border-border/40 bg-background/50 p-4">
+                  <React.Suspense fallback={<Skeleton className="w-full h-full rounded-xl" />}>
+                    <LazyCalendar
+                      events={calendarEvents}
+                      startAccessor="start"
+                      endAccessor="end"
+                      views={["month", "week", "day"]}
+                      defaultView="week"
+                      className="text-sm font-medium"
+                      eventPropGetter={() => ({
+                        className: "border-none shadow-sm font-bold text-xs rounded-md px-2",
+                        style: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
+                      })}
+                      onSelectEvent={(event) => setSelectedCalendarEvent(event)}
+                    />
+                  </React.Suspense>
                 </div>
               </div>
             </TabsContent>
@@ -393,37 +443,43 @@ function SubscriberPortal() {
         </Tabs>
         </div>
       </main>
-      <Footer />
 
       <Dialog open={!!bookingResource} onOpenChange={(open) => !open && setBookingResource(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-3xl p-6">
           <DialogHeader>
-            <DialogTitle>Book {bookingResource?.name}</DialogTitle>
-            <DialogDescription>Select date and time for your reservation.</DialogDescription>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+               <Calendar className="h-6 w-6 text-primary" />
+               Book {bookingResource?.name}
+            </DialogTitle>
+            <DialogDescription className="text-base mt-2">
+               Select a date, time, and duration for your reservation.
+            </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="date">Date</Label>
+          <div className="grid gap-6 py-6">
+            <div className="space-y-2">
+              <Label htmlFor="date" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Date</Label>
               <Input
                 id="date"
                 type="date"
                 value={bookingDate}
                 onChange={(e) => setBookingDate(e.target.value)}
                 min={format(new Date(), "yyyy-MM-dd")}
+                className="h-12 rounded-xl border-border/60 bg-secondary/10 focus-visible:ring-primary/20"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="time">Start Time</Label>
+              <div className="space-y-2">
+                <Label htmlFor="time" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Start Time</Label>
                 <Input
                   id="time"
                   type="time"
                   value={bookingTime}
                   onChange={(e) => setBookingTime(e.target.value)}
+                  className="h-12 rounded-xl border-border/60 bg-secondary/10 focus-visible:ring-primary/20"
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="duration">Duration (Hours)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="duration" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Duration (Hrs)</Label>
                 <Input
                   id="duration"
                   type="number"
@@ -431,13 +487,15 @@ function SubscriberPortal() {
                   max="8"
                   value={bookingDuration}
                   onChange={(e) => setBookingDuration(Number(e.target.value))}
+                  className="h-12 rounded-xl border-border/60 bg-secondary/10 focus-visible:ring-primary/20"
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setBookingResource(null)}>Cancel</Button>
+          <div className="flex justify-end gap-3 pt-4 border-t border-border/40">
+            <Button variant="outline" className="h-12 rounded-xl px-6" onClick={() => setBookingResource(null)}>Cancel</Button>
             <Button 
+              className="h-12 rounded-xl px-8 font-bold shadow-sm"
               onClick={() => {
                 if (!bookingResource) return;
                 const start = new Date(`${bookingDate}T${bookingTime}`);
@@ -455,9 +513,45 @@ function SubscriberPortal() {
               }}
               disabled={createBooking.isPending}
             >
-              {createBooking.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {createBooking.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
               Confirm Booking
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selectedCalendarEvent} onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+               {selectedCalendarEvent?.type === 'session' ? <Calendar className="h-6 w-6 text-primary" /> : <Clock className="h-6 w-6 text-primary" />}
+               {selectedCalendarEvent?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+             <div className="space-y-1">
+               <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Start</p>
+               <p className="font-semibold text-foreground">{selectedCalendarEvent?.start ? format(selectedCalendarEvent.start, "MMMM d, yyyy h:mm a") : ""}</p>
+             </div>
+             <div className="space-y-1">
+               <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">End</p>
+               <p className="font-semibold text-foreground">{selectedCalendarEvent?.end ? format(selectedCalendarEvent.end, "MMMM d, yyyy h:mm a") : ""}</p>
+             </div>
+             {selectedCalendarEvent?.resource?.resource?.name && (
+               <div className="space-y-1">
+                 <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Resource</p>
+                 <p className="font-semibold text-foreground">{selectedCalendarEvent.resource.resource.name}</p>
+               </div>
+             )}
+             {selectedCalendarEvent?.resource?.class?.name && (
+               <div className="space-y-1">
+                 <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Class</p>
+                 <p className="font-semibold text-foreground">{selectedCalendarEvent.resource.class.name}</p>
+               </div>
+             )}
+          </div>
+          <div className="flex justify-end pt-4 border-t border-border/40">
+            <Button className="h-12 rounded-xl px-8 font-bold shadow-sm" onClick={() => setSelectedCalendarEvent(null)}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>
