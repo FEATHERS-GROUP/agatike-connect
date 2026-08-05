@@ -392,6 +392,55 @@ export const getUserSubscriptions = createServerFn({ method: "POST" })
     }
   });
 
+export const getSubscriptionById = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { id, user_id, email } = ctx.data as any;
+    if (!id) return null;
+
+    try {
+      const query = `
+        query GetSubscriptionById($id: uuid!) {
+          space_subscriptions_by_pk(id: $id) {
+            id
+            plan_name
+            price
+            status
+            billing_cycle
+            start_date
+            next_billing_date
+            booking_type
+            customer_name
+            customer_email
+            customer_phone
+            team_members
+            created_at
+            space_id
+            space {
+              id
+              name
+              description
+              cover_url
+              currency
+            }
+            invoices(order_by: { created_at: desc }) {
+              id
+              invoice_number
+              amount
+              status
+              created_at
+            }
+          }
+        }
+      `;
+      const data = await hasuraRequest<{ space_subscriptions_by_pk: any }>(query, { id });
+      return data.space_subscriptions_by_pk;
+    } catch (e) {
+      console.error("Error fetching subscription by ID:", e);
+      return null;
+    }
+  });
+
 /** Search for a group subscription by team member email OR personal membership_id */
 export const findGroupSubscriptionByEmailOrId = createServerFn({ method: "POST" })
   .validator((d: any) => d)

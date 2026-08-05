@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { MapPin, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,10 +18,10 @@ export function SubscriptionCard({ sub }: { sub: any }) {
 
   return (
     <>
-      <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex flex-col">
-        <div
+      <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-[var(--shadow-card)] flex flex-col transition-all hover:border-primary/40 hover:shadow-md">
+        <Link
+          to={`/profile/subscriptions/${sub.id}`}
           className="flex gap-3 p-3 border-b border-border/40 cursor-pointer hover:bg-secondary/20 transition-colors"
-          onClick={() => setShowQR(true)}
         >
           <img
             src={sub.cover}
@@ -46,7 +47,7 @@ export function SubscriptionCard({ sub }: { sub: any }) {
               {sub.price} <span className="text-muted-foreground font-normal">/ {sub.type}</span>
             </div>
           </div>
-        </div>
+        </Link>
         <div className="bg-secondary/20 p-3 flex items-center justify-between">
           <div className="text-xs text-muted-foreground">
             Next billing: <span className="font-semibold text-foreground">{sub.nextBilling}</span>

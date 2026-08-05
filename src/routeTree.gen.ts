@@ -69,6 +69,7 @@ import { Route as StaffEventEventIdRouteImport } from './routes/staff.event.$eve
 import { Route as SpacesSuccessSpaceIdRouteImport } from './routes/spaces/success/$spaceId'
 import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/checkout/$spaceId'
 import { Route as PublicBadgeBadgeIdRouteImport } from './routes/public/badge/$badgeId'
+import { Route as ProfileSubscriptionsSubscriptionIdRouteImport } from './routes/profile_.subscriptions.$subscriptionId'
 import { Route as InternalControlAdminRouteImport } from './routes/internal/control/admin'
 import { Route as FEventIdReviewRouteImport } from './routes/f/$eventId/review'
 import { Route as DashboardBillingInvoicesRouteImport } from './routes/dashboard/billing/invoices'
@@ -531,6 +532,12 @@ const PublicBadgeBadgeIdRoute = PublicBadgeBadgeIdRouteImport.update({
   path: '/public/badge/$badgeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileSubscriptionsSubscriptionIdRoute =
+  ProfileSubscriptionsSubscriptionIdRouteImport.update({
+    id: '/profile_/subscriptions/$subscriptionId',
+    path: '/profile/subscriptions/$subscriptionId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const InternalControlAdminRoute = InternalControlAdminRouteImport.update({
   id: '/internal/control/admin',
   path: '/internal/control/admin',
@@ -1550,6 +1557,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/billing/invoices': typeof DashboardBillingInvoicesRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/internal/control/admin': typeof InternalControlAdminRouteWithChildren
+  '/profile/subscriptions/$subscriptionId': typeof ProfileSubscriptionsSubscriptionIdRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
@@ -1770,6 +1778,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/vip-access': typeof DashboardWorkspaceSlugVipAccessRoute
   '/dashboard/billing/invoices': typeof DashboardBillingInvoicesRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
+  '/profile/subscriptions/$subscriptionId': typeof ProfileSubscriptionsSubscriptionIdRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
@@ -1989,6 +1998,7 @@ export interface FileRoutesById {
   '/dashboard/billing/invoices': typeof DashboardBillingInvoicesRoute
   '/f/$eventId/review': typeof FEventIdReviewRoute
   '/internal/control/admin': typeof InternalControlAdminRouteWithChildren
+  '/profile_/subscriptions/$subscriptionId': typeof ProfileSubscriptionsSubscriptionIdRoute
   '/public/badge/$badgeId': typeof PublicBadgeBadgeIdRoute
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
@@ -2212,6 +2222,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing/invoices'
     | '/f/$eventId/review'
     | '/internal/control/admin'
+    | '/profile/subscriptions/$subscriptionId'
     | '/public/badge/$badgeId'
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
@@ -2432,6 +2443,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/vip-access'
     | '/dashboard/billing/invoices'
     | '/f/$eventId/review'
+    | '/profile/subscriptions/$subscriptionId'
     | '/public/badge/$badgeId'
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
@@ -2650,6 +2662,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing/invoices'
     | '/f/$eventId/review'
     | '/internal/control/admin'
+    | '/profile_/subscriptions/$subscriptionId'
     | '/public/badge/$badgeId'
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
@@ -2856,6 +2869,7 @@ export interface RootRouteChildren {
   CheckoutItemTypeItemIdRoute: typeof CheckoutItemTypeItemIdRoute
   FEventIdReviewRoute: typeof FEventIdReviewRoute
   InternalControlAdminRoute: typeof InternalControlAdminRouteWithChildren
+  ProfileSubscriptionsSubscriptionIdRoute: typeof ProfileSubscriptionsSubscriptionIdRoute
   PublicBadgeBadgeIdRoute: typeof PublicBadgeBadgeIdRoute
   SpacesCheckoutSpaceIdRoute: typeof SpacesCheckoutSpaceIdRoute
   SpacesSuccessSpaceIdRoute: typeof SpacesSuccessSpaceIdRoute
@@ -3286,6 +3300,13 @@ declare module '@tanstack/react-router' {
       path: '/public/badge/$badgeId'
       fullPath: '/public/badge/$badgeId'
       preLoaderRoute: typeof PublicBadgeBadgeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile_/subscriptions/$subscriptionId': {
+      id: '/profile_/subscriptions/$subscriptionId'
+      path: '/profile/subscriptions/$subscriptionId'
+      fullPath: '/profile/subscriptions/$subscriptionId'
+      preLoaderRoute: typeof ProfileSubscriptionsSubscriptionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/internal/control/admin': {
@@ -4974,6 +4995,8 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutItemTypeItemIdRoute: CheckoutItemTypeItemIdRoute,
   FEventIdReviewRoute: FEventIdReviewRoute,
   InternalControlAdminRoute: InternalControlAdminRouteWithChildren,
+  ProfileSubscriptionsSubscriptionIdRoute:
+    ProfileSubscriptionsSubscriptionIdRoute,
   PublicBadgeBadgeIdRoute: PublicBadgeBadgeIdRoute,
   SpacesCheckoutSpaceIdRoute: SpacesCheckoutSpaceIdRoute,
   SpacesSuccessSpaceIdRoute: SpacesSuccessSpaceIdRoute,
