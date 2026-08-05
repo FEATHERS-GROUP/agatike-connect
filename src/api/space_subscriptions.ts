@@ -385,7 +385,7 @@ export const getUserSubscriptions = createServerFn({ method: "POST" })
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
 
-      return subscriptions;
+      return subscriptions.filter(getValidity);
     } catch (e) {
       console.error("Error fetching user subscriptions:", e);
       return [];

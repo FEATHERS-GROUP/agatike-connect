@@ -10,7 +10,7 @@ import { getSpaceClasses, getSessionBookings } from "@/api/space_classes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User } from "lucide-react";
 import { format, addHours, startOfHour } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -105,239 +105,293 @@ function SubscriberPortal() {
   const myResourceBookings = resourceBookings?.filter((b: any) => b.customer_id === user?.id) || [];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background/50">
       <Navbar />
       
-      <main className="flex-1 max-w-6xl mx-auto w-full pt-20 pb-24 px-4 md:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate({ to: "/profile" })}
-            className="mb-4 -ml-2 text-muted-foreground"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
-          </Button>
-
-          <div className="relative w-full h-48 md:h-64 rounded-3xl overflow-hidden mb-6 shadow-sm">
-            {space?.cover_url ? (
-              <img src={space.cover_url} alt={space.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
-                <MapPin className="h-12 w-12 text-muted-foreground/30" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-6 md:p-8">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{space?.name}</h1>
-              <div className="flex items-center gap-3 text-white/80">
-                <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md uppercase tracking-wider">
-                  {subscription.status}
-                </span>
-                <span className="text-sm">{subscription.plan_name}</span>
+      <main className="flex-1 w-full pb-24 animate-in fade-in duration-700">
+        {/* Header Hero */}
+        <div className="relative w-full h-[40vh] min-h-[320px] shadow-sm">
+          {space?.cover_url ? (
+            <img src={space.cover_url} alt={space.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-secondary/30 flex items-center justify-center">
+              <MapPin className="h-16 w-16 text-muted-foreground/20" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          
+          <div className="absolute inset-0 max-w-6xl mx-auto px-4 md:px-8 flex flex-col justify-end pb-8">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: "/profile" })}
+              className="w-fit mb-6 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
+            </Button>
+            
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-3 tracking-tight">
+                  {space?.name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="bg-primary/10 text-primary border border-primary/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
+                    {subscription.status}
+                  </span>
+                  <span className="text-muted-foreground font-medium flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40"></span>
+                    {subscription.plan_name}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6 bg-secondary/20 border border-border/40 p-1 rounded-xl flex flex-wrap h-auto gap-1">
-            <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="resources" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Book Resources
-            </TabsTrigger>
-            <TabsTrigger value="sessions" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Classes & Sessions
-            </TabsTrigger>
-            <TabsTrigger value="bookings" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              My Bookings
-            </TabsTrigger>
-          </TabsList>
+        {/* Content Area */}
+        <div className="max-w-6xl mx-auto px-4 md:px-8 mt-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-8 bg-transparent border-b border-border/40 p-0 flex h-auto gap-8 w-full justify-start rounded-none overflow-x-auto overflow-y-hidden hide-scrollbar">
+              {["overview", "resources", "sessions", "bookings"].map((tab) => (
+                <TabsTrigger
+                  key={tab}
+                  value={tab}
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-0 py-3 font-semibold text-muted-foreground hover:text-foreground transition-colors capitalize tracking-wide whitespace-nowrap"
+                >
+                  {tab === "sessions" ? "Classes & Sessions" : tab === "bookings" ? "My Bookings" : tab === "resources" ? "Book Resources" : tab}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          {/* OVERVIEW TAB */}
-          <TabsContent value="overview" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Billing Info */}
-              <div className="md:col-span-2 space-y-6">
-                <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-[var(--shadow-card)]">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-                    <CreditCard className="h-5 w-5 text-primary" /> Subscription Details
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="bg-secondary/10 p-4 rounded-xl border border-border/40">
-                      <p className="text-sm text-muted-foreground mb-1">Plan</p>
-                      <p className="font-medium">{subscription.plan_name}</p>
-                    </div>
-                    <div className="bg-secondary/10 p-4 rounded-xl border border-border/40">
-                      <p className="text-sm text-muted-foreground mb-1">Price</p>
-                      <p className="font-medium">{subscription.price?.toLocaleString()} {space?.currency || "RWF"} / {subscription.billing_cycle}</p>
-                    </div>
-                    <div className="bg-secondary/10 p-4 rounded-xl border border-border/40">
-                      <p className="text-sm text-muted-foreground mb-1">Start Date</p>
-                      <p className="font-medium">{subscription.start_date ? format(new Date(subscription.start_date), "MMM d, yyyy") : "-"}</p>
-                    </div>
-                    <div className="bg-secondary/10 p-4 rounded-xl border border-border/40">
-                      <p className="text-sm text-muted-foreground mb-1">Next Billing</p>
-                      <p className="font-medium">{subscription.next_billing_date ? format(new Date(subscription.next_billing_date), "MMM d, yyyy") : "-"}</p>
-                    </div>
-                  </div>
-                  <div className="mt-6 pt-6 border-t border-border/40 flex justify-end">
-                    <Button>Renew Subscription</Button>
-                  </div>
-                </div>
-
-                <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-[var(--shadow-card)]">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-                    <Info className="h-5 w-5 text-primary" /> Space Information
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                    {space?.description || "No description provided."}
-                  </p>
-                </div>
-              </div>
-
-              {/* Invoices Sidebar */}
-              <div className="space-y-6">
-                <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-[var(--shadow-card)]">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-                    <Receipt className="h-5 w-5 text-primary" /> Recent Invoices
-                  </h3>
-                  {subscription.invoices?.length > 0 ? (
-                    <div className="space-y-3">
-                      {subscription.invoices.map((inv: any) => (
-                        <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/10 border border-border/40">
-                          <div>
-                            <p className="text-sm font-medium">{inv.invoice_number}</p>
-                            <p className="text-xs text-muted-foreground">{format(new Date(inv.created_at), "MMM d, yyyy")}</p>
-                          </div>
-                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-500/10 text-green-500">
-                            {inv.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No invoices yet.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* RESOURCES TAB */}
-          <TabsContent value="resources" className="mt-0">
-            <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-[var(--shadow-card)]">
-              <h3 className="text-lg font-semibold mb-2">Book a Resource</h3>
-              <p className="text-muted-foreground text-sm mb-6">Reserve meeting rooms, desks, or equipment.</p>
-              
-              {isResourcesLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
-                </div>
-              ) : resources?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {resources.map((res: any) => (
-                    <div key={res.id} className="border border-border/60 rounded-xl p-4 flex flex-col justify-between hover:border-primary/40 transition-colors">
-                      <div>
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold">{res.name}</h4>
-                          <span className="text-xs font-medium bg-secondary/30 px-2 py-0.5 rounded-full">{res.type}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-4">Capacity: {res.capacity} people</p>
+            {/* OVERVIEW TAB */}
+            <TabsContent value="overview" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Billing Info */}
+                <div className="md:col-span-2 space-y-8">
+                  <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    {/* Decorative background element */}
+                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+                    
+                    <h3 className="text-xl font-bold flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-primary/10 rounded-xl">
+                        <CreditCard className="h-5 w-5 text-primary" />
                       </div>
-                      <Button variant="outline" className="w-full" onClick={() => setBookingResource(res)}>
-                        Book Resource
+                      Subscription Details
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="bg-secondary/20 p-5 rounded-2xl">
+                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Plan Name</p>
+                        <p className="font-semibold text-lg">{subscription.plan_name}</p>
+                      </div>
+                      <div className="bg-secondary/20 p-5 rounded-2xl">
+                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Price</p>
+                        <p className="font-semibold text-lg text-primary">
+                          {subscription.price?.toLocaleString()} {space?.currency || "RWF"} <span className="text-sm text-muted-foreground font-medium">/ {subscription.billing_cycle}</span>
+                        </p>
+                      </div>
+                      <div className="bg-secondary/20 p-5 rounded-2xl">
+                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Start Date</p>
+                        <p className="font-semibold text-base">{subscription.start_date ? format(new Date(subscription.start_date), "MMMM d, yyyy") : "-"}</p>
+                      </div>
+                      <div className="bg-secondary/20 p-5 rounded-2xl">
+                        <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider mb-2">Next Billing</p>
+                        <p className="font-semibold text-base">{subscription.next_billing_date ? format(new Date(subscription.next_billing_date), "MMMM d, yyyy") : "-"}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-8 pt-8 border-t border-border/40 flex justify-end">
+                      <Button className="rounded-xl px-8 font-bold shadow-sm h-12">
+                        Manage Subscription
                       </Button>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 className="text-xl font-bold flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-primary/10 rounded-xl">
+                        <Info className="h-5 w-5 text-primary" />
+                      </div>
+                      Space Information
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-loose whitespace-pre-wrap">
+                      {space?.description || "No description provided."}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <div className="text-center py-12 border border-dashed border-border/60 rounded-xl">
-                  <MapPin className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground font-medium">No resources available for booking.</p>
+
+                {/* Invoices Sidebar */}
+                <div className="space-y-8">
+                  <div className="bg-card border border-border/40 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 className="text-lg font-bold flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-secondary rounded-xl text-foreground">
+                        <Receipt className="h-4 w-4" />
+                      </div>
+                      Recent Invoices
+                    </h3>
+                    {subscription.invoices?.length > 0 ? (
+                      <div className="space-y-4">
+                        {subscription.invoices.map((inv: any) => (
+                          <div key={inv.id} className="group flex items-center justify-between p-4 rounded-2xl bg-secondary/10 hover:bg-secondary/30 border border-transparent hover:border-border/60 transition-all cursor-pointer">
+                            <div>
+                              <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{inv.invoice_number}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{format(new Date(inv.created_at), "MMM d, yyyy")}</p>
+                            </div>
+                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 shadow-sm">
+                              {inv.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 bg-secondary/10 rounded-2xl border border-dashed border-border/40">
+                        <p className="text-sm text-muted-foreground font-medium">No invoices yet.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </TabsContent>
+              </div>
+            </TabsContent>
+
+            {/* RESOURCES TAB */}
+            <TabsContent value="resources" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
+              <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
+                <div className="mb-8 max-w-xl">
+                  <h3 className="text-2xl font-bold mb-2">Book a Resource</h3>
+                  <p className="text-muted-foreground leading-relaxed">Reserve meeting rooms, desks, or specialized equipment available at this space.</p>
+                </div>
+                
+                {isResourcesLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
+                  </div>
+                ) : resources?.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {resources.map((res: any) => (
+                      <div key={res.id} className="group border border-border/40 bg-secondary/5 rounded-3xl p-6 flex flex-col justify-between hover:border-primary/50 hover:shadow-md hover:bg-card transition-all">
+                        <div>
+                          <div className="flex justify-between items-start mb-4">
+                            <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{res.name}</h4>
+                            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full uppercase tracking-wider">{res.type}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                            <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
+                              <User className="h-4 w-4" />
+                            </div>
+                            <span className="font-medium">Up to {res.capacity} people</span>
+                          </div>
+                        </div>
+                        <Button className="w-full rounded-xl font-bold" onClick={() => setBookingResource(res)}>
+                          Select Time
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/40 max-w-2xl mx-auto">
+                    <MapPin className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground font-semibold text-lg">No resources available for booking.</p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">Check back later or contact the space manager.</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
 
           {/* SESSIONS TAB */}
-          <TabsContent value="sessions" className="mt-0">
-            <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-[var(--shadow-card)]">
-              <h3 className="text-lg font-semibold mb-2">Upcoming Classes & Sessions</h3>
-              <p className="text-muted-foreground text-sm mb-6">Join scheduled activities in this space.</p>
+          <TabsContent value="sessions" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
+            <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
+              <div className="mb-8 max-w-xl">
+                <h3 className="text-2xl font-bold mb-2">Classes & Sessions</h3>
+                <p className="text-muted-foreground leading-relaxed">Join scheduled activities, workshops, or fitness classes available to members.</p>
+              </div>
               
               {isClassesLoading ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
                 </div>
               ) : classes?.length > 0 ? (
                 <div className="space-y-4">
                   {classes.map((cls: any) => (
-                    <div key={cls.id} className="border border-border/60 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-primary/40 transition-colors">
-                      <div className="flex gap-4 items-center">
-                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <div key={cls.id} className="group border border-border/40 bg-secondary/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 hover:border-primary/50 hover:shadow-md hover:bg-card transition-all">
+                      <div className="flex gap-5 items-center w-full sm:w-auto">
+                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
                           <Calendar className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <h4 className="font-semibold">{cls.name}</h4>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                            <Clock className="h-3 w-3" /> {cls.duration_minutes} min • {cls.category}
-                          </p>
+                          <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{cls.name}</h4>
+                          <div className="flex items-center gap-3 mt-1.5 text-sm font-medium text-muted-foreground">
+                            <span className="flex items-center gap-1 bg-secondary/40 px-2 py-0.5 rounded-md">
+                              <Clock className="h-3.5 w-3.5" /> {cls.duration_minutes} min
+                            </span>
+                            <span className="flex items-center gap-1">
+                              • {cls.category}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <Button size="sm">View Schedule</Button>
+                      <Button className="w-full sm:w-auto rounded-xl font-bold px-6 shadow-sm">View Schedule</Button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 border border-dashed border-border/60 rounded-xl">
-                  <Calendar className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground font-medium">No sessions scheduled.</p>
+                <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/40 max-w-2xl mx-auto">
+                  <Calendar className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+                  <p className="text-muted-foreground font-semibold text-lg">No sessions scheduled.</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">There are no upcoming classes at this time.</p>
                 </div>
               )}
             </div>
           </TabsContent>
 
           {/* MY BOOKINGS TAB */}
-          <TabsContent value="bookings" className="mt-0">
-             <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-[var(--shadow-card)]">
-              <h3 className="text-lg font-semibold mb-6">My Resource Bookings</h3>
+          <TabsContent value="bookings" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
+             <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
+              <div className="mb-8 max-w-xl">
+                <h3 className="text-2xl font-bold mb-2">My Resource Bookings</h3>
+                <p className="text-muted-foreground leading-relaxed">Manage your upcoming reservations and past bookings for this space.</p>
+              </div>
               
               {isResourceBookingsLoading ? (
-                <Skeleton className="h-32 rounded-xl" />
+                <div className="space-y-4">
+                  {[1, 2].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+                </div>
               ) : myResourceBookings.length > 0 ? (
                 <div className="space-y-4">
                   {myResourceBookings.map((b: any) => (
-                    <div key={b.id} className="border border-border/60 rounded-xl p-4 flex justify-between items-center bg-secondary/5">
-                      <div>
-                        <h4 className="font-medium">{b.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                          <span>{b.resource?.name}</span>
-                          <span>•</span>
-                          <span>{format(new Date(b.start_time), "MMM d, h:mm a")}</span>
-                        </p>
+                    <div key={b.id} className="group border border-border/40 bg-secondary/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-primary/50 hover:shadow-md hover:bg-card transition-all">
+                      <div className="flex items-start gap-4">
+                        <div className="mt-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                        <div>
+                          <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{b.title}</h4>
+                          <p className="text-sm font-medium text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="bg-secondary/40 px-2.5 py-1 rounded-md text-foreground">{b.resource?.name}</span>
+                            <span className="text-muted-foreground/50">•</span>
+                            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5"/> {format(new Date(b.start_time), "MMM d")}</span>
+                            <span className="text-muted-foreground/50">•</span>
+                            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5"/> {format(new Date(b.start_time), "h:mm a")}</span>
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-500/10 text-blue-500">
+                      <span className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-500 shadow-sm uppercase tracking-wider">
                         {b.status}
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 border border-dashed border-border/60 rounded-xl">
-                  <Clock className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground font-medium">You have no bookings yet.</p>
-                  <Button variant="link" onClick={() => setActiveTab("resources")}>Book a resource</Button>
+                <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/40 max-w-2xl mx-auto">
+                  <Clock className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
+                  <p className="text-muted-foreground font-semibold text-lg">You have no bookings yet.</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1 mb-6">Secure your workspace or equipment for your next visit.</p>
+                  <Button className="rounded-xl font-bold px-8" onClick={() => setActiveTab("resources")}>Book a Resource</Button>
                 </div>
               )}
             </div>
           </TabsContent>
 
         </Tabs>
+        </div>
       </main>
       <Footer />
 
