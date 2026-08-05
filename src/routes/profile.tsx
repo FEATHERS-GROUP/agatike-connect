@@ -116,14 +116,35 @@ function ProfilePage() {
     return eventDate >= today;
   });
 
-  const historyTicketsList = tickets.filter((t: any) => {
+  const rawHistoryTickets = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return true;
     const eventDate = parseDateInsensitively(t.eventDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     eventDate.setHours(0, 0, 0, 0);
     return eventDate < today;
-  }).slice(0, 20);
+  });
+
+  const historyTicketsList = Object.values(
+    rawHistoryTickets.reduce((acc: any, ticket: any) => {
+      const key = ticket.eventId || ticket.title;
+      if (!acc[key]) {
+        acc[key] = {
+          id: key, // grouping id
+          eventId: ticket.eventId,
+          title: ticket.title,
+          cover: ticket.cover,
+          date: ticket.date,
+          city: ticket.city,
+          rated: ticket.rated,
+          histRating: ticket.histRating,
+          tickets: [],
+        };
+      }
+      acc[key].tickets.push(ticket);
+      return acc;
+    }, {})
+  ).slice(0, 20);
 
   const handleLogout = async () => {
     await signOut();

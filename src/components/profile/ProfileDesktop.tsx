@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Ticket, Calendar, ChevronRight, Heart, LogOut, User, Repeat } from "lucide-react";
+import { Ticket, Calendar, ChevronRight, ChevronDown, ChevronUp, Heart, LogOut, User, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,6 +9,122 @@ import { Footer } from "@/components/site/Footer";
 import { TicketCard } from "./TicketCard";
 import { HistoryCard } from "./HistoryCard";
 import { SubscriptionCard } from "./SubscriptionCard";
+
+function HistoryTableRow({ eventGroup, navigate }: { eventGroup: any; navigate: any }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const tickets = eventGroup.tickets || [eventGroup];
+  const hasMultiple = tickets.length > 1;
+  const hasEventId = !!eventGroup.eventId;
+
+  return (
+    <React.Fragment>
+      <TableRow 
+        className={`group ${hasEventId ? "cursor-pointer hover:bg-secondary/30 transition-colors" : ""}`}
+        onClick={() => {
+          if (hasMultiple) {
+            setIsExpanded(!isExpanded);
+          } else if (hasEventId) {
+            navigate({ to: '/events/$eventId', params: { eventId: eventGroup.eventId } });
+          }
+        }}
+      >
+        <TableCell className="p-3">
+          <img
+            src={eventGroup.cover || "/placeholder-event.png"}
+            alt={eventGroup.title}
+            className="w-14 h-14 object-cover rounded-xl shadow-sm"
+          />
+        </TableCell>
+        <TableCell>
+          <p className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+            {eventGroup.title}
+          </p>
+          {hasMultiple && (
+            <p className="text-xs font-semibold text-primary mt-0.5">
+              {tickets.length} Tickets
+            </p>
+          )}
+        </TableCell>
+        <TableCell className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+          {eventGroup.date || "Past Event"}
+        </TableCell>
+        <TableCell className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+          {eventGroup.city || "Online"}
+        </TableCell>
+        <TableCell className="text-right p-3">
+          <div className="flex items-center justify-end gap-2">
+            {hasMultiple && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                className="h-8 rounded-full text-xs font-bold text-muted-foreground"
+              >
+                {isExpanded ? <ChevronUp className="h-4 w-4 mr-1" /> : <ChevronDown className="h-4 w-4 mr-1" />}
+                {isExpanded ? "Hide" : "Tickets"}
+              </Button>
+            )}
+            {!eventGroup.rated && (
+              <Button 
+                size="sm" 
+                className="rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (eventGroup.eventId) {
+                    navigate({ to: `/f/$eventId/review`, params: { eventId: eventGroup.eventId } });
+                  }
+                }}
+              >
+                Rate Event
+              </Button>
+            )}
+            {!hasMultiple && hasEventId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full text-xs font-bold text-muted-foreground ml-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate({ to: '/events/$eventId', params: { eventId: eventGroup.eventId } });
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+      
+      {isExpanded && hasMultiple && (
+        <TableRow className="bg-secondary/10 hover:bg-secondary/10 border-t-0">
+          <TableCell colSpan={5} className="p-0 border-b border-border/40 pb-3">
+            <div className="px-16 py-2 space-y-2">
+              {tickets.map((t: any, idx: number) => (
+                <div key={t.id || idx} className="bg-card rounded-xl p-3 flex items-center justify-between border border-border/40 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <Ticket className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{t.seat || "General Admission"}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{t.orderId}</p>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${t.ticketType === "VIP" ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                    {t.ticketType || "Standard"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </React.Fragment>
+  );
+}
 
 export function ProfileDesktop({
   user,
@@ -156,55 +272,9 @@ export function ProfileDesktop({
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {historyTicketsList.map((t: any) => {
-                          const hasEventId = !!t.eventId;
-                          return (
-                            <TableRow 
-                              key={t.id} 
-                              className={hasEventId ? "cursor-pointer group hover:bg-secondary/30 transition-colors" : ""}
-                              onClick={() => {
-                                if (hasEventId) {
-                                  navigate({ to: '/events/$eventId', params: { eventId: t.eventId } });
-                                }
-                              }}
-                            >
-                              <TableCell className="p-3">
-                                <img
-                                  src={t.cover || "/placeholder-event.png"}
-                                  alt={t.title}
-                                  className="w-14 h-14 object-cover rounded-xl shadow-sm"
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <p className="font-bold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                                  {t.title}
-                                </p>
-                              </TableCell>
-                              <TableCell className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                                {t.date || "Past Event"}
-                              </TableCell>
-                              <TableCell className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                                {t.city || "Online"}
-                              </TableCell>
-                              <TableCell className="text-right p-3">
-                                {!t.rated && (
-                                  <Button 
-                                    size="sm" 
-                                    className="rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (t.eventId) {
-                                        window.location.href = `/f/${t.eventId}/review`;
-                                      }
-                                    }}
-                                  >
-                                    Rate Event
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
+                        {historyTicketsList.map((t: any) => (
+                          <HistoryTableRow key={t.id} eventGroup={t} navigate={navigate} />
+                        ))}
                       </TableBody>
                     </Table>
                   </div>
