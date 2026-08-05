@@ -81,12 +81,13 @@ export function HistoryCard({ ticket: eventGroup }: { ticket: any }) {
                 </Button>
               )}
               {!isRated && (
-                <button 
-                  onClick={handleRateClick} 
-                  className="text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 px-4 py-1.5 rounded-full transition-colors"
+                <a 
+                  href={`/f/${eventGroup.eventId}/review`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-block text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 px-4 py-1.5 rounded-full transition-colors"
                 >
                   Rate Event
-                </button>
+                </a>
               )}
             </div>
           </div>

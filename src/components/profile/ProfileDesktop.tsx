@@ -68,18 +68,13 @@ function HistoryTableRow({ eventGroup, navigate }: { eventGroup: any; navigate: 
               </Button>
             )}
             {!eventGroup.rated && (
-              <Button 
-                size="sm" 
-                className="rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (eventGroup.eventId) {
-                    navigate({ to: `/f/$eventId/review`, params: { eventId: eventGroup.eventId } });
-                  }
-                }}
+              <a 
+                href={`/f/${eventGroup.eventId}/review`}
+                className="inline-block px-3 py-1.5 rounded-full text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+                onClick={(e) => e.stopPropagation()}
               >
                 Rate Event
-              </Button>
+              </a>
             )}
             {!hasMultiple && hasEventId && (
               <Button
