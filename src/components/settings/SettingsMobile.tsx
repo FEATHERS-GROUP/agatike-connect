@@ -1,295 +1,63 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import React from "react";
+import { SettingsProps } from "./SettingsTypes";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { useUserAuth } from "@/contexts/UserAuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { SettingsMobile } from "@/components/settings/SettingsMobile";
-import { SettingsDesktop } from "@/components/settings/SettingsDesktop";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  User,
-  Lock,
-  Image as ImageIcon,
-  Heart,
-  Loader2,
-  RefreshCw,
-  ChevronRight,
-  ChevronDown,
-  Moon,
-  Sun,
-  Monitor,
-  FileText,
-  ArrowLeft,
-  Trash2,
-  AlertTriangle,
-} from "lucide-react";
-import {
-  updateUserGeneral,
-  updateUserPassword,
-  updateUserOnboarding,
-  verifyNewPasswordDifference,
-  deactivateUserAccount,
-} from "@/api/auth";
-import { sendProfileUpdateOTP } from "@/api/email";
+import { ChevronRight, ChevronDown, RefreshCw, Trash2, AlertTriangle, ArrowLeft, Loader2, Lock, Monitor, Sun, Moon } from "lucide-react";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { RefundPolicy } from "@/components/legal/RefundPolicy";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
-import { toast } from "sonner";
-import { COUNTRIES } from "@/lib/countries";
 
-export const Route = createFileRoute("/settings")({
-  head: () => ({
-    meta: [
-      { title: "Settings — Agatike" },
-      { name: "description", content: "Manage your Agatike account settings and preferences." },
-    ],
-  }),
-  component: SettingsPage,
-});
+export function SettingsMobile(props: SettingsProps) {
+  const {
+    user,
+    theme,
+    setTheme,
+    navigate,
+    activeModal,
+    setActiveModal,
+    general,
+    setGeneral,
+    isUpdatingGeneral,
+    isOtpStep,
+    setIsOtpStep,
+    otpInput,
+    setOtpInput,
+    deleteConfirmHandle,
+    setDeleteConfirmHandle,
+    isDeletingAccount,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    isUpdatingPassword,
+    selectedStyle,
+    setSelectedStyle,
+    seed,
+    setSeed,
+    isUpdatingAvatar,
+    stagedAvatar,
+    setStagedAvatar,
+    generatedAvatars,
+    selectedInterests,
+    setSelectedInterests,
+    initialInterests,
+    isUpdatingInterests,
+    handleUpdateGeneral,
+    handleUpdatePassword,
+    handleSelectAvatar,
+    handleUpdateInterests,
+    handleDeleteAccount,
+    getModalTitle,
+    DESKTOP_TABS,
+    COUNTRIES,
+    INTEREST_OPTIONS,
+    AVATAR_STYLES,
+  } = props;
 
-const AVATAR_STYLES = ["micah", "avataaars", "bottts", "lorelei", "adventurer", "fun-emoji"];
-const INTEREST_OPTIONS = [
-  "Events",
-  "Entertainment",
-  "Experiences",
-  "Music",
-  "Sports",
-  "Cinema",
-  "Conferences",
-  "Tech",
-  "Art",
-  "Food",
-  "Fashion",
-  "Gaming",
-  "Business",
-  "Health",
-  "Education",
-  "Bus Booking",
-  "Travel & Transport",
-  "Gym & Fitness",
-  "Wellness",
-  "Office Spaces",
-  "Coworking",
-  "Venue Booking",
-  "Nightlife & Parties",
-  "Networking",
-  "Workshops",
-  "Retreats",
-  "Exhibitions & Expos",
-  "Comedy",
-  "Theater & Arts",
-  "Festivals",
-  "Pop-ups & Markets",
-  "Real Estate",
-  "Outdoors & Adventure",
-  "Photography",
-  "Startups",
-];
-
-function SettingsPage() {
-  const { user, refresh } = useUserAuth();
-  const { theme, setTheme } = useTheme();
-  const navigate = useNavigate();
-
-  const [activeModal, setActiveModal] = useState<string | null>(null);
-
-  // States for sub-forms
-  const [general, setGeneral] = useState({
-    username: "",
-    email: "",
-    phone: "",
-    country: "",
-    gender: "",
-  });
-  const [isUpdatingGeneral, setIsUpdatingGeneral] = useState(false);
-  const [isOtpStep, setIsOtpStep] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [otpInput, setOtpInput] = useState("");
-  const [deleteConfirmHandle, setDeleteConfirmHandle] = useState("");
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-
-  const [selectedStyle, setSelectedStyle] = useState("micah");
-  const [seed, setSeed] = useState(Math.random().toString(36).substring(7));
-  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
-  const [stagedAvatar, setStagedAvatar] = useState<string | null>(null);
-  const generatedAvatars = Array.from({ length: 12 }).map(
-    (_, i) => `https://api.dicebear.com/7.x/${selectedStyle}/svg?seed=${seed}_${i}`,
-  );
-
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [initialInterests, setInitialInterests] = useState<string[]>([]);
-  const [isUpdatingInterests, setIsUpdatingInterests] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setGeneral({
-        username: user.username || "",
-        email: user.email || "",
-        phone: user.phone || "",
-        country: user.country || "",
-        gender: user.gender || "",
-      });
-      let ints: string[] = [];
-      try {
-        ints = Array.isArray(user.interests)
-          ? user.interests
-          : typeof user.interests === "string"
-            ? JSON.parse(user.interests)
-            : [];
-      } catch (e) {}
-      setSelectedInterests(ints);
-      setInitialInterests(ints);
-    }
-  }, [user]);
-
-  // Handlers
-  const handleUpdateGeneral = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!general.username || !general.email) return toast.error("Name and email are required");
-
-    if (!isOtpStep) {
-      setIsUpdatingGeneral(true);
-      try {
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        setGeneratedOtp(otp);
-        await sendProfileUpdateOTP({ data: { to: general.email, otp } } as any);
-        setIsOtpStep(true);
-        toast.success("OTP sent to your email");
-      } catch (e: any) {
-        toast.error(e.message || "Failed to send OTP");
-      } finally {
-        setIsUpdatingGeneral(false);
-      }
-      return;
-    }
-
-    if (otpInput !== generatedOtp) {
-      return toast.error("Invalid OTP");
-    }
-
-    setIsUpdatingGeneral(true);
-
-    // Generate unique handle
-    let newHandle = general.username.toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (!user?.handle || user.username !== general.username) {
-      newHandle = newHandle + Math.floor(Math.random() * 10000);
-    } else {
-      newHandle = user.handle;
-    }
-
-    try {
-      await updateUserGeneral({
-        data: { ...general, handle: newHandle, dateOfBirth: user?.dateOfBirth || "" },
-      } as any);
-      toast.success("Profile updated successfully!");
-      refresh();
-      setIsOtpStep(false);
-      setOtpInput("");
-      setActiveModal(null);
-    } catch (e: any) {
-      toast.error(e.message || "Failed to update profile");
-    } finally {
-      setIsUpdatingGeneral(false);
-    }
-  };
-
-  const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password.length < 6) return toast.error("Password must be at least 6 characters");
-    if (password !== confirmPassword) return toast.error("Passwords do not match");
-    if (!isOtpStep) {
-      setIsUpdatingPassword(true);
-      try {
-        await verifyNewPasswordDifference({ data: { password } } as any);
-
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        setGeneratedOtp(otp);
-        await sendProfileUpdateOTP({ data: { to: user?.email || "", otp } } as any);
-        setIsOtpStep(true);
-        toast.success("OTP sent to your email");
-      } catch (e: any) {
-        toast.error(e.message || "Failed to send OTP");
-      } finally {
-        setIsUpdatingPassword(false);
-      }
-      return;
-    }
-
-    if (otpInput !== generatedOtp) {
-      return toast.error("Invalid OTP");
-    }
-
-    setIsUpdatingPassword(true);
-    try {
-      await updateUserPassword({ data: { password } } as any);
-      toast.success("Password updated successfully!");
-      setPassword("");
-      setConfirmPassword("");
-      setIsOtpStep(false);
-      setOtpInput("");
-      setActiveModal(null);
-    } catch (e: any) {
-      toast.error(e.message || "Failed to update password");
-    } finally {
-      setIsUpdatingPassword(false);
-    }
-  };
-
-  const handleSelectAvatar = async (url: string) => {
-    setIsUpdatingAvatar(true);
-    try {
-      await updateUserOnboarding({ data: { profile: url, interests: user?.interests } } as any);
-      toast.success("Avatar updated successfully!");
-      refresh();
-      setActiveModal(null);
-    } catch (e: any) {
-      toast.error("Failed to update avatar");
-    } finally {
-      setIsUpdatingAvatar(false);
-    }
-  };
-
-  const handleUpdateInterests = async () => {
-    setIsUpdatingInterests(true);
-    try {
-      await updateUserOnboarding({
-        data: { profile: user?.profile || "", interests: selectedInterests },
-      } as any);
-      toast.success("Interests updated successfully!");
-      refresh();
-      setActiveModal(null);
-    } catch (e: any) {
-      toast.error("Failed to update interests");
-    } finally {
-      setIsUpdatingInterests(false);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmHandle !== user?.handle) {
-      return toast.error("Handle does not match. Please type your exact handle.");
-    }
-    setIsDeletingAccount(true);
-    try {
-      await deactivateUserAccount();
-      toast.success("Your account has been deleted.");
-      navigate({ to: "/" });
-    } catch (e: any) {
-      toast.error(e.message || "Failed to delete account");
-    } finally {
-      setIsDeletingAccount(false);
-    }
-  };
-
-  // Modals Content
   const renderModalContent = () => {
     switch (activeModal) {
       case "general":
@@ -359,15 +127,11 @@ function SettingsPage() {
                       <select
                         value={general.country}
                         onChange={(e) => setGeneral({ ...general, country: e.target.value })}
-                        className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <option value="" disabled>
-                          Select Country
-                        </option>
+                        <option value="" disabled>Select Country</option>
                         {COUNTRIES.map((c) => (
-                          <option key={c.code} value={c.name}>
-                            {c.name}
-                          </option>
+                          <option key={c.code} value={c.name}>{c.name}</option>
                         ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -380,11 +144,9 @@ function SettingsPage() {
                     <select
                       value={general.gender}
                       onChange={(e) => setGeneral({ ...general, gender: e.target.value })}
-                      className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <option value="" disabled>
-                        Select Gender
-                      </option>
+                      <option value="" disabled>Select Gender</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
@@ -480,8 +242,7 @@ function SettingsPage() {
                       setSelectedInterests(
                         isSelected
                           ? selectedInterests.filter(
-                              (i) =>
-                                typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
+                              (i) => typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
                             )
                           : [...selectedInterests, interest],
                       )
@@ -658,8 +419,7 @@ function SettingsPage() {
 
             <div className="flex flex-col gap-2">
               <Label className="text-sm">
-                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to
-                confirm:
+                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to confirm:
               </Label>
               <Input
                 value={deleteConfirmHandle}
@@ -690,147 +450,161 @@ function SettingsPage() {
     }
   };
 
-  const getModalTitle = () => {
-    switch (activeModal) {
-      case "general":
-        return "General Information";
-      case "avatar":
-        return "Change Avatar";
-      case "interests":
-        return "Manage Interests";
-      case "security":
-        return "Security & Password";
-      case "preferences":
-        return "App Preferences";
-      case "terms":
-        return "Terms & Conditions";
-      case "refunds":
-        return "Refund Policy";
-      case "privacy":
-        return "Privacy Policy";
-      case "delete":
-        return "Delete Account";
-      default:
-        return "";
-    }
-  };
-
-  const DESKTOP_TABS = [
-    {
-      group: "Account",
-      items: [
-        {
-          id: "general",
-          label: "General Info",
-          desc: "Name, email, phone",
-          icon: User,
-          color: "text-primary bg-primary/10",
-        },
-        {
-          id: "avatar",
-          label: "Avatar",
-          desc: "Profile picture",
-          icon: ImageIcon,
-          color: "text-blue-500 bg-blue-500/10",
-        },
-        {
-          id: "interests",
-          label: "Interests",
-          desc: "Event categories",
-          icon: Heart,
-          color: "text-rose-500 bg-rose-500/10",
-        },
-      ],
-    },
-    {
-      group: "App Settings",
-      items: [
-        {
-          id: "security",
-          label: "Security",
-          desc: "Update password",
-          icon: Lock,
-          color: "text-emerald-500 bg-emerald-500/10",
-        },
-        {
-          id: "preferences",
-          label: "Preferences",
-          desc: "Dark / Light mode",
-          icon: Monitor,
-          color: "text-amber-500 bg-amber-500/10",
-        },
-      ],
-    },
-    {
-      group: "Legal",
-      items: [
-        {
-          id: "terms",
-          label: "Terms & Conditions",
-          desc: "Legal agreements",
-          icon: FileText,
-          color: "text-purple-500 bg-purple-500/10",
-        },
-        {
-          id: "refunds",
-          label: "Refund Policy",
-          desc: "Refund rules",
-          icon: FileText,
-          color: "text-blue-500 bg-blue-500/10",
-        },
-        {
-          id: "privacy",
-          label: "Privacy Policy",
-          desc: "How we use your data",
-          icon: Lock,
-          color: "text-indigo-500 bg-indigo-500/10",
-        },
-      ],
-    },
-    {
-      group: "Danger Zone",
-      items: [
-        {
-          id: "delete",
-          label: "Delete Account",
-          desc: "Permanently deactivate",
-          icon: Trash2,
-          color: "text-destructive bg-destructive/10",
-        },
-      ],
-    },
-  ];
-
-  const [desktopTab, setDesktopTab] = useState("general");
-
-  const getDesktopTabMeta = () =>
-    DESKTOP_TABS.flatMap((g) => g.items).find((i) => i.id === desktopTab);
-
-
-  const settingsProps = {
-    user, refresh, theme, setTheme, navigate, activeModal, setActiveModal,
-    desktopTab, setDesktopTab, general, setGeneral, isUpdatingGeneral,
-    isOtpStep, setIsOtpStep, generatedOtp, otpInput, setOtpInput,
-    deleteConfirmHandle, setDeleteConfirmHandle, isDeletingAccount,
-    password, setPassword, confirmPassword, setConfirmPassword,
-    isUpdatingPassword, selectedStyle, setSelectedStyle, seed, setSeed,
-    isUpdatingAvatar, stagedAvatar, setStagedAvatar, generatedAvatars,
-    selectedInterests, setSelectedInterests, initialInterests,
-    isUpdatingInterests, handleUpdateGeneral, handleUpdatePassword,
-    handleSelectAvatar, handleUpdateInterests, handleDeleteAccount,
-    getModalTitle: () => "", // simplified or we can extract it
-    DESKTOP_TABS, COUNTRIES, INTEREST_OPTIONS, AVATAR_STYLES
-  };
-
   return (
-    <div className="bg-background text-foreground relative">
-      <SettingsMobile {...settingsProps} />
-      <SettingsDesktop {...settingsProps} />
-      
-      <style>{`
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+    <div className="md:hidden flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-1 overflow-y-auto bg-secondary/20 pt-6 pb-20">
+        <div className="px-5 mb-6 text-center">
+          <div className="mx-auto h-20 w-20 rounded-full bg-card shadow-sm border border-border/40 p-[2px] mb-3 relative">
+            {user?.profile ? (
+              <img src={user.profile} alt={user.username} className="h-full w-full rounded-full object-cover" />
+            ) : (
+              <div className="h-full w-full rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
+                {user?.username?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+            )}
+            <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 border shadow-sm">
+              <div className="h-3 w-3 bg-green-500 rounded-full" />
+            </div>
+          </div>
+          <h1 className="font-bold text-xl">{user?.username || "Guest User"}</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">@{user?.handle}</p>
+        </div>
+
+        <div className="px-4 space-y-6">
+          <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-border/40 bg-secondary/10">
+              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">Account</h2>
+            </div>
+            <div className="divide-y divide-border/40">
+              {DESKTOP_TABS[0].items.map((item: any) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveModal(item.id)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-border/40 bg-secondary/10">
+              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">App Settings</h2>
+            </div>
+            <div className="divide-y divide-border/40">
+              {DESKTOP_TABS[1].items.map((item: any) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveModal(item.id)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-border/40 bg-secondary/10">
+              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">Legal</h2>
+            </div>
+            <div className="divide-y divide-border/40">
+              {DESKTOP_TABS[2].items.map((item: any) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveModal(item.id)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-destructive/5 border border-destructive/20 rounded-3xl overflow-hidden">
+            <div className="p-4 border-b border-destructive/20">
+              <h2 className="font-bold text-sm text-destructive tracking-wider uppercase">Danger Zone</h2>
+            </div>
+            <button
+              onClick={() => {
+                setDeleteConfirmHandle("");
+                setActiveModal("delete");
+              }}
+              className="w-full flex items-center justify-between p-4 hover:bg-destructive/5 transition-colors text-left"
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-destructive">Delete Account</p>
+                  <p className="text-xs text-muted-foreground">Permanently deactivate your account</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-destructive/50" />
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <Dialog
+        open={!!activeModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveModal(null);
+            setIsOtpStep(false);
+            setOtpInput("");
+          }
+        }}
+      >
+        <DialogContent className="w-full h-[100dvh] max-w-none p-0 overflow-hidden bg-card border-none rounded-none flex flex-col sm:max-w-none">
+          <DialogHeader className="p-4 border-b border-border/40 bg-muted/20 flex flex-row items-center gap-3 space-y-0 text-left">
+            <button
+              onClick={() => {
+                setActiveModal(null);
+                setIsOtpStep(false);
+                setOtpInput("");
+              }}
+              className="p-2 -ml-2 rounded-full hover:bg-secondary transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              {getModalTitle()}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 flex-1 overflow-y-auto">{renderModalContent()}</div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
