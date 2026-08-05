@@ -115,7 +115,7 @@ function SubscriberPortal() {
     return evts;
   }, [sessions, resourceBookings, user?.id]);
 
-  if (isSubLoading) {
+  if (isSubLoading || isResourcesLoading || isClassesLoading || isResourceBookingsLoading || !sessions) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
