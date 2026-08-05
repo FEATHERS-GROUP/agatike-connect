@@ -164,13 +164,60 @@ export const getAllUsers = createServerFn({ method: "GET" }).handler(async () =>
         country
         created_at
         profile
+        event_attendees_aggregate {
+          aggregate {
+            count
+          }
+        }
+        space_subscriptions_aggregate {
+          aggregate {
+            count
+          }
+        }
+        venue_bookings_aggregate {
+          aggregate {
+            count
+          }
+        }
+      }
+      organizer_followers {
+        organizer_id
+        user_id
       }
     }
   `;
 
   try {
-    const result = await hasuraRequest<{ users: any[] }>(query);
-    return result.users || [];
+    const result = await hasuraRequest<{ 
+      users: any[];
+      organizer_followers: { organizer_id: string; user_id: any }[];
+    }>(query);
+
+    const followersMap = new Map<string, number>();
+
+    // Calculate how many organizers each user follows
+    if (result.organizer_followers) {
+      result.organizer_followers.forEach(f => {
+        let userIds: string[] = [];
+        if (Array.isArray(f.user_id)) {
+          userIds = f.user_id.map((id: any) => String(id).replace(/"/g, ""));
+        } else if (f.user_id) {
+          userIds = [String(f.user_id).replace(/"/g, "")];
+        }
+        
+        userIds.forEach(uid => {
+          followersMap.set(uid, (followersMap.get(uid) || 0) + 1);
+        });
+      });
+    }
+
+    return (result.users || []).map(u => ({
+      ...u,
+      totalEvents: u.event_attendees_aggregate?.aggregate?.count || 0,
+      totalSubscriptions: u.space_subscriptions_aggregate?.aggregate?.count || 0,
+      totalVenueBookings: u.venue_bookings_aggregate?.aggregate?.count || 0,
+      totalFollowing: followersMap.get(u.id) || 0,
+    }));
   } catch (err) {
     console.error("Failed to fetch all users", err);
     return [];

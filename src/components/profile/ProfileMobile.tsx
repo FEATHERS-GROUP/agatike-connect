@@ -29,6 +29,7 @@ export function ProfileMobile({
   tab,
   setTab,
   subscriptions,
+  venueBookingsCount,
   staffAssignments = [],
 }: any) {
   const navigate = useNavigate();
@@ -109,6 +110,7 @@ export function ProfileMobile({
           upcomingCount={upcomingTicketsList.length}
           followingCount={followedOrganizers.length}
           subscriptionsCount={subscriptions?.length || 0}
+          venueCount={venueBookingsCount}
         />
       </div>
 

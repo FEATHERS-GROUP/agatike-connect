@@ -125,6 +125,8 @@ function ProfilePage() {
     return eventDate < today;
   });
 
+  const venueBookingsCount = tickets.filter((t: any) => t.isVenueBooking === true).length;
+  
   const historyTicketsList = Object.values(
     rawHistoryTickets.reduce((acc: any, ticket: any) => {
       const key = ticket.eventId || ticket.title;
@@ -229,6 +231,7 @@ function ProfilePage() {
         favoriteCategories={favoriteCategories}
         setShowLogoutModal={setShowLogoutModal}
         subscriptions={subscriptions}
+        venueBookingsCount={venueBookingsCount}
       />
       <ProfileMobile
         user={user}
@@ -240,6 +243,7 @@ function ProfilePage() {
         favoriteCategories={favoriteCategories}
         setShowLogoutModal={setShowLogoutModal}
         subscriptions={subscriptions}
+        venueBookingsCount={venueBookingsCount}
         staffAssignments={staffAssignments}
         tab={tab}
         setTab={setTab}

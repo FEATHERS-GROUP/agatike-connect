@@ -132,6 +132,7 @@ export function ProfileDesktop({
   favoriteCategories,
   setShowLogoutModal,
   subscriptions,
+  venueBookingsCount,
 }: any) {
   const navigate = useNavigate();
 
@@ -219,6 +220,7 @@ export function ProfileDesktop({
                   upcomingCount={upcomingTicketsList.length}
                   followingCount={followedOrganizers.length}
                   subscriptionsCount={subscriptions?.length || 0}
+                  venueCount={venueBookingsCount}
                 />
               </div>
             </div>
