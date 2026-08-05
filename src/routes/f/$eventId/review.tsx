@@ -1,5 +1,5 @@
 import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { submitEventFeedback, checkFeedbackExists } from "@/api/feedback";
 import { getEventById } from "@/api/events";
@@ -120,6 +120,11 @@ function FeedbackForm() {
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Sync user info once it loads
+  useEffect(() => {
+    if (prefillName && !name) setName(prefillName);
+    if (prefillEmail && !email) setEmail(prefillEmail);
+  }, [prefillName, prefillEmail]);
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],

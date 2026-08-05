@@ -38,6 +38,7 @@ const GET_USER_EVENT_ATTENDEES = `
         }
         workspaces {
           currency
+          city
         }
         ticket_projects(where: { deleted: { _eq: false } }) {
           id
@@ -195,6 +196,14 @@ const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: strin
   };
 };
 
+const GET_USER_FEEDBACKS = `
+  query GetUserFeedbacks($email: String!) {
+    event_feedback(where: { reviewer_email: { _eq: $email } }) {
+      event_id
+    }
+  }
+`;
+
 export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async () => {
   const user = await getUserSession();
   if (!user || !user.email) {
@@ -204,7 +213,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
   const userId = user.id || null;
   const email = user.email;
 
-  const [attendeesRes, bookingsRes, cinemaRes] = await Promise.all([
+  const [attendeesRes, bookingsRes, cinemaRes, feedbacksRes] = await Promise.all([
     hasuraRequest<{ event_attendees: any[] }>(GET_USER_EVENT_ATTENDEES, {
       user_id: userId,
       email,
@@ -216,11 +225,17 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
     hasuraRequest<{ cinema_bookings: any[] }>(GET_USER_CINEMA_BOOKINGS, {
       email,
     }),
+    hasuraRequest<{ event_feedback: any[] }>(GET_USER_FEEDBACKS, {
+      email,
+    }),
   ]);
 
   const attendees = attendeesRes.event_attendees || [];
   const bookings = bookingsRes.venue_bookings || [];
   const cinemaBookings = cinemaRes.cinema_bookings || [];
+  const feedbacks = feedbacksRes.event_feedback || [];
+
+  const ratedEventIds = new Set(feedbacks.map((f: any) => f.event_id).filter(Boolean));
 
   const tickets: any[] = [];
 
@@ -266,12 +281,17 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         }
       : null;
 
+    const baseDate = stop?.date || event?.tour_stops?.[0]?.date;
+    const scheduleDate = event?.schedules?.[0]?.start_date;
+    const formattedScheduleDate = scheduleDate ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(scheduleDate)) : null;
+
     tickets.push({
       id: att.id,
       title: event?.title || "Event Ticket",
       cover: event?.cover || "/afrobeats_night.png",
-      date: stop?.date || event?.tour_stops?.[0]?.date || "Upcoming",
+      date: baseDate || formattedScheduleDate || "Upcoming",
       time: stop?.time || event?.tour_stops?.[0]?.time || "Upcoming",
+      city: stop?.city || event?.tour_stops?.[0]?.city || event?.workspaces?.city || "Online",
       seat: att.names || "General Admission",
       passengerName: att.names || user.username || "Guest",
       passengerProfile: user.profile || null,
@@ -281,8 +301,9 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       price: 0,
       isVenueBooking: false,
       status: att.status || "Confirmed",
-      eventDate: stop?.date || event?.schedules?.[0]?.start_date || att.created_at,
+      eventDate: baseDate || scheduleDate || att.created_at,
       eventId: event?.id || null,
+      rated: event?.id ? ratedEventIds.has(event.id) : false,
       design,
     });
   }
