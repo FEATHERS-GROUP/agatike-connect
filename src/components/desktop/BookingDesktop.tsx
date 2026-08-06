@@ -763,7 +763,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     return <CheckoutSkeleton />;
   }
 
-  if (isPollingPawaPay) {
+  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo")) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         {!isSubdomain && <Navbar />}

@@ -492,7 +492,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     );
   }
 
-  if (isPollingPawaPay) {
+  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo")) {
     return (
       <CheckYourPhone
         onCancel={async () => {

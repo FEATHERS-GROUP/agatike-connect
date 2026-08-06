@@ -814,7 +814,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     );
   }
 
-  if (isPollingPawaPay) {
+  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo")) {
     return (
       <CheckYourPhone
         onCancel={async () => {

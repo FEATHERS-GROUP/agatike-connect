@@ -515,7 +515,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     );
   }
 
-  if (isPollingPawaPay) {
+  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo")) {
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
         <Navbar />

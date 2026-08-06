@@ -506,7 +506,7 @@ export function VenueCheckoutSheet({
       >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
 
-        {isPollingPawaPay ? (
+        {isPollingPawaPay || (isCheckingOut && paymentMethod === "momo") ? (
           <CheckYourPhone
             themeColor={themeColor}
             onCancel={async () => {

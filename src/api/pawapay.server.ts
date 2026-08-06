@@ -13,8 +13,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
   try {
     const body = await request.json();
-    console.log(`[PawaPay Webhook] Received callback for ${path}:`, body);
-
     const providerReference = body.depositId || body.payoutId || body.refundId;
     const providerStatus = body.status;
 
@@ -65,9 +63,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
       if (affectedRows === 0) {
         // Either already completed/failed, or unknown reference — skip duplicate processing
-        console.log(
-          `[PawaPay Webhook] Transaction ${providerReference} already processed or not found. Skipping.`,
-        );
         return new Response(JSON.stringify({ received: true, message: "Already processed" }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -134,7 +129,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
             }
             wsThemeColor = dbTheme || "";
-            console.log("[PawaPay Webhook] EXTRACTED THEME COLOR:", wsThemeColor);
           }
         } catch (e) {
           console.error("Failed to fetch workspace", e);
