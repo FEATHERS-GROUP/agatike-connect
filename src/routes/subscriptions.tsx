@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ArrowLeft, MapPin, CalendarDays, Building2, Plus, Unlink, QrCode, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
 } from "@/api/space_subscriptions";
 import QRCode from "react-qr-code";
 import { PaymentModal } from "@/components/shared/PaymentModal";
+import { initiatePawaPayDeposit, getPawaPayDepositStatus } from "@/api/pawapay";
+import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 
 export const Route = createFileRoute("/subscriptions")({
   loader: async () => {
@@ -89,7 +91,11 @@ function SubscriptionCard({
   const [showQR, setShowQR] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("pawapay");
+  const [paymentMethod, setPaymentMethod] = useState("momo");
+  const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
+  const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentCurrency, setPaymentCurrency] = useState<string>("");
 
   const validity = useMemo(() => getSubscriptionValidity(sub), [sub]);
   const latestInvoice = sub.invoices?.[0] || null;
@@ -160,10 +166,32 @@ function SubscriptionCard({
     }
   };
 
-  const handleRenew = async () => {
-    setIsRenewing(true);
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPollingPawaPay && pawapayDepositId) {
+      interval = setInterval(async () => {
+        try {
+          const status = await getPawaPayDepositStatus({
+            data: { depositId: pawapayDepositId },
+          });
+          if (status?.status === "completed") {
+            setIsPollingPawaPay(false);
+            await completeRenewal();
+          } else if (status?.status === "failed") {
+            setIsPollingPawaPay(false);
+            setIsRenewing(false);
+            toast.error("Payment failed or was cancelled.");
+          }
+        } catch (e) {
+          // ignore transient polling errors
+        }
+      }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [isPollingPawaPay, pawapayDepositId]);
+
+  const completeRenewal = async () => {
     try {
-      // Create pending invoice and extend next_billing_date
       await renewSpaceSubscription({ data: { subscription_id: sub.id } });
       toast.success("Subscription renewed successfully!");
       setShowRenew(false);
@@ -172,6 +200,38 @@ function SubscriptionCard({
       toast.error(err.message || "Failed to renew subscription");
     } finally {
       setIsRenewing(false);
+      setPawapayDepositId(null);
+    }
+  };
+
+  const handleRenew = async (details?: any) => {
+    if (paymentMethod === "momo" && details) {
+      try {
+        setIsRenewing(true);
+        const res = await initiatePawaPayDeposit({
+          data: {
+            amount: details.convertedAmount,
+            currency: details.currency,
+            phoneNumber: details.phone,
+            network: details.network,
+            reason: `Renew ${sub.plan_name}`,
+            organizerId: sub.space?.workspace_id,
+            feeBreakdown: details.simulation?.feeBreakdown,
+          },
+        });
+        setPawapayDepositId(res.depositId);
+        setPaymentAmount(details.convertedAmount);
+        setPaymentCurrency(details.currency);
+        setIsPollingPawaPay(true);
+        setShowRenew(false);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to initiate payment");
+        setIsRenewing(false);
+      }
+    } else {
+      // Free or other methods
+      setIsRenewing(true);
+      await completeRenewal();
     }
   };
 
@@ -422,6 +482,19 @@ function SubscriptionCard({
           baseAmount={parseFloat(sub.price || "0")}
           baseCurrency={sub.space?.currency || "RWF"}
           itemLabel={sub.plan_name}
+        />
+      )}
+
+      {/* Processing overlay for PawaPay */}
+      {isPollingPawaPay && (
+        <CheckYourPhone
+          amount={paymentAmount}
+          currency={paymentCurrency}
+          onCancel={() => {
+            setIsPollingPawaPay(false);
+            setIsRenewing(false);
+            setPawapayDepositId(null);
+          }}
         />
       )}
 
