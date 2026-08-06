@@ -305,6 +305,9 @@ const GET_EVENT_BY_ID = `
       vipPerks
       vip_privilege_ids
       workspace_id
+      workspace {
+        currency
+      }
       schedules {
         id
         start_date

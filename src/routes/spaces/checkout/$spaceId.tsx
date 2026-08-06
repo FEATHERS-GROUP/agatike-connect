@@ -938,7 +938,7 @@ function CheckoutPage() {
         baseAmount={finalPriceNum}
         quantity={bookingType === "group" ? teamMembers.length : 1}
         itemLabel="Pass(es)"
-        baseCurrency={space?.currency || "RWF"}
+        baseCurrency={space?.workspace?.currency || space?.currency || "RWF"}
         userPhone={user?.phone || undefined}
       />
 

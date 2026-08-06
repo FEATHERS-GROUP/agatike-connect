@@ -1231,7 +1231,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         workspaceId={venue.workspace_id}
         quantity={totalTickets}
         itemLabel="Ticket(s)"
-        baseCurrency={venue.currency}
+        baseCurrency={venue?.workspace?.currency || venue?.currency}
         userPhone={user?.phone || undefined}
       />
     </div>

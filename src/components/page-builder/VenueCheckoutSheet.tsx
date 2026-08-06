@@ -1130,7 +1130,7 @@ export function VenueCheckoutSheet({
               workspaceId={venue.workspace_id}
               quantity={totalTickets}
               itemLabel="Ticket(s)"
-              baseCurrency={venue.currency}
+              baseCurrency={venue?.workspace?.currency || venue?.currency}
               userPhone={undefined}
               themeColor={themeColor}
             />
