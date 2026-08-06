@@ -227,7 +227,7 @@ export function EventCheckoutSidebar({
                         key={t.id}
                         className={`w-full rounded-2xl border p-4 text-left transition relative overflow-hidden ${
                           isSoldOut
-                            ? "border-border/40 bg-secondary/30 opacity-70 grayscale cursor-not-allowed"
+                            ? "border-border/40 bg-secondary/30 opacity-70 cursor-not-allowed"
                             : isSelected
                               ? "border-primary bg-accent/40"
                               : "border-border bg-background hover:bg-secondary"

@@ -328,7 +328,7 @@ export function EventCheckoutDrawer({
                         key={t.id}
                         className={`w-full rounded-2xl border p-3.5 transition-all duration-300 relative overflow-hidden ${
                           isSoldOut
-                            ? "border-border/40 bg-secondary/30 opacity-70 grayscale cursor-not-allowed"
+                            ? "border-border/40 bg-secondary/30 opacity-70 cursor-not-allowed"
                             : isSelected
                               ? "border-primary bg-primary/10"
                               : "border-border/40 bg-card/50"
@@ -343,18 +343,18 @@ export function EventCheckoutDrawer({
                       >
                         {isSoldOut && (
                           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                            <div className="border-[3px] border-red-600 text-red-600 px-3 py-1 text-2xl font-black uppercase tracking-widest transform -rotate-12 bg-transparent shadow-sm whitespace-nowrap">
+                            <div className="border-[3px] border-black text-black px-3 py-1 text-2xl font-black uppercase tracking-widest transform -rotate-12 bg-transparent whitespace-nowrap shadow-sm">
                               Sold Out
                             </div>
                           </div>
                         )}
-                        <div className={`flex items-center justify-between mb-1 ${isSoldOut ? 'opacity-40' : ''}`}>
+                        <div className={`flex items-center justify-between mb-1 ${isSoldOut ? 'opacity-20' : ''}`}>
                           <p className="font-bold text-sm">{t.name}</p>
-                          <p className="font-bold text-base text-primary">
+                          <p className={`font-bold text-base ${isSoldOut ? 'text-white' : 'text-primary'}`}>
                             {formatCurrency(t.price, currencyCode)}
                           </p>
                         </div>
-                          <p className={`text-[11px] text-muted-foreground leading-snug ${isSoldOut ? 'opacity-40' : ''}`}>
+                          <p className={`text-[11px] leading-snug ${isSoldOut ? 'text-white opacity-20' : 'text-muted-foreground'}`}>
                             {t.perks.join(" · ")}
                           </p>
                           {!isSoldOut && (
@@ -363,7 +363,7 @@ export function EventCheckoutDrawer({
                             </p>
                           )}
 
-                          <div className={`flex items-center justify-between ${isSoldOut ? 'mt-2' : 'mt-3 pt-3 border-t border-border/40'} ${isSoldOut ? 'opacity-40' : ''}`}>
+                          <div className={`flex items-center justify-between ${isSoldOut ? 'mt-2' : 'mt-3 pt-3 border-t border-border/40'} ${isSoldOut ? 'opacity-20' : ''}`}>
                             {!isSoldOut && (
                               <span className="text-xs font-medium text-muted-foreground">
                                 Quantity
