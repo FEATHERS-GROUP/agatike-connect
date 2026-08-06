@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { ArrowLeft, MapPin, CalendarDays, Building2, Plus, Unlink, QrCode } from "lucide-react";
+import { ArrowLeft, MapPin, CalendarDays, Building2, Plus, Unlink, QrCode, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +17,7 @@ import {
   getLinkedCredentials,
   addLinkedGroupSubscription,
   removeLinkedGroupSubscription,
+  renewSpaceSubscription,
 } from "@/api/space_subscriptions";
 import QRCode from "react-qr-code";
 
@@ -85,6 +87,7 @@ function SubscriptionCard({
   const [showRenew, setShowRenew] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
+  const [isRenewing, setIsRenewing] = useState(false);
 
   const validity = useMemo(() => getSubscriptionValidity(sub), [sub]);
   const latestInvoice = sub.invoices?.[0] || null;
@@ -152,6 +155,21 @@ function SubscriptionCard({
       console.error(err);
     } finally {
       setIsUnlinking(false);
+    }
+  };
+
+  const handleRenew = async () => {
+    setIsRenewing(true);
+    try {
+      // Create pending invoice and extend next_billing_date
+      await renewSpaceSubscription({ data: { subscription_id: sub.id } });
+      toast.success("Subscription renewed successfully!");
+      setShowRenew(false);
+      await router.invalidate();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to renew subscription");
+    } finally {
+      setIsRenewing(false);
     }
   };
 
@@ -382,11 +400,16 @@ function SubscriptionCard({
               </div>
               <Button
                 className="w-full h-12 rounded-xl text-base font-bold"
-                onClick={() => {
-                  setShowRenew(false);
-                }}
+                onClick={handleRenew}
+                disabled={isRenewing}
               >
-                Confirm Payment
+                {isRenewing ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
+                  </>
+                ) : (
+                  "Confirm Payment"
+                )}
               </Button>
             </div>
           </DialogContent>
