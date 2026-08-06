@@ -35,7 +35,6 @@ export function SubscriberPortalMobile({
 }: any) {
   const [activeTab, setActiveTab] = useState("overview");
   const [bookingResource, setBookingResource] = useState<any>(null);
-  const [bookingTime, setBookingTime] = useState<string>(format(startOfHour(addHours(new Date(), 1)), "HH:mm"));
   const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<any>(null);
   const navigate = useNavigate();
 
@@ -194,7 +193,7 @@ export function SubscriberPortalMobile({
                     </div>
                     <Button 
                       className="rounded-xl px-5 h-10 font-bold shadow-sm"
-                      onClick={() => { setBookingResource(res); setBookingDate(format(new Date(), "yyyy-MM-dd")); setBookingTime(format(startOfHour(addHours(new Date(), 1)), "HH:mm")); }}
+                      onClick={() => setBookingResource(res)}
                     >
                       Book
                     </Button>
