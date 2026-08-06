@@ -36,10 +36,10 @@ export function Experience2(props: TemplateProps) {
     return (
       <div
         id="ticket-preview-container"
-        className="relative flex w-[760px] flex-row overflow-hidden rounded-[20px] text-[#e2e8f0] bg-[#0f172a] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#334155]"
+        className="relative flex w-[720px] flex-row overflow-hidden rounded-[20px] text-[#e2e8f0] bg-[#0f172a] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#334155]"
         style={{
           fontFamily: font.css,
-          height: 250,
+          height: 260,
         }}
       >
         {isBack ? (

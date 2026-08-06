@@ -43,7 +43,7 @@ export function Conference1(props: TemplateProps) {
         style={{
           fontFamily: font.css,
           background: `linear-gradient(180deg, ${palette.from}, ${palette.to})`,
-          height: 280,
+          height: 260,
         }}
       >
         {isBack ? (

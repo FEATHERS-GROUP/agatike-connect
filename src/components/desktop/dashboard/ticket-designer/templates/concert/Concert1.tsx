@@ -43,7 +43,7 @@ export function Concert1(props: TemplateProps) {
         style={{
           fontFamily: font.css,
           background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
-          height: 230,
+          height: 260,
         }}
       >
         {isBack ? (
