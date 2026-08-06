@@ -240,12 +240,23 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   });
 
   const isPastEvent = useMemo(() => {
-    if (!date || date === "Upcoming") return false;
+    const targetDateStr = ev.end_date || date;
+    if (!targetDateStr || targetDateStr === "Upcoming") return false;
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const eventDate = new Date(date);
-    return !isNaN(eventDate.getTime()) && eventDate < today;
-  }, [date]);
+    
+    const eventDate = new Date(targetDateStr);
+    const fallbackDate = new Date(date);
+    
+    if (!isNaN(eventDate.getTime())) {
+      return eventDate < today;
+    } else if (!isNaN(fallbackDate.getTime())) {
+      return fallbackDate < today;
+    }
+    
+    return false;
+  }, [date, ev.end_date]);
 
   const { data: eventProducts } = useQuery({
     queryKey: ["event-products", eventId],

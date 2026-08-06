@@ -207,7 +207,7 @@ function TicketViewer() {
                 <div className="p-1.5 rounded-lg bg-orange-500/20 text-orange-400">
                   <Briefcase className="w-4 h-4" />
                 </div>
-                Popular Now
+                Purchases
               </h2>
             </div>
             
@@ -306,7 +306,7 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
     ...vouchers.map((v, i) => ({
       id: v.id || `v-${i}`,
       type: "voucher",
-      color: ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
+      color: (v.product?.name || "").toLowerCase().includes("sponsored") ? "bg-yellow-600" : ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
       brand: v.product?.name || "Voucher",
       offer: v.qty ? `${v.qty}x` : "1x",
       icon: v.product?.image_url ? (
@@ -359,16 +359,20 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
                   
                   {/* Content */}
                   <div className="flex flex-col items-center justify-center flex-1 w-full pb-8">
-                    <p className="tracking-[0.2em] text-xs font-bold uppercase mb-4 opacity-90">{card.brand}</p>
+                    <p className={`tracking-[0.2em] text-xs font-bold uppercase mb-4 opacity-90 ${card.brand.toLowerCase().includes('sponsored') ? 'text-yellow-200' : ''}`}>
+                      {card.brand}
+                    </p>
                     <div className="flex flex-col items-center justify-center mb-6">
-                      <h2 className="text-5xl font-black text-center px-4 leading-tight">{card.offer}</h2>
+                      <h2 className={`text-5xl font-black text-center px-4 leading-tight ${card.brand.toLowerCase().includes('sponsored') ? 'text-yellow-100 drop-shadow-md' : ''}`}>
+                        {card.offer}
+                      </h2>
                     </div>
                     {card.icon}
                   </div>
 
                   <div className="absolute bottom-6 w-full px-8">
-                    <div className="w-full bg-white/10 backdrop-blur-sm text-white font-bold py-3.5 rounded-full text-[13px] border border-white/20 text-center uppercase tracking-widest">
-                      Voucher
+                    <div className={`w-full backdrop-blur-sm font-bold py-3.5 rounded-full text-[13px] border text-center uppercase tracking-widest ${card.brand.toLowerCase().includes('sponsored') ? 'bg-yellow-500/20 text-yellow-200 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'bg-white/10 text-white border-white/20'}`}>
+                      {card.brand.toLowerCase().includes('sponsored') ? 'Sponsored Gift' : 'Voucher'}
                     </div>
                   </div>
                 </div>
