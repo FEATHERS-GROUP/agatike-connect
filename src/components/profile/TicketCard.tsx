@@ -53,7 +53,7 @@ export function TicketCard({ ticket }: { ticket: any }) {
   return (
     <Link
       to="/ticket/$ticketId"
-      params={{ ticketId: ticket.id }}
+      params={{ ticketId: ticket.eventId || ticket.id }}
       className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform"
     >
       <div className="relative h-32">

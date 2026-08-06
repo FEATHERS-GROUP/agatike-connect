@@ -366,6 +366,10 @@ const GET_BOOKING_PRODUCT_ORDERS = `
         type
         specs 
         image_url
+        event {
+          id
+          title
+        }
       }
     }
   }

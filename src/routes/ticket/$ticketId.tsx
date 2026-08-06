@@ -30,7 +30,16 @@ function TicketViewer() {
     queryFn: () => getUserAllTickets(),
   });
 
-  const ticket = tickets.find((t: any) => t.id === ticketId);
+  // Try to find the ticket by the URL param (in case a ticket ID like TKT-293NDGIR was passed)
+  const exactTicket = tickets.find((t: any) => String(t.id) === String(ticketId) || String(t.orderId) === String(ticketId));
+  
+  // The event ID is either the eventId of the ticket we found, or the param itself (if an event ID was passed)
+  const resolvedEventId = exactTicket ? exactTicket.eventId : ticketId;
+
+  // Now find ALL related tickets for the stack
+  const eventTickets = tickets.filter((t: any) => String(t.eventId) === String(resolvedEventId));
+    
+  const primaryTicket = exactTicket || eventTickets[0];
   const [isDownloading, setIsDownloading] = useState(false);
   const { user } = useUserAuth();
 
@@ -40,6 +49,14 @@ function TicketViewer() {
     enabled: !!user?.id,
   });
 
+  // Find product orders for this specific event
+  const eventProductOrders = primaryTicket 
+    ? productOrders.filter((o: any) => String(o.product?.event?.id) === String(primaryTicket.eventId))
+    : [];
+    
+  const vouchers = eventProductOrders.filter((o: any) => o.product?.type === 'voucher');
+  const physicalOrders = eventProductOrders.filter((o: any) => o.product?.type === 'physical');
+
   const handleDownload = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
@@ -48,9 +65,9 @@ function TicketViewer() {
       const elementBack = document.getElementById("printable-ticket-back");
       if (!elementFront || !elementBack) throw new Error("Ticket elements not found");
 
-      const isCustomDesign = !!ticket?.design;
+      const isCustomDesign = !!primaryTicket?.design;
       const width = isCustomDesign ? 720 : 800;
-      const height = isCustomDesign ? getCustomTemplateHeight(ticket.design.template) : 300;
+      const height = isCustomDesign ? getCustomTemplateHeight(primaryTicket.design.template) : 300;
 
       // Capture front
       const imgDataFront = await htmlToImage.toPng(elementFront, {
@@ -84,7 +101,7 @@ function TicketViewer() {
       pdf.addPage([width, height], "landscape");
       pdf.addImage(imgDataBack, "PNG", 0, 0, width, height);
 
-      pdf.save(`agatike-ticket-${ticket?.orderId || ticketId}.pdf`);
+      pdf.save(`agatike-ticket-${primaryTicket?.orderId || ticketId}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     } finally {
@@ -103,7 +120,7 @@ function TicketViewer() {
     );
   }
 
-  if (!ticket) {
+  if (!primaryTicket) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
         <p className="text-lg font-bold mb-4">Ticket not found</p>
@@ -117,10 +134,10 @@ function TicketViewer() {
   return (
     <div className="relative min-h-screen font-sans flex flex-col text-foreground bg-[#0a0a0a] overflow-x-hidden selection:bg-primary/30">
       {/* Ambient background — blurred cover image with richer overlay */}
-      {ticket.cover && (
+      {primaryTicket.cover && (
         <div className="fixed inset-0 z-0 flex items-center justify-center">
           <img
-            src={ticket.cover}
+            src={primaryTicket.cover}
             alt=""
             aria-hidden
             className="absolute inset-0 w-full h-full object-cover scale-125 blur-[100px] opacity-40 saturate-150 pointer-events-none select-none"
@@ -141,13 +158,13 @@ function TicketViewer() {
             <ChevronLeft className="w-5 h-5 text-white/90" />
           </Link>
           <span className="font-bold text-[13px] tracking-[0.2em] text-white/60 uppercase">
-            {ticket.ticketCategory === "movie"
+            {primaryTicket.ticketCategory === "movie"
               ? "Movie"
-              : ticket.ticketCategory === "conference"
+              : primaryTicket.ticketCategory === "conference"
                 ? "Conference"
-                : ticket.ticketCategory === "entrance"
+                : primaryTicket.ticketCategory === "entrance"
                   ? "Entrance Pass"
-                  : ticket.ticketCategory === "venue"
+                  : primaryTicket.ticketCategory === "venue"
                     ? "Venue Booking"
                     : "Event Ticket"}
           </span>
@@ -159,31 +176,27 @@ function TicketViewer() {
           <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md mb-4 shadow-sm">
             <Calendar className="w-3.5 h-3.5 text-primary" />
             <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
-              {ticket.date}, {ticket.time || ticket.showtimes?.[0]}
+              {primaryTicket.date}, {primaryTicket.time || primaryTicket.showtimes?.[0]}
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-2xl leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-            {ticket.title}
+            {primaryTicket.title}
           </h1>
         </div>
 
-        {/* Ticket Card */}
-        <div className="flex justify-center w-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both perspective-[1000px]">
-          <div className="w-full max-w-[360px] mx-auto hover:rotate-x-[2deg] hover:rotate-y-[-2deg] hover:scale-[1.02] transition-transform duration-500 rounded-[2rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
-            <DynamicPass ticket={ticket} />
-          </div>
-        </div>
+        {/* Carousel Stack */}
+        <CarouselStack tickets={eventTickets} vouchers={vouchers} />
 
         {/* Sections Wrapper with Staggered Animation */}
         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-          {/* Product Orders Section */}
+          {/* Popular Now / Physical Orders */}
           <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-white/90 font-semibold text-base flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-orange-500/20 text-orange-400">
                   <Briefcase className="w-4 h-4" />
                 </div>
-                Merch & Add-ons
+                Popular Now
               </h2>
             </div>
             <div className="flex flex-col gap-3">
@@ -191,41 +204,26 @@ function TicketViewer() {
                 <div className="flex items-center justify-center p-4">
                   <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
                 </div>
-              ) : productOrders.length > 0 ? (
-                productOrders.map((order: any) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]"
-                  >
-                    {order.product?.image_url ? (
-                      <img
-                        src={order.product.image_url}
-                        alt={order.product.name}
-                        className="w-12 h-12 rounded-xl object-cover ring-1 ring-white/10"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
-                        <Briefcase className="w-5 h-5 text-white/40" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="font-medium text-white/90 text-sm line-clamp-1">
-                        {order.product?.name || "Product"}
-                      </p>
-                      <p className="text-[13px] text-white/50 mt-0.5">
-                        Qty: {order.qty} {order.size ? `· Size: ${order.size}` : ""}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      {order.picked ? (
-                        <span className="inline-flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
-                          Picked Up
-                        </span>
+              ) : physicalOrders.length > 0 ? (
+                physicalOrders.map((order: any, idx: number) => (
+                  <div key={order.id || idx} className="bg-white/5 rounded-2xl p-4 flex items-center shadow-sm border border-white/10">
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mr-4 text-white overflow-hidden shrink-0">
+                      {order.product?.image_url ? (
+                         <img src={order.product.image_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="inline-flex items-center text-[11px] font-semibold text-orange-400 bg-orange-500/10 px-2 py-1 rounded border border-orange-500/20">
-                          Pending
-                        </span>
+                        <Briefcase className="w-6 h-6 text-white/70" />
                       )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white/90 text-[15px]">{order.product?.name || "Product"}</h3>
+                      <p className="text-white/70 font-semibold text-sm mt-0.5">{order.qty} Item(s)</p>
+                      <p className="text-white/40 text-xs mt-0.5 font-medium">{order.picked ? "Picked Up" : "Pending"}</p>
+                    </div>
+                    <div className="h-12 w-px border-l-2 border-dashed border-white/20 mx-5" />
+                    <div className="text-center shrink-0 w-12 flex flex-col items-center justify-center">
+                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-0.5">EXP</p>
+                      <p className="font-black text-white/90 text-xl leading-none">{primaryTicket.date ? primaryTicket.date.split(' ')?.[0] : "1"}</p>
+                      <p className="text-white/40 text-[9px] uppercase font-bold mt-1">{primaryTicket.date ? primaryTicket.date.split(' ')?.[1] || "MAY" : "MAY"}</p>
                     </div>
                   </div>
                 ))
@@ -237,32 +235,11 @@ function TicketViewer() {
                   <div>
                     <p className="font-medium text-white/90 text-sm">No items purchased</p>
                     <p className="text-[13px] text-white/50 mt-0.5">
-                      Explore the shop for exclusive merch.
+                      Explore the shop for physical merch.
                     </p>
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Gift Cards Section */}
-          <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
-            <h2 className="text-white/90 font-semibold text-base mb-4 flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400">
-                <TicketIcon className="w-4 h-4" />
-              </div>
-              Gift Cards & Vouchers
-            </h2>
-            <div className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
-              <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
-                <TicketIcon className="w-5 h-5 text-white/40" />
-              </div>
-              <div>
-                <p className="font-medium text-white/90 text-sm">No active vouchers</p>
-                <p className="text-[13px] text-white/50 mt-0.5">
-                  Any claimed gifts will appear here.
-                </p>
-              </div>
             </div>
           </div>
 
@@ -273,7 +250,7 @@ function TicketViewer() {
               <div className="flex justify-between items-center py-1">
                 <span className="text-white/50 text-[13px] font-medium">Order Reference</span>
                 <span className="text-white/90 font-mono text-sm tracking-wider bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
-                  {ticket.orderId}
+                  {primaryTicket.orderId}
                 </span>
               </div>
               <div className="flex justify-between items-center py-1">
@@ -286,8 +263,8 @@ function TicketViewer() {
               <div className="flex justify-between items-center py-1">
                 <span className="text-white/50 text-[13px] font-medium">Purchased On</span>
                 <span className="text-white/90 font-medium text-[13px]">
-                  {ticket.created_at
-                    ? new Date(ticket.created_at).toLocaleDateString(undefined, {
+                  {primaryTicket.created_at
+                    ? new Date(primaryTicket.created_at).toLocaleDateString(undefined, {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -324,7 +301,110 @@ function TicketViewer() {
       </div>
 
       {/* Hidden PDF Printable Layer */}
-      <PrintableTicket id="printable-ticket" ticket={ticket} />
+      <PrintableTicket id="printable-ticket" ticket={primaryTicket} />
+    </div>
+  );
+}
+
+function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] }) {
+  // Map tickets and vouchers to a single cards array.
+  // Tickets are placed first, vouchers last so tickets render on top initially (since activeIndex starts at 0).
+  const cards = [
+    ...tickets.map((t, i) => ({
+      id: t.id || `t-${i}`,
+      type: "ticket",
+      data: t,
+    })),
+    ...vouchers.map((v, i) => ({
+      id: v.id || `v-${i}`,
+      type: "voucher",
+      color: ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
+      brand: v.product?.name || "Voucher",
+      offer: v.qty ? `${v.qty}x` : "1x",
+      icon: v.product?.image_url ? (
+        <img src={v.product.image_url} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white/20" />
+      ) : (
+        <TicketIcon className="w-10 h-10 text-white" />
+      ),
+      data: v,
+    }))
+  ];
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
+      <div className="relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6">
+        {cards.map((card, index) => {
+          const offset = index - activeIndex;
+          const absOffset = Math.abs(offset);
+          const isVisible = absOffset <= 3;
+          
+          if (!isVisible) return null;
+
+          // Fan-out effect: Rotate Z and translate slightly to create a spread hand of cards
+          const rotateZ = offset * 12; // Spread degrees
+          const translateY = Math.abs(offset) * 15; // Push sides down slightly
+          const translateX = offset * 10; // Push sides outward slightly
+          const scale = 1 - absOffset * 0.05;
+          const zIndex = 20 - absOffset;
+
+          return (
+            <div
+              key={card.id}
+              onClick={() => setActiveIndex(index)}
+              className="absolute bottom-0 transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] cursor-pointer"
+              style={{
+                transform: `translateX(${translateX}px) translateY(${translateY}px) rotateZ(${rotateZ}deg) scale(${scale})`,
+                transformOrigin: '50% 120%', // Pivot point near the bottom
+                zIndex,
+                opacity: absOffset > 2 ? 0 : 1,
+                pointerEvents: absOffset > 2 ? 'none' : 'auto'
+              }}
+            >
+              {card.type === "voucher" ? (
+                <div className={`relative w-[280px] h-[360px] rounded-[2rem] shadow-2xl ${card.color} flex flex-col items-center p-6 text-white overflow-hidden border border-white/10`}>
+                  {/* Punch holes matched to dark ambient background color */}
+                  <div className="absolute left-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10" style={{ boxShadow: 'inset -3px 0px 5px rgba(0,0,0,0.5)' }} />
+                  <div className="absolute right-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10" style={{ boxShadow: 'inset 3px 0px 5px rgba(0,0,0,0.5)' }} />
+                  <div className="absolute left-6 right-6 top-[60%] border-t-2 border-dashed border-white/30 translate-y-[15px]" />
+                  
+                  {/* Content */}
+                  <div className="flex flex-col items-center justify-center flex-1 w-full pb-8">
+                    <p className="tracking-[0.2em] text-xs font-bold uppercase mb-4 opacity-90">{card.brand}</p>
+                    <div className="flex flex-col items-center justify-center mb-6">
+                      <h2 className="text-5xl font-black text-center px-4 leading-tight">{card.offer}</h2>
+                    </div>
+                    {card.icon}
+                  </div>
+
+                  <div className="absolute bottom-6 w-full px-8">
+                    <div className="w-full bg-white/10 backdrop-blur-sm text-white font-bold py-3.5 rounded-full text-[13px] border border-white/20 text-center uppercase tracking-widest">
+                      Voucher
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-[340px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[2rem]">
+                  <DynamicPass ticket={card.data} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Dots */}
+      <div className="flex items-center justify-center gap-2">
+        {cards.map((_, idx) => (
+          <div
+            key={idx}
+            className={`h-1.5 rounded-full transition-all duration-300 ${
+              activeIndex === idx ? "w-8 bg-white" : "w-4 bg-white/30"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
