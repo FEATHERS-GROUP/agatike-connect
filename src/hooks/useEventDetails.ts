@@ -42,11 +42,11 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
         0,
       ) || 0;
 
-  const primaryDateStr = isMock ? ev.date : ev.event_requency?.date || ev.date || "TBD";
+  const primaryDateStr = isMock ? ev.date : ev.event_requency?.date || ev.date || "Upcoming";
 
   const schedules = isExperience
     ? [
-        ...(primaryDateStr && primaryDateStr !== "TBD"
+        ...(primaryDateStr && primaryDateStr !== "Upcoming"
           ? [
               {
                 id: `primary-${ev.id}`,
@@ -240,7 +240,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   });
 
   const isPastEvent = useMemo(() => {
-    if (!date || date === "TBD") return false;
+    if (!date || date === "Upcoming") return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const eventDate = new Date(date);

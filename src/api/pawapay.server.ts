@@ -249,7 +249,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           }
 
           let eventName = "Your Event";
-          let dateStr = "TBD";
+          let dateStr = "Upcoming";
           let eventLocation = "";
 
           if (firstAtt?.events) {
@@ -260,7 +260,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 ? [firstAtt.events.tour_stops]
                 : [];
             const firstStop = tourStops[0] || {};
-            dateStr = `${firstStop.date || "TBD"} ${firstStop.time || ""}`.trim();
+            dateStr = `${firstStop.date || "Upcoming"} ${firstStop.time || ""}`.trim();
             eventLocation = firstStop.venue || firstStop.city || "";
           }
 
