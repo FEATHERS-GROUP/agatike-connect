@@ -1222,7 +1222,7 @@ export function FacilityCheckoutSheet({
           themeColor={themeColor}
         />
 
-        {(isPollingPawaPay || (bookingMutation.isPending && paymentMethod === "momo")) && (
+        {(isPollingPawaPay || ((bookingMutation.isPending || isGenerating) && paymentMethod === "momo")) && (
           <CheckYourPhone
             themeColor={themeColor || "var(--primary)"}
             onCancel={async () => {

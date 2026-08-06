@@ -522,7 +522,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     return () => clearTimeout(tm);
   }, [isSuccess, navigate]);
 
-  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo")) {
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
       <CheckYourPhone
         onCancel={async () => {

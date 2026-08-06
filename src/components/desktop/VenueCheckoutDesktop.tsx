@@ -552,7 +552,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     return () => clearTimeout(tm);
   }, [isSuccess, navigate]);
 
-  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo")) {
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
         <Navbar />
