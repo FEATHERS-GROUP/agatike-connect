@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -95,9 +96,11 @@ export function SubscriberPortalDesktop({
               </div>
               
               <div className="shrink-0">
-                <Button className="rounded-2xl px-10 font-bold shadow-md h-14 text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
-                  Manage Subscription
-                </Button>
+                <Link to={`/profile/subscriptions/${subscriptionId}/manage`}>
+                  <Button className="rounded-2xl px-10 font-bold shadow-md h-14 text-base bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
+                    Manage Subscription
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

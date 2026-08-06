@@ -95,6 +95,7 @@ import { Route as DashboardWorkspaceSlugEventsIndexRouteImport } from './routes/
 import { Route as DashboardWorkspaceSlugBookIndexRouteImport } from './routes/dashboard/$workspaceSlug/book/index'
 import { Route as DashboardWorkspaceSlugBadgeDesignerIndexRouteImport } from './routes/dashboard/$workspaceSlug/badge-designer/index'
 import { Route as DashboardWorkspaceSlugCinemaIndexRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/index'
+import { Route as ProfileSubscriptionsSubscriptionIdManageRouteImport } from './routes/profile_.subscriptions.$subscriptionId_.manage'
 import { Route as PSlugCheckoutCartRouteImport } from './routes/p_.$slug.checkout.cart'
 import { Route as InternalControlAdminUsersRouteImport } from './routes/internal/control/admin/users'
 import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal/control/admin/transactions'
@@ -684,6 +685,12 @@ const DashboardWorkspaceSlugCinemaIndexRoute =
     id: '/$workspaceSlug/Cinema/',
     path: '/$workspaceSlug/Cinema/',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const ProfileSubscriptionsSubscriptionIdManageRoute =
+  ProfileSubscriptionsSubscriptionIdManageRouteImport.update({
+    id: '/profile_/subscriptions/$subscriptionId_/manage',
+    path: '/profile/subscriptions/$subscriptionId/manage',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const PSlugCheckoutCartRoute = PSlugCheckoutCartRouteImport.update({
   id: '/p_/$slug/checkout/cart',
@@ -1610,6 +1617,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/p/$slug/checkout/cart': typeof PSlugCheckoutCartRoute
+  '/profile/subscriptions/$subscriptionId/manage': typeof ProfileSubscriptionsSubscriptionIdManageRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -1829,6 +1837,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/p/$slug/checkout/cart': typeof PSlugCheckoutCartRoute
+  '/profile/subscriptions/$subscriptionId/manage': typeof ProfileSubscriptionsSubscriptionIdManageRoute
   '/dashboard/$workspaceSlug/Cinema': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -2051,6 +2060,7 @@ export interface FileRoutesById {
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
   '/p_/$slug/checkout/cart': typeof PSlugCheckoutCartRoute
+  '/profile_/subscriptions/$subscriptionId_/manage': typeof ProfileSubscriptionsSubscriptionIdManageRoute
   '/dashboard/$workspaceSlug/Cinema/': typeof DashboardWorkspaceSlugCinemaIndexRoute
   '/dashboard/$workspaceSlug/badge-designer/': typeof DashboardWorkspaceSlugBadgeDesignerIndexRoute
   '/dashboard/$workspaceSlug/book/': typeof DashboardWorkspaceSlugBookIndexRoute
@@ -2275,6 +2285,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
     | '/p/$slug/checkout/cart'
+    | '/profile/subscriptions/$subscriptionId/manage'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2494,6 +2505,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
     | '/p/$slug/checkout/cart'
+    | '/profile/subscriptions/$subscriptionId/manage'
     | '/dashboard/$workspaceSlug/Cinema'
     | '/dashboard/$workspaceSlug/badge-designer'
     | '/dashboard/$workspaceSlug/book'
@@ -2715,6 +2727,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
     | '/p_/$slug/checkout/cart'
+    | '/profile_/subscriptions/$subscriptionId_/manage'
     | '/dashboard/$workspaceSlug/Cinema/'
     | '/dashboard/$workspaceSlug/badge-designer/'
     | '/dashboard/$workspaceSlug/book/'
@@ -2877,6 +2890,7 @@ export interface RootRouteChildren {
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
   AdminWithdrawalsIndexRoute: typeof AdminWithdrawalsIndexRoute
   PSlugCheckoutCartRoute: typeof PSlugCheckoutCartRoute
+  ProfileSubscriptionsSubscriptionIdManageRoute: typeof ProfileSubscriptionsSubscriptionIdManageRoute
   VenuesVenueIdFacilitiesCheckoutFacilityIdRoute: typeof VenuesVenueIdFacilitiesCheckoutFacilityIdRoute
 }
 
@@ -3483,6 +3497,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/$workspaceSlug/Cinema/'
       preLoaderRoute: typeof DashboardWorkspaceSlugCinemaIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/profile_/subscriptions/$subscriptionId_/manage': {
+      id: '/profile_/subscriptions/$subscriptionId_/manage'
+      path: '/profile/subscriptions/$subscriptionId/manage'
+      fullPath: '/profile/subscriptions/$subscriptionId/manage'
+      preLoaderRoute: typeof ProfileSubscriptionsSubscriptionIdManageRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/p_/$slug/checkout/cart': {
       id: '/p_/$slug/checkout/cart'
@@ -5004,6 +5025,8 @@ const rootRouteChildren: RootRouteChildren = {
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
   AdminWithdrawalsIndexRoute: AdminWithdrawalsIndexRoute,
   PSlugCheckoutCartRoute: PSlugCheckoutCartRoute,
+  ProfileSubscriptionsSubscriptionIdManageRoute:
+    ProfileSubscriptionsSubscriptionIdManageRoute,
   VenuesVenueIdFacilitiesCheckoutFacilityIdRoute:
     VenuesVenueIdFacilitiesCheckoutFacilityIdRoute,
 }

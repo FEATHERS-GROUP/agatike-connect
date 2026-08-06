@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { format, addHours, startOfHour } from "date-fns";
 import { Info, Calendar, Layers, Ticket, MapPin, Receipt, Clock, User, Phone, Instagram, MessageCircle, Building2, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -123,9 +124,11 @@ export function SubscriberPortalMobile({
             <span className="w-2 h-2 rounded-full bg-green-400" />
             <span className="uppercase tracking-wider text-[10px]">{subscription?.status}</span>
           </div>
-          <Button className="bg-background text-primary hover:bg-background/90 rounded-full px-6 font-bold text-sm shadow-md h-10">
-            Manage
-          </Button>
+          <Link to={`/profile/subscriptions/${subscriptionId}/manage`}>
+            <Button className="bg-background text-primary hover:bg-background/90 rounded-full px-6 font-bold text-sm shadow-md h-10">
+              Manage
+            </Button>
+          </Link>
         </div>
 
         {/* Stats Row */}

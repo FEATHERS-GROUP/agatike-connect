@@ -72,12 +72,9 @@ export default function LazyCalendar(props: any) {
     plugins: [eventsService, calendarControls],
   });
 
-  console.log("LazyCalendar render props.events:", props.events);
-  console.log("LazyCalendar calendar instance:", calendar);
   
   useEffect(() => {
     if (props.events) {
-       console.log("LazyCalendar calling eventsService.set with:", props.events);
        // We can't deep clone with JSON because it destroys Temporal objects
        eventsService.set(props.events);
     }

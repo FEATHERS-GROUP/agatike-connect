@@ -799,3 +799,48 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
 
     return { success: true, data };
   });
+
+export const sendRefundPayout = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { amount, currency, phone, description } = ctx.data;
+    const baseUrl = process.env.PAWAPAY_API_URL;
+    if (!baseUrl) throw new Error("PAWAPAY_API_URL is missing");
+
+    let network = "MTN_MOMO_RWA";
+    if (phone.startsWith("073") || phone.startsWith("072") || phone.startsWith("+25073") || phone.startsWith("+25072") || phone.startsWith("25073") || phone.startsWith("25072")) {
+      network = "AIRTEL_O_RWA";
+    }
+
+    const { v4: uuidv4 } = await import("uuid");
+    const payoutId = uuidv4();
+
+    const payload = {
+      payoutId,
+      amount: String(amount),
+      currency: currency || "RWF",
+      correspondent: network,
+      recipient: {
+        type: "MSISDN",
+        address: { value: phone.replace("+", "") },
+      },
+      customerTimestamp: new Date().toISOString(),
+      statementDescription: description || "Agatike Refund",
+    };
+
+    const payoutRes = await fetch(`${baseUrl}/v1/payouts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await payoutRes.json();
+    if (!payoutRes.ok) {
+      throw new Error(data.errorMessage || data.message || "PawaPay API error on refund payout");
+    }
+
+    return { success: true, payoutId, data };
+  });
