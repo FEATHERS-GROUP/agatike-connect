@@ -340,7 +340,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
-          const attachments = [];
+          const attachments: any[] = [];
 
           const coverUrl = movieProject.coverImage || activeMovie?.cover_url;
           if (coverUrl) {
@@ -355,7 +355,6 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
           await new Promise((r) => setTimeout(r, 600));
 
-          const attachments: any[] = [];
           if (movieProject) {
             const chunkSize = 5;
             for (let i = 0; i < issuedTickets.length; i += chunkSize) {
@@ -515,10 +514,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   }
 
   const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && movieProject && (
-    <div
-      className="absolute -z-50 pointer-events-none"
-      style={{ top: "-9999px", left: "-9999px" }}
-    >
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((t) => {
         const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
         return (
@@ -600,19 +596,18 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     return (
       <>
         <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
-        <p className="text-base text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
-          has been sent to {attendeeInfo.email}.
-        </p>
+          <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
+          </div>
+          <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
+          <p className="text-base text-muted-foreground max-w-md mx-auto mb-8">
+            Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
+            has been sent to {attendeeInfo.email}.
+          </p>
           <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
         </div>
-      </div>
-      {hiddenTicketRenderer}
-    </>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
