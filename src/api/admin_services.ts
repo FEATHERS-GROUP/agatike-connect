@@ -128,7 +128,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           type: "Cinema",
           title: c.movie?.title || "Movie Screening",
           date: datetimeStr,
-          location: c.cinema?.name ? `${c.cinema.name} (${c.cinema.city || ""})` : "TBA",
+          location: c.cinema?.name ? `${c.cinema.name} (${c.cinema.city || ""})` : "Upcoming",
           organizer: c.cinema?.workspaces?.organizer?.name || "Unknown",
           coverUrl: c.movie?.cover_url,
           ticketTiers: c.ticket_tiers?.map((t: any) => ({

@@ -453,8 +453,8 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
             month: "short",
             day: "numeric",
           }).format(new Date(booking.schedule.show_date))
-        : "TBA",
-      time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "TBA",
+        : "Upcoming",
+      time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "Upcoming",
       duration,
       seat: booking.names || "Guest",
       passengerName: booking.names || user.username || "Guest",

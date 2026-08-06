@@ -35,8 +35,8 @@ export const generateFallbackReceipt = async (options: {
       : "See Event Details";
 
   if (type === "event" || type === "movie") {
-    displayDate = dateStr && dateStr !== "Upcoming" && dateStr.trim() !== "" ? dateStr : "TBA";
-    displayTime = timeStr && timeStr !== "Upcoming" && timeStr.trim() !== "" ? timeStr : "TBA";
+    displayDate = dateStr && dateStr !== "Upcoming" && dateStr.trim() !== "" ? dateStr : "Date Not Set";
+    displayTime = timeStr && timeStr !== "Upcoming" && timeStr.trim() !== "" ? timeStr : "Time Not Set";
   } else if (type === "facility") {
     displayDate = dateStr && dateStr !== "Upcoming" && dateStr.trim() !== "" ? dateStr : "Date Not Set";
     displayTime = timeStr && timeStr !== "Upcoming" && timeStr.trim() !== "" ? timeStr : "Time Not Set";
