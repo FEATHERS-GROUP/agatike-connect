@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { format, addHours, startOfHour } from "date-fns";
+import { format, addHours, startOfHour, isSameDay } from "date-fns";
 import { Info, Calendar, Layers, Ticket, MapPin, Receipt, Clock, User, Phone, Instagram, MessageCircle, Building2, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -258,24 +258,85 @@ export function SubscriberPortalMobile({
           </>
         )}
 
+
         {activeTab === "sessions" && (
-          <div className="bg-background rounded-[32px] p-4 shadow-sm border border-border/40">
-             <div className="h-[600px] w-full rounded-2xl overflow-hidden sx-mobile-calendar">
-                <React.Suspense fallback={<div className="w-full h-full bg-secondary/20 animate-pulse rounded-xl" />}>
-                  <LazyCalendar
-                    events={calendarEvents}
-                    startAccessor="start"
-                    endAccessor="end"
-                    views={["month", "week", "day", "agenda"]}
-                    defaultView="agenda"
-                    className="text-sm font-medium"
-                    eventPropGetter={() => ({
-                      className: "border-none shadow-sm font-bold text-xs rounded-md px-2",
-                      style: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
-                    })}
-                    onSelectEvent={(event) => setSelectedCalendarEvent(event)}
-                  />
-                </React.Suspense>
+          <div className="bg-background rounded-[32px] p-5 shadow-sm border border-border/40">
+             <div className="w-full space-y-6">
+                {(() => {
+                  if (!sessions || sessions.length === 0) {
+                    return (
+                      <div className="text-center py-12 bg-secondary/10 rounded-3xl border border-dashed border-border/40">
+                        <Calendar className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-muted-foreground font-semibold">No classes scheduled.</p>
+                      </div>
+                    );
+                  }
+
+                  // Group sessions by day
+                  const grouped: { [key: string]: any[] } = {};
+                  const sortedSessions = [...sessions].sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+                  
+                  sortedSessions.forEach(session => {
+                    const d = new Date(session.start_time);
+                    d.setHours(0,0,0,0);
+                    const key = d.toISOString();
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(session);
+                  });
+
+                  return Object.keys(grouped).map(dateKey => {
+                    const date = new Date(dateKey);
+                    const isToday = isSameDay(date, new Date());
+                    return (
+                      <div key={dateKey} className="space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className={`text-base font-extrabold ${isToday ? 'text-primary' : 'text-foreground'}`}>
+                            {isToday ? "Today" : format(date, "EEEE")}
+                          </h4>
+                          <span className="text-muted-foreground font-medium text-xs">
+                            {format(date, "MMM d")}
+                          </span>
+                        </div>
+                        
+                        <div className="grid gap-3">
+                          {grouped[dateKey].map(session => (
+                            <div key={session.id} className="flex flex-col p-4 rounded-2xl bg-secondary/20 active:bg-secondary/40 border border-border/30 transition-all">
+                              
+                              <div className="flex justify-between items-start mb-3 border-b border-border/40 pb-3">
+                                <div>
+                                  <h5 className="text-base font-bold text-foreground mb-1">
+                                    {session.class?.name || "Class Session"}
+                                  </h5>
+                                  <span className="text-sm font-black text-primary">
+                                    {format(new Date(session.start_time), "HH:mm")} - {format(new Date(session.end_time), "HH:mm")}
+                                  </span>
+                                </div>
+                                <div className="text-right">
+                                  {session.class?.is_free_with_subscription ? (
+                                    <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md block">Included</span>
+                                  ) : (
+                                    <span className="bg-orange-500/10 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-md block">Extra Fee</span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center justify-between">
+                                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                                  <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {session.class?.duration_minutes || 60} min</span>
+                                  <span className="flex items-center gap-1.5"><User className="w-3 h-3" /> {session.coach_name || "Instructor"}</span>
+                                </div>
+                                <Button size="sm" className="rounded-xl font-bold px-4" onClick={() => setSelectedCalendarEvent({ resource: session })}>
+                                  Book
+                                </Button>
+                              </div>
+                              
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
              </div>
           </div>
         )}

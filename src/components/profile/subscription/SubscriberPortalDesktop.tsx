@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User, Phone, Instagram, MessageCircle, Building2 } from "lucide-react";
-import { format, addHours, startOfHour } from "date-fns";
+import { format, addHours, startOfHour, isSameDay } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { todayHours, summarizeHours } from "@/lib/hours";
@@ -229,35 +229,7 @@ export function SubscriberPortalDesktop({
                 </div>
               </div>
 
-              {/* Overview Calendar */}
-              <div className="mt-8 bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow">
-                <div className="mb-6 max-w-xl">
-                  <h3 className="text-xl font-bold flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-xl">
-                      <Calendar className="h-5 w-5 text-primary" />
-                    </div>
-                    Space Schedule
-                  </h3>
-                  <p className="text-muted-foreground text-sm">View upcoming classes, sessions, and resource bookings going on at {space?.name}.</p>
-                </div>
-                <div className="h-[550px] w-full rounded-2xl overflow-hidden border border-border/40 bg-background/50 p-4">
-                  <React.Suspense fallback={<Skeleton className="w-full h-full rounded-xl" />}>
-                    <LazyCalendar
-                      events={calendarEvents}
-                      startAccessor="start"
-                      endAccessor="end"
-                      views={["month", "week", "day"]}
-                      defaultView="week"
-                      className="text-sm font-medium"
-                      eventPropGetter={() => ({
-                        className: "border-none shadow-sm font-bold text-xs rounded-md px-2",
-                        style: { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
-                      })}
-                      onSelectEvent={(event) => setSelectedCalendarEvent(event)}
-                    />
-                  </React.Suspense>
-                </div>
-              </div>
+
             </TabsContent>
 
             {/* RESOURCES TAB */}
@@ -307,46 +279,95 @@ export function SubscriberPortalDesktop({
           {/* SESSIONS TAB */}
           <TabsContent value="sessions" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
             <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
-              <div className="mb-8 max-w-xl">
+              <div className="mb-6 max-w-xl">
                 <h3 className="text-2xl font-bold mb-2">Classes & Sessions</h3>
                 <p className="text-muted-foreground leading-relaxed">Join scheduled activities, workshops, or fitness classes available to members.</p>
               </div>
               
-              {false ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}
-                </div>
-              ) : classes?.length > 0 ? (
-                <div className="space-y-4">
-                  {classes.map((cls: any) => (
-                    <div key={cls.id} className="group border border-border/40 bg-secondary/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 hover:border-primary/50 hover:shadow-md hover:bg-card transition-all">
-                      <div className="flex gap-5 items-center w-full sm:w-auto">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 shadow-inner">
-                          <Calendar className="h-6 w-6 text-primary" />
+
+              <div className="w-full max-h-[700px] overflow-y-auto pr-2 custom-scrollbar space-y-8">
+                {(() => {
+                  if (!sessions || sessions.length === 0) {
+                    return (
+                      <div className="text-center py-20 bg-secondary/10 rounded-3xl border border-dashed border-border/40">
+                        <Calendar className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                        <p className="text-muted-foreground font-semibold text-lg">No classes scheduled.</p>
+                        <p className="text-sm text-muted-foreground/70 mt-1">Check back later for new sessions.</p>
+                      </div>
+                    );
+                  }
+
+                  // Group sessions by day
+                  const grouped: { [key: string]: any[] } = {};
+                  const sortedSessions = [...sessions].sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+                  
+                  sortedSessions.forEach(session => {
+                    const d = new Date(session.start_time);
+                    d.setHours(0,0,0,0);
+                    const key = d.toISOString();
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(session);
+                  });
+
+                  return Object.keys(grouped).map(dateKey => {
+                    const date = new Date(dateKey);
+                    const isToday = isSameDay(date, new Date());
+                    return (
+                      <div key={dateKey} className="space-y-4">
+                        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-md py-2 border-b border-border/40 flex items-center gap-3">
+                          <h4 className={`text-lg font-extrabold ${isToday ? 'text-primary' : 'text-foreground'}`}>
+                            {isToday ? "Today" : format(date, "EEEE")}
+                          </h4>
+                          <span className="text-muted-foreground font-medium text-sm">
+                            {format(date, "MMM d, yyyy")}
+                          </span>
                         </div>
-                        <div>
-                          <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{cls.name}</h4>
-                          <div className="flex items-center gap-3 mt-1.5 text-sm font-medium text-muted-foreground">
-                            <span className="flex items-center gap-1 bg-secondary/40 px-2 py-0.5 rounded-md">
-                              <Clock className="h-3.5 w-3.5" /> {cls.duration_minutes} min
-                            </span>
-                            <span className="flex items-center gap-1">
-                              • {cls.category}
-                            </span>
-                          </div>
+                        
+                        <div className="grid gap-3">
+                          {grouped[dateKey].map(session => (
+                            <div key={session.id} className="group relative flex flex-col sm:flex-row gap-4 p-5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 border border-border/30 transition-all hover:shadow-md hover:border-border/60">
+                              
+                              <div className="flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-start min-w-[120px] sm:border-r border-border/40 pr-4">
+                                <span className="text-xl font-black text-foreground">{format(new Date(session.start_time), "HH:mm")}</span>
+                                <span className="text-sm text-muted-foreground font-medium">{format(new Date(session.end_time), "HH:mm")}</span>
+                              </div>
+                              
+                              <div className="flex-1 flex flex-col justify-center">
+                                <h5 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                                  {session.class?.name || "Class Session"}
+                                </h5>
+                                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
+                                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {session.class?.duration_minutes || 60} min</span>
+                                  <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> {session.coach_name || "Instructor"}</span>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-2">
+                                  {session.class?.is_free_with_subscription ? (
+                                    <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-md">Included in Plan</span>
+                                  ) : (
+                                    <span className="bg-orange-500/10 text-orange-600 text-xs font-bold px-2.5 py-1 rounded-md">Extra Fee</span>
+                                  )}
+                                  <span className="bg-secondary text-secondary-foreground text-xs font-semibold px-2.5 py-1 rounded-md">
+                                    {session.class?.max_capacity || 20} Spots
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center sm:pl-4 mt-4 sm:mt-0">
+                                <Button className="w-full sm:w-auto rounded-xl font-bold px-6" onClick={() => setSelectedCalendarEvent({ resource: session })}>
+                                  Book Session
+                                </Button>
+                              </div>
+                              
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <Button className="w-full sm:w-auto rounded-xl font-bold px-6 shadow-sm">View Schedule</Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/40 max-w-2xl mx-auto">
-                  <Calendar className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
-                  <p className="text-muted-foreground font-semibold text-lg">No sessions scheduled.</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">There are no upcoming classes at this time.</p>
-                </div>
-              )}
+                    );
+                  });
+                })()}
+              </div>
+
             </div>
           </TabsContent>
 
