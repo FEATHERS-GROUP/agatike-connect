@@ -284,7 +284,7 @@ function ManageSubscriptionPage() {
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">Pricing</p>
                           <p className="text-2xl font-bold text-foreground">
-                            {parseFloat(subscription.price).toLocaleString()} <span className="text-lg font-medium opacity-80">{space?.currency}</span>
+                            {parseFloat(subscription.price).toLocaleString()} <span className="text-lg font-medium opacity-80">{space?.workspace?.currency}</span>
                           </p>
                           <p className="text-sm text-muted-foreground mt-1 opacity-80">per {subscription.billing_cycle}</p>
                         </div>
@@ -344,7 +344,7 @@ function ManageSubscriptionPage() {
                               cancelMutation.mutate();
                             }
                           } else {
-                            if (confirm(`Are you sure you want to cancel this subscription? WARNING: You will only receive a 50% refund (${(price * 0.5).toLocaleString()} ${space?.currency}).`)) {
+                            if (confirm(`Are you sure you want to cancel this subscription? WARNING: You will only receive a 50% refund (${(price * 0.5).toLocaleString()} ${space?.workspace?.currency}).`)) {
                               cancelMutation.mutate();
                             }
                           }
@@ -364,7 +364,7 @@ function ManageSubscriptionPage() {
                 <div>
                   <h3 className="text-2xl font-bold tracking-tight mb-2">Available Upgrades</h3>
                   <p className="text-muted-foreground text-base">
-                    Upgrade your plan to unlock different benefits. Your current payment of <span className="font-bold text-foreground bg-primary/10 px-2 py-0.5 rounded-md">{currentPrice.toLocaleString()} {space?.currency}</span> will be prorated against the new plan!
+                    Upgrade your plan to unlock different benefits. Your current payment of <span className="font-bold text-foreground bg-primary/10 px-2 py-0.5 rounded-md">{currentPrice.toLocaleString()} {space?.workspace?.currency}</span> will be prorated against the new plan!
                   </p>
                 </div>
 
@@ -393,7 +393,7 @@ function ManageSubscriptionPage() {
                           
                           <div className="relative z-10">
                             <p className="text-4xl font-extrabold mb-2 tracking-tighter">
-                              {parseFloat(plan.price).toLocaleString()} <span className="text-xl font-bold text-muted-foreground">{space?.currency}</span>
+                              {parseFloat(plan.price).toLocaleString()} <span className="text-xl font-bold text-muted-foreground">{space?.workspace?.currency}</span>
                             </p>
                             <p className="text-sm text-muted-foreground font-medium mb-8">Billed {plan.billing_cycle}</p>
                           </div>
@@ -401,7 +401,7 @@ function ManageSubscriptionPage() {
                           <div className="mt-auto pt-6 border-t border-border/50 relative z-10">
                             <div className="flex justify-between items-center mb-6 bg-secondary/50 p-4 rounded-2xl">
                               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Amount Due Now</span>
-                              <span className="text-xl font-black text-primary">{amountDue.toLocaleString()} {space?.currency}</span>
+                              <span className="text-xl font-black text-primary">{amountDue.toLocaleString()} {space?.workspace?.currency}</span>
                             </div>
                             <Button size="lg" className="w-full rounded-2xl h-14 font-bold text-base group-hover:bg-primary group-hover:text-primary-foreground shadow-md group-hover:shadow-xl transition-all">
                               Proceed to Upgrade
@@ -503,7 +503,7 @@ function ManageSubscriptionPage() {
         onOpenChange={setIsPaymentModalOpen}
         onProceed={handleProceedPayment}
         baseAmount={proratedAmount}
-        baseCurrency={space?.currency || "RWF"}
+        baseCurrency={space?.workspace?.currency || "RWF"}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
         isProcessing={isProcessing}
