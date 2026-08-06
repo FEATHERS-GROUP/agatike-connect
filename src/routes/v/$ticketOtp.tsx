@@ -88,7 +88,7 @@ function PublicTicketValidationRoute() {
   if (result.type === "subscription") {
     const sub = result.data;
     const validity = getSubscriptionValidity(sub);
-    const currency = sub.space?.currency || "RWF";
+    const currency = sub.space?.workspace?.currency || sub.space?.currency || "RWF";
 
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 text-center">

@@ -20,7 +20,7 @@ export function SubscriptionCard({ sub }: { sub: any }) {
   const cover = sub.space?.cover_url || "/venues.png";
   const title = sub.plan_name || "Membership";
   const venue = sub.space?.name || "Agatike Space";
-  const currency = sub.space?.currency || "RWF";
+  const currency = sub.space?.workspace?.currency || sub.space?.currency || "RWF";
   const price = new Intl.NumberFormat("en-RW", { style: "currency", currency }).format(sub.price || 0);
   const type = sub.billing_cycle || "month";
   const status = sub.status || "Active";

@@ -136,7 +136,7 @@ export function SubscriberPortalMobile({
           <div className="text-center">
             <p className="text-xl font-bold">{subscription?.price?.toLocaleString() || "0"}</p>
             <p className="text-[9px] uppercase tracking-wider font-bold text-primary-foreground/70 mt-1">
-              {space?.currency || "RWF"} / {subscription?.billing_cycle?.substring(0, 3)}
+              {space?.workspace?.currency || space?.currency || "RWF"} / {subscription?.billing_cycle?.substring(0, 3)}
             </p>
           </div>
           <div className="text-center border-l border-r border-primary-foreground/20 px-2">

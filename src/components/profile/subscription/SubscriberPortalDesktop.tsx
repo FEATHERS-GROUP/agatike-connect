@@ -82,7 +82,7 @@ export function SubscriberPortalDesktop({
                    </div>
                    <div className="space-y-1.5">
                      <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Price</p>
-                     <p className="font-semibold text-lg text-primary">{subscription.price?.toLocaleString()} {space?.currency || "RWF"} <span className="text-xs text-muted-foreground font-medium">/ {subscription.billing_cycle}</span></p>
+                     <p className="font-semibold text-lg text-primary">{subscription.price?.toLocaleString()} {space?.workspace?.currency || space?.currency || "RWF"} <span className="text-xs text-muted-foreground font-medium">/ {subscription.billing_cycle}</span></p>
                    </div>
                    <div className="space-y-1.5">
                      <p className="text-[11px] text-muted-foreground uppercase font-bold tracking-wider">Start Date</p>
