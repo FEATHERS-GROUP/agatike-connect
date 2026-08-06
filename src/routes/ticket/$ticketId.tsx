@@ -49,13 +49,24 @@ function TicketViewer() {
     enabled: !!user?.id,
   });
 
-  // Find product orders for this specific event
+  const eventTicketOrderIds = eventTickets.map((t: any) => String(t.orderId));
+
+  // Find product orders for this specific event or matched by any ticket's order ID
   const eventProductOrders = primaryTicket 
-    ? productOrders.filter((o: any) => String(o.product?.event?.id) === String(primaryTicket.eventId))
+    ? productOrders.filter((o: any) => {
+        const prod = o.product || {};
+        const prodEventId = prod.event?.id || prod.event_id || prod.specs?.eventId || prod.specs?.event_id;
+        
+        const isEventMatch = String(prodEventId) === String(primaryTicket.eventId);
+        const isOrderMatch = o.qr_code_string && eventTicketOrderIds.includes(String(o.qr_code_string));
+        
+        return isEventMatch || isOrderMatch;
+      })
     : [];
     
   const vouchers = eventProductOrders.filter((o: any) => o.product?.type === 'voucher');
-  const physicalOrders = eventProductOrders.filter((o: any) => o.product?.type === 'physical');
+  // Anything that isn't a voucher is considered a physical product / merch
+  const physicalOrders = eventProductOrders.filter((o: any) => o.product?.type !== 'voucher');
 
   const handleDownload = async () => {
     if (isDownloading) return;
@@ -189,9 +200,9 @@ function TicketViewer() {
 
         {/* Sections Wrapper with Staggered Animation */}
         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-          {/* Popular Now / Physical Orders */}
+          {/* Popular Now & Order Meta */}
           <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 px-1">
               <h2 className="text-white/90 font-semibold text-base flex items-center gap-2">
                 <div className="p-1.5 rounded-lg bg-orange-500/20 text-orange-400">
                   <Briefcase className="w-4 h-4" />
@@ -199,78 +210,55 @@ function TicketViewer() {
                 Popular Now
               </h2>
             </div>
-            <div className="flex flex-col gap-3">
+            
+            <div className="flex flex-col gap-1.5 px-1">
               {isProductsLoading ? (
                 <div className="flex items-center justify-center p-4">
                   <Loader2 className="w-5 h-5 text-white/50 animate-spin" />
                 </div>
               ) : physicalOrders.length > 0 ? (
                 physicalOrders.map((order: any, idx: number) => (
-                  <div key={order.id || idx} className="bg-white/5 rounded-2xl p-4 flex items-center shadow-sm border border-white/10">
-                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mr-4 text-white overflow-hidden shrink-0">
+                  <div key={order.id || idx} className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0 group/item">
+                    <div className="h-12 w-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform">
                       {order.product?.image_url ? (
-                         <img src={order.product.image_url} alt="" className="w-full h-full object-cover" />
+                        <img src={order.product.image_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Briefcase className="w-6 h-6 text-white/70" />
+                        <Briefcase className="w-5 h-5 text-white/40" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-white/90 text-[15px]">{order.product?.name || "Product"}</h3>
-                      <p className="text-white/70 font-semibold text-sm mt-0.5">{order.qty} Item(s)</p>
-                      <p className="text-white/40 text-xs mt-0.5 font-medium">{order.picked ? "Picked Up" : "Pending"}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-white/90 text-sm truncate">{order.product?.name || "Product"}</p>
+                      <p className="text-white/40 text-xs mt-0.5 truncate uppercase tracking-wider font-semibold">Qty: {order.qty || 1} • {order.size || 'Standard'}</p>
                     </div>
-                    <div className="h-12 w-px border-l-2 border-dashed border-white/20 mx-5" />
-                    <div className="text-center shrink-0 w-12 flex flex-col items-center justify-center">
-                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-wider mb-0.5">EXP</p>
-                      <p className="font-black text-white/90 text-xl leading-none">{primaryTicket.date ? primaryTicket.date.split(' ')?.[0] : "1"}</p>
-                      <p className="text-white/40 text-[9px] uppercase font-bold mt-1">{primaryTicket.date ? primaryTicket.date.split(' ')?.[1] || "MAY" : "MAY"}</p>
+                    <div className="h-8 w-px border-l-2 border-dashed border-white/10 mx-2" />
+                    <div className="text-right shrink-0">
+                      <p className="font-mono text-white/90 text-[13px]">{order.amount_paid} RWF</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider mt-1 ${order.status === 'Confirmed' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                        {order.status}
+                      </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex items-center gap-4 p-4 bg-black/40 rounded-2xl border border-white/[0.05]">
-                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center ring-1 ring-white/10 shadow-inner">
-                    <Briefcase className="w-5 h-5 text-white/40" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-white/90 text-sm">No items purchased</p>
-                    <p className="text-[13px] text-white/50 mt-0.5">
-                      Explore the shop for physical merch.
-                    </p>
-                  </div>
+                <div className="py-3 text-white/40 text-[13px] italic">
+                  No additional items purchased.
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Other Details */}
-          <div className="group bg-white/[0.03] hover:bg-white/[0.05] backdrop-blur-2xl rounded-[1.5rem] p-5 border border-white/[0.08] shadow-xl transition-all duration-300">
-            <h2 className="text-white/90 font-semibold text-base mb-4">Order Details</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-1">
+              
+              <div className="h-px w-full bg-white/5 my-3" />
+              
+              <div className="flex justify-between items-center py-1.5">
                 <span className="text-white/50 text-[13px] font-medium">Order Reference</span>
                 <span className="text-white/90 font-mono text-sm tracking-wider bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
                   {primaryTicket.orderId}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-1">
+              <div className="flex justify-between items-center py-1.5">
                 <span className="text-white/50 text-[13px] font-medium">Status</span>
                 <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span className="font-semibold text-[13px]">Confirmed</span>
                 </div>
-              </div>
-              <div className="flex justify-between items-center py-1">
-                <span className="text-white/50 text-[13px] font-medium">Purchased On</span>
-                <span className="text-white/90 font-medium text-[13px]">
-                  {primaryTicket.created_at
-                    ? new Date(primaryTicket.created_at).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "N/A"}
-                </span>
               </div>
             </div>
           </div>
