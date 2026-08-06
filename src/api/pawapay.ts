@@ -255,11 +255,11 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     } = ctx.data as any;
 
     if (!currency) {
-      throw new Error("Currency is required for PawaPay deposit.");
+      throw new Error("Currency is required for Agatike deposit.");
     }
 
     if (!workspaceId) {
-      throw new Error("Workspace ID is required for PawaPay deposit.");
+      throw new Error("Workspace ID is required for Agatike deposit.");
     }
 
     if (!process.env.PAWAPAY_API_KEY) {
@@ -298,12 +298,12 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(`PawaPay Error: ${data.errorMessage || JSON.stringify(data)}`);
+      throw new Error(`Agatike Error: ${data.errorMessage || JSON.stringify(data)}`);
     }
 
     if (data.status === "REJECTED") {
       throw new Error(
-        `PawaPay Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`,
+        `Agatike Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`,
       );
     }
 
@@ -471,7 +471,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-        description: pageSlug ? `PawaPay Deposit::${pageSlug}` : "PawaPay Deposit",
+        description: pageSlug ? `Agatike Deposit::${pageSlug}` : "Agatike Deposit",
       },
     );
 
@@ -552,7 +552,7 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
           }
         }
       } catch (err) {
-        console.error("[PawaPay] Active polling fallback failed:", err);
+        console.error("[Agatike] Active polling fallback failed:", err);
       }
     }
 

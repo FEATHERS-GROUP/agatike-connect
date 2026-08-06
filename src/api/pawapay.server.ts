@@ -87,7 +87,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
       if (tx?.workspace_id) {
         try {
           let targetSlug = "";
-          if (tx.description && tx.description.includes("PawaPay Deposit::")) {
+          if (tx.description && tx.description.includes("Agatike Deposit::")) {
             targetSlug = tx.description.split("::")[1];
           }
 
