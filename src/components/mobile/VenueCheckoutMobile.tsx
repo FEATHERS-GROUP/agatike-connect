@@ -399,59 +399,65 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
-          const attachments = [];
+          const attachments: any[] = [];
           if (venueProject) {
-            for (const ticket of issuedTickets) {
-              const el = document.getElementById(`ticket-render-${ticket.id}`);
-              if (!el) continue;
-
-              // Wait a tiny bit more for React to flush the DOM
-              await new Promise((r) => setTimeout(r, 100));
-
-              const rectDebug = el.getBoundingClientRect();
-              console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
-
-              const imgData = await htmlToImage.toJpeg(el, {
-                pixelRatio: 1.5,
-                quality: 0.8,
-                backgroundColor: "#ffffff",
-                width: 720,
-                height: 260,
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                const el = document.getElementById(`ticket-render-${ticket.id}`);
+                if (!el) return null;
+                try {
+                  const imgData = await htmlToImage.toJpeg(el, {
+                    pixelRatio: 1.5,
+                    quality: 0.8,
+                    backgroundColor: "#ffffff",
+                    width: 720,
+                    height: 260,
+                  });
+                  if (!imgData || imgData === "data:,") {
+                    throw new Error("htmlToImage returned an empty image.");
+                  }
+                  const pdf = new jsPDF({
+                    orientation: "landscape",
+                    unit: "px",
+                    format: [720, 260],
+                  });
+                  pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+                  const base64 = pdf.output("datauristring").split(",")[1];
+                  return {
+                    filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                    content: base64,
+                  };
+                } catch (e) {
+                  console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
+                  return await generateFallbackReceipt({
+                    entityName: venue?.name || "Event/Venue",
+                    ticket,
+                    bookingRef: ticket.booking_ref || ticket.otp || "",
+                    customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                    type: "venue",
+                  });
+                }
               });
-              console.log("Generated imgData length:", imgData?.length);
-              if (!imgData || imgData === "data:,") {
-                throw new Error(
-                  "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-                );
-              }
-
-              const rect = el.getBoundingClientRect();
-              const width = rect.width || 720;
-              const height = rect.height || 260;
-
-              const pdf = new jsPDF({
-                orientation: "landscape",
-                unit: "px",
-                format: [width, height],
-              });
-              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-              const base64 = pdf.output("datauristring").split(",")[1];
-
-              attachments.push({
-                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                content: base64,
-              });
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           } else {
-            for (const ticket of issuedTickets) {
-              const fallbackPdf = await generateFallbackReceipt({
-                entityName: venue?.name || "Event/Venue",
-                ticket,
-                bookingRef: ticket.booking_ref || ticket.otp || "",
-                customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
-                type: "venue",
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                return await generateFallbackReceipt({
+                  entityName: venue?.name || "Event/Venue",
+                  ticket,
+                  bookingRef: ticket.booking_ref || ticket.otp || "",
+                  customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                  type: "venue",
+                });
               });
-              attachments.push(fallbackPdf);
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           }
 

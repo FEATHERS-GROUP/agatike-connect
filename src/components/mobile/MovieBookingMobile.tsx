@@ -355,51 +355,73 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
 
           await new Promise((r) => setTimeout(r, 600));
 
+          const attachments: any[] = [];
           if (movieProject) {
-            for (const ticket of issuedTickets) {
-              const el = document.getElementById(`ticket-render-${ticket.id}`);
-              if (!el) continue;
-
-              await new Promise((r) => setTimeout(r, 100));
-
-              const imgData = await htmlToImage.toJpeg(el, {
-                pixelRatio: 1.5,
-                quality: 0.8,
-                backgroundColor: "#ffffff",
-                width: 720,
-                height: 260,
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                const el = document.getElementById(`ticket-render-${ticket.id}`);
+                if (!el) return null;
+                try {
+                  const imgData = await htmlToImage.toJpeg(el, {
+                    pixelRatio: 1.5,
+                    quality: 0.8,
+                    backgroundColor: "#ffffff",
+                    width: 720,
+                    height: 260,
+                  });
+                  if (!imgData || imgData === "data:,") {
+                    throw new Error("Empty image data from htmlToImage");
+                  }
+                  const pdf = new jsPDF({
+                    orientation: "landscape",
+                    unit: "px",
+                    format: [720, 260],
+                  });
+                  pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+                  const base64 = pdf.output("datauristring").split(",")[1];
+                  return {
+                    filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                    content: base64,
+                  };
+                } catch (e) {
+                  console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
+                  return await generateFallbackReceipt({
+                    entityName: activeMovie?.title || "Event/Venue",
+                    ticket,
+                    bookingRef: ticket.otp,
+                    customerName: ticket.attendee?.firstName || "Guest",
+                    type: "movie",
+                    dateStr: selectedDate || "",
+                    timeStr: currentSchedule?.start_time || "",
+                    locationStr: cinema?.name || "",
+                    tierName: ticket.tierName,
+                  });
+                }
               });
-
-              if (!imgData || imgData === "data:,")
-                throw new Error("Empty image data from htmlToImage");
-
-              const pdf = new jsPDF({
-                orientation: "landscape",
-                unit: "px",
-                format: [720, 260],
-              });
-              pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
-              const base64 = pdf.output("datauristring").split(",")[1];
-
-              attachments.push({
-                filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                content: base64,
-              });
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           } else {
-            for (const ticket of issuedTickets) {
-              const fallbackPdf = await generateFallbackReceipt({
-                entityName: activeMovie?.title || "Event/Venue",
-                ticket,
-                bookingRef: ticket.otp,
-                customerName: ticket.attendee?.firstName || "Guest",
-                type: "movie",
-                dateStr: selectedDate || "",
-                timeStr: currentSchedule?.start_time || "",
-                locationStr: cinema?.name || "",
-                tierName: ticket.tierName,
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                return await generateFallbackReceipt({
+                  entityName: activeMovie?.title || "Event/Venue",
+                  ticket,
+                  bookingRef: ticket.otp,
+                  customerName: ticket.attendee?.firstName || "Guest",
+                  type: "movie",
+                  dateStr: selectedDate || "",
+                  timeStr: currentSchedule?.start_time || "",
+                  locationStr: cinema?.name || "",
+                  tierName: ticket.tierName,
+                });
               });
-              attachments.push(fallbackPdf);
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           }
 
