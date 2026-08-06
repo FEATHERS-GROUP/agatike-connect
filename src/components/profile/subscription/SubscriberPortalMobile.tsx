@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { todayHours, summarizeHours } from "@/lib/hours";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowLeft } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LazyCalendar from "@/components/lazy/LazyCalendar";
@@ -30,6 +31,7 @@ export function SubscriberPortalMobile({
   const [bookingTime, setBookingTime] = useState<string>(format(startOfHour(addHours(new Date(), 1)), "HH:mm"));
   const [bookingDuration, setBookingDuration] = useState<number>(1);
   const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<any>(null);
+  const navigate = useNavigate();
 
   const tabs = [
     { id: "overview", icon: Info, label: "Overview" },
@@ -43,8 +45,14 @@ export function SubscriberPortalMobile({
   return (
     <div className="md:hidden min-h-screen bg-secondary/30 flex flex-col pb-20">
       {/* Top Header Section (Orange theme like design) */}
-      <div className="bg-primary pt-8 pb-10 px-6 rounded-b-[40px] text-primary-foreground shadow-sm">
-        <div className="flex items-center justify-between mb-6 mt-6">
+      <div className="bg-primary pt-6 pb-10 px-6 rounded-b-[40px] text-primary-foreground shadow-sm relative">
+        <button 
+          onClick={() => navigate({ to: "/profile" })} 
+          className="p-2 -ml-2 mb-4 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors flex items-center justify-center w-fit"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex items-center justify-between mb-6 mt-2">
           <div className="flex items-center gap-4">
             <div className="relative">
               <Avatar className="h-20 w-20 border-4 border-background shadow-md">

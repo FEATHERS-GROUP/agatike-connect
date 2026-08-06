@@ -6,11 +6,13 @@ import {
   createViewMonthAgenda,
 } from '@schedule-x/calendar';
 import { createEventsServicePlugin } from '@schedule-x/events-service';
+import { createCalendarControlsPlugin } from '@schedule-x/calendar-controls';
 import '@schedule-x/theme-default/dist/index.css';
 import { useEffect, useState } from 'react';
 
 export default function LazyCalendar(props: any) {
   const [eventsService] = useState(() => createEventsServicePlugin());
+  const [calendarControls] = useState(() => createCalendarControlsPlugin());
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const getResponsiveView = () => {
@@ -62,8 +64,12 @@ export default function LazyCalendar(props: any) {
       onEventClick: (calendarEvent) => {
         if (props.onSelectEvent) props.onSelectEvent(calendarEvent);
       },
+      onClickDate: (date) => {
+        calendarControls.setDate(date);
+        calendarControls.setView('day');
+      }
     },
-    plugins: [eventsService],
+    plugins: [eventsService, calendarControls],
   });
 
   console.log("LazyCalendar render props.events:", props.events);

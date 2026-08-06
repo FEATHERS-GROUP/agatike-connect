@@ -55,6 +55,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-oauth/google": "^0.13.5",
     "@schedule-x/calendar": "^4.6.1",
+    "@schedule-x/calendar-controls": "^4.6.1",
     "@schedule-x/events-service": "^4.6.1",
     "@schedule-x/react": "^4.1.0",
     "@schedule-x/theme-default": "^4.6.1",

@@ -2753,6 +2753,11 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.60.4.tgz#da4f1676d87e2bdf744291b504b0ab79550c3e61"
   integrity sha512-QVTUovf40zgTqlFVrKA1uXMVvU2QWEFWfAH8Wdc48IxLvrJMQVMBRjuQyUpzZCDkakImib9eVazbWlC6ksWtJw==
 
+"@schedule-x/calendar-controls@^4.6.1":
+  version "4.6.1"
+  resolved "https://registry.yarnpkg.com/@schedule-x/calendar-controls/-/calendar-controls-4.6.1.tgz#ebf77433540412ffb2fcfc061e9f807cd7146e14"
+  integrity sha512-369EcOarcynwVrUA2faYeQRm91AY0FoAoN+tWMuqU31BvC5VPvgycyC4byfnzKwQhwcad4G41wGzqdnBaZBgmw==
+
 "@schedule-x/calendar@^4.6.1":
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/@schedule-x/calendar/-/calendar-4.6.1.tgz#d49ea0715a3eff16175577f5afec606dace596bd"
