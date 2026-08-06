@@ -80,6 +80,7 @@ function SubscriptionCard({
   linkedCreds: any[];
 }) {
   const router = useRouter();
+  const navigate = useNavigate();
   const [showInvoice, setShowInvoice] = useState(false);
   const [showRenew, setShowRenew] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -160,7 +161,7 @@ function SubscriptionCard({
         {/* Top Cover Section */}
         <div 
           className="relative h-24 md:h-32 w-full cursor-pointer"
-          onClick={() => setShowQR(true)}
+          onClick={() => navigate({ to: '/profile/subscriptions/$subscriptionId', params: { subscriptionId: String(sub.id) } })}
         >
           <img
             src={
@@ -203,7 +204,7 @@ function SubscriptionCard({
         {/* Details Section */}
         <div 
           className="p-3 md:p-4 flex flex-col gap-3 cursor-pointer hover:bg-secondary/20 transition-colors"
-          onClick={() => setShowQR(true)}
+          onClick={() => navigate({ to: '/profile/subscriptions/$subscriptionId', params: { subscriptionId: String(sub.id) } })}
         >
           {/* Price & Customer Info */}
           <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-2">
