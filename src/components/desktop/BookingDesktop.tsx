@@ -763,6 +763,19 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     return <CheckoutSkeleton />;
   }
 
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && eventProject && (
+    <HiddenPDFGenerator
+      issuedTickets={issuedTickets}
+      eventProject={eventProject}
+      event={event}
+      currency={currency}
+      getMergedProjectDesign={getMergedProjectDesign}
+      getStopDetails={getStopDetails}
+      formatSeatDisplay={formatSeatDisplay}
+      getTierDetails={getTierDetails}
+    />
+  );
+
   if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -779,6 +792,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             }
           }}
         />
+        {hiddenTicketRenderer}
         {!isSubdomain && <Footer />}
       </div>
     );
@@ -787,20 +801,22 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
 
   if (isSuccess) {
-    return (
-      <SuccessState
-        eventTitle={event.title}
-        recipientEmail={attendees[0]?.email}
-        hasMerch={hasMerchInCart}
-        onReset={() => {
-          setIsSuccess(false);
-          setPawapayDepositId(null);
-          setIssuedTickets([]);
-          setCart({});
-          setSelectedSeats([]);
-          setAttendees([]);
-        }}
-      />
+      <>
+        <SuccessState
+          eventTitle={event.title}
+          recipientEmail={attendees[0]?.email}
+          hasMerch={hasMerchInCart}
+          onReset={() => {
+            setIsSuccess(false);
+            setPawapayDepositId(null);
+            setIssuedTickets([]);
+            setCart({});
+            setSelectedSeats([]);
+            setAttendees([]);
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -888,18 +904,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       />
 
       {/* Hidden container for PDF rendering */}
-      {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <HiddenPDFGenerator
-          issuedTickets={issuedTickets}
-          eventProject={eventProject}
-          event={event}
-          currency={currency}
-          getMergedProjectDesign={getMergedProjectDesign}
-          getStopDetails={getStopDetails}
-          formatSeatDisplay={formatSeatDisplay}
-          getTierDetails={getTierDetails}
-        />
-      )}
+      {hiddenTicketRenderer}
 
       {!isSubdomain && <Footer />}
       {isSubdomain && <StorefrontFooter />}

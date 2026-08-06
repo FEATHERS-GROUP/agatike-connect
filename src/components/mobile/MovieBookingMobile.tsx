@@ -492,9 +492,71 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     );
   }
 
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && movieProject && (
+    <div
+      className="absolute -z-50 pointer-events-none"
+      style={{ top: "-9999px", left: "-9999px" }}
+    >
+      {issuedTickets.map((t) => {
+        const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
+        return (
+          <div
+            key={t.id}
+            id={`ticket-render-${t.id}`}
+            className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+          >
+            <TicketPreview
+              template={finalDesign.template}
+              palette={finalDesign.palette || { from: "#000", to: "#000", name: "Black" }}
+              font={finalDesign.font || { css: "sans-serif", name: "Modern" }}
+              tier={t.tierName}
+              title={activeMovie.title}
+              subtitle={cinema?.name}
+              date={selectedDate!}
+              time={currentSchedule?.start_time?.substring(0, 5)}
+              seat={t.attendee_name}
+              price={(
+                activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0
+              ).toString()}
+              currency={currency}
+              cover={finalDesign.coverImage || activeMovie.cover_url}
+              logoText={finalDesign.logoText || "Agatike"}
+              logoImage={finalDesign.logoImage}
+              logoScale={Number(finalDesign.logoScale || 24)}
+              logoOpacity={Number(finalDesign.logoOpacity ?? 1)}
+              logoColorMode={finalDesign.logoColorMode || "original"}
+              orderId={t.otp}
+              qrValue={`${window.location.origin}/c/${t.otp}`}
+              previewMode="Front"
+              layout={
+                finalDesign.layout || {
+                  titleSize: 30,
+                  subtitleSize: 14,
+                  metaSize: 11,
+                  titleAlign: "left",
+                  titleOffsetY: 0,
+                  subtitleOffsetY: 0,
+                  metaOffsetY: 0,
+                }
+              }
+              back={
+                finalDesign.back || {
+                  backText: "",
+                  backImage: "",
+                  backImageOpacity: 0.3,
+                }
+              }
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+
   if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
-      <CheckYourPhone
+      <>
+        <CheckYourPhone
         onCancel={async () => {
           setIsPollingPawaPay(false);
           if (pawapayDepositId) {
@@ -506,12 +568,15 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           }
         }}
       />
+      {hiddenTicketRenderer}
+    </>
     );
   }
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+      <>
+        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
         <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
           <CheckCircle2 className="h-12 w-12 text-green-500" />
         </div>
@@ -520,8 +585,11 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
           has been sent to {attendeeInfo.email}.
         </p>
-        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to movies...</p>
+          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+        </div>
       </div>
+      {hiddenTicketRenderer}
+    </>
     );
   }
 
@@ -755,67 +823,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         userPhone={user?.phone || undefined}
       />
 
-      {/* Hidden Ticket Renderer */}
-      {isGenerating && issuedTickets.length > 0 && movieProject && (
-        <div
-          className="absolute -z-50 pointer-events-none"
-          style={{ top: "-9999px", left: "-9999px" }}
-        >
-          {issuedTickets.map((t) => {
-            const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
-            return (
-              <div
-                key={t.id}
-                id={`ticket-render-${t.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={finalDesign.template}
-                  palette={finalDesign.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={finalDesign.font || { css: "sans-serif", name: "Modern" }}
-                  tier={t.tierName}
-                  title={activeMovie.title}
-                  subtitle={cinema?.name}
-                  date={selectedDate!}
-                  time={currentSchedule?.start_time?.substring(0, 5)}
-                  seat={t.attendee_name}
-                  price={(
-                    activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0
-                  ).toString()}
-                  currency={currency}
-                  cover={finalDesign.coverImage || activeMovie.cover_url}
-                  logoText={finalDesign.logoText || "Agatike"}
-                  logoImage={finalDesign.logoImage}
-                  logoScale={Number(finalDesign.logoScale || 24)}
-                  logoOpacity={Number(finalDesign.logoOpacity ?? 1)}
-                  logoColorMode={finalDesign.logoColorMode || "original"}
-                  orderId={t.otp}
-                  qrValue={`${window.location.origin}/c/${t.otp}`}
-                  previewMode="Front"
-                  layout={
-                    finalDesign.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    finalDesign.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {hiddenTicketRenderer}
     </div>
   );
 }

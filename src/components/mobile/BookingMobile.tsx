@@ -814,20 +814,101 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     );
   }
 
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && eventProject && (
+    <div
+      className="absolute -z-50 pointer-events-none"
+      style={{ top: "-9999px", left: "-9999px" }}
+    >
+      {issuedTickets.map((ticket: any) => {
+        const mergedProject = getMergedProjectDesign(
+          eventProject,
+          ticket.attendee.stopIdx,
+          ticket.attendee.tierId,
+        );
+        return (
+          <div
+            key={ticket.id}
+            id={`ticket-render-${ticket.id}`}
+            className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+          >
+            <TicketPreview
+              template={mergedProject.template || "Concert 1"}
+              palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
+              font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
+              tier={ticket.tier}
+              title={event.title}
+              subtitle={event.venue || ""}
+              date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
+              time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
+              seat={
+                ticket.attendee.seat
+                  ? formatSeatDisplay(
+                      ticket.attendee.seatName || ticket.attendee.seat,
+                      ticket.attendee.sectionName,
+                    )
+                  : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
+              }
+              price={
+                getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
+                getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
+                "0"
+              }
+              currency={currency === "FRWS" ? "RWF" : currency}
+              cover={mergedProject.coverImage || event.cover || ""}
+              logoText={
+                mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                  ? mergedProject.logoText
+                  : event.organizer || "Agatike"
+              }
+              logoImage={mergedProject.logoImage}
+              logoScale={Number(mergedProject.logoScale || 24)}
+              logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
+              logoColorMode={mergedProject.logoColorMode || "original"}
+              orderId={ticket.otp}
+              qrValue={`${window.location.origin}/v/${ticket.otp}`}
+              previewMode="Front"
+              layout={
+                mergedProject.layout || {
+                  titleSize: 30,
+                  subtitleSize: 14,
+                  metaSize: 11,
+                  titleAlign: "left",
+                  titleOffsetY: 0,
+                  subtitleOffsetY: 0,
+                  metaOffsetY: 0,
+                }
+              }
+              back={
+                mergedProject.back || {
+                  backText: "",
+                  backImage: "",
+                  backImageOpacity: 0.3,
+                }
+              }
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+
   if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
-      <CheckYourPhone
-        onCancel={async () => {
-          setIsPollingPawaPay(false);
-          if (pawapayDepositId) {
-            try {
-              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-            } catch (e) {
-              console.error("Cancel cleanup failed:", e);
+      <>
+        <CheckYourPhone
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -835,7 +916,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+      <>
+        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
         <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
           <CheckCircle2 className="h-12 w-12 text-green-500" />
         </div>
@@ -909,6 +991,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
         </div>
       </div>
+      {hiddenTicketRenderer}
+    </>
     );
   }
 
@@ -1267,84 +1351,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         userPhone={user?.phone || undefined}
       />
 
-      {/* Hidden container for PDF rendering */}
-      {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <div
-          className="absolute -z-50 pointer-events-none"
-          style={{ top: "-9999px", left: "-9999px" }}
-        >
-          {issuedTickets.map((ticket: any) => {
-            const mergedProject = getMergedProjectDesign(
-              eventProject,
-              ticket.attendee.stopIdx,
-              ticket.attendee.tierId,
-            );
-            return (
-              <div
-                key={ticket.id}
-                id={`ticket-render-${ticket.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={mergedProject.template || "Concert 1"}
-                  palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={ticket.tier}
-                  title={event.title}
-                  subtitle={event.venue || ""}
-                  date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
-                  time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
-                  seat={
-                    ticket.attendee.seat
-                      ? formatSeatDisplay(
-                          ticket.attendee.seatName || ticket.attendee.seat,
-                          ticket.attendee.sectionName,
-                        )
-                      : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
-                  }
-                  price={
-                    getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
-                    getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
-                    "0"
-                  }
-                  currency={currency === "FRWS" ? "RWF" : currency}
-                  cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={
-                    mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                      ? mergedProject.logoText
-                      : event.organizer || "Agatike"
-                  }
-                  logoImage={mergedProject.logoImage}
-                  logoScale={Number(mergedProject.logoScale || 24)}
-                  logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
-                  logoColorMode={mergedProject.logoColorMode || "original"}
-                  orderId={ticket.otp}
-                  qrValue={`${window.location.origin}/v/${ticket.otp}`}
-                  previewMode="Front"
-                  layout={
-                    mergedProject.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    mergedProject.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {hiddenTicketRenderer}
     </div>
   );
 }

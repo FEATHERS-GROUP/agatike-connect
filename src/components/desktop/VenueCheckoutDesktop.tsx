@@ -552,6 +552,68 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     return () => clearTimeout(tm);
   }, [isSuccess, navigate]);
 
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && venueProject && (
+    <div
+      className="absolute -z-50 pointer-events-none"
+      style={{ top: "-9999px", left: "-9999px" }}
+    >
+      {issuedTickets.map((t) => (
+        <div
+          key={t.id}
+          id={`ticket-render-${t.id}`}
+          className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+        >
+          <TicketPreview
+            template={venueProject.template}
+            palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+            font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+            tier={t.tier}
+            title={venue.name}
+            subtitle={venue.address || t.attendee_name || name}
+            date={date}
+            time="Opening Hours"
+            seat={t.attendee_name || name || "General"}
+            price={
+              t.tier === "Standard Entry"
+                ? venue?.entrance_fee?.toString() || "0"
+                : venue.pricing_tiers
+                    ?.find((pt: any) => pt.name === t.tier)
+                    ?.amount?.toString() || total.toString()
+            }
+            currency={venue.currency}
+            cover={venueProject.coverImage || ""}
+            logoText={venueProject.logoText || "Agatike"}
+            logoImage={venueProject.logoImage}
+            logoScale={Number(venueProject.logoScale || 24)}
+            logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+            logoColorMode={venueProject.logoColorMode || "original"}
+            orderId={t.otp}
+            qrValue={`${window.location.origin}/v/${t.otp}`}
+            previewMode="Front"
+            layout={
+              venueProject.design_overrides?.layout || {
+                titleSize: 30,
+                subtitleSize: 14,
+                metaSize: 11,
+                titleAlign: "left",
+                titleOffsetY: 0,
+                subtitleOffsetY: 0,
+                metaOffsetY: 0,
+              }
+            }
+            back={
+              venueProject.design_overrides?.back || {
+                backText: "",
+                backImage: "",
+                backImageOpacity: 0.1,
+              }
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
@@ -569,6 +631,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           }}
         />
         <Footer />
+        {hiddenTicketRenderer}
       </div>
     );
   }
@@ -588,106 +651,48 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             </strong>
           </p>
         </div>
-        {/* Hidden Ticket Renderer so html-to-image can find it */}
-        {venueProject && (
-          <div
-            className="absolute -z-50 pointer-events-none"
-            style={{ top: "-9999px", left: "-9999px" }}
-          >
-            {issuedTickets.map((t) => (
-              <div
-                key={t.id}
-                id={`ticket-render-${t.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={venueProject.template}
-                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={t.tier}
-                  title={venue.name}
-                  subtitle={venue.address || t.attendee_name || name}
-                  date={date}
-                  time="Opening Hours"
-                  seat={t.attendee_name || name || "General"}
-                  price={
-                    t.tier === "Standard Entry"
-                      ? venue?.entrance_fee?.toString() || "0"
-                      : venue.pricing_tiers
-                          ?.find((pt: any) => pt.name === t.tier)
-                          ?.amount?.toString() || total.toString()
-                  }
-                  currency={venue.currency}
-                  cover={venueProject.coverImage || ""}
-                  logoText={venueProject.logoText || "Agatike"}
-                  logoImage={venueProject.logoImage}
-                  logoScale={Number(venueProject.logoScale || 24)}
-                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
-                  logoColorMode={venueProject.logoColorMode || "original"}
-                  orderId={t.otp}
-                  qrValue={`${window.location.origin}/v/${t.otp}`}
-                  previewMode="Front"
-                  layout={
-                    venueProject.design_overrides?.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    venueProject.design_overrides?.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.1,
-                    }
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        )}
+      {hiddenTicketRenderer}
       </>
     );
   }
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-secondary/20 flex flex-col items-center justify-center p-4">
-        <div className="bg-card p-12 rounded-3xl shadow-xl text-center max-w-md w-full border border-border/50">
-          <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
-          <h2 className="text-3xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
-          <p className="text-muted-foreground mb-8">
-            Your ticket for {venue.name} has been secured.
-          </p>
-          <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
-            <Ticket className="w-6 h-6 text-primary" />
-            <span className="font-bold tracking-widest">
-              {Math.random().toString(36).substring(2, 10).toUpperCase()}
-            </span>
-          </div>
-          <div className="mt-8 space-y-4">
-            <button
-              onClick={() => {
-                setIsSuccess(false);
-                setPawapayDepositId(null);
-                setIssuedTickets([]);
-                setCart({});
-                setAttendees([{ name: "", id_document: "" }]);
-              }}
-              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-            >
-              Buy Another Ticket
-            </button>
-            <p className="text-sm text-muted-foreground animate-pulse">
-              Or wait to be redirected...
+      <>
+        <div className="min-h-screen bg-secondary/20 flex flex-col items-center justify-center p-4">
+          <div className="bg-card p-12 rounded-3xl shadow-xl text-center max-w-md w-full border border-border/50">
+            <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
+            <h2 className="text-3xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
+            <p className="text-muted-foreground mb-8">
+              Your ticket for {venue.name} has been secured.
             </p>
+            <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
+              <Ticket className="w-6 h-6 text-primary" />
+              <span className="font-bold tracking-widest">
+                {Math.random().toString(36).substring(2, 10).toUpperCase()}
+              </span>
+            </div>
+            <div className="mt-8 space-y-4">
+              <button
+                onClick={() => {
+                  setIsSuccess(false);
+                  setPawapayDepositId(null);
+                  setIssuedTickets([]);
+                  setCart({});
+                  setAttendees([{ name: "", id_document: "" }]);
+                }}
+                className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+              >
+                Buy Another Ticket
+              </button>
+              <p className="text-sm text-muted-foreground animate-pulse">
+                Or wait to be redirected...
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
