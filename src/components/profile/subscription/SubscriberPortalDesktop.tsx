@@ -4,6 +4,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { SessionBookingModal } from "./SessionBookingModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User, Phone, Instagram, MessageCircle, Building2 } from "lucide-react";
 import { format, addHours, startOfHour, isSameDay } from "date-fns";
@@ -354,9 +355,15 @@ export function SubscriberPortalDesktop({
                               </div>
                               
                               <div className="flex items-center sm:pl-4 mt-4 sm:mt-0">
-                                <Button className="w-full sm:w-auto rounded-xl font-bold px-6" onClick={() => setSelectedCalendarEvent({ resource: session })}>
-                                  Book Session
-                                </Button>
+                                {new Date(session.end_time) > new Date() ? (
+                                  <Button className="w-full sm:w-auto rounded-xl font-bold px-6" onClick={() => setSelectedCalendarEvent({ resource: session })}>
+                                    Book Session
+                                  </Button>
+                                ) : (
+                                  <Button variant="secondary" disabled className="w-full sm:w-auto rounded-xl font-bold px-6 opacity-50">
+                                    Completed
+                                  </Button>
+                                )}
                               </div>
                               
                             </div>
@@ -497,41 +504,13 @@ export function SubscriberPortalDesktop({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!selectedCalendarEvent} onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-               {selectedCalendarEvent?.type === 'session' ? <Calendar className="h-6 w-6 text-primary" /> : <Clock className="h-6 w-6 text-primary" />}
-               {selectedCalendarEvent?.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-             <div className="space-y-1">
-               <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Start</p>
-               <p className="font-semibold text-foreground">{selectedCalendarEvent?.start ? format(new Date(selectedCalendarEvent.start.epochMilliseconds ?? selectedCalendarEvent.start), "MMMM d, yyyy h:mm a") : ""}</p>
-             </div>
-             <div className="space-y-1">
-               <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">End</p>
-               <p className="font-semibold text-foreground">{selectedCalendarEvent?.end ? format(new Date(selectedCalendarEvent.end.epochMilliseconds ?? selectedCalendarEvent.end), "MMMM d, yyyy h:mm a") : ""}</p>
-             </div>
-             {selectedCalendarEvent?.resource?.resource?.name && (
-               <div className="space-y-1">
-                 <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Resource</p>
-                 <p className="font-semibold text-foreground">{selectedCalendarEvent.resource.resource.name}</p>
-               </div>
-             )}
-             {selectedCalendarEvent?.resource?.class?.name && (
-               <div className="space-y-1">
-                 <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Class</p>
-                 <p className="font-semibold text-foreground">{selectedCalendarEvent.resource.class.name}</p>
-               </div>
-             )}
-          </div>
-          <div className="flex justify-end pt-4 border-t border-border/40">
-            <Button className="h-12 rounded-xl px-8 font-bold shadow-sm" onClick={() => setSelectedCalendarEvent(null)}>Close</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SessionBookingModal 
+        isOpen={!!selectedCalendarEvent}
+        onClose={() => setSelectedCalendarEvent(null)}
+        session={selectedCalendarEvent?.resource}
+        space={space}
+        user={user}
+      />
     </div>
   );
 }

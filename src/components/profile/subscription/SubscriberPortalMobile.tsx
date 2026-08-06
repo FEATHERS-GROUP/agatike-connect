@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LazyCalendar from "@/components/lazy/LazyCalendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SessionBookingModal } from "./SessionBookingModal";
 
 export function SubscriberPortalMobile({
   subscriptionId,
@@ -325,9 +326,15 @@ export function SubscriberPortalMobile({
                                   <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {session.class?.duration_minutes || 60} min</span>
                                   <span className="flex items-center gap-1.5"><User className="w-3 h-3" /> {session.coach_name || "Instructor"}</span>
                                 </div>
-                                <Button size="sm" className="rounded-xl font-bold px-4" onClick={() => setSelectedCalendarEvent({ resource: session })}>
-                                  Book
-                                </Button>
+                                {new Date(session.end_time) > new Date() ? (
+                                  <Button size="sm" className="rounded-xl font-bold px-4" onClick={() => setSelectedCalendarEvent({ resource: session })}>
+                                    Book
+                                  </Button>
+                                ) : (
+                                  <Button size="sm" variant="secondary" disabled className="rounded-xl font-bold px-4 opacity-50">
+                                    Completed
+                                  </Button>
+                                )}
                               </div>
                               
                             </div>
@@ -480,27 +487,13 @@ export function SubscriberPortalMobile({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!selectedCalendarEvent} onOpenChange={(open) => !open && setSelectedCalendarEvent(null)}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 w-[90vw] mx-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-               {selectedCalendarEvent?.type === 'session' ? <Calendar className="h-5 w-5 text-primary" /> : <Clock className="h-5 w-5 text-primary" />}
-               {selectedCalendarEvent?.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-2 space-y-4 text-sm">
-             <div>
-               <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Start</p>
-               <p className="font-semibold">{selectedCalendarEvent?.start ? format(new Date(selectedCalendarEvent.start.epochMilliseconds ?? selectedCalendarEvent.start), "MMM d, yyyy h:mm a") : ""}</p>
-             </div>
-             <div>
-               <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground">End</p>
-               <p className="font-semibold">{selectedCalendarEvent?.end ? format(new Date(selectedCalendarEvent.end.epochMilliseconds ?? selectedCalendarEvent.end), "MMM d, yyyy h:mm a") : ""}</p>
-             </div>
-          </div>
-          <Button className="h-12 rounded-xl font-bold shadow-sm w-full mt-2" onClick={() => setSelectedCalendarEvent(null)}>Close</Button>
-        </DialogContent>
-      </Dialog>
+      <SessionBookingModal 
+        isOpen={!!selectedCalendarEvent}
+        onClose={() => setSelectedCalendarEvent(null)}
+        session={selectedCalendarEvent?.resource}
+        space={space}
+        user={user}
+      />
     </div>
   );
 }
