@@ -892,6 +892,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     return (
       <>
         <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

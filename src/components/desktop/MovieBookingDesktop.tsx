@@ -613,6 +613,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
         <Navbar />
         <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

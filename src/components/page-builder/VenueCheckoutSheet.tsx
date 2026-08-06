@@ -509,6 +509,7 @@ export function VenueCheckoutSheet({
         {isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo") ? (
           <CheckYourPhone
             themeColor={themeColor}
+            status={isGenerating ? "generating" : "payment"}
             onCancel={async () => {
               setIsPollingPawaPay(false);
               if (pawapayDepositId) {

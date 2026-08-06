@@ -594,17 +594,18 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     return (
       <>
         <CheckYourPhone
-        onCancel={async () => {
-          setIsPollingPawaPay(false);
-          if (pawapayDepositId) {
-            try {
-              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-            } catch (e) {
-              console.error("Cancel cleanup failed:", e);
+          status={isGenerating ? "generating" : "payment"}
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
       {hiddenTicketRenderer}
     </>
     );

@@ -777,6 +777,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       <div className="min-h-screen bg-background text-foreground">
         {!isSubdomain && <Navbar />}
         <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {
