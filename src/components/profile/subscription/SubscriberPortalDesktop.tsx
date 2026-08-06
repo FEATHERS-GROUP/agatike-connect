@@ -62,12 +62,10 @@ export function SubscriberPortalDesktop({
             <Button
               variant="ghost"
               size="sm"
-              asChild
+              onClick={() => window.history.back()}
               className="w-fit mb-8 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Link to="/profile">
-                <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
-              </Link>
+              <ArrowLeft className="h-4 w-4 mr-2" /> Back
             </Button>
             
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">

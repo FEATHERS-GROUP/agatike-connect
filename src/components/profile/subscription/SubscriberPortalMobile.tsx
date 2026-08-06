@@ -52,7 +52,7 @@ export function SubscriberPortalMobile({
       {/* Top Header Section (Orange theme like design) */}
       <div className="bg-primary pt-6 pb-10 px-6 rounded-b-[40px] text-primary-foreground shadow-sm relative">
         <button 
-          onClick={() => navigate({ to: "/profile" })} 
+          onClick={() => window.history.back()} 
           className="p-2 -ml-2 mb-4 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors flex items-center justify-center w-fit"
         >
           <ArrowLeft className="h-5 w-5" />
