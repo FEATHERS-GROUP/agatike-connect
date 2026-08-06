@@ -231,12 +231,12 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     const rightStop = isExperience
       ? true
       : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
-    // Hide sold-out tiers
-    const hasInventory = t.remaining > 0;
+    // Keep sold-out tiers so the UI can show the 'SOLD OUT' stamp
+    // const hasInventory = t.remaining > 0;
     // Hide expired tiers
     const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
 
-    return rightStop && hasInventory && isNotExpired;
+    return rightStop && isNotExpired;
   });
 
   const isPastEvent = useMemo(() => {
