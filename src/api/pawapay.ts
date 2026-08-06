@@ -298,7 +298,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(`Agatike Error: ${data.errorMessage || JSON.stringify(data)}`);
+      throw new Error(`PawaPay Error: ${data.errorMessage || JSON.stringify(data)}`);
     }
 
     if (data.status === "REJECTED") {
@@ -471,7 +471,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-        description: pageSlug ? `Agatike Deposit::${pageSlug}` : "Agatike Deposit",
+        description: pageSlug ? `PawaPay Deposit::${pageSlug}` : "PawaPay Deposit",
       },
     );
 

@@ -42,7 +42,7 @@ export const Route = createFileRoute("/feed")({
 
 function Feed() {
   const { followedIds, isFollowing, toggleFollow } = useFollowedOrganizers();
-  const { isLoggedIn, user } = useUserAuth();
+  const { isLoggedIn, user, isLoading: isLoadingAuth } = useUserAuth();
   const navigate = useNavigate();
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [showAllOrganizers, setShowAllOrganizers] = useState(false);
@@ -314,7 +314,7 @@ function Feed() {
         </aside>
       </div>
 
-      {!isLoggedIn && (
+      {!isLoadingAuth && !isLoggedIn && (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 pointer-events-none flex justify-center">
           <div className="bg-card/95 backdrop-blur-xl border border-border/60 shadow-[0_-8px_30px_rgb(0,0,0,0.12)] rounded-3xl p-6 md:p-8 w-full max-w-lg pointer-events-auto animate-in slide-in-from-bottom-10 fade-in duration-500 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
@@ -349,7 +349,7 @@ function Feed() {
       )}
 
       {/* Blur overlay for the background when not logged in */}
-      {!isLoggedIn && (
+      {!isLoadingAuth && !isLoggedIn && (
         <div className="fixed inset-0 top-[72px] bg-background/20 backdrop-blur-[2px] z-40 pointer-events-none" />
       )}
 

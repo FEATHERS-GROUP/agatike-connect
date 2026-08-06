@@ -12,7 +12,7 @@ const GET_PUBLIC_CINEMAS = `
       id
       name
       description
-      workspace {
+      workspaces {
         currency
       }
       city
@@ -36,7 +36,7 @@ const GET_CINEMAS = `
       workspace_id
       name
       description
-      workspace {
+      workspaces {
         currency
       }
       city
@@ -68,7 +68,7 @@ const GET_CINEMA_BY_ID = `
       workspace_id
       name
       description
-      workspace {
+      workspaces {
         currency
       }
       city
