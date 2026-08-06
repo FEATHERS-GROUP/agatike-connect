@@ -57,10 +57,12 @@ export function SubscriberPortalDesktop({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate({ to: "/profile" })}
+              asChild
               className="w-fit mb-8 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
+              <Link to="/profile">
+                <ArrowLeft className="h-4 w-4 mr-2" /> Back to Profile
+              </Link>
             </Button>
             
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
