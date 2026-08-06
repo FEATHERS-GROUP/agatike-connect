@@ -211,12 +211,16 @@ function SubscriptionCard({
         const res = await initiatePawaPayDeposit({
           data: {
             amount: details.convertedAmount,
+            baseAmount: parseFloat(sub.price || "0"),
+            baseCurrency: sub.space?.currency || "RWF",
             currency: details.currency,
-            phoneNumber: details.phone,
+            phone: details.phone,
             network: details.network,
             reason: `Renew ${sub.plan_name}`,
-            organizerId: sub.space?.workspace_id,
+            workspaceId: sub.space?.workspace_id,
             feeBreakdown: details.simulation?.feeBreakdown,
+            referenceId: sub.id,
+            type: "space_subscription",
           },
         });
         setPawapayDepositId(res.depositId);
