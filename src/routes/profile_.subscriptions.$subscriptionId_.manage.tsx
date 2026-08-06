@@ -62,11 +62,11 @@ function ManageSubscriptionPage() {
   const handleChangePlanClick = (targetPlan: any) => {
     const currentPrice = parseFloat(subscription?.price || "0");
     const targetPrice = parseFloat(targetPlan.price);
-    
+
     const amountDue = Math.max(0, targetPrice - currentPrice);
     setUpgradeTargetPlan(targetPlan);
     setProratedAmount(amountDue);
-    
+
     if (amountDue === 0) {
       // Just change plan immediately without payment
       if (confirm(`Are you sure you want to switch to ${targetPlan.name}?`)) {
@@ -113,7 +113,7 @@ function ManageSubscriptionPage() {
           space_id: space?.id
         }
       });
-      
+
       toast.success("Subscription changed successfully!");
       queryClient.invalidateQueries({ queryKey: ["subscription", subscriptionId] });
       setIsPaymentModalOpen(false);
@@ -210,13 +210,13 @@ function ManageSubscriptionPage() {
   return (
     <div className="min-h-screen bg-secondary/20 flex flex-col font-sans">
       <Navbar />
-      
+
       {/* Header with Animated Premium Gradient */}
       <div className="relative bg-primary text-primary-foreground pt-16 pb-28 px-6 md:px-12 overflow-hidden border-b border-primary/20">
         {/* Decorative glassmorphism blobs */}
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-background/20 rounded-full blur-3xl opacity-60 mix-blend-overlay"></div>
         <div className="absolute bottom-0 left-10 -mb-20 w-72 h-72 bg-secondary/20 rounded-full blur-3xl opacity-60 mix-blend-overlay"></div>
-        
+
         <div className="max-w-5xl mx-auto relative z-10">
           <Link to={`/profile/subscriptions/${subscriptionId}`} className="inline-flex items-center gap-2 text-primary-foreground/70 hover:text-primary-foreground transition-colors mb-8 font-medium bg-black/10 hover:bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm text-sm">
             <ArrowLeft className="w-4 h-4" />
@@ -228,8 +228,8 @@ function ManageSubscriptionPage() {
                 Manage Subscription
               </h1>
               <p className="text-lg md:text-xl text-primary-foreground/80 font-medium flex items-center gap-3">
-                <span className="bg-white/20 px-3 py-1 rounded-md backdrop-blur-md">{space?.name}</span> 
-                <span className="opacity-50">•</span> 
+                <span className="bg-white/20 px-3 py-1 rounded-md backdrop-blur-md">{space?.name}</span>
+                <span className="opacity-50">•</span>
                 <span>{subscription.plan_name}</span>
               </p>
             </div>
@@ -240,7 +240,7 @@ function ManageSubscriptionPage() {
       {/* Main Content Split Layout */}
       <div className="flex-1 max-w-5xl mx-auto w-full px-4 md:px-12 -mt-16 mb-20 relative z-10">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col md:flex-row gap-6 w-full">
-          
+
           {/* Sidebar Tabs for Desktop, Horizontal for Mobile */}
           <TabsList className="flex flex-row md:flex-col justify-start h-auto bg-background/60 dark:bg-background/40 backdrop-blur-xl p-2 rounded-2xl border border-border/50 shadow-lg w-full md:w-64 shrink-0 overflow-x-auto">
             <TabsTrigger value="overview" className="w-full justify-start py-3.5 px-4 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all text-base font-medium mb-1">
@@ -259,7 +259,7 @@ function ManageSubscriptionPage() {
 
           {/* Tab Content Area */}
           <div className="flex-1 bg-background/90 dark:bg-card/90 backdrop-blur-2xl rounded-3xl p-6 md:p-10 shadow-2xl border border-border/40 min-h-[500px]">
-            
+
             <TabsContent value="overview" className="animate-in fade-in slide-in-from-bottom-4 duration-500 mt-0">
               <div className="space-y-8">
                 <div>
@@ -272,14 +272,14 @@ function ManageSubscriptionPage() {
                   <div className="relative overflow-hidden bg-secondary border border-border p-7 rounded-3xl shadow-xl transform transition-transform hover:scale-[1.02] duration-300">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                     <div className="absolute bottom-0 left-0 w-32 h-32 bg-background/20 rounded-full -ml-10 -mb-10 blur-xl"></div>
-                    
+
                     <div className="relative z-10">
                       <div className="flex justify-between items-center mb-6">
                         <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest opacity-80">Current Plan</p>
                         <CreditCard className="w-6 h-6 text-muted-foreground opacity-50" />
                       </div>
                       <p className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8 text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground">{subscription.plan_name}</p>
-                      
+
                       <div className="flex justify-between items-end">
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">Pricing</p>
@@ -302,7 +302,7 @@ function ManageSubscriptionPage() {
                       </span>
                       <p className="text-3xl font-bold capitalize tracking-tight">{subscription.status}</p>
                     </div>
-                    
+
                     {subscription.next_billing_date && (
                       <div className="bg-background/50 dark:bg-background/30 rounded-2xl p-4 border border-border/30">
                         <p className="text-sm text-muted-foreground mb-1">Next billing date</p>
@@ -320,7 +320,7 @@ function ManageSubscriptionPage() {
                     const startDate = new Date(subscription.start_date);
                     now.setHours(0, 0, 0, 0);
                     startDate.setHours(0, 0, 0, 0);
-                    
+
                     if (now >= startDate) {
                       return (
                         <div className="bg-orange-500/10 text-orange-600 dark:text-orange-400 px-6 py-4 rounded-2xl border border-orange-500/20 flex items-center gap-3 w-full justify-center">
@@ -331,10 +331,10 @@ function ManageSubscriptionPage() {
                         </div>
                       );
                     }
-                    
+
                     return (
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         size="lg"
                         className="rounded-2xl px-8 h-14 text-base font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
                         onClick={() => {
@@ -383,21 +383,21 @@ function ManageSubscriptionPage() {
                       return (
                         <div key={i} className="group relative overflow-hidden bg-background hover:bg-gradient-to-b hover:from-background hover:to-primary/5 p-7 rounded-3xl border-2 border-border/40 hover:border-primary/50 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-2xl hover:-translate-y-1" onClick={() => handleChangePlanClick(plan)}>
                           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/10 transition-colors"></div>
-                          
+
                           <div className="flex justify-between items-start mb-6 relative z-10">
                             <h4 className="font-bold text-2xl tracking-tight">{plan.name}</h4>
                             <div className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">
                               Upgrade
                             </div>
                           </div>
-                          
+
                           <div className="relative z-10">
                             <p className="text-4xl font-extrabold mb-2 tracking-tighter">
                               {parseFloat(plan.price).toLocaleString()} <span className="text-xl font-bold text-muted-foreground">{space?.workspace?.currency}</span>
                             </p>
                             <p className="text-sm text-muted-foreground font-medium mb-8">Billed {plan.billing_cycle}</p>
                           </div>
-                          
+
                           <div className="mt-auto pt-6 border-t border-border/50 relative z-10">
                             <div className="flex justify-between items-center mb-6 bg-secondary/50 p-4 rounded-2xl">
                               <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Amount Due Now</span>
@@ -425,31 +425,31 @@ function ManageSubscriptionPage() {
                 <div className="bg-secondary/20 p-8 rounded-3xl border border-border/50 shadow-sm space-y-6">
                   <div className="space-y-3">
                     <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
-                    <Input 
-                      placeholder="e.g. John Doe" 
-                      value={visitorName} 
+                    <Input
+                      placeholder="e.g. John Doe"
+                      value={visitorName}
                       onChange={e => setVisitorName(e.target.value)}
                       className="rounded-2xl h-14 px-5 bg-background border-border/50 focus-visible:ring-primary/20 text-base"
                     />
                   </div>
-                  
+
                   <div className="space-y-3">
                     <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
-                    <Input 
-                      type="email" 
-                      placeholder="e.g. john@example.com" 
-                      value={visitorEmail} 
+                    <Input
+                      type="email"
+                      placeholder="e.g. john@example.com"
+                      value={visitorEmail}
                       onChange={e => setVisitorEmail(e.target.value)}
                       className="rounded-2xl h-14 px-5 bg-background border-border/50 focus-visible:ring-primary/20 text-base"
                     />
                   </div>
-                  
+
                   <div className="space-y-3">
                     <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Phone Number</Label>
-                    <Input 
-                      type="tel" 
-                      placeholder="e.g. 0780000000" 
-                      value={visitorPhone} 
+                    <Input
+                      type="tel"
+                      placeholder="e.g. 0780000000"
+                      value={visitorPhone}
                       onChange={e => setVisitorPhone(e.target.value)}
                       className="rounded-2xl h-14 px-5 bg-background border-border/50 focus-visible:ring-primary/20 text-base"
                     />
@@ -458,9 +458,9 @@ function ManageSubscriptionPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
                     <div className="space-y-3">
                       <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Visit Date</Label>
-                      <Input 
-                        type="date" 
-                        value={visitDate} 
+                      <Input
+                        type="date"
+                        value={visitDate}
                         onChange={e => setVisitDate(e.target.value)}
                         className="rounded-2xl h-14 px-5 bg-background border-border/50 focus-visible:ring-primary/20 text-base"
                         min={format(new Date(), "yyyy-MM-dd")}
@@ -468,16 +468,16 @@ function ManageSubscriptionPage() {
                     </div>
                     <div className="space-y-3">
                       <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Hosted By</Label>
-                      <Input 
-                        placeholder="Your Name" 
-                        value={hostedBy} 
+                      <Input
+                        placeholder="Your Name"
+                        value={hostedBy}
                         onChange={e => setHostedBy(e.target.value)}
                         className="rounded-2xl h-14 px-5 bg-background border-border/50 focus-visible:ring-primary/20 text-base"
                       />
                     </div>
                   </div>
-                  
-                  <Button 
+
+                  <Button
                     className="w-full rounded-2xl h-14 mt-4 font-bold text-base shadow-lg hover:shadow-xl transition-all"
                     onClick={() => {
                       if (!visitorName || !visitorEmail) {
@@ -503,7 +503,7 @@ function ManageSubscriptionPage() {
         onOpenChange={setIsPaymentModalOpen}
         onProceed={handleProceedPayment}
         baseAmount={proratedAmount}
-        baseCurrency={space?.workspace?.currency || "RWF"}
+        baseCurrency={space?.workspace?.currency}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
         isProcessing={isProcessing}
