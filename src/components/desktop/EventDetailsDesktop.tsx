@@ -60,7 +60,7 @@ export function EventDetailsDesktop({
         avgRating={d.avgRating}
       />
 
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 pb-20 pt-10 lg:grid-cols-[1fr_400px]">
+      <div className="relative z-20 mx-auto grid max-w-7xl gap-10 px-6 pb-20 pt-10 lg:grid-cols-[1fr_400px] bg-background rounded-t-[2.5rem] -mt-12 shadow-[0_-8px_40px_rgba(0,0,0,0.12)]">
         {/* Left */}
         <div className="space-y-10">
           <EventOrganizerInfo
