@@ -93,6 +93,7 @@ function SubscriberPortal() {
           start: getLocalZdt(s.start_time),
           end: getLocalZdt(s.end_time),
           allDay: false,
+          calendarId: 'session',
           resource: s,
           type: "session"
         });
@@ -107,6 +108,7 @@ function SubscriberPortal() {
           start: getLocalZdt(b.start_time),
           end: getLocalZdt(b.end_time),
           allDay: false,
+          calendarId: isMine ? 'my-booking' : 'other-booking',
           resource: b,
           type: "booking"
         });

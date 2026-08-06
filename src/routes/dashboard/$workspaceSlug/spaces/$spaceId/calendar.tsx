@@ -220,6 +220,7 @@ function SchedulePage() {
       title: b.title,
       start: getLocalZdt(b.start_time),
       end: getLocalZdt(b.end_time),
+      calendarId: b.status?.toLowerCase() || 'other-booking',
       resourceId: b.resource_id,
       resourceName: b.resource?.name,
       organizerName: b.organizer_name,
