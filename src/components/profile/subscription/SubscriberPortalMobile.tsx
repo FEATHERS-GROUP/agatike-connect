@@ -13,6 +13,12 @@ import { Label } from "@/components/ui/label";
 import LazyCalendar from "@/components/lazy/LazyCalendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SessionBookingModal } from "./SessionBookingModal";
+import { ResourceBookingModal } from "./ResourceBookingModal";
+import { OverviewTab } from "./tabs/OverviewTab";
+import { ResourcesTab } from "./tabs/ResourcesTab";
+import { SessionsTab } from "./tabs/SessionsTab";
+import { BookingsTab } from "./tabs/BookingsTab";
+
 
 export function SubscriberPortalMobile({
   subscriptionId,
@@ -29,9 +35,7 @@ export function SubscriberPortalMobile({
 }: any) {
   const [activeTab, setActiveTab] = useState("overview");
   const [bookingResource, setBookingResource] = useState<any>(null);
-  const [bookingDate, setBookingDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [bookingTime, setBookingTime] = useState<string>(format(startOfHour(addHours(new Date(), 1)), "HH:mm"));
-  const [bookingDuration, setBookingDuration] = useState<number>(1);
   const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<any>(null);
   const navigate = useNavigate();
 
@@ -172,181 +176,7 @@ export function SubscriberPortalMobile({
 
       {/* Content Area */}
       <div className="px-4 mt-6 relative z-10 space-y-4">
-        {activeTab === "overview" && (
-          <>
-            <div className="bg-background rounded-[32px] p-6 shadow-sm border border-border/40">
-               <h3 className="text-lg font-bold mb-4">Space Information</h3>
-               <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap mb-6">
-                 {space?.description || "No description provided."}
-               </p>
-
-               {space?.type && (
-                 <div className="pt-4 border-t border-border/40">
-                   <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Facility Type</h4>
-                   <div className="flex items-center gap-2 text-sm font-medium">
-                     <Building2 className="h-4 w-4 text-primary" />
-                     <span className="capitalize">{space.type.replace(/_/g, " ")}</span>
-                   </div>
-                 </div>
-               )}
-
-               {space?.locations && space.locations.length > 0 && (
-                 <div className="pt-4 border-t border-border/40">
-                   <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Locations</h4>
-                   <div className="space-y-3">
-                     {space.locations.map((loc: any, i: number) => (
-                       <div key={i} className="flex items-start gap-2 text-sm font-medium">
-                         <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                         <span>{[loc.address, loc.city, loc.country].filter(Boolean).join(", ")}</span>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-               )}
-
-               {space?.socials && Object.keys(space.socials).length > 0 && (
-                 <div className="pt-4 border-t border-border/40">
-                   <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Contact & Socials</h4>
-                   <div className="flex flex-wrap gap-4">
-                     {space.socials.phone && (
-                       <div className="flex items-center gap-2 text-sm font-medium">
-                         <Phone className="h-4 w-4 text-primary" />
-                         <span>{space.socials.phone}</span>
-                       </div>
-                     )}
-                     {space.socials.whatsapp && (
-                       <div className="flex items-center gap-2 text-sm font-medium">
-                         <MessageCircle className="h-4 w-4 text-primary" />
-                         <span>{space.socials.whatsapp}</span>
-                       </div>
-                     )}
-                     {space.socials.instagram && (
-                       <div className="flex items-center gap-2 text-sm font-medium">
-                         <Instagram className="h-4 w-4 text-primary" />
-                         <span>{space.socials.instagram}</span>
-                       </div>
-                     )}
-                   </div>
-                 </div>
-               )}
-            </div>
-
-            <div className="bg-background rounded-[32px] p-6 shadow-sm border border-border/40">
-              <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                <Receipt className="h-4 w-4 text-primary" />
-                Recent Invoices
-              </h3>
-              {subscription.invoices?.length > 0 ? (
-                <div className="space-y-4">
-                  {subscription.invoices.map((inv: any) => (
-                    <div key={inv.id} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/20 border border-transparent">
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{inv.invoice_number}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{format(new Date(inv.created_at), "MMM d, yyyy")}</p>
-                      </div>
-                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 shadow-sm">
-                        {inv.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-secondary/10 rounded-2xl">
-                  <p className="text-sm text-muted-foreground font-medium">No invoices yet.</p>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-
-        {activeTab === "sessions" && (
-          <div className="bg-background rounded-[32px] p-5 shadow-sm border border-border/40">
-             <div className="w-full space-y-6">
-                {(() => {
-                  if (!sessions || sessions.length === 0) {
-                    return (
-                      <div className="text-center py-12 bg-secondary/10 rounded-3xl border border-dashed border-border/40">
-                        <Calendar className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                        <p className="text-muted-foreground font-semibold">No classes scheduled.</p>
-                      </div>
-                    );
-                  }
-
-                  // Group sessions by day
-                  const grouped: { [key: string]: any[] } = {};
-                  const sortedSessions = [...sessions].sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-                  
-                  sortedSessions.forEach(session => {
-                    const d = new Date(session.start_time);
-                    d.setHours(0,0,0,0);
-                    const key = d.toISOString();
-                    if (!grouped[key]) grouped[key] = [];
-                    grouped[key].push(session);
-                  });
-
-                  return Object.keys(grouped).map(dateKey => {
-                    const date = new Date(dateKey);
-                    const isToday = isSameDay(date, new Date());
-                    return (
-                      <div key={dateKey} className="space-y-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className={`text-base font-extrabold ${isToday ? 'text-primary' : 'text-foreground'}`}>
-                            {isToday ? "Today" : format(date, "EEEE")}
-                          </h4>
-                          <span className="text-muted-foreground font-medium text-xs">
-                            {format(date, "MMM d")}
-                          </span>
-                        </div>
-                        
-                        <div className="grid gap-3">
-                          {grouped[dateKey].map(session => (
-                            <div key={session.id} className="flex flex-col p-4 rounded-2xl bg-secondary/20 active:bg-secondary/40 border border-border/30 transition-all">
-                              
-                              <div className="flex justify-between items-start mb-3 border-b border-border/40 pb-3">
-                                <div>
-                                  <h5 className="text-base font-bold text-foreground mb-1">
-                                    {session.class?.name || "Class Session"}
-                                  </h5>
-                                  <span className="text-sm font-black text-primary">
-                                    {format(new Date(session.start_time), "HH:mm")} - {format(new Date(session.end_time), "HH:mm")}
-                                  </span>
-                                </div>
-                                <div className="text-right">
-                                  {session.class?.is_free_with_subscription ? (
-                                    <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-md block">Included</span>
-                                  ) : (
-                                    <span className="bg-orange-500/10 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-md block">Extra Fee</span>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center justify-between">
-                                <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                                  <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> {session.class?.duration_minutes || 60} min</span>
-                                  <span className="flex items-center gap-1.5"><User className="w-3 h-3" /> {session.coach_name || "Instructor"}</span>
-                                </div>
-                                {new Date(session.end_time) > new Date() ? (
-                                  <Button size="sm" className="rounded-xl font-bold px-4" onClick={() => setSelectedCalendarEvent({ resource: session })}>
-                                    Book
-                                  </Button>
-                                ) : (
-                                  <Button size="sm" variant="secondary" disabled className="rounded-xl font-bold px-4 opacity-50">
-                                    Completed
-                                  </Button>
-                                )}
-                              </div>
-                              
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
-             </div>
-          </div>
-        )}
+        {activeTab === "overview" && <OverviewTab space={space} subscription={subscription} />}
 
         {activeTab === "resources" && (
           <div className="space-y-4">
@@ -417,75 +247,16 @@ export function SubscriberPortalMobile({
         )}
       </div>
 
-      <Dialog open={!!bookingResource} onOpenChange={(open) => !open && setBookingResource(null)}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6 w-[90vw] mx-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-               <Calendar className="h-5 w-5 text-primary" />
-               Book {bookingResource?.name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Date</Label>
-              <Input
-                type="date"
-                value={bookingDate}
-                onChange={(e) => setBookingDate(e.target.value)}
-                min={format(new Date(), "yyyy-MM-dd")}
-                className="h-12 rounded-xl bg-secondary/10"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Time</Label>
-                <Input
-                  type="time"
-                  value={bookingTime}
-                  onChange={(e) => setBookingTime(e.target.value)}
-                  className="h-12 rounded-xl bg-secondary/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Duration (Hrs)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={bookingDuration}
-                  onChange={(e) => setBookingDuration(Number(e.target.value))}
-                  className="h-12 rounded-xl bg-secondary/10"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2 pt-2">
-            <Button 
-              className="h-12 rounded-xl font-bold shadow-sm w-full"
-              onClick={() => {
-                if (!bookingResource) return;
-                const start = new Date(`${bookingDate}T${bookingTime}`);
-                const end = addHours(start, bookingDuration);
-                createBooking.mutate({
-                  object: {
-                    resource_id: bookingResource.id,
-                    customer_id: user?.id,
-                    start_time: start.toISOString(),
-                    end_time: end.toISOString(),
-                    status: "confirmed",
-                    title: `Booking by ${user?.name || "Member"}`
-                  }
-                });
-              }}
-              disabled={createBooking.isPending}
-            >
-              {createBooking.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-              Confirm
-            </Button>
-            <Button variant="ghost" className="h-12 rounded-xl w-full" onClick={() => setBookingResource(null)}>Cancel</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ResourceBookingModal 
+        isOpen={!!bookingResource} 
+        onClose={() => setBookingResource(null)} 
+        resource={bookingResource} 
+        space={space} 
+        user={user} 
+        onSuccess={() => {
+          // Refetch if necessary
+        }} 
+      />
 
       <SessionBookingModal 
         isOpen={!!selectedCalendarEvent}

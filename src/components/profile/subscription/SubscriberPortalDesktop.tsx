@@ -5,6 +5,12 @@ import { Footer } from "@/components/site/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { SessionBookingModal } from "./SessionBookingModal";
+import { ResourceBookingModal } from "./ResourceBookingModal";
+import { OverviewTab } from "./tabs/OverviewTab";
+import { ResourcesTab } from "./tabs/ResourcesTab";
+import { SessionsTab } from "./tabs/SessionsTab";
+import { BookingsTab } from "./tabs/BookingsTab";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User, Phone, Instagram, MessageCircle, Building2 } from "lucide-react";
 import { format, addHours, startOfHour, isSameDay } from "date-fns";
@@ -31,9 +37,7 @@ export function SubscriberPortalDesktop({
 }: any) {
   const [activeTab, setActiveTab] = useState("overview");
   const [bookingResource, setBookingResource] = useState<any>(null);
-  const [bookingDate, setBookingDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [bookingTime, setBookingTime] = useState<string>(format(startOfHour(addHours(new Date(), 1)), "HH:mm"));
-  const [bookingDuration, setBookingDuration] = useState<number>(1);
   const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<any>(null);
 
   const myResourceBookings = resourceBookings?.filter((b: any) => b.customer_id === user?.id) || [];
@@ -125,384 +129,31 @@ export function SubscriberPortalDesktop({
             </TabsList>
 
             {/* OVERVIEW TAB */}
-            <TabsContent value="overview" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Space Info */}
-                <div className="md:col-span-2 space-y-8">
-
-                  <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 className="text-xl font-bold flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-primary/10 rounded-xl">
-                        <Info className="h-5 w-5 text-primary" />
-                      </div>
-                      Space Information
-                    </h3>
-                    
-                    <div className="space-y-6">
-                      <div>
-                        <p className="text-muted-foreground text-sm leading-loose whitespace-pre-wrap">
-                          {space?.description || "No description provided."}
-                        </p>
-                      </div>
-
-                      {space?.type && (
-                        <div className="pt-4 border-t border-border/40">
-                          <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Facility Type</h4>
-                          <div className="flex items-center gap-2 text-sm font-medium">
-                            <Building2 className="h-4 w-4 text-primary" />
-                            <span className="capitalize">{space.type.replace(/_/g, " ")}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {space?.locations && space.locations.length > 0 && (
-                        <div className="pt-4 border-t border-border/40">
-                          <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Locations</h4>
-                          <div className="space-y-3">
-                            {space.locations.map((loc: any, i: number) => (
-                              <div key={i} className="flex items-start gap-2 text-sm font-medium">
-                                <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                                <span>{[loc.address, loc.city, loc.country].filter(Boolean).join(", ")}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {space?.socials && Object.keys(space.socials).length > 0 && (
-                        <div className="pt-4 border-t border-border/40">
-                          <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Contact & Socials</h4>
-                          <div className="flex flex-wrap gap-4">
-                            {space.socials.phone && (
-                              <div className="flex items-center gap-2 text-sm font-medium">
-                                <Phone className="h-4 w-4 text-primary" />
-                                <span>{space.socials.phone}</span>
-                              </div>
-                            )}
-                            {space.socials.whatsapp && (
-                              <div className="flex items-center gap-2 text-sm font-medium">
-                                <MessageCircle className="h-4 w-4 text-primary" />
-                                <span>{space.socials.whatsapp}</span>
-                              </div>
-                            )}
-                            {space.socials.instagram && (
-                              <div className="flex items-center gap-2 text-sm font-medium">
-                                <Instagram className="h-4 w-4 text-primary" />
-                                <span>{space.socials.instagram}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Invoices Sidebar */}
-                <div className="space-y-8">
-                  <div className="bg-card border border-border/40 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 className="text-lg font-bold flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-secondary rounded-xl text-foreground">
-                        <Receipt className="h-4 w-4" />
-                      </div>
-                      Recent Invoices
-                    </h3>
-                    {subscription.invoices?.length > 0 ? (
-                      <div className="space-y-4">
-                        {subscription.invoices.map((inv: any) => (
-                          <div key={inv.id} className="group flex items-center justify-between p-4 rounded-2xl bg-secondary/10 hover:bg-secondary/30 border border-transparent hover:border-border/60 transition-all cursor-pointer">
-                            <div>
-                              <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{inv.invoice_number}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{format(new Date(inv.created_at), "MMM d, yyyy")}</p>
-                            </div>
-                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 shadow-sm">
-                              {inv.status}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 bg-secondary/10 rounded-2xl border border-dashed border-border/40">
-                        <p className="text-sm text-muted-foreground font-medium">No invoices yet.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-
-            </TabsContent>
+            <TabsContent value="overview" className="mt-0 outline-none"><OverviewTab space={space} subscription={subscription} /></TabsContent>
 
             {/* RESOURCES TAB */}
-            <TabsContent value="resources" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
-              <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
-                <div className="mb-8 max-w-xl">
-                  <h3 className="text-2xl font-bold mb-2">Book a Resource</h3>
-                  <p className="text-muted-foreground leading-relaxed">Reserve meeting rooms, desks, or specialized equipment available at this space.</p>
-                </div>
-                
-                {false ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
-                  </div>
-                ) : resources?.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {resources.map((res: any) => (
-                      <div key={res.id} className="group border border-border/40 bg-secondary/5 rounded-3xl p-6 flex flex-col justify-between hover:border-primary/50 hover:shadow-md hover:bg-card transition-all">
-                        <div>
-                          <div className="flex justify-between items-start mb-4">
-                            <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">{res.name}</h4>
-                            <span className="text-[10px] font-bold bg-primary/10 text-primary px-2.5 py-1 rounded-full uppercase tracking-wider">{res.type}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                            <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
-                              <User className="h-4 w-4" />
-                            </div>
-                            <span className="font-medium">Up to {res.capacity} people</span>
-                          </div>
-                        </div>
-                        <Button className="w-full rounded-xl font-bold" onClick={() => setBookingResource(res)}>
-                          Select Time
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/40 max-w-2xl mx-auto">
-                    <MapPin className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground font-semibold text-lg">No resources available for booking.</p>
-                    <p className="text-sm text-muted-foreground/70 mt-1">Check back later or contact the space manager.</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
+            <TabsContent value="resources" className="mt-0 outline-none"><ResourcesTab resources={resources} onBookResource={setBookingResource} /></TabsContent>
 
           {/* SESSIONS TAB */}
-          <TabsContent value="sessions" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
-            <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
-              <div className="mb-6 max-w-xl">
-                <h3 className="text-2xl font-bold mb-2">Classes & Sessions</h3>
-                <p className="text-muted-foreground leading-relaxed">Join scheduled activities, workshops, or fitness classes available to members.</p>
-              </div>
-              
-
-              <div className="w-full max-h-[700px] overflow-y-auto pr-2 custom-scrollbar space-y-8">
-                {(() => {
-                  if (!sessions || sessions.length === 0) {
-                    return (
-                      <div className="text-center py-20 bg-secondary/10 rounded-3xl border border-dashed border-border/40">
-                        <Calendar className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                        <p className="text-muted-foreground font-semibold text-lg">No classes scheduled.</p>
-                        <p className="text-sm text-muted-foreground/70 mt-1">Check back later for new sessions.</p>
-                      </div>
-                    );
-                  }
-
-                  // Group sessions by day
-                  const grouped: { [key: string]: any[] } = {};
-                  const sortedSessions = [...sessions].sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-                  
-                  sortedSessions.forEach(session => {
-                    const d = new Date(session.start_time);
-                    d.setHours(0,0,0,0);
-                    const key = d.toISOString();
-                    if (!grouped[key]) grouped[key] = [];
-                    grouped[key].push(session);
-                  });
-
-                  return Object.keys(grouped).map(dateKey => {
-                    const date = new Date(dateKey);
-                    const isToday = isSameDay(date, new Date());
-                    return (
-                      <div key={dateKey} className="space-y-4">
-                        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-md py-2 border-b border-border/40 flex items-center gap-3">
-                          <h4 className={`text-lg font-extrabold ${isToday ? 'text-primary' : 'text-foreground'}`}>
-                            {isToday ? "Today" : format(date, "EEEE")}
-                          </h4>
-                          <span className="text-muted-foreground font-medium text-sm">
-                            {format(date, "MMM d, yyyy")}
-                          </span>
-                        </div>
-                        
-                        <div className="grid gap-3">
-                          {grouped[dateKey].map(session => (
-                            <div key={session.id} className="group relative flex flex-col sm:flex-row gap-4 p-5 rounded-2xl bg-secondary/20 hover:bg-secondary/40 border border-border/30 transition-all hover:shadow-md hover:border-border/60">
-                              
-                              <div className="flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-start min-w-[120px] sm:border-r border-border/40 pr-4">
-                                <span className="text-xl font-black text-foreground">{format(new Date(session.start_time), "HH:mm")}</span>
-                                <span className="text-sm text-muted-foreground font-medium">{format(new Date(session.end_time), "HH:mm")}</span>
-                              </div>
-                              
-                              <div className="flex-1 flex flex-col justify-center">
-                                <h5 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                                  {session.class?.name || "Class Session"}
-                                </h5>
-                                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {session.class?.duration_minutes || 60} min</span>
-                                  <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> {session.coach_name || "Instructor"}</span>
-                                </div>
-                                
-                                <div className="flex flex-wrap gap-2">
-                                  {session.class?.is_free_with_subscription ? (
-                                    <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-md">Included in Plan</span>
-                                  ) : (
-                                    <span className="bg-orange-500/10 text-orange-600 text-xs font-bold px-2.5 py-1 rounded-md">Extra Fee</span>
-                                  )}
-                                  <span className="bg-secondary text-secondary-foreground text-xs font-semibold px-2.5 py-1 rounded-md">
-                                    {session.class?.max_capacity || 20} Spots
-                                  </span>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center sm:pl-4 mt-4 sm:mt-0">
-                                {new Date(session.end_time) > new Date() ? (
-                                  <Button className="w-full sm:w-auto rounded-xl font-bold px-6" onClick={() => setSelectedCalendarEvent({ resource: session })}>
-                                    Book Session
-                                  </Button>
-                                ) : (
-                                  <Button variant="secondary" disabled className="w-full sm:w-auto rounded-xl font-bold px-6 opacity-50">
-                                    Completed
-                                  </Button>
-                                )}
-                              </div>
-                              
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-
-            </div>
-          </TabsContent>
+          <TabsContent value="sessions" className="mt-0 outline-none"><SessionsTab sessions={sessions} onBookSession={(session) => setSelectedCalendarEvent({ resource: session })} space={space} /></TabsContent>
 
           {/* MY BOOKINGS TAB */}
-          <TabsContent value="bookings" className="mt-0 outline-none animate-in slide-in-from-bottom-4 fade-in duration-500">
-             <div className="bg-card border border-border/40 rounded-3xl p-8 shadow-sm">
-              <div className="mb-8 max-w-xl">
-                <h3 className="text-2xl font-bold mb-2">My Resource Bookings</h3>
-                <p className="text-muted-foreground leading-relaxed">Manage your upcoming reservations and past bookings for this space.</p>
-              </div>
-              
-              {false ? (
-                <div className="space-y-4">
-                  {[1, 2].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
-                </div>
-              ) : myResourceBookings.length > 0 ? (
-                <div className="space-y-4">
-                  {myResourceBookings.map((b: any) => (
-                    <div key={b.id} className="group border border-border/40 bg-secondary/5 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-primary/50 hover:shadow-md hover:bg-card transition-all">
-                      <div className="flex items-start gap-4">
-                        <div className="mt-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-                        <div>
-                          <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{b.title}</h4>
-                          <p className="text-sm font-medium text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className="bg-secondary/40 px-2.5 py-1 rounded-md text-foreground">{b.resource?.name}</span>
-                            <span className="text-muted-foreground/50">•</span>
-                            <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5"/> {format(new Date(b.start_time), "MMM d")}</span>
-                            <span className="text-muted-foreground/50">•</span>
-                            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5"/> {format(new Date(b.start_time), "h:mm a")}</span>
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-500 shadow-sm uppercase tracking-wider">
-                        {b.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/40 max-w-2xl mx-auto">
-                  <Clock className="h-10 w-10 text-muted-foreground/30 mx-auto mb-4" />
-                  <p className="text-muted-foreground font-semibold text-lg">You have no bookings yet.</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1 mb-6">Secure your workspace or equipment for your next visit.</p>
-                  <Button className="rounded-xl font-bold px-8" onClick={() => setActiveTab("resources")}>Book a Resource</Button>
-                </div>
-              )}
-            </div>
-          </TabsContent>
+          <TabsContent value="bookings" className="mt-0 outline-none"><BookingsTab myResourceBookings={myResourceBookings} setActiveTab={setActiveTab} isLoading={false} /></TabsContent>
 
         </Tabs>
         </div>
       </main>
 
-      <Dialog open={!!bookingResource} onOpenChange={(open) => !open && setBookingResource(null)}>
-        <DialogContent className="sm:max-w-md rounded-3xl p-6">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-               <Calendar className="h-6 w-6 text-primary" />
-               Book {bookingResource?.name}
-            </DialogTitle>
-            <DialogDescription className="text-base mt-2">
-               Select a date, time, and duration for your reservation.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-6 py-6">
-            <div className="space-y-2">
-              <Label htmlFor="date" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={bookingDate}
-                onChange={(e) => setBookingDate(e.target.value)}
-                min={format(new Date(), "yyyy-MM-dd")}
-                className="h-12 rounded-xl border-border/60 bg-secondary/10 focus-visible:ring-primary/20"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="time" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Start Time</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={bookingTime}
-                  onChange={(e) => setBookingTime(e.target.value)}
-                  className="h-12 rounded-xl border-border/60 bg-secondary/10 focus-visible:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="duration" className="text-xs uppercase font-bold tracking-wider text-muted-foreground">Duration (Hrs)</Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={bookingDuration}
-                  onChange={(e) => setBookingDuration(Number(e.target.value))}
-                  className="h-12 rounded-xl border-border/60 bg-secondary/10 focus-visible:ring-primary/20"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-border/40">
-            <Button variant="outline" className="h-12 rounded-xl px-6" onClick={() => setBookingResource(null)}>Cancel</Button>
-            <Button 
-              className="h-12 rounded-xl px-8 font-bold shadow-sm"
-              onClick={() => {
-                if (!bookingResource) return;
-                const start = new Date(`${bookingDate}T${bookingTime}`);
-                const end = addHours(start, bookingDuration);
-                createBooking.mutate({
-                  object: {
-                    resource_id: bookingResource.id,
-                    customer_id: user?.id,
-                    start_time: start.toISOString(),
-                    end_time: end.toISOString(),
-                    status: "confirmed",
-                    title: `Booking by ${user?.name || "Member"}`
-                  }
-                });
-              }}
-              disabled={createBooking.isPending}
-            >
-              {createBooking.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-              Confirm Booking
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ResourceBookingModal 
+        isOpen={!!bookingResource} 
+        onClose={() => setBookingResource(null)} 
+        resource={bookingResource} 
+        space={space} 
+        user={user} 
+        onSuccess={() => {
+          // Refetch if necessary
+        }} 
+      />
 
       <SessionBookingModal 
         isOpen={!!selectedCalendarEvent}

@@ -1,9 +1,12 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSpaceResources, createSpaceResource, deleteSpaceResource } from "@/api/space_resources";
+import { getSpaceById } from "@/api/spaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Box, Plus, Trash2, Building, GripVertical } from "lucide-react";
+import { Box, Plus, Trash2, Building, GripVertical, Settings } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -42,8 +45,19 @@ function StructureBuilderPage() {
     }
   });
 
+  const { data: space } = useQuery({
+    queryKey: ["space", spaceId],
+    queryFn: () => getSpaceById({ data: { id: spaceId } }),
+    enabled: !!spaceId,
+  });
+
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("meeting_room");
+  const [locationId, setLocationId] = useState("");
+  const [operatingHoursStart, setOperatingHoursStart] = useState("09:00");
+  const [operatingHoursEnd, setOperatingHoursEnd] = useState("17:00");
+  const [requireExclusive, setRequireExclusive] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +68,11 @@ function StructureBuilderPage() {
           space_id: spaceId,
           name: newName,
           type: newType,
+          rules: {
+            locationId,
+            operatingHours: { start: operatingHoursStart, end: operatingHoursEnd },
+            requireExclusiveBooking: requireExclusive
+          }
         }
       }
     });
@@ -73,38 +92,84 @@ function StructureBuilderPage() {
 
       <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm max-w-2xl">
         <h3 className="font-bold text-lg mb-4">Add New Resource</h3>
-        <form onSubmit={handleAdd} className="flex gap-3 items-end">
-          <div className="flex-1 space-y-2">
-            <label className="text-sm font-medium">Name</label>
-            <Input 
-              value={newName} 
-              onChange={(e) => setNewName(e.target.value)} 
-              placeholder="e.g. Building A, Room 101, Private Office 2" 
-            />
+                <form onSubmit={handleAdd} className="space-y-4">
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex-1 space-y-2 min-w-[200px]">
+              <label className="text-sm font-medium">Name</label>
+              <Input 
+                value={newName} 
+                onChange={(e) => setNewName(e.target.value)} 
+                placeholder="e.g. Building A, Room 101, Private Office 2" 
+              />
+            </div>
+            <div className="w-48 space-y-2">
+              <label className="text-sm font-medium">Type</label>
+              <select 
+                value={newType} 
+                onChange={(e) => setNewType(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="building">Building</option>
+                <option value="floor">Floor / Wall</option>
+                <option value="meeting_room">Meeting Room</option>
+                <option value="private_office">Private Office</option>
+                <option value="gym_studio">Gym Studio</option>
+                <option value="table">Dedicated Table</option>
+              </select>
+            </div>
           </div>
-          <div className="w-48 space-y-2">
-            <label className="text-sm font-medium">Type</label>
-            <select 
-              value={newType} 
-              onChange={(e) => setNewType(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="building">Building</option>
-              <option value="floor">Floor / Wall</option>
-              <option value="meeting_room">Meeting Room</option>
-              <option value="private_office">Private Office</option>
-              <option value="gym_studio">Gym Studio</option>
-              <option value="table">Dedicated Table</option>
-            </select>
+
+          <div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAdvanced(!showAdvanced)} className="text-muted-foreground -ml-3">
+              <Settings className="w-4 h-4 mr-2" />
+              Advanced Booking Rules
+            </Button>
           </div>
+
+          {showAdvanced && (
+            <div className="bg-secondary/10 border border-border/40 p-4 rounded-xl space-y-4 animate-in slide-in-from-top-2 fade-in">
+              {space?.locations?.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Location</label>
+                  <select 
+                    value={locationId} 
+                    onChange={(e) => setLocationId(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">Any Location</option>
+                    {space.locations.map((loc: any, i: number) => (
+                      <option key={i} value={i.toString()}>{[loc.address, loc.city].filter(Boolean).join(", ")}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Available From</label>
+                  <Input type="time" value={operatingHoursStart} onChange={(e) => setOperatingHoursStart(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Available Until</label>
+                  <Input type="time" value={operatingHoursEnd} onChange={(e) => setOperatingHoursEnd(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox id="exclusive" checked={requireExclusive} onCheckedChange={(c) => setRequireExclusive(!!c)} />
+                <Label htmlFor="exclusive" className="font-medium cursor-pointer">Require Exclusive Booking (Prevent double bookings)</Label>
+              </div>
+            </div>
+          )}
+
           <Button 
             type="submit" 
             disabled={createMutation.isPending}
-            className="h-10 shrink-0 gap-2 px-5 rounded-lg"
+            className="h-10 px-6 rounded-lg font-bold"
             style={{ background: "var(--gradient-primary)" }}
           >
-            <Plus className="h-4 w-4" />
-            Add
+            <Plus className="h-4 w-4 mr-2" />
+            Add Resource
           </Button>
         </form>
       </div>
