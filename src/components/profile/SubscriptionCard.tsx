@@ -21,29 +21,40 @@ export function SubscriptionCard({ sub }: { sub: any }) {
   const title = sub.plan_name || "Membership";
   const venue = sub.space?.name || "Agatike Space";
   const currency = sub.space?.workspace?.currency || sub.space?.currency || "RWF";
-  const price = new Intl.NumberFormat("en-RW", { style: "currency", currency }).format(sub.price || 0);
+  const price = new Intl.NumberFormat("en-RW", { style: "currency", currency }).format(
+    sub.price || 0,
+  );
   const type = sub.billing_cycle || "month";
   const status = sub.status || "Active";
   const isTeam = sub.booking_type === "group";
   const nextBilling = sub.next_billing_date
-    ? new Date(sub.next_billing_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    ? new Date(sub.next_billing_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "N/A";
   const startDate = sub.start_date
-    ? new Date(sub.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    ? new Date(sub.start_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "N/A";
 
   return (
     <>
       {/* Mobile Design (Default) vs Desktop Design (md:) */}
       <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm flex flex-col transition-all hover:border-primary/40 hover:shadow-md md:rounded-[20px]">
-        
         {/* Top Cover Section - Desktop specific styling */}
         <div className="relative h-20 md:h-28 w-full">
           <img src={cover} alt={venue} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
             <div>
-              <p className="text-white font-bold text-sm md:text-base leading-tight drop-shadow-md">{title}</p>
+              <p className="text-white font-bold text-sm md:text-base leading-tight drop-shadow-md">
+                {title}
+              </p>
               <p className="text-white/80 text-xs flex items-center gap-1 mt-0.5 md:text-sm">
                 <MapPin className="h-3 w-3 md:h-4 md:w-4" /> {venue}
               </p>
@@ -66,7 +77,8 @@ export function SubscriptionCard({ sub }: { sub: any }) {
           {/* Price & Type */}
           <div className="flex justify-between items-center">
             <div className="text-sm md:text-base font-bold text-primary">
-              {price} <span className="text-muted-foreground font-normal text-xs md:text-sm">/ {type}</span>
+              {price}{" "}
+              <span className="text-muted-foreground font-normal text-xs md:text-sm">/ {type}</span>
             </div>
             <div className="flex items-center gap-1 text-xs md:text-sm font-semibold text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
               {isTeam ? <Users className="h-3 w-3" /> : <User className="h-3 w-3" />}
@@ -77,19 +89,27 @@ export function SubscriptionCard({ sub }: { sub: any }) {
           {/* Desktop Only Extra Info Grid */}
           <div className="hidden md:grid grid-cols-2 gap-3 pt-3 border-t border-border/40">
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Started On</p>
-              <p className="text-xs font-medium flex items-center gap-1.5"><Calendar className="h-3 w-3" /> {startDate}</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
+                Started On
+              </p>
+              <p className="text-xs font-medium flex items-center gap-1.5">
+                <Calendar className="h-3 w-3" /> {startDate}
+              </p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Next Billing</p>
-              <p className="text-xs font-medium flex items-center gap-1.5 text-foreground"><CreditCard className="h-3 w-3 text-primary" /> {nextBilling}</p>
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
+                Next Billing
+              </p>
+              <p className="text-xs font-medium flex items-center gap-1.5 text-foreground">
+                <CreditCard className="h-3 w-3 text-primary" /> {nextBilling}
+              </p>
             </div>
           </div>
 
           {/* Mobile Only Next Billing */}
           <div className="md:hidden pt-2 border-t border-border/40 text-xs flex justify-between items-center">
-             <span className="text-muted-foreground">Next billing:</span>
-             <span className="font-semibold">{nextBilling}</span>
+            <span className="text-muted-foreground">Next billing:</span>
+            <span className="font-semibold">{nextBilling}</span>
           </div>
         </Link>
 
@@ -154,7 +174,10 @@ export function SubscriptionCard({ sub }: { sub: any }) {
               <span className="text-muted-foreground">Status</span>
               <span className="text-green-500 font-bold">Paid</span>
             </div>
-            <Button className="w-full mt-4 rounded-xl font-bold" onClick={() => setShowInvoice(false)}>
+            <Button
+              className="w-full mt-4 rounded-xl font-bold"
+              onClick={() => setShowInvoice(false)}
+            >
               Download PDF
             </Button>
           </div>
@@ -166,7 +189,9 @@ export function SubscriptionCard({ sub }: { sub: any }) {
         <DialogContent className="max-w-sm rounded-3xl">
           <DialogHeader>
             <DialogTitle>Renew Subscription</DialogTitle>
-            <DialogDescription>You are renewing {title} for another {type}.</DialogDescription>
+            <DialogDescription>
+              You are renewing {title} for another {type}.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="bg-secondary/40 p-4 rounded-2xl flex justify-between items-center">

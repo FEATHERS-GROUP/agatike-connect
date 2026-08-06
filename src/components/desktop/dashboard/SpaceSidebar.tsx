@@ -66,15 +66,36 @@ export function SpaceSidebar() {
     },
   ];
 
-  const isAdvancedSpace = space && ["Coworking", "Gym", "Office", "Studio", "Cafe", "Other"].includes(space.type);
+  const isAdvancedSpace =
+    space && ["Coworking", "Gym", "Office", "Studio", "Cafe", "Other"].includes(space.type);
 
   if (isAdvancedSpace) {
     nav.push(
-      { label: "Structure Builder", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/resources`, icon: Box },
-      { label: "Schedule", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/calendar`, icon: Calendar },
-      { label: "Classes", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/classes`, icon: Dumbbell },
-      { label: "Sessions", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/sessions`, icon: CalendarDays },
-      { label: "Tenants", href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/leases`, icon: Building }
+      {
+        label: "Structure Builder",
+        href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/resources`,
+        icon: Box,
+      },
+      {
+        label: "Schedule",
+        href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/calendar`,
+        icon: Calendar,
+      },
+      {
+        label: "Classes",
+        href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/classes`,
+        icon: Dumbbell,
+      },
+      {
+        label: "Sessions",
+        href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/sessions`,
+        icon: CalendarDays,
+      },
+      {
+        label: "Tenants",
+        href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/leases`,
+        icon: Building,
+      },
     );
   }
 

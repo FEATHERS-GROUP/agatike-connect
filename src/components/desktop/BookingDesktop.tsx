@@ -639,7 +639,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   };
                 } catch (e) {
                   console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
-                  const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                  const stop =
+                    event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
                   return await generateFallbackReceipt({
                     entityName: event?.title || "Event",
                     ticket,
@@ -662,7 +663,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             for (let i = 0; i < issuedTickets.length; i += chunkSize) {
               const chunk = issuedTickets.slice(i, i + chunkSize);
               const chunkPromises = chunk.map(async (ticket: any) => {
-                const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                const stop =
+                  event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
                 return await generateFallbackReceipt({
                   entityName: event?.title || "Event/Venue",
                   ticket,

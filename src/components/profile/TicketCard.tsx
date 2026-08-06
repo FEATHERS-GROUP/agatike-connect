@@ -80,12 +80,16 @@ export function TicketCard({ ticket }: { ticket: any }) {
           </span>
           <span className="flex items-center gap-1 col-span-2">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{ticket.venueName ? `${ticket.venueName}, ${ticket.city}` : ticket.city || "Online"}</span>
+            <span className="truncate">
+              {ticket.venueName ? `${ticket.venueName}, ${ticket.city}` : ticket.city || "Online"}
+            </span>
           </span>
         </div>
         <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-1">
           <div>
-            <p className="text-xs font-semibold text-foreground truncate max-w-[150px]">{ticket.passengerName}</p>
+            <p className="text-xs font-semibold text-foreground truncate max-w-[150px]">
+              {ticket.passengerName}
+            </p>
             <p className="text-[10px] text-muted-foreground mt-0.5">{ticket.seat}</p>
             <p className="text-[10px] font-mono text-primary mt-0.5">{ticket.orderId}</p>
           </div>

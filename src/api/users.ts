@@ -188,7 +188,7 @@ export const getAllUsers = createServerFn({ method: "GET" }).handler(async () =>
   `;
 
   try {
-    const result = await hasuraRequest<{ 
+    const result = await hasuraRequest<{
       users: any[];
       organizer_followers: { organizer_id: string; user_id: any }[];
     }>(query);
@@ -197,21 +197,21 @@ export const getAllUsers = createServerFn({ method: "GET" }).handler(async () =>
 
     // Calculate how many organizers each user follows
     if (result.organizer_followers) {
-      result.organizer_followers.forEach(f => {
+      result.organizer_followers.forEach((f) => {
         let userIds: string[] = [];
         if (Array.isArray(f.user_id)) {
           userIds = f.user_id.map((id: any) => String(id).replace(/"/g, ""));
         } else if (f.user_id) {
           userIds = [String(f.user_id).replace(/"/g, "")];
         }
-        
-        userIds.forEach(uid => {
+
+        userIds.forEach((uid) => {
           followersMap.set(uid, (followersMap.get(uid) || 0) + 1);
         });
       });
     }
 
-    return (result.users || []).map(u => ({
+    return (result.users || []).map((u) => ({
       ...u,
       totalEvents: u.event_attendees_aggregate?.aggregate?.count || 0,
       totalSubscriptions: u.space_subscriptions_aggregate?.aggregate?.count || 0,

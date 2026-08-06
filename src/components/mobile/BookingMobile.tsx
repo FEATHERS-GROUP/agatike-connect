@@ -630,7 +630,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   };
                 } catch (e) {
                   console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
-                  const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                  const stop =
+                    event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
                   return await generateFallbackReceipt({
                     entityName: event?.title || "Event",
                     ticket,
@@ -654,7 +655,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             for (let i = 0; i < issuedTickets.length; i += chunkSize) {
               const chunk = issuedTickets.slice(i, i + chunkSize);
               const chunkPromises = chunk.map(async (ticket: any) => {
-                const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                const stop =
+                  event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
                 return await generateFallbackReceipt({
                   entityName: event?.title || "Event/Venue",
                   ticket,
@@ -811,10 +813,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   }
 
   const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && eventProject && (
-    <div
-      className="absolute -z-50 pointer-events-none"
-      style={{ top: "-9999px", left: "-9999px" }}
-    >
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((ticket: any) => {
         const mergedProject = getMergedProjectDesign(
           eventProject,
@@ -913,81 +912,83 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     return (
       <>
         <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
-        <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
-          .
-        </p>
-
-        {hasMerchInCart && (
-          <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <svg
-                  className="h-5 w-5 text-primary"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold">Merchandise Order</p>
-                <p className="text-xs text-muted-foreground">Pickup instructions</p>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Your merchandise can be picked up{" "}
-              <strong className="text-foreground">on the day of the event</strong>. Please collect
-              it at the merchandise desk using either method below:
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
-                <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Phone Number Pickup</p>
-                  <p className="text-xs text-muted-foreground">
-                    Show your registered phone number at the merchandise desk.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
-                <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
-                  <p className="text-xs text-muted-foreground">
-                    Show your event ticket QR code — staff will scan it and hand you your order.
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
           </div>
-        )}
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => {
-              setIsSuccess(false);
-              setPawapayDepositId(null);
-              setIssuedTickets([]);
-              setCart({});
-              setSelectedSeats([]);
-              setAttendees([]);
-            }}
-            className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-          >
-            Buy Another Ticket
-          </button>
-          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+          <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
+          <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
+            Your tickets for {event.title} have been secured. We've sent them to{" "}
+            {attendees[0]?.email}.
+          </p>
+
+          {hasMerchInCart && (
+            <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <svg
+                    className="h-5 w-5 text-primary"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold">Merchandise Order</p>
+                  <p className="text-xs text-muted-foreground">Pickup instructions</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your merchandise can be picked up{" "}
+                <strong className="text-foreground">on the day of the event</strong>. Please collect
+                it at the merchandise desk using either method below:
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
+                  <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Phone Number Pickup</p>
+                    <p className="text-xs text-muted-foreground">
+                      Show your registered phone number at the merchandise desk.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
+                  <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
+                    <p className="text-xs text-muted-foreground">
+                      Show your event ticket QR code — staff will scan it and hand you your order.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => {
+                setIsSuccess(false);
+                setPawapayDepositId(null);
+                setIssuedTickets([]);
+                setCart({});
+                setSelectedSeats([]);
+                setAttendees([]);
+              }}
+              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Buy Another Ticket
+            </button>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Or wait to be redirected...
+            </p>
+          </div>
         </div>
-      </div>
-      {hiddenTicketRenderer}
-    </>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 

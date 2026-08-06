@@ -247,7 +247,10 @@ function CinemaDetail() {
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/40">
                       <span className="text-sm font-bold text-foreground">
-                        {formatCurrency(movie.price || 8, cinema?.workspace?.currency || movie.currency)}
+                        {formatCurrency(
+                          movie.price || 8,
+                          cinema?.workspace?.currency || movie.currency,
+                        )}
                       </span>
                       <Button
                         size="sm"
@@ -346,7 +349,10 @@ function CinemaDetail() {
                       search={{ date: new Date().toISOString().split("T")[0] }}
                     >
                       <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                      {formatCurrency(selectedMovie.price || 3000, cinema?.workspace?.currency || selectedMovie.currency)}
+                      {formatCurrency(
+                        selectedMovie.price || 3000,
+                        cinema?.workspace?.currency || selectedMovie.currency,
+                      )}
                     </Link>
                   </Button>
                   <Button

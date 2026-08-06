@@ -846,11 +846,11 @@ export const renewSpaceSubscription = createServerFn({ method: "POST" })
               </tr>
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Start Time</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${new Date(sub.start_date || Date.now()).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${new Date(sub.start_date || Date.now()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #666;">Next Billing Date</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: bold;">${newBillingDate.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: bold;">${newBillingDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</td>
               </tr>
             </table>
           </div>
@@ -906,7 +906,9 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
         }
       }
     `;
-    const subRes = await hasuraRequest<{ space_subscriptions_by_pk: any }>(subQuery, { id: subscription_id });
+    const subRes = await hasuraRequest<{ space_subscriptions_by_pk: any }>(subQuery, {
+      id: subscription_id,
+    });
     const sub = subRes.space_subscriptions_by_pk;
     if (!sub) throw new Error("Subscription not found");
 
@@ -949,7 +951,7 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
         const deductRes = await hasuraRequest<any>(deductMutation, {
           workspace_id,
           amount: refundAmount,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
 
         if (deductRes.update_wallets?.affected_rows === 0) {
@@ -966,8 +968,8 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
               amount: refundAmount,
               currency,
               phone: sub.customer_phone,
-              description: `Agatike Cancel 50% Refund`
-            }
+              description: `Agatike Cancel 50% Refund`,
+            },
           } as any);
         } catch (e: any) {
           console.error("Failed to execute pawapay refund", e);
@@ -1009,14 +1011,14 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
         customer_name: sub.customer_name || "Unknown",
         amount: String(-refundAmount), // Negative amount for refund
         currency,
-        status: "completed"
+        status: "completed",
       });
 
       // 2d. Send Notifications
       try {
         const { db } = await import("./firebase");
         const orgnizer_id = sub.space?.workspace?.orgnizer_id;
-        
+
         // Notify organizer
         if (orgnizer_id) {
           await db.collection("agatike_notifications").add({
@@ -1025,7 +1027,7 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
             organizerId: workspace_id,
             content: `User ${sub.customer_name} cancelled their subscription at ${sub.space?.name}. A 50% refund (${refundAmount} ${currency}) has been deducted from your wallet.`,
             targetUsers: [orgnizer_id],
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           });
         }
       } catch (e) {
@@ -1068,7 +1070,7 @@ export const upgradeSpaceSubscription = createServerFn({ method: "POST" })
       customer_email,
       customer_name,
       workspace_id,
-      space_id
+      space_id,
     } = ctx.data as any;
 
     if (!subscription_id) throw new Error("Missing subscription_id");
@@ -1134,17 +1136,17 @@ export const upgradeSpaceSubscription = createServerFn({ method: "POST" })
         }
       }
     `;
-    
+
     // Attempt to get space currency, fallback to RWF
     let currency = "RWF";
     if (space_id) {
-        try {
-            const spaceRes = await hasuraRequest<{ spaces_by_pk: { currency: string } }>(
-            `query GetSpaceCurrency($id: uuid!) { spaces_by_pk(id: $id) { currency } }`,
-            { id: space_id }
-            );
-            if (spaceRes?.spaces_by_pk?.currency) currency = spaceRes.spaces_by_pk.currency;
-        } catch(e) {}
+      try {
+        const spaceRes = await hasuraRequest<{ spaces_by_pk: { currency: string } }>(
+          `query GetSpaceCurrency($id: uuid!) { spaces_by_pk(id: $id) { currency } }`,
+          { id: space_id },
+        );
+        if (spaceRes?.spaces_by_pk?.currency) currency = spaceRes.spaces_by_pk.currency;
+      } catch (e) {}
     }
 
     try {
@@ -1159,7 +1161,7 @@ export const upgradeSpaceSubscription = createServerFn({ method: "POST" })
         currency: currency,
         plan_name: new_plan_name,
         billing_cycle: new_billing_cycle,
-        status: "paid"
+        status: "paid",
       });
     } catch (e) {
       console.error("Failed to create upgrade invoice", e);
@@ -1190,8 +1192,8 @@ export const upgradeSpaceSubscription = createServerFn({ method: "POST" })
           currency: currency,
           start_date: new Date().toISOString(),
           end_date: new_next_billing_date,
-          workspace_id: workspace_id
-        }
+          workspace_id: workspace_id,
+        },
       });
     } catch (e) {
       console.error("Failed to send upgrade receipt:", e);

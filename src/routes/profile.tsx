@@ -126,7 +126,7 @@ function ProfilePage() {
   });
 
   const venueBookingsCount = tickets.filter((t: any) => t.isVenueBooking === true).length;
-  
+
   const historyTicketsList = Object.values(
     rawHistoryTickets.reduce((acc: any, ticket: any) => {
       const key = ticket.eventId || ticket.title;
@@ -145,7 +145,7 @@ function ProfilePage() {
       }
       acc[key].tickets.push(ticket);
       return acc;
-    }, {})
+    }, {}),
   ).slice(0, 20);
 
   const handleLogout = async () => {

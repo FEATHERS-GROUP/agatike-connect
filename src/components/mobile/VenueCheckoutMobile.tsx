@@ -529,10 +529,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   }, [isSuccess, navigate]);
 
   const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && venueProject && (
-    <div
-      className="absolute -z-50 pointer-events-none"
-      style={{ top: "-9999px", left: "-9999px" }}
-    >
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((t) => (
         <div
           key={t.id}
@@ -552,9 +549,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             price={
               t.tier === "Standard Entry"
                 ? venue?.entrance_fee?.toString() || "0"
-                : venue.pricing_tiers
-                    ?.find((pt: any) => pt.name === t.tier)
-                    ?.amount?.toString() || total.toString()
+                : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                  total.toString()
             }
             currency={venue.currency}
             cover={venueProject.coverImage || ""}
@@ -606,8 +602,8 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             }
           }}
         />
-      {hiddenTicketRenderer}
-    </>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -626,7 +622,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             </strong>
           </p>
         </div>
-      {hiddenTicketRenderer}
+        {hiddenTicketRenderer}
       </>
     );
   }
@@ -635,35 +631,37 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     return (
       <>
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
-        <CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />
-        <h2 className="text-2xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
-        <p className="text-muted-foreground mb-8 px-4">
-          Your ticket for {venue.name} has been secured.
-        </p>
-        <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
-          <Ticket className="w-6 h-6 text-primary" />
-          <span className="font-bold tracking-widest">
-            {Math.random().toString(36).substring(2, 10).toUpperCase()}
-          </span>
+          <CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />
+          <h2 className="text-2xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
+          <p className="text-muted-foreground mb-8 px-4">
+            Your ticket for {venue.name} has been secured.
+          </p>
+          <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
+            <Ticket className="w-6 h-6 text-primary" />
+            <span className="font-bold tracking-widest">
+              {Math.random().toString(36).substring(2, 10).toUpperCase()}
+            </span>
+          </div>
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => {
+                setIsSuccess(false);
+                setPawapayDepositId(null);
+                setIssuedTickets([]);
+                setCart({});
+                setAttendees([{ name: "", id_document: "" }]);
+              }}
+              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Buy Another Ticket
+            </button>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Or wait to be redirected...
+            </p>
+          </div>
         </div>
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => {
-              setIsSuccess(false);
-              setPawapayDepositId(null);
-              setIssuedTickets([]);
-              setCart({});
-              setAttendees([{ name: "", id_document: "" }]);
-            }}
-            className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-          >
-            Buy Another Ticket
-          </button>
-          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
-        </div>
-      </div>
-      {hiddenTicketRenderer}
-    </>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 

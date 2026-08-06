@@ -1,6 +1,15 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
-import { ArrowLeft, MapPin, CalendarDays, Building2, Plus, Unlink, QrCode, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  CalendarDays,
+  Building2,
+  Plus,
+  Unlink,
+  QrCode,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -243,9 +252,14 @@ function SubscriptionCard({
     <>
       <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm flex flex-col mb-4 transition-all hover:border-primary/40 hover:shadow-md md:rounded-[20px]">
         {/* Top Cover Section */}
-        <div 
+        <div
           className="relative h-20 md:h-28 w-full cursor-pointer"
-          onClick={() => navigate({ to: '/profile/subscriptions/$subscriptionId', params: { subscriptionId: String(sub.id) } })}
+          onClick={() =>
+            navigate({
+              to: "/profile/subscriptions/$subscriptionId",
+              params: { subscriptionId: String(sub.id) },
+            })
+          }
         >
           <img
             src={
@@ -274,10 +288,15 @@ function SubscriptionCard({
               </p>
             </div>
             <span
-              className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm backdrop-blur-sm ${validity.color.replace('bg-', 'bg-white/90 text-').replace('/10', '')}`}
+              className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm backdrop-blur-sm ${validity.color.replace("bg-", "bg-white/90 text-").replace("/10", "")}`}
               style={{
-                backgroundColor: validity.label === 'Active' ? 'rgba(34, 197, 94, 0.9)' : validity.label === 'Expiring Soon' ? 'rgba(245, 158, 11, 0.9)' : 'rgba(239, 68, 68, 0.9)',
-                color: '#fff'
+                backgroundColor:
+                  validity.label === "Active"
+                    ? "rgba(34, 197, 94, 0.9)"
+                    : validity.label === "Expiring Soon"
+                      ? "rgba(245, 158, 11, 0.9)"
+                      : "rgba(239, 68, 68, 0.9)",
+                color: "#fff",
               }}
             >
               {validity.label}
@@ -286,9 +305,14 @@ function SubscriptionCard({
         </div>
 
         {/* Details Section */}
-        <div 
+        <div
           className="p-3 md:p-4 flex flex-col gap-3 cursor-pointer hover:bg-secondary/20 transition-colors"
-          onClick={() => navigate({ to: '/profile/subscriptions/$subscriptionId', params: { subscriptionId: String(sub.id) } })}
+          onClick={() =>
+            navigate({
+              to: "/profile/subscriptions/$subscriptionId",
+              params: { subscriptionId: String(sub.id) },
+            })
+          }
         >
           {/* Price & Customer Info */}
           <div className="flex justify-between items-start md:items-center flex-col md:flex-row gap-2">
@@ -304,29 +328,41 @@ function SubscriptionCard({
                 Group Subscription
               </div>
             )}
-            
+
             {isTeamMemberOnly && matchedMember && (
               <div className="text-xs text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
-                Purchased by <span className="font-semibold text-foreground">{sub.customer_name}</span>
+                Purchased by{" "}
+                <span className="font-semibold text-foreground">{sub.customer_name}</span>
               </div>
             )}
           </div>
-          
+
           {/* Desktop/Tablet Detailed Grid */}
           <div className="hidden sm:grid grid-cols-2 gap-3 pt-3 border-t border-border/40">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
-                {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" || isGroupSub 
-                  ? (isTeamMemberOnly ? "Member Since" : "Start Date") 
+                {sub.billing_cycle?.toLowerCase() === "one-time" ||
+                sub.billing_cycle?.toLowerCase() === "onetime" ||
+                isGroupSub
+                  ? isTeamMemberOnly
+                    ? "Member Since"
+                    : "Start Date"
                   : "Start Date"}
               </p>
               <p className="text-xs font-medium flex items-center gap-1.5 text-foreground">
-                <CalendarDays className="h-3 w-3 text-muted-foreground" /> {formatDate(sub.start_date)}
+                <CalendarDays className="h-3 w-3 text-muted-foreground" />{" "}
+                {formatDate(sub.start_date)}
               </p>
             </div>
-            {!(sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" || isGroupSub) && (
+            {!(
+              sub.billing_cycle?.toLowerCase() === "one-time" ||
+              sub.billing_cycle?.toLowerCase() === "onetime" ||
+              isGroupSub
+            ) && (
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Next Billing</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">
+                  Next Billing
+                </p>
                 <p className="text-xs font-medium flex items-center gap-1.5 text-foreground">
                   <CalendarDays className="h-3 w-3 text-primary" /> {nextBillingDisplay}
                 </p>
@@ -336,12 +372,22 @@ function SubscriptionCard({
 
           {/* Mobile Only Dates Row */}
           <div className="sm:hidden pt-2 border-t border-border/40 text-xs flex justify-between items-center text-muted-foreground">
-            {sub.billing_cycle?.toLowerCase() === "one-time" || sub.billing_cycle?.toLowerCase() === "onetime" ? (
-              <span>Start: <span className="font-semibold text-foreground">{formatDate(sub.start_date)}</span></span>
+            {sub.billing_cycle?.toLowerCase() === "one-time" ||
+            sub.billing_cycle?.toLowerCase() === "onetime" ? (
+              <span>
+                Start:{" "}
+                <span className="font-semibold text-foreground">{formatDate(sub.start_date)}</span>
+              </span>
             ) : isGroupSub ? (
-              <span>{isTeamMemberOnly ? "Since" : "Start"}: <span className="font-semibold text-foreground">{formatDate(sub.start_date)}</span></span>
+              <span>
+                {isTeamMemberOnly ? "Since" : "Start"}:{" "}
+                <span className="font-semibold text-foreground">{formatDate(sub.start_date)}</span>
+              </span>
             ) : (
-              <span>Next billing: <span className="font-semibold text-foreground">{nextBillingDisplay}</span></span>
+              <span>
+                Next billing:{" "}
+                <span className="font-semibold text-foreground">{nextBillingDisplay}</span>
+              </span>
             )}
           </div>
         </div>
@@ -359,7 +405,7 @@ function SubscriptionCard({
           >
             <QrCode className="h-4 w-4 mr-1.5" /> Show Pass
           </Button>
-          
+
           <div className="flex gap-2">
             {!isGroupSub && (
               <>
@@ -417,7 +463,10 @@ function SubscriptionCard({
             <div className="py-2 space-y-3 max-h-[50vh] overflow-y-auto pr-1">
               {sub.invoices && sub.invoices.length > 0 ? (
                 sub.invoices.map((inv: any, idx: number) => (
-                  <div key={inv.id || idx} className="border border-border/60 rounded-xl p-3 bg-card shadow-sm">
+                  <div
+                    key={inv.id || idx}
+                    className="border border-border/60 rounded-xl p-3 bg-card shadow-sm"
+                  >
                     <div className="flex justify-between items-center mb-2 pb-2 border-b border-border/40">
                       <span className="font-bold font-mono text-xs text-foreground">
                         {inv.invoice_number}
@@ -429,7 +478,9 @@ function SubscriptionCard({
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between text-muted-foreground">
                         <span>Date</span>
-                        <span className="font-medium text-foreground">{formatDate(inv.created_at)}</span>
+                        <span className="font-medium text-foreground">
+                          {formatDate(inv.created_at)}
+                        </span>
                       </div>
                       <div className="flex justify-between text-muted-foreground">
                         <span>Amount</span>
@@ -453,7 +504,9 @@ function SubscriptionCard({
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between text-muted-foreground">
                       <span>Date</span>
-                      <span className="font-medium text-foreground">{formatDate(sub.start_date)}</span>
+                      <span className="font-medium text-foreground">
+                        {formatDate(sub.start_date)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
                       <span>Amount</span>
@@ -558,43 +611,53 @@ function SubscriptionsPage() {
 
     subscriptions.forEach((sub: any) => {
       const spaceId = sub.space?.id || sub.id; // Fallback to sub.id if no space
-      
+
       if (!groups.has(spaceId)) {
         groups.set(spaceId, { ...sub, invoices: sub.invoices ? [...sub.invoices] : [] });
       } else {
         const existing = groups.get(spaceId);
-        
+
         // Merge invoices
         if (sub.invoices && sub.invoices.length > 0) {
           existing.invoices = [...existing.invoices, ...sub.invoices];
         }
-        
+
         // Pick primary: prefer "active" or later next_billing_date/start_date
         const existingValid = getSubscriptionValidity(existing).isValid;
         const subValid = getSubscriptionValidity(sub).isValid;
-        
+
         if (subValid && !existingValid) {
           groups.set(spaceId, { ...sub, invoices: existing.invoices });
         } else if (subValid && existingValid) {
-             const existingDate = existing.next_billing_date ? new Date(existing.next_billing_date).getTime() : new Date(existing.start_date || 0).getTime();
-             const subDate = sub.next_billing_date ? new Date(sub.next_billing_date).getTime() : new Date(sub.start_date || 0).getTime();
-             if (subDate > existingDate) {
-                 groups.set(spaceId, { ...sub, invoices: existing.invoices });
-             }
+          const existingDate = existing.next_billing_date
+            ? new Date(existing.next_billing_date).getTime()
+            : new Date(existing.start_date || 0).getTime();
+          const subDate = sub.next_billing_date
+            ? new Date(sub.next_billing_date).getTime()
+            : new Date(sub.start_date || 0).getTime();
+          if (subDate > existingDate) {
+            groups.set(spaceId, { ...sub, invoices: existing.invoices });
+          }
         } else if (!subValid && !existingValid) {
-             const existingDate = existing.next_billing_date ? new Date(existing.next_billing_date).getTime() : new Date(existing.start_date || 0).getTime();
-             const subDate = sub.next_billing_date ? new Date(sub.next_billing_date).getTime() : new Date(sub.start_date || 0).getTime();
-             if (subDate > existingDate) {
-                 groups.set(spaceId, { ...sub, invoices: existing.invoices });
-             }
+          const existingDate = existing.next_billing_date
+            ? new Date(existing.next_billing_date).getTime()
+            : new Date(existing.start_date || 0).getTime();
+          const subDate = sub.next_billing_date
+            ? new Date(sub.next_billing_date).getTime()
+            : new Date(sub.start_date || 0).getTime();
+          if (subDate > existingDate) {
+            groups.set(spaceId, { ...sub, invoices: existing.invoices });
+          }
         }
       }
     });
-    
+
     // Sort combined invoices by created_at desc
-    return Array.from(groups.values()).map(group => {
-       group.invoices.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-       return group;
+    return Array.from(groups.values()).map((group) => {
+      group.invoices.sort(
+        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      return group;
     });
   }, [subscriptions]);
 

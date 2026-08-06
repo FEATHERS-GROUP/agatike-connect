@@ -5,14 +5,38 @@ import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSubscriptionById } from "@/api/space_subscriptions";
-import { getSpaceResources, getSpaceResourceBookings, createSpaceResourceBooking } from "@/api/space_resources";
+import {
+  getSpaceResources,
+  getSpaceResourceBookings,
+  createSpaceResourceBooking,
+} from "@/api/space_resources";
 import { getSpaceClasses, getSessionBookings, getSpaceSessions } from "@/api/space_classes";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, CreditCard, MapPin, Receipt, Clock, Info, Loader2, User, Phone, Instagram, MessageCircle, Building2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  CreditCard,
+  MapPin,
+  Receipt,
+  Clock,
+  Info,
+  Loader2,
+  User,
+  Phone,
+  Instagram,
+  MessageCircle,
+  Building2,
+} from "lucide-react";
 import { format, addHours, startOfHour } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LazyCalendar from "@/components/lazy/LazyCalendar";
@@ -36,7 +60,9 @@ function SubscriberPortal() {
 
   const [bookingResource, setBookingResource] = useState<any>(null);
   const [bookingDate, setBookingDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
-  const [bookingTime, setBookingTime] = useState<string>(format(startOfHour(addHours(new Date(), 1)), "HH:mm"));
+  const [bookingTime, setBookingTime] = useState<string>(
+    format(startOfHour(addHours(new Date(), 1)), "HH:mm"),
+  );
   const [bookingDuration, setBookingDuration] = useState<number>(1);
   const [selectedCalendarEvent, setSelectedCalendarEvent] = useState<any>(null);
 
@@ -51,7 +77,8 @@ function SubscriberPortal() {
 
   const { data: subscription, isLoading: isSubLoading } = useQuery({
     queryKey: ["subscription", subscriptionId],
-    queryFn: () => getSubscriptionById({ data: { id: subscriptionId, user_id: user?.id, email: user?.email } }),
+    queryFn: () =>
+      getSubscriptionById({ data: { id: subscriptionId, user_id: user?.id, email: user?.email } }),
     enabled: !!user && !!subscriptionId,
   });
 
@@ -86,7 +113,7 @@ function SubscriberPortal() {
       const instant = (window as any).Temporal.Instant.from(new Date(dateStr).toISOString());
       return instant.toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId());
     };
-    
+
     const evts: any[] = [];
     if (sessions) {
       sessions.forEach((s: any) => {
@@ -96,9 +123,9 @@ function SubscriberPortal() {
           start: getLocalZdt(s.start_time),
           end: getLocalZdt(s.end_time),
           allDay: false,
-          calendarId: 'session',
+          calendarId: "session",
           resource: s,
-          type: "session"
+          type: "session",
         });
       });
     }
@@ -107,20 +134,28 @@ function SubscriberPortal() {
         const isMine = b.customer_id === user?.id;
         evts.push({
           id: String(b.id),
-          title: isMine ? `My Booking: ${b.resource?.name || "Resource"}` : `Booked: ${b.resource?.name || "Resource"}`,
+          title: isMine
+            ? `My Booking: ${b.resource?.name || "Resource"}`
+            : `Booked: ${b.resource?.name || "Resource"}`,
           start: getLocalZdt(b.start_time),
           end: getLocalZdt(b.end_time),
           allDay: false,
-          calendarId: isMine ? 'my-booking' : 'other-booking',
+          calendarId: isMine ? "my-booking" : "other-booking",
           resource: b,
-          type: "booking"
+          type: "booking",
         });
       });
     }
     return evts;
   }, [sessions, resourceBookings, user?.id]);
 
-  if (isSubLoading || isResourcesLoading || isClassesLoading || isResourceBookingsLoading || !sessions) {
+  if (
+    isSubLoading ||
+    isResourcesLoading ||
+    isClassesLoading ||
+    isResourceBookingsLoading ||
+    !sessions
+  ) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />

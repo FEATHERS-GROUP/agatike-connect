@@ -247,7 +247,9 @@ export function EventCheckoutSidebar({
                             </div>
                           </div>
                         )}
-                        <div className={`flex items-center justify-between ${isSoldOut ? 'opacity-40' : ''}`}>
+                        <div
+                          className={`flex items-center justify-between ${isSoldOut ? "opacity-40" : ""}`}
+                        >
                           <div>
                             <p className="font-medium">{t.name}</p>
                             <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
@@ -297,8 +299,14 @@ export function EventCheckoutSidebar({
                             </div>
                           )}
                         </div>
-                        <p className={`mt-2 text-xs text-muted-foreground ${isSoldOut ? 'opacity-40' : ''}`}>{t.perks.join(" · ")}</p>
-                        {!isSoldOut && <p className="mt-1 text-xs text-primary">{t.remaining} left</p>}
+                        <p
+                          className={`mt-2 text-xs text-muted-foreground ${isSoldOut ? "opacity-40" : ""}`}
+                        >
+                          {t.perks.join(" · ")}
+                        </p>
+                        {!isSoldOut && (
+                          <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
+                        )}
                       </div>
                     );
                   })}

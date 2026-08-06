@@ -182,10 +182,12 @@ function SpacesListingsPage() {
               </TableHeader>
               <TableBody>
                 {spaces.map((space: any) => (
-                  <TableRow 
-                    key={space.id} 
-                    className="cursor-pointer hover:bg-muted/50" 
-                    onClick={() => navigate({ to: `/dashboard/${workspaceSlug}/spaces/${space.id}` })}
+                  <TableRow
+                    key={space.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() =>
+                      navigate({ to: `/dashboard/${workspaceSlug}/spaces/${space.id}` })
+                    }
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">

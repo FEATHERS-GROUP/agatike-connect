@@ -31,14 +31,16 @@ function TicketViewer() {
   });
 
   // Try to find the ticket by the URL param (in case a ticket ID like TKT-293NDGIR was passed)
-  const exactTicket = tickets.find((t: any) => String(t.id) === String(ticketId) || String(t.orderId) === String(ticketId));
-  
+  const exactTicket = tickets.find(
+    (t: any) => String(t.id) === String(ticketId) || String(t.orderId) === String(ticketId),
+  );
+
   // The event ID is either the eventId of the ticket we found, or the param itself (if an event ID was passed)
   const resolvedEventId = exactTicket ? exactTicket.eventId : ticketId;
 
   // Now find ALL related tickets for the stack
   const eventTickets = tickets.filter((t: any) => String(t.eventId) === String(resolvedEventId));
-    
+
   const primaryTicket = exactTicket || eventTickets[0];
   const [isDownloading, setIsDownloading] = useState(false);
   const { user } = useUserAuth();
@@ -52,21 +54,23 @@ function TicketViewer() {
   const eventTicketOrderIds = eventTickets.map((t: any) => String(t.orderId));
 
   // Find product orders for this specific event or matched by any ticket's order ID
-  const eventProductOrders = primaryTicket 
+  const eventProductOrders = primaryTicket
     ? productOrders.filter((o: any) => {
         const prod = o.product || {};
-        const prodEventId = prod.event?.id || prod.event_id || prod.specs?.eventId || prod.specs?.event_id;
-        
+        const prodEventId =
+          prod.event?.id || prod.event_id || prod.specs?.eventId || prod.specs?.event_id;
+
         const isEventMatch = String(prodEventId) === String(primaryTicket.eventId);
-        const isOrderMatch = o.qr_code_string && eventTicketOrderIds.includes(String(o.qr_code_string));
-        
+        const isOrderMatch =
+          o.qr_code_string && eventTicketOrderIds.includes(String(o.qr_code_string));
+
         return isEventMatch || isOrderMatch;
       })
     : [];
-    
-  const vouchers = eventProductOrders.filter((o: any) => o.product?.type === 'voucher');
+
+  const vouchers = eventProductOrders.filter((o: any) => o.product?.type === "voucher");
   // Anything that isn't a voucher is considered a physical product / merch
-  const physicalOrders = eventProductOrders.filter((o: any) => o.product?.type !== 'voucher');
+  const physicalOrders = eventProductOrders.filter((o: any) => o.product?.type !== "voucher");
 
   const handleDownload = async () => {
     if (isDownloading) return;
@@ -210,7 +214,7 @@ function TicketViewer() {
                 Purchases
               </h2>
             </div>
-            
+
             <div className="flex flex-col gap-1.5 px-1">
               {isProductsLoading ? (
                 <div className="flex items-center justify-center p-4">
@@ -218,22 +222,35 @@ function TicketViewer() {
                 </div>
               ) : physicalOrders.length > 0 ? (
                 physicalOrders.map((order: any, idx: number) => (
-                  <div key={order.id || idx} className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0 group/item">
+                  <div
+                    key={order.id || idx}
+                    className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0 group/item"
+                  >
                     <div className="h-12 w-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform">
                       {order.product?.image_url ? (
-                        <img src={order.product.image_url} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={order.product.image_url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                         <Briefcase className="w-5 h-5 text-white/40" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white/90 text-sm truncate">{order.product?.name || "Product"}</p>
-                      <p className="text-white/40 text-xs mt-0.5 truncate uppercase tracking-wider font-semibold">Qty: {order.qty || 1} • {order.size || 'Standard'}</p>
+                      <p className="font-bold text-white/90 text-sm truncate">
+                        {order.product?.name || "Product"}
+                      </p>
+                      <p className="text-white/40 text-xs mt-0.5 truncate uppercase tracking-wider font-semibold">
+                        Qty: {order.qty || 1} • {order.size || "Standard"}
+                      </p>
                     </div>
                     <div className="h-8 w-px border-l-2 border-dashed border-white/10 mx-2" />
                     <div className="text-right shrink-0">
                       <p className="font-mono text-white/90 text-[13px]">{order.amount_paid} RWF</p>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider mt-1 ${order.status === 'Confirmed' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      <p
+                        className={`text-[10px] font-bold uppercase tracking-wider mt-1 ${order.status === "Confirmed" ? "text-emerald-400" : "text-amber-400"}`}
+                      >
                         {order.status}
                       </p>
                     </div>
@@ -244,9 +261,9 @@ function TicketViewer() {
                   No additional items purchased.
                 </div>
               )}
-              
+
               <div className="h-px w-full bg-white/5 my-3" />
-              
+
               <div className="flex justify-between items-center py-1.5">
                 <span className="text-white/50 text-[13px] font-medium">Order Reference</span>
                 <span className="text-white/90 font-mono text-sm tracking-wider bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
@@ -294,7 +311,7 @@ function TicketViewer() {
   );
 }
 
-function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] }) {
+function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] }) {
   // Map tickets and vouchers to a single cards array.
   // Tickets are placed first, vouchers last so tickets render on top initially (since activeIndex starts at 0).
   const cards = [
@@ -306,16 +323,22 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
     ...vouchers.map((v, i) => ({
       id: v.id || `v-${i}`,
       type: "voucher",
-      color: (v.product?.name || "").toLowerCase().includes("sponsored") ? "bg-yellow-600" : ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
+      color: (v.product?.name || "").toLowerCase().includes("sponsored")
+        ? "bg-yellow-600"
+        : ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
       brand: v.product?.name || "Voucher",
       offer: v.qty ? `${v.qty}x` : "1x",
       icon: v.product?.image_url ? (
-        <img src={v.product.image_url} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white/20" />
+        <img
+          src={v.product.image_url}
+          alt=""
+          className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
+        />
       ) : (
         <TicketIcon className="w-10 h-10 text-white" />
       ),
       data: v,
-    }))
+    })),
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -327,7 +350,7 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
           const offset = index - activeIndex;
           const absOffset = Math.abs(offset);
           const isVisible = absOffset <= 3;
-          
+
           if (!isVisible) return null;
 
           // Fan-out effect: Rotate Z and translate slightly to create a spread hand of cards
@@ -344,26 +367,38 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
               className="absolute bottom-0 transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] cursor-pointer"
               style={{
                 transform: `translateX(${translateX}px) translateY(${translateY}px) rotateZ(${rotateZ}deg) scale(${scale})`,
-                transformOrigin: '50% 120%', // Pivot point near the bottom
+                transformOrigin: "50% 120%", // Pivot point near the bottom
                 zIndex,
                 opacity: absOffset > 2 ? 0 : 1,
-                pointerEvents: absOffset > 2 ? 'none' : 'auto'
+                pointerEvents: absOffset > 2 ? "none" : "auto",
               }}
             >
               {card.type === "voucher" ? (
-                <div className={`relative w-[280px] h-[360px] rounded-[2rem] shadow-2xl ${card.color} flex flex-col items-center p-6 text-white overflow-hidden border border-white/10`}>
+                <div
+                  className={`relative w-[280px] h-[360px] rounded-[2rem] shadow-2xl ${card.color} flex flex-col items-center p-6 text-white overflow-hidden border border-white/10`}
+                >
                   {/* Punch holes matched to dark ambient background color */}
-                  <div className="absolute left-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10" style={{ boxShadow: 'inset -3px 0px 5px rgba(0,0,0,0.5)' }} />
-                  <div className="absolute right-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10" style={{ boxShadow: 'inset 3px 0px 5px rgba(0,0,0,0.5)' }} />
+                  <div
+                    className="absolute left-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10"
+                    style={{ boxShadow: "inset -3px 0px 5px rgba(0,0,0,0.5)" }}
+                  />
+                  <div
+                    className="absolute right-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10"
+                    style={{ boxShadow: "inset 3px 0px 5px rgba(0,0,0,0.5)" }}
+                  />
                   <div className="absolute left-6 right-6 top-[60%] border-t-2 border-dashed border-white/30 translate-y-[15px]" />
-                  
+
                   {/* Content */}
                   <div className="flex flex-col items-center justify-center flex-1 w-full pb-8">
-                    <p className={`tracking-[0.2em] text-xs font-bold uppercase mb-4 opacity-90 ${card.brand.toLowerCase().includes('sponsored') ? 'text-yellow-200' : ''}`}>
+                    <p
+                      className={`tracking-[0.2em] text-xs font-bold uppercase mb-4 opacity-90 ${card.brand.toLowerCase().includes("sponsored") ? "text-yellow-200" : ""}`}
+                    >
                       {card.brand}
                     </p>
                     <div className="flex flex-col items-center justify-center mb-6">
-                      <h2 className={`text-5xl font-black text-center px-4 leading-tight ${card.brand.toLowerCase().includes('sponsored') ? 'text-yellow-100 drop-shadow-md' : ''}`}>
+                      <h2
+                        className={`text-5xl font-black text-center px-4 leading-tight ${card.brand.toLowerCase().includes("sponsored") ? "text-yellow-100 drop-shadow-md" : ""}`}
+                      >
                         {card.offer}
                       </h2>
                     </div>
@@ -371,8 +406,12 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
                   </div>
 
                   <div className="absolute bottom-6 w-full px-8">
-                    <div className={`w-full backdrop-blur-sm font-bold py-3.5 rounded-full text-[13px] border text-center uppercase tracking-widest ${card.brand.toLowerCase().includes('sponsored') ? 'bg-yellow-500/20 text-yellow-200 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'bg-white/10 text-white border-white/20'}`}>
-                      {card.brand.toLowerCase().includes('sponsored') ? 'Sponsored Gift' : 'Voucher'}
+                    <div
+                      className={`w-full backdrop-blur-sm font-bold py-3.5 rounded-full text-[13px] border text-center uppercase tracking-widest ${card.brand.toLowerCase().includes("sponsored") ? "bg-yellow-500/20 text-yellow-200 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]" : "bg-white/10 text-white border-white/20"}`}
+                    >
+                      {card.brand.toLowerCase().includes("sponsored")
+                        ? "Sponsored Gift"
+                        : "Voucher"}
                     </div>
                   </div>
                 </div>
@@ -385,7 +424,7 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[], vouchers: any[] 
           );
         })}
       </div>
-      
+
       {/* Dots */}
       <div className="flex items-center justify-center gap-2">
         {cards.map((_, idx) => (

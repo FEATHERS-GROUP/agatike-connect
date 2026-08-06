@@ -3,13 +3,13 @@ import * as LucideIcons from "lucide-react";
 import { useState } from "react";
 import { getAllUsers } from "@/api/users";
 
-import { 
-  ExplorerIcon, 
-  EnthusiastIcon, 
-  VipIcon, 
-  SocialIcon, 
-  SubscriberIcon, 
-  VenueIcon 
+import {
+  ExplorerIcon,
+  EnthusiastIcon,
+  VipIcon,
+  SocialIcon,
+  SubscriberIcon,
+  VenueIcon,
 } from "@/components/profile/ProfileBadges";
 
 export const Route = createFileRoute("/internal/control/admin/agatike-users/")({
@@ -139,7 +139,7 @@ function UsersPage() {
                         <span className="text-xs text-gray-500 dark:text-[#888888]">Unknown</span>
                       )}
                     </td>
-                  <td className="px-6 py-4 text-xs text-gray-600 dark:text-[#aaaaaa]">
+                    <td className="px-6 py-4 text-xs text-gray-600 dark:text-[#aaaaaa]">
                       {user.created_at
                         ? new Date(user.created_at).toLocaleDateString(undefined, {
                             year: "numeric",
@@ -156,15 +156,49 @@ function UsersPage() {
                         const followingCount = user.totalFollowing || 0;
 
                         const badges = [];
-                        if (totalEvents >= 10) badges.push({ title: "Event Explorer", Icon: ExplorerIcon, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" });
-                        if (totalEvents >= 50) badges.push({ title: "Enthusiast", Icon: EnthusiastIcon, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" });
-                        if (totalEvents >= 100) badges.push({ title: "VIP Attendee", Icon: VipIcon, color: "text-orange-500 bg-orange-500/20 border-orange-500/30" });
-                        if (followingCount >= 25) badges.push({ title: "Social Butterfly", Icon: SocialIcon, color: "text-orange-400 bg-orange-400/10 border-orange-400/20" });
-                        if (totalSubscriptions >= 5) badges.push({ title: "Loyal Subscriber", Icon: SubscriberIcon, color: "text-red-500 bg-red-500/10 border-red-500/20" });
-                        if (totalVenueBookings >= 50) badges.push({ title: "Space Booker", Icon: VenueIcon, color: "text-orange-400 bg-orange-300/10 border-orange-400/20" });
+                        if (totalEvents >= 10)
+                          badges.push({
+                            title: "Event Explorer",
+                            Icon: ExplorerIcon,
+                            color: "text-orange-500 bg-orange-500/10 border-orange-500/20",
+                          });
+                        if (totalEvents >= 50)
+                          badges.push({
+                            title: "Enthusiast",
+                            Icon: EnthusiastIcon,
+                            color: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+                          });
+                        if (totalEvents >= 100)
+                          badges.push({
+                            title: "VIP Attendee",
+                            Icon: VipIcon,
+                            color: "text-orange-500 bg-orange-500/20 border-orange-500/30",
+                          });
+                        if (followingCount >= 25)
+                          badges.push({
+                            title: "Social Butterfly",
+                            Icon: SocialIcon,
+                            color: "text-orange-400 bg-orange-400/10 border-orange-400/20",
+                          });
+                        if (totalSubscriptions >= 5)
+                          badges.push({
+                            title: "Loyal Subscriber",
+                            Icon: SubscriberIcon,
+                            color: "text-red-500 bg-red-500/10 border-red-500/20",
+                          });
+                        if (totalVenueBookings >= 50)
+                          badges.push({
+                            title: "Space Booker",
+                            Icon: VenueIcon,
+                            color: "text-orange-400 bg-orange-300/10 border-orange-400/20",
+                          });
 
                         if (badges.length === 0) {
-                          return <span className="text-xs text-gray-500 dark:text-[#888888] italic">No badges</span>;
+                          return (
+                            <span className="text-xs text-gray-500 dark:text-[#888888] italic">
+                              No badges
+                            </span>
+                          );
                         }
 
                         return (

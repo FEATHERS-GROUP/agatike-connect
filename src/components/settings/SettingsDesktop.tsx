@@ -5,7 +5,15 @@ import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Lock, ChevronDown, RefreshCw, Trash2, AlertTriangle, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  Lock,
+  ChevronDown,
+  RefreshCw,
+  Trash2,
+  AlertTriangle,
+  ArrowLeft,
+} from "lucide-react";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { RefundPolicy } from "@/components/legal/RefundPolicy";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
@@ -131,7 +139,9 @@ export function SettingsDesktop(props: SettingsProps) {
                         onChange={(e) => setGeneral({ ...general, gender: e.target.value })}
                         className="flex appearance-none h-10 w-full rounded-xl border border-border/40 bg-background/50 px-3 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                       >
-                        <option value="" disabled>Select Gender</option>
+                        <option value="" disabled>
+                          Select Gender
+                        </option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
@@ -148,9 +158,13 @@ export function SettingsDesktop(props: SettingsProps) {
                       onChange={(e) => setGeneral({ ...general, country: e.target.value })}
                       className="flex appearance-none h-10 w-full rounded-xl border border-border/40 bg-background/50 px-3 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     >
-                      <option value="" disabled>Select Country</option>
+                      <option value="" disabled>
+                        Select Country
+                      </option>
                       {COUNTRIES.map((c) => (
-                        <option key={c.code} value={c.name}>{c.name}</option>
+                        <option key={c.code} value={c.name}>
+                          {c.name}
+                        </option>
                       ))}
                     </select>
                     <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -183,8 +197,8 @@ export function SettingsDesktop(props: SettingsProps) {
                   key={style}
                   onClick={() => setSelectedStyle(style)}
                   className={`text-xs px-4 py-2 rounded-full whitespace-nowrap capitalize transition-all ${
-                    selectedStyle === style 
-                      ? "bg-primary text-primary-foreground font-bold shadow-md" 
+                    selectedStyle === style
+                      ? "bg-primary text-primary-foreground font-bold shadow-md"
                       : "bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground border border-border/40"
                   }`}
                 >
@@ -199,8 +213,8 @@ export function SettingsDesktop(props: SettingsProps) {
                   onClick={() => setStagedAvatar(url)}
                   disabled={isUpdatingAvatar}
                   className={`aspect-square rounded-2xl p-2 border transition-all hover:scale-105 hover:shadow-md ${
-                    stagedAvatar === url 
-                      ? "bg-primary/10 border-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                    stagedAvatar === url
+                      ? "bg-primary/10 border-primary shadow-sm ring-2 ring-primary ring-offset-2 ring-offset-background"
                       : "bg-secondary/20 border-border/40 hover:border-primary/40"
                   }`}
                 >
@@ -237,7 +251,8 @@ export function SettingsDesktop(props: SettingsProps) {
         return (
           <div className="space-y-6">
             <p className="text-sm text-muted-foreground max-w-2xl">
-              Select categories you're interested in to get better event recommendations tailored just for you.
+              Select categories you're interested in to get better event recommendations tailored
+              just for you.
             </p>
             <div className="flex flex-wrap gap-2.5">
               {INTEREST_OPTIONS.map((interest) => {
@@ -254,14 +269,15 @@ export function SettingsDesktop(props: SettingsProps) {
                       setSelectedInterests(
                         isSelected
                           ? selectedInterests.filter(
-                              (i) => typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
+                              (i) =>
+                                typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
                             )
                           : [...selectedInterests, interest],
                       )
                     }
                     className={`px-5 py-2 rounded-full text-sm font-semibold border transition-all ${
-                      isSelected 
-                        ? "bg-primary/10 border-primary text-primary shadow-sm" 
+                      isSelected
+                        ? "bg-primary/10 border-primary text-primary shadow-sm"
                         : "bg-secondary/40 border-border/40 text-muted-foreground hover:bg-secondary hover:text-foreground"
                     }`}
                   >
@@ -280,9 +296,9 @@ export function SettingsDesktop(props: SettingsProps) {
               const isChanged =
                 normalizedSelected.length !== normalizedInitial.length ||
                 normalizedSelected.some((i) => !normalizedInitial.includes(i));
-              
+
               if (!isChanged) return null;
-              
+
               return (
                 <div className="pt-2">
                   <Button
@@ -381,28 +397,84 @@ export function SettingsDesktop(props: SettingsProps) {
               Choose your preferred application theme.
             </p>
             <div className="grid grid-cols-3 gap-4">
-              {DESKTOP_TABS[1].items.find(i => i.id === "preferences") && [
-                { id: "light", label: "Light", icon: DESKTOP_TABS[1].items[1].icon }, // using fallback icons since they aren't explicitly passed
-                { id: "dark", label: "Dark", icon: DESKTOP_TABS[1].items[1].icon },
-                { id: "system", label: "System", icon: DESKTOP_TABS[1].items[1].icon },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTheme(t.id as any)}
-                  className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all hover:scale-105 ${
-                    theme === t.id 
-                      ? "bg-primary/10 border-primary text-primary font-bold shadow-md" 
-                      : "bg-card border-border/60 text-muted-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <div className={`p-3 rounded-full ${theme === t.id ? 'bg-primary/20' : 'bg-secondary'}`}>
-                    {t.id === 'light' ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg> 
-                    : t.id === 'dark' ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                    : <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>}
-                  </div>
-                  <span className="text-sm font-semibold">{t.label}</span>
-                </button>
-              ))}
+              {DESKTOP_TABS[1].items.find((i) => i.id === "preferences") &&
+                [
+                  { id: "light", label: "Light", icon: DESKTOP_TABS[1].items[1].icon }, // using fallback icons since they aren't explicitly passed
+                  { id: "dark", label: "Dark", icon: DESKTOP_TABS[1].items[1].icon },
+                  { id: "system", label: "System", icon: DESKTOP_TABS[1].items[1].icon },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTheme(t.id as any)}
+                    className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all hover:scale-105 ${
+                      theme === t.id
+                        ? "bg-primary/10 border-primary text-primary font-bold shadow-md"
+                        : "bg-card border-border/60 text-muted-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <div
+                      className={`p-3 rounded-full ${theme === t.id ? "bg-primary/20" : "bg-secondary"}`}
+                    >
+                      {t.id === "light" ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-6 w-6"
+                        >
+                          <circle cx="12" cy="12" r="4" />
+                          <path d="M12 2v2" />
+                          <path d="M12 20v2" />
+                          <path d="m4.93 4.93 1.41 1.41" />
+                          <path d="m17.66 17.66 1.41 1.41" />
+                          <path d="M2 12h2" />
+                          <path d="M20 12h2" />
+                          <path d="m6.34 17.66-1.41 1.41" />
+                          <path d="m19.07 4.93-1.41 1.41" />
+                        </svg>
+                      ) : t.id === "dark" ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-6 w-6"
+                        >
+                          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-6 w-6"
+                        >
+                          <rect width="20" height="14" x="2" y="3" rx="2" />
+                          <line x1="8" x2="16" y1="21" y2="21" />
+                          <line x1="12" x2="12" y1="17" y2="21" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-sm font-semibold">{t.label}</span>
+                  </button>
+                ))}
             </div>
           </div>
         );
@@ -431,7 +503,10 @@ export function SettingsDesktop(props: SettingsProps) {
               <AlertTriangle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
               <div className="text-sm text-destructive/90 space-y-2">
                 <p className="font-semibold text-base">This action cannot be undone.</p>
-                <p>All your data, bookings, tickets, and followers will become inaccessible. We cannot recover an account once it has been deleted.</p>
+                <p>
+                  All your data, bookings, tickets, and followers will become inaccessible. We
+                  cannot recover an account once it has been deleted.
+                </p>
               </div>
             </div>
 
@@ -488,7 +563,9 @@ export function SettingsDesktop(props: SettingsProps) {
               </div>
             )}
             <div className="min-w-0">
-              <p className="font-bold text-base text-foreground truncate leading-tight">{user?.username || "User"}</p>
+              <p className="font-bold text-base text-foreground truncate leading-tight">
+                {user?.username || "User"}
+              </p>
               <p className="text-sm text-muted-foreground truncate mt-0.5">@{user?.handle}</p>
             </div>
           </div>
@@ -513,8 +590,8 @@ export function SettingsDesktop(props: SettingsProps) {
                         setOtpInput("");
                       }}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-left transition-all ${
-                        isActive 
-                          ? "bg-primary/10 text-primary font-semibold shadow-sm" 
+                        isActive
+                          ? "bg-primary/10 text-primary font-semibold shadow-sm"
                           : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                       }`}
                     >
@@ -526,7 +603,9 @@ export function SettingsDesktop(props: SettingsProps) {
                         <item.icon className="h-4 w-4" />
                       </div>
                       <span className="text-sm">{item.label}</span>
-                      {isActive && <div className="ml-auto w-1 h-4 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]" />}
+                      {isActive && (
+                        <div className="ml-auto w-1 h-4 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                      )}
                     </button>
                   );
                 })}
@@ -549,18 +628,22 @@ export function SettingsDesktop(props: SettingsProps) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen relative">
         <Navbar />
-        
+
         <main className="flex-1 px-8 lg:px-12 py-10 max-w-5xl">
           {/* Header */}
           <div className="mb-8 flex items-end justify-between pb-6 border-b border-border/40">
             <div className="flex items-center gap-4">
               {desktopTabMeta && (
-                <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${desktopTabMeta.color}`}>
+                <div
+                  className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${desktopTabMeta.color}`}
+                >
                   <desktopTabMeta.icon className="h-7 w-7" />
                 </div>
               )}
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{desktopTabMeta?.label}</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  {desktopTabMeta?.label}
+                </h1>
                 <p className="text-sm text-muted-foreground mt-1">{desktopTabMeta?.desc}</p>
               </div>
             </div>
@@ -571,7 +654,7 @@ export function SettingsDesktop(props: SettingsProps) {
             {renderContent()}
           </div>
         </main>
-        
+
         <Footer />
       </div>
     </div>

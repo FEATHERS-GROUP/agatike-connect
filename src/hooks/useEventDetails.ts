@@ -81,14 +81,26 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
 
   let derivedDate = currentStop?.date;
   let derivedTime = currentStop?.time;
-  
+
   // If the direct date isn't set but schedules exist, use the first schedule's start_date
-  if (!derivedDate && Array.isArray(ev.schedules) && ev.schedules.length > 0 && ev.schedules[0].start_date) {
+  if (
+    !derivedDate &&
+    Array.isArray(ev.schedules) &&
+    ev.schedules.length > 0 &&
+    ev.schedules[0].start_date
+  ) {
     const scheduleDate = new Date(ev.schedules[0].start_date);
     if (!isNaN(scheduleDate.getTime())) {
-      derivedDate = scheduleDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      derivedDate = scheduleDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
       if (!derivedTime) {
-        derivedTime = scheduleDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        derivedTime = scheduleDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
       }
     }
   }
@@ -242,19 +254,19 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const isPastEvent = useMemo(() => {
     const targetDateStr = ev.end_date || date;
     if (!targetDateStr || targetDateStr === "Upcoming") return false;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const eventDate = new Date(targetDateStr);
     const fallbackDate = new Date(date);
-    
+
     if (!isNaN(eventDate.getTime())) {
       return eventDate < today;
     } else if (!isNaN(fallbackDate.getTime())) {
       return fallbackDate < today;
     }
-    
+
     return false;
   }, [date, ev.end_date]);
 

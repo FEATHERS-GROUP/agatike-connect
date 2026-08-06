@@ -43,7 +43,6 @@ export function ProfileMobile({
 
   return (
     <div className="md:hidden min-h-screen bg-background pb-24 text-foreground">
-
       {/* Profile Hero */}
       <div className="relative px-4 pt-4 pb-4">
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent pointer-events-none -mt-4" />
@@ -105,8 +104,8 @@ export function ProfileMobile({
       </div>
 
       <div className="mt-6 border-b border-border/40 pb-5">
-        <ProfileBadges 
-          historyCount={historyTicketsList.length} 
+        <ProfileBadges
+          historyCount={historyTicketsList.length}
           upcomingCount={upcomingTicketsList.length}
           followingCount={followedOrganizers.length}
           subscriptionsCount={subscriptions?.length || 0}

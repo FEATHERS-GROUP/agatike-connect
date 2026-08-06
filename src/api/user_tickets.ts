@@ -283,7 +283,13 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
 
     const baseDate = stop?.date || event?.tour_stops?.[0]?.date;
     const scheduleDate = event?.schedules?.[0]?.start_date;
-    const formattedScheduleDate = scheduleDate ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(scheduleDate)) : null;
+    const formattedScheduleDate = scheduleDate
+      ? new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }).format(new Date(scheduleDate))
+      : null;
 
     tickets.push({
       id: att.id,

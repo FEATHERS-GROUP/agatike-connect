@@ -68,18 +68,22 @@ function VenueOverviewPage() {
         const endDate = new Date(b.end_time);
         return {
           id: String(b.id || b.customer_name + b.start_time),
-          title: b.customer_name || 'Booking',
-          start: (window as any).Temporal.ZonedDateTime.from(startDate.toISOString().replace(/\.\d{3}/, '') + '[UTC]'),
-          end: (window as any).Temporal.ZonedDateTime.from(endDate.toISOString().replace(/\.\d{3}/, '') + '[UTC]'),
+          title: b.customer_name || "Booking",
+          start: (window as any).Temporal.ZonedDateTime.from(
+            startDate.toISOString().replace(/\.\d{3}/, "") + "[UTC]",
+          ),
+          end: (window as any).Temporal.ZonedDateTime.from(
+            endDate.toISOString().replace(/\.\d{3}/, "") + "[UTC]",
+          ),
           data: {
             paymentStatus: b.payment_status,
             status: b.status,
             customerName: b.customer_name,
             customerEmail: b.customer_email,
             customerPhone: b.customer_phone,
-            date: b.date || format(new Date(b.start_time), 'yyyy-MM-dd'),
-            timeStart: b.timeStart || format(new Date(b.start_time), 'HH:mm'),
-            timeEnd: b.timeEnd || format(new Date(b.end_time), 'HH:mm'),
+            date: b.date || format(new Date(b.start_time), "yyyy-MM-dd"),
+            timeStart: b.timeStart || format(new Date(b.start_time), "HH:mm"),
+            timeEnd: b.timeEnd || format(new Date(b.end_time), "HH:mm"),
             isAllDay: false,
           },
         };
@@ -100,7 +104,10 @@ function VenueOverviewPage() {
     }
 
     return (
-      <div className="flex flex-col gap-0.5 p-1 w-full h-full overflow-hidden text-white" style={{ background: "var(--gradient-primary)", borderRadius: "4px" }}>
+      <div
+        className="flex flex-col gap-0.5 p-1 w-full h-full overflow-hidden text-white"
+        style={{ background: "var(--gradient-primary)", borderRadius: "4px" }}
+      >
         <span className="font-semibold text-xs leading-tight truncate">{calendarEvent.title}</span>
         <div className="flex items-center gap-1 mt-0.5 flex-wrap">
           <span className="px-1.5 py-0.5 rounded-[4px] bg-white/20 text-[9px] uppercase tracking-wider font-bold">
@@ -117,15 +124,15 @@ function VenueOverviewPage() {
   };
 
   console.log("overview.tsx render myEvents:", myEvents);
-  
+
   const [eventsService] = useState(() => createEventsServicePlugin());
 
   const calendar = useNextCalendarApp({
     views: [createViewDay(), createViewWeek(), createViewMonthGrid(), createViewMonthAgenda()],
     events: myEvents,
-    defaultView: 'month-grid',
+    defaultView: "month-grid",
     callbacks: {
-      onEventClick: (event) => setSelectedEvent(event)
+      onEventClick: (event) => setSelectedEvent(event),
     },
     plugins: [eventsService],
   });
@@ -135,8 +142,8 @@ function VenueOverviewPage() {
   // Re-sync events to calendar state if they change
   useEffect(() => {
     if (myEvents) {
-       console.log("overview.tsx calling eventsService.set with:", myEvents);
-       eventsService.set(myEvents);
+      console.log("overview.tsx calling eventsService.set with:", myEvents);
+      eventsService.set(myEvents);
     }
   }, [myEvents, eventsService]);
 
@@ -193,13 +200,16 @@ function VenueOverviewPage() {
               </select>
             )}
           </div>
-          <div className="flex-1 rounded-2xl overflow-hidden shadow-inner sx-react-calendar-wrapper" style={{ minHeight: "500px" }}>
-            <ScheduleXCalendar 
-              calendarApp={calendar} 
+          <div
+            className="flex-1 rounded-2xl overflow-hidden shadow-inner sx-react-calendar-wrapper"
+            style={{ minHeight: "500px" }}
+          >
+            <ScheduleXCalendar
+              calendarApp={calendar}
               customComponents={{
                 timeGridEvent: CustomEvent,
                 dateGridEvent: CustomEvent,
-                monthGridEvent: CustomEvent
+                monthGridEvent: CustomEvent,
               }}
             />
           </div>

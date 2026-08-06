@@ -376,7 +376,10 @@ function CheckoutPage() {
                   </div>
                   {selectedCurrency !== "USD" && (
                     <div className="text-xs text-muted-foreground">
-                      ≈ {formatCurrency(getConvertedAmount(isAnnually ? plan.price * 12 : plan.price))}
+                      ≈{" "}
+                      {formatCurrency(
+                        getConvertedAmount(isAnnually ? plan.price * 12 : plan.price),
+                      )}
                     </div>
                   )}
                 </div>
@@ -387,9 +390,11 @@ function CheckoutPage() {
                   <span>Annual Discount (20%)</span>
                   <div className="text-right">
                     <div className="font-medium">
-                      -{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                        plan.price * 12 * 0.2,
-                      )}
+                      -
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format(plan.price * 12 * 0.2)}
                     </div>
                     {selectedCurrency !== "USD" && (
                       <div className="text-xs opacity-80">
@@ -400,21 +405,24 @@ function CheckoutPage() {
                 </div>
               )}
 
-              {isPromoEligible && !isRenewal && finalUSDPrice < (isAnnually ? plan.price * 12 * 0.8 : plan.price) && (
-                <div className="flex justify-between text-sm text-primary font-medium">
-                  <span>Launch Promo (50% off first 3 mos)</span>
-                  <span>Applied</span>
-                </div>
-              )}
+              {isPromoEligible &&
+                !isRenewal &&
+                finalUSDPrice < (isAnnually ? plan.price * 12 * 0.8 : plan.price) && (
+                  <div className="flex justify-between text-sm text-primary font-medium">
+                    <span>Launch Promo (50% off first 3 mos)</span>
+                    <span>Applied</span>
+                  </div>
+                )}
 
               <div className="border-t pt-4 mt-4 flex flex-col gap-3">
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total Due</span>
                   <div className="text-right">
                     <div>
-                      {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-                        finalUSDPrice,
-                      )}
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format(finalUSDPrice)}
                     </div>
                     {selectedCurrency !== "USD" && (
                       <div className="text-sm text-muted-foreground font-normal mt-1">

@@ -34,7 +34,7 @@ function StructureBuilderPage() {
     onError: (err) => {
       toast.error("Failed to add resource.");
       console.error(err);
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -42,7 +42,7 @@ function StructureBuilderPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["space_resources", spaceId] });
       toast.success("Resource deleted.");
-    }
+    },
   });
 
   const { data: space } = useQuery({
@@ -71,10 +71,10 @@ function StructureBuilderPage() {
           rules: {
             locationId,
             operatingHours: { start: operatingHoursStart, end: operatingHoursEnd },
-            requireExclusiveBooking: requireExclusive
-          }
-        }
-      }
+            requireExclusiveBooking: requireExclusive,
+          },
+        },
+      },
     });
   };
 
@@ -92,20 +92,20 @@ function StructureBuilderPage() {
 
       <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm max-w-2xl">
         <h3 className="font-bold text-lg mb-4">Add New Resource</h3>
-                <form onSubmit={handleAdd} className="space-y-4">
+        <form onSubmit={handleAdd} className="space-y-4">
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 space-y-2 min-w-[200px]">
               <label className="text-sm font-medium">Name</label>
-              <Input 
-                value={newName} 
-                onChange={(e) => setNewName(e.target.value)} 
-                placeholder="e.g. Building A, Room 101, Private Office 2" 
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Building A, Room 101, Private Office 2"
               />
             </div>
             <div className="w-48 space-y-2">
               <label className="text-sm font-medium">Type</label>
-              <select 
-                value={newType} 
+              <select
+                value={newType}
                 onChange={(e) => setNewType(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -120,7 +120,13 @@ function StructureBuilderPage() {
           </div>
 
           <div>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAdvanced(!showAdvanced)} className="text-muted-foreground -ml-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-muted-foreground -ml-3"
+            >
               <Settings className="w-4 h-4 mr-2" />
               Advanced Booking Rules
             </Button>
@@ -131,39 +137,55 @@ function StructureBuilderPage() {
               {space?.locations?.length > 0 && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Location</label>
-                  <select 
-                    value={locationId} 
+                  <select
+                    value={locationId}
                     onChange={(e) => setLocationId(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="">Any Location</option>
                     {space.locations.map((loc: any, i: number) => (
-                      <option key={i} value={i.toString()}>{[loc.address, loc.city].filter(Boolean).join(", ")}</option>
+                      <option key={i} value={i.toString()}>
+                        {[loc.address, loc.city].filter(Boolean).join(", ")}
+                      </option>
                     ))}
                   </select>
                 </div>
               )}
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Available From</label>
-                  <Input type="time" value={operatingHoursStart} onChange={(e) => setOperatingHoursStart(e.target.value)} />
+                  <Input
+                    type="time"
+                    value={operatingHoursStart}
+                    onChange={(e) => setOperatingHoursStart(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Available Until</label>
-                  <Input type="time" value={operatingHoursEnd} onChange={(e) => setOperatingHoursEnd(e.target.value)} />
+                  <Input
+                    type="time"
+                    value={operatingHoursEnd}
+                    onChange={(e) => setOperatingHoursEnd(e.target.value)}
+                  />
                 </div>
               </div>
 
               <div className="flex items-center space-x-2 pt-2">
-                <Checkbox id="exclusive" checked={requireExclusive} onCheckedChange={(c) => setRequireExclusive(!!c)} />
-                <Label htmlFor="exclusive" className="font-medium cursor-pointer">Require Exclusive Booking (Prevent double bookings)</Label>
+                <Checkbox
+                  id="exclusive"
+                  checked={requireExclusive}
+                  onCheckedChange={(c) => setRequireExclusive(!!c)}
+                />
+                <Label htmlFor="exclusive" className="font-medium cursor-pointer">
+                  Require Exclusive Booking (Prevent double bookings)
+                </Label>
               </div>
             </div>
           )}
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={createMutation.isPending}
             className="h-10 px-6 rounded-lg font-bold"
             style={{ background: "var(--gradient-primary)" }}
@@ -180,13 +202,15 @@ function StructureBuilderPage() {
           <p className="text-muted-foreground">Loading resources...</p>
         ) : resources.length === 0 ? (
           <div className="bg-secondary/30 border border-dashed border-border rounded-xl p-8 text-center">
-            <p className="text-muted-foreground">No resources added yet. Build your space layout above.</p>
+            <p className="text-muted-foreground">
+              No resources added yet. Build your space layout above.
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {resources.map((res: any) => (
-              <div 
-                key={res.id} 
+              <div
+                key={res.id}
                 className="flex items-center justify-between p-4 bg-card border border-border/60 rounded-xl hover:border-orange-500/30 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -203,8 +227,8 @@ function StructureBuilderPage() {
                     </p>
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
                   onClick={() => deleteMutation.mutate({ data: { id: res.id } })}

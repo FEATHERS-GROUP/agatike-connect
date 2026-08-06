@@ -134,10 +134,7 @@ export const getTelemetryStats = createServerFn({ method: "POST" }).handler(asyn
     const totalToday = todaySessions.length;
     const totalYesterday = yesterdaySessions.length;
 
-    const totalDuration = todaySessions.reduce(
-      (acc, s) => acc + (s.durationSeconds || 0),
-      0,
-    );
+    const totalDuration = todaySessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0);
     const avgDurationSeconds =
       todaySessions.length > 0 ? Math.floor(totalDuration / todaySessions.length) : 0;
 
@@ -182,7 +179,10 @@ export const getTelemetryStats = createServerFn({ method: "POST" }).handler(asyn
     }));
 
     // --- 7-Day Daily Trend ---
-    const dailyMap: Record<string, { sessions: number; users: number; organizers: number; anonymous: number }> = {};
+    const dailyMap: Record<
+      string,
+      { sessions: number; users: number; organizers: number; anonymous: number }
+    > = {};
     for (let d = 6; d >= 0; d--) {
       const date = new Date(now - d * 24 * 60 * 60 * 1000);
       const key = date.toISOString().slice(0, 10); // YYYY-MM-DD
@@ -224,7 +224,11 @@ export const getTelemetryStats = createServerFn({ method: "POST" }).handler(asyn
     const userTypeMap: Record<string, number> = {};
     todaySessions.forEach((s) => {
       const label =
-        s.userType === "organizer" ? "Organizer" : s.userType === "anonymous" ? "Anonymous" : "User";
+        s.userType === "organizer"
+          ? "Organizer"
+          : s.userType === "anonymous"
+            ? "Anonymous"
+            : "User";
       userTypeMap[label] = (userTypeMap[label] || 0) + 1;
     });
     const userTypes = Object.entries(userTypeMap).map(([name, value]) => ({ name, value }));

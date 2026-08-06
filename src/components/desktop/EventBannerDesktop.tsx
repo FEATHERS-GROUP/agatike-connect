@@ -27,7 +27,9 @@ export function EventBannerDesktop({
         <span className="w-fit rounded-full bg-black/30 border border-white/20 text-white px-3 py-1 text-xs backdrop-blur font-semibold tracking-wider uppercase">
           {category}
         </span>
-        <h1 className="mt-3 max-w-3xl text-4xl font-bold md:text-6xl text-white drop-shadow-md leading-tight">{title}</h1>
+        <h1 className="mt-3 max-w-3xl text-4xl font-bold md:text-6xl text-white drop-shadow-md leading-tight">
+          {title}
+        </h1>
         <div className="mt-6 flex flex-wrap items-center gap-5 text-sm text-white/80 font-medium">
           <span className="inline-flex items-center gap-1.5">
             <Calendar className="h-4 w-4 text-primary" /> {date || "Today"}

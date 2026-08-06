@@ -41,7 +41,9 @@ const CREATE_SPACE_CLASS = `
 export const createSpaceClass = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ insert_space_classes_one: any }>(CREATE_SPACE_CLASS, { object: ctx.data.object });
+    const res = await hasuraRequest<{ insert_space_classes_one: any }>(CREATE_SPACE_CLASS, {
+      object: ctx.data.object,
+    });
     return res.insert_space_classes_one;
   });
 
@@ -56,7 +58,10 @@ const UPDATE_SPACE_CLASS = `
 export const updateSpaceClass = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ update_space_classes_by_pk: any }>(UPDATE_SPACE_CLASS, { id: ctx.data.id, object: ctx.data.object });
+    const res = await hasuraRequest<{ update_space_classes_by_pk: any }>(UPDATE_SPACE_CLASS, {
+      id: ctx.data.id,
+      object: ctx.data.object,
+    });
     return res.update_space_classes_by_pk;
   });
 
@@ -69,7 +74,9 @@ const DELETE_SPACE_CLASS = `
 export const deleteSpaceClass = createServerFn({ method: "POST" })
   .validator((d: { id: string }) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ delete_space_classes_by_pk: any }>(DELETE_SPACE_CLASS, { id: ctx.data.id });
+    const res = await hasuraRequest<{ delete_space_classes_by_pk: any }>(DELETE_SPACE_CLASS, {
+      id: ctx.data.id,
+    });
     return res.delete_space_classes_by_pk;
   });
 
@@ -132,7 +139,9 @@ const CREATE_SPACE_SESSION = `
 export const createSpaceSession = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ insert_space_sessions_one: any }>(CREATE_SPACE_SESSION, { object: ctx.data.object });
+    const res = await hasuraRequest<{ insert_space_sessions_one: any }>(CREATE_SPACE_SESSION, {
+      object: ctx.data.object,
+    });
     return res.insert_space_sessions_one;
   });
 
@@ -147,7 +156,10 @@ const UPDATE_SPACE_SESSION = `
 export const updateSpaceSession = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ update_space_sessions_by_pk: any }>(UPDATE_SPACE_SESSION, { id: ctx.data.id, object: ctx.data.object });
+    const res = await hasuraRequest<{ update_space_sessions_by_pk: any }>(UPDATE_SPACE_SESSION, {
+      id: ctx.data.id,
+      object: ctx.data.object,
+    });
     return res.update_space_sessions_by_pk;
   });
 
@@ -160,7 +172,9 @@ const DELETE_SPACE_SESSION = `
 export const deleteSpaceSession = createServerFn({ method: "POST" })
   .validator((d: { id: string }) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ delete_space_sessions_by_pk: any }>(DELETE_SPACE_SESSION, { id: ctx.data.id });
+    const res = await hasuraRequest<{ delete_space_sessions_by_pk: any }>(DELETE_SPACE_SESSION, {
+      id: ctx.data.id,
+    });
     return res.delete_space_sessions_by_pk;
   });
 
@@ -188,7 +202,9 @@ const GET_SESSION_BOOKINGS = `
 export const getSessionBookings = createServerFn({ method: "POST" })
   .validator((d: { session_id: string }) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ space_session_bookings: any[] }>(GET_SESSION_BOOKINGS, { session_id: ctx.data.session_id });
+    const res = await hasuraRequest<{ space_session_bookings: any[] }>(GET_SESSION_BOOKINGS, {
+      session_id: ctx.data.session_id,
+    });
     return res.space_session_bookings;
   });
 
@@ -203,7 +219,10 @@ const CREATE_SESSION_BOOKING = `
 export const createSessionBooking = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ insert_space_session_bookings_one: any }>(CREATE_SESSION_BOOKING, { object: ctx.data.object });
+    const res = await hasuraRequest<{ insert_space_session_bookings_one: any }>(
+      CREATE_SESSION_BOOKING,
+      { object: ctx.data.object },
+    );
     return res.insert_space_session_bookings_one;
   });
 
@@ -218,7 +237,10 @@ const UPDATE_SESSION_BOOKING = `
 export const updateSessionBooking = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ update_space_session_bookings_by_pk: any }>(UPDATE_SESSION_BOOKING, { id: ctx.data.id, object: ctx.data.object });
+    const res = await hasuraRequest<{ update_space_session_bookings_by_pk: any }>(
+      UPDATE_SESSION_BOOKING,
+      { id: ctx.data.id, object: ctx.data.object },
+    );
     return res.update_space_session_bookings_by_pk;
   });
 
@@ -231,6 +253,9 @@ const DELETE_SESSION_BOOKING = `
 export const deleteSessionBooking = createServerFn({ method: "POST" })
   .validator((d: { id: string }) => d)
   .handler(async (ctx) => {
-    const res = await hasuraRequest<{ delete_space_session_bookings_by_pk: any }>(DELETE_SESSION_BOOKING, { id: ctx.data.id });
+    const res = await hasuraRequest<{ delete_space_session_bookings_by_pk: any }>(
+      DELETE_SESSION_BOOKING,
+      { id: ctx.data.id },
+    );
     return res.delete_space_session_bookings_by_pk;
   });

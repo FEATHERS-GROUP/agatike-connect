@@ -37,19 +37,31 @@ export function EventOrganizerInfo({
           </p>
           <p className="text-sm md:text-base font-semibold truncate">
             {organizerName}{" "}
-            <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">@{organizerHandle}</span>
+            <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">
+              @{organizerHandle}
+            </span>
           </p>
         </div>
       </div>
       <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-        <Button variant="outline" className="h-9 w-9 md:h-12 md:w-12 rounded-full shrink-0 p-0 flex items-center justify-center">
+        <Button
+          variant="outline"
+          className="h-9 w-9 md:h-12 md:w-12 rounded-full shrink-0 p-0 flex items-center justify-center"
+        >
           <Heart className="h-4 w-4" />
         </Button>
-        <Button variant="outline" className="h-9 w-9 md:h-12 md:w-12 rounded-full shrink-0 p-0 flex items-center justify-center">
+        <Button
+          variant="outline"
+          className="h-9 w-9 md:h-12 md:w-12 rounded-full shrink-0 p-0 flex items-center justify-center"
+        >
           <Share2 className="h-4 w-4" />
         </Button>
         {organizerId && following && isLoggedIn && (
-          <Button asChild variant="outline" className="h-9 w-9 md:h-12 md:w-12 rounded-full shrink-0 p-0 flex items-center justify-center">
+          <Button
+            asChild
+            variant="outline"
+            className="h-9 w-9 md:h-12 md:w-12 rounded-full shrink-0 p-0 flex items-center justify-center"
+          >
             <Link
               to="/$userId/message"
               params={{ userId: user?.id || "" }}

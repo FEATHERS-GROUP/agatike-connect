@@ -30,12 +30,15 @@ export function BillingBanner({ isSidebar }: { isSidebar?: boolean } = {}) {
   const now = new Date();
 
   // Strip the time portion so we strictly compare calendar days (avoids 15.2 days rounding up to 16)
-  const nextBillingDateOnly = new Date(nextBilling.getFullYear(), nextBilling.getMonth(), nextBilling.getDate());
+  const nextBillingDateOnly = new Date(
+    nextBilling.getFullYear(),
+    nextBilling.getMonth(),
+    nextBilling.getDate(),
+  );
   const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
+
   const diffTime = nextBillingDateOnly.getTime() - nowDateOnly.getTime();
   const daysLeft = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
 
   // Only show if within the warning threshold
   if (daysLeft > WARNING_THRESHOLD_DAYS) return null;

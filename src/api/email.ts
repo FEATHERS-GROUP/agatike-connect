@@ -489,8 +489,17 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
 export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => {
-    const { to, customerName, spaceName, planName, price, billingCycle, startDate, pdfBase64, invoiceNumber } =
-      ctx.data as any;
+    const {
+      to,
+      customerName,
+      spaceName,
+      planName,
+      price,
+      billingCycle,
+      startDate,
+      pdfBase64,
+      invoiceNumber,
+    } = ctx.data as any;
 
     const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`

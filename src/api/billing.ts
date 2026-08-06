@@ -255,22 +255,25 @@ export const checkLaunchPromoEligibility = createServerFn({ method: "POST" })
   .validator((d: { organizer_id: string }) => d)
   .handler(async (ctx) => {
     if (!ctx.data.organizer_id) return false;
-    
-    const res = await hasuraRequest<{ organizer_invoices: { created_at: string }[] }>(GET_FIRST_PAID_INVOICE, {
-      organizer_id: ctx.data.organizer_id,
-    });
-    
+
+    const res = await hasuraRequest<{ organizer_invoices: { created_at: string }[] }>(
+      GET_FIRST_PAID_INVOICE,
+      {
+        organizer_id: ctx.data.organizer_id,
+      },
+    );
+
     // If they have never had a paid invoice, they are eligible
     if (!res.organizer_invoices || res.organizer_invoices.length === 0) return true;
-    
+
     // Check if their first paid invoice was less than 3 months ago
     const firstPaymentDate = new Date(res.organizer_invoices[0].created_at);
     const now = new Date();
-    
+
     // Add 3 months to the first payment date to find the cutoff date
     const cutoffDate = new Date(firstPaymentDate);
     cutoffDate.setMonth(cutoffDate.getMonth() + 3);
-    
+
     // If today is past the cutoff date, they are no longer eligible for the 3-month launch promo
     return now <= cutoffDate;
   });
@@ -323,7 +326,6 @@ export const upgradeSubscription = createServerFn({ method: "POST" })
     } else {
       nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
     }
-
 
     // 2. Fetch all workspace IDs for this organizer
     const wsQuery = `query GetWs($id: uuid!) { workspaces(where: { orgnizer_id: { _eq: $id } }) { id } }`;

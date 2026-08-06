@@ -1,11 +1,27 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSpaceResourceBookings, createSpaceResourceBooking, createSpaceResourceBookingsBulk, deleteSpaceResourceBooking, getSpaceResources } from "@/api/space_resources";
+import {
+  getSpaceResourceBookings,
+  createSpaceResourceBooking,
+  createSpaceResourceBookingsBulk,
+  deleteSpaceResourceBooking,
+  getSpaceResources,
+} from "@/api/space_resources";
 import { getSpaceSubscriptionsBySpaceId } from "@/api/space_subscriptions";
 import { getWorkspaceUsers } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar as CalendarIcon, Plus, Trash2, Clock, MapPin, User, Repeat, ChevronDown, X } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Plus,
+  Trash2,
+  Clock,
+  MapPin,
+  User,
+  Repeat,
+  ChevronDown,
+  X,
+} from "lucide-react";
 import { useState, lazy, Suspense, useRef, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
@@ -95,7 +111,7 @@ function SchedulePage() {
     onError: (err) => {
       toast.error("Failed to create booking.");
       console.error(err);
-    }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -104,7 +120,7 @@ function SchedulePage() {
       queryClient.invalidateQueries({ queryKey: ["space_resource_bookings", spaceId] });
       toast.success("Booking cancelled.");
       setSelectedEvent(null);
-    }
+    },
   });
 
   const createBulkMutation = useMutation({
@@ -120,7 +136,7 @@ function SchedulePage() {
     onError: (err) => {
       toast.error("Failed to create recurring bookings.");
       console.error(err);
-    }
+    },
   });
 
   const [title, setTitle] = useState("");
@@ -143,7 +159,7 @@ function SchedulePage() {
     (s) =>
       organizerName === "" ||
       s.name.toLowerCase().includes(organizerName.toLowerCase()) ||
-      s.email.toLowerCase().includes(organizerName.toLowerCase())
+      s.email.toLowerCase().includes(organizerName.toLowerCase()),
   );
   const [resourceId, setResourceId] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -158,7 +174,7 @@ function SchedulePage() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !resourceId || !startTime || !endTime) return;
-    
+
     if (isRepeating && repeatUntil) {
       const objects = [];
       let currentStart = new Date(startTime);
@@ -198,8 +214,8 @@ function SchedulePage() {
             organizer_name: organizerName,
             start_time: new Date(startTime).toISOString(),
             end_time: new Date(endTime).toISOString(),
-          }
-        }
+          },
+        },
       });
     }
   };
@@ -209,7 +225,7 @@ function SchedulePage() {
 
   const events = useMemo(() => {
     if (!bookings) return [];
-    
+
     const getLocalZdt = (dateStr: string) => {
       const instant = (window as any).Temporal.Instant.from(new Date(dateStr).toISOString());
       return instant.toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId());
@@ -220,7 +236,7 @@ function SchedulePage() {
       title: b.title,
       start: getLocalZdt(b.start_time),
       end: getLocalZdt(b.end_time),
-      calendarId: b.status?.toLowerCase() || 'other-booking',
+      calendarId: b.status?.toLowerCase() || "other-booking",
       resourceId: b.resource_id,
       resourceName: b.resource?.name,
       organizerName: b.organizer_name,
@@ -241,29 +257,38 @@ function SchedulePage() {
 
       <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm">
         <h3 className="font-bold text-lg mb-4">New Booking</h3>
-        <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <form
+          onSubmit={handleAdd}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end"
+        >
           <div className="space-y-2 lg:col-span-2">
             <label className="text-sm font-medium">Title / Event</label>
-            <Input 
-              value={title} 
-              onChange={(e) => setTitle(e.target.value)} 
-              placeholder="e.g. Yoga Class" 
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Yoga Class"
               required
             />
           </div>
           <div className="space-y-2" ref={organizerRef}>
             <label className="text-sm font-medium">Organizer</label>
             <div className="relative">
-              <Input 
-                value={organizerName} 
-                onChange={(e) => { setOrganizerName(e.target.value); setShowOrganizerDropdown(true); }} 
+              <Input
+                value={organizerName}
+                onChange={(e) => {
+                  setOrganizerName(e.target.value);
+                  setShowOrganizerDropdown(true);
+                }}
                 onFocus={() => setShowOrganizerDropdown(true)}
-                placeholder="Type name or pick a subscriber..." 
+                placeholder="Type name or pick a subscriber..."
               />
               {organizerName && (
                 <button
                   type="button"
-                  onClick={() => { setOrganizerName(""); setShowOrganizerDropdown(false); }}
+                  onClick={() => {
+                    setOrganizerName("");
+                    setShowOrganizerDropdown(false);
+                  }}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -276,7 +301,10 @@ function SchedulePage() {
                       key={s.email}
                       type="button"
                       className="flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-secondary/60 transition-colors text-sm"
-                      onClick={() => { setOrganizerName(s.name); setShowOrganizerDropdown(false); }}
+                      onClick={() => {
+                        setOrganizerName(s.name);
+                        setShowOrganizerDropdown(false);
+                      }}
                     >
                       <div className="h-6 w-6 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0 text-xs font-bold">
                         {s.name.charAt(0).toUpperCase()}
@@ -285,11 +313,15 @@ function SchedulePage() {
                         <p className="font-medium truncate">{s.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{s.email}</p>
                       </div>
-                      <span className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
-                        s.tag === "Staff" ? "bg-purple-500/10 text-purple-500" :
-                        s.tag === "Member" ? "bg-orange-500/10 text-orange-500" :
-                        "bg-muted text-muted-foreground"
-                      }`}>
+                      <span
+                        className={`shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+                          s.tag === "Staff"
+                            ? "bg-purple-500/10 text-purple-500"
+                            : s.tag === "Member"
+                              ? "bg-orange-500/10 text-orange-500"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
                         {s.tag}
                       </span>
                     </button>
@@ -300,55 +332,64 @@ function SchedulePage() {
           </div>
           <div className="space-y-2 lg:col-span-1">
             <label className="text-sm font-medium">Resource</label>
-            <select 
-              value={resourceId} 
+            <select
+              value={resourceId}
               onChange={(e) => setResourceId(e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               required
             >
-              <option value="" disabled>Select a room...</option>
+              <option value="" disabled>
+                Select a room...
+              </option>
               {schedulableResources.map((r: any) => (
-                <option key={r.id} value={r.id}>{r.name} ({r.type.replace('_', ' ')})</option>
+                <option key={r.id} value={r.id}>
+                  {r.name} ({r.type.replace("_", " ")})
+                </option>
               ))}
             </select>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Start Time</label>
-            <Input 
+            <Input
               type="datetime-local"
-              value={startTime} 
-              onChange={(e) => setStartTime(e.target.value)} 
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">End Time</label>
-            <Input 
+            <Input
               type="datetime-local"
-              value={endTime} 
-              onChange={(e) => setEndTime(e.target.value)} 
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2 lg:col-span-6 flex items-center gap-3 mt-2 mb-2 p-3 bg-secondary/30 rounded-lg border border-border/50">
             <div className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 id="repeatToggle"
-                checked={isRepeating} 
-                onChange={(e) => setIsRepeating(e.target.checked)} 
+                checked={isRepeating}
+                onChange={(e) => setIsRepeating(e.target.checked)}
                 className="w-4 h-4 rounded text-orange-500 focus:ring-orange-500"
               />
-              <label htmlFor="repeatToggle" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
+              <label
+                htmlFor="repeatToggle"
+                className="text-sm font-medium flex items-center gap-1.5 cursor-pointer"
+              >
                 <Repeat className="h-4 w-4 text-orange-500" />
                 Repeat this booking
               </label>
             </div>
-            
+
             {isRepeating && (
               <div className="flex items-center gap-4 ml-4 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Every</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Every
+                  </span>
                   <select
                     value={repeatFrequency}
                     onChange={(e) => setRepeatFrequency(e.target.value)}
@@ -359,11 +400,13 @@ function SchedulePage() {
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Until</span>
-                  <Input 
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Until
+                  </span>
+                  <Input
                     type="date"
-                    value={repeatUntil} 
-                    onChange={(e) => setRepeatUntil(e.target.value)} 
+                    value={repeatUntil}
+                    onChange={(e) => setRepeatUntil(e.target.value)}
                     className="h-8"
                     required={isRepeating}
                   />
@@ -371,10 +414,14 @@ function SchedulePage() {
               </div>
             )}
           </div>
-          
-          <Button 
-            type="submit" 
-            disabled={createMutation.isPending || createBulkMutation.isPending || schedulableResources.length === 0}
+
+          <Button
+            type="submit"
+            disabled={
+              createMutation.isPending ||
+              createBulkMutation.isPending ||
+              schedulableResources.length === 0
+            }
             className="h-10 shrink-0 gap-2 px-5 rounded-lg lg:col-span-6 w-full shadow-[var(--shadow-glow)]"
             style={{ background: "var(--gradient-primary)" }}
           >
@@ -385,21 +432,28 @@ function SchedulePage() {
         {schedulableResources.length === 0 && (
           <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
             <span className="text-orange-500">ℹ</span>
-            No resources found. Head over to the <strong>Structure Builder</strong> to add your first room or space — then come back to schedule it.
+            No resources found. Head over to the <strong>Structure Builder</strong> to add your
+            first room or space — then come back to schedule it.
           </p>
         )}
       </div>
 
       <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm overflow-hidden min-h-[700px]">
         <h3 className="font-bold text-lg mb-4">Calendar</h3>
-        
+
         {bookingsLoading ? (
           <div className="flex justify-center items-center h-64 text-muted-foreground">
             Loading calendar...
           </div>
         ) : (
           <div className="h-[650px] relative">
-            <Suspense fallback={<div className="h-full flex items-center justify-center text-muted-foreground">Loading calendar view...</div>}>
+            <Suspense
+              fallback={
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  Loading calendar view...
+                </div>
+              }
+            >
               <LazyCalendar
                 events={events}
                 onSelectEvent={(event: any) => setSelectedEvent(event)}
@@ -413,11 +467,9 @@ function SchedulePage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Booking Details</DialogTitle>
-            <DialogDescription>
-              Details for this specific schedule.
-            </DialogDescription>
+            <DialogDescription>Details for this specific schedule.</DialogDescription>
           </DialogHeader>
-          
+
           {selectedEvent && (
             <div className="space-y-4 py-4">
               <div>
@@ -429,15 +481,23 @@ function SchedulePage() {
                       {selectedEvent.resourceName || "Unknown Resource"}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-3 text-muted-foreground">
                     <Clock className="h-4 w-4 shrink-0 text-orange-500" />
                     <div className="flex flex-col">
                       <span className="font-medium text-foreground">
-                        {new Date(selectedEvent.start.epochMilliseconds ?? selectedEvent.start).toLocaleDateString()}
+                        {new Date(
+                          selectedEvent.start.epochMilliseconds ?? selectedEvent.start,
+                        ).toLocaleDateString()}
                       </span>
                       <span>
-                        {new Date(selectedEvent.start.epochMilliseconds ?? selectedEvent.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(selectedEvent.end.epochMilliseconds ?? selectedEvent.end).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(
+                          selectedEvent.start.epochMilliseconds ?? selectedEvent.start,
+                        ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}{" "}
+                        -{" "}
+                        {new Date(
+                          selectedEvent.end.epochMilliseconds ?? selectedEvent.end,
+                        ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
                   </div>

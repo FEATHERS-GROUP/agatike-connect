@@ -24,7 +24,7 @@ export const CheckYourPhone = ({
         {status === "generating" ? "Generating Tickets" : "Check Your Phone"}
       </h1>
       <p className="text-lg text-muted-foreground mb-4 max-w-sm mx-auto">
-        {status === "generating" 
+        {status === "generating"
           ? "Your payment was successful! Please wait while we prepare and issue your tickets."
           : `We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment${amount ? ` of ${currency} ${amount.toLocaleString()}` : ""}.`}
       </p>

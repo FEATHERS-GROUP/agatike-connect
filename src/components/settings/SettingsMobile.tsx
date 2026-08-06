@@ -6,7 +6,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronRight, ChevronDown, RefreshCw, Trash2, AlertTriangle, ArrowLeft, Loader2, Lock, Monitor, Sun, Moon } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  RefreshCw,
+  Trash2,
+  AlertTriangle,
+  ArrowLeft,
+  Loader2,
+  Lock,
+  Monitor,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { RefundPolicy } from "@/components/legal/RefundPolicy";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
@@ -129,9 +141,13 @@ export function SettingsMobile(props: SettingsProps) {
                         onChange={(e) => setGeneral({ ...general, country: e.target.value })}
                         className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <option value="" disabled>Select Country</option>
+                        <option value="" disabled>
+                          Select Country
+                        </option>
                         {COUNTRIES.map((c) => (
-                          <option key={c.code} value={c.name}>{c.name}</option>
+                          <option key={c.code} value={c.name}>
+                            {c.name}
+                          </option>
                         ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -146,7 +162,9 @@ export function SettingsMobile(props: SettingsProps) {
                       onChange={(e) => setGeneral({ ...general, gender: e.target.value })}
                       className="flex appearance-none h-10 w-full rounded-xl border border-input bg-background/50 px-3 pr-10 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <option value="" disabled>Select Gender</option>
+                      <option value="" disabled>
+                        Select Gender
+                      </option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
@@ -242,7 +260,8 @@ export function SettingsMobile(props: SettingsProps) {
                       setSelectedInterests(
                         isSelected
                           ? selectedInterests.filter(
-                              (i) => typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
+                              (i) =>
+                                typeof i === "string" && i.toLowerCase() !== interest.toLowerCase(),
                             )
                           : [...selectedInterests, interest],
                       )
@@ -419,7 +438,8 @@ export function SettingsMobile(props: SettingsProps) {
 
             <div className="flex flex-col gap-2">
               <Label className="text-sm">
-                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to confirm:
+                Type your handle <strong className="text-foreground">@{user?.handle}</strong> to
+                confirm:
               </Label>
               <Input
                 value={deleteConfirmHandle}
@@ -457,7 +477,11 @@ export function SettingsMobile(props: SettingsProps) {
         <div className="px-5 mb-6 text-center">
           <div className="mx-auto h-20 w-20 rounded-full bg-card shadow-sm border border-border/40 p-[2px] mb-3 relative">
             {user?.profile ? (
-              <img src={user.profile} alt={user.username} className="h-full w-full rounded-full object-cover" />
+              <img
+                src={user.profile}
+                alt={user.username}
+                className="h-full w-full rounded-full object-cover"
+              />
             ) : (
               <div className="h-full w-full rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl">
                 {user?.username?.charAt(0)?.toUpperCase() || "U"}
@@ -474,7 +498,9 @@ export function SettingsMobile(props: SettingsProps) {
         <div className="px-4 space-y-6">
           <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
             <div className="p-4 border-b border-border/40 bg-secondary/10">
-              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">Account</h2>
+              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">
+                Account
+              </h2>
             </div>
             <div className="divide-y divide-border/40">
               {DESKTOP_TABS[0].items.map((item: any) => (
@@ -484,7 +510,9 @@ export function SettingsMobile(props: SettingsProps) {
                   className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}>
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}
+                    >
                       <item.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -500,7 +528,9 @@ export function SettingsMobile(props: SettingsProps) {
 
           <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
             <div className="p-4 border-b border-border/40 bg-secondary/10">
-              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">App Settings</h2>
+              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">
+                App Settings
+              </h2>
             </div>
             <div className="divide-y divide-border/40">
               {DESKTOP_TABS[1].items.map((item: any) => (
@@ -510,7 +540,9 @@ export function SettingsMobile(props: SettingsProps) {
                   className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}>
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}
+                    >
                       <item.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -526,7 +558,9 @@ export function SettingsMobile(props: SettingsProps) {
 
           <div className="bg-card border border-border/40 rounded-3xl overflow-hidden shadow-sm">
             <div className="p-4 border-b border-border/40 bg-secondary/10">
-              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">Legal</h2>
+              <h2 className="font-bold text-sm text-muted-foreground tracking-wider uppercase">
+                Legal
+              </h2>
             </div>
             <div className="divide-y divide-border/40">
               {DESKTOP_TABS[2].items.map((item: any) => (
@@ -536,7 +570,9 @@ export function SettingsMobile(props: SettingsProps) {
                   className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}>
+                    <div
+                      className={`h-10 w-10 rounded-full flex items-center justify-center ${item.color}`}
+                    >
                       <item.icon className="h-5 w-5" />
                     </div>
                     <div>
@@ -552,7 +588,9 @@ export function SettingsMobile(props: SettingsProps) {
 
           <div className="bg-destructive/5 border border-destructive/20 rounded-3xl overflow-hidden">
             <div className="p-4 border-b border-destructive/20">
-              <h2 className="font-bold text-sm text-destructive tracking-wider uppercase">Danger Zone</h2>
+              <h2 className="font-bold text-sm text-destructive tracking-wider uppercase">
+                Danger Zone
+              </h2>
             </div>
             <button
               onClick={() => {
@@ -567,7 +605,9 @@ export function SettingsMobile(props: SettingsProps) {
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-destructive">Delete Account</p>
-                  <p className="text-xs text-muted-foreground">Permanently deactivate your account</p>
+                  <p className="text-xs text-muted-foreground">
+                    Permanently deactivate your account
+                  </p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-destructive/50" />

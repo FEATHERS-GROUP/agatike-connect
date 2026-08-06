@@ -244,7 +244,12 @@ export function RenderedPage({
 
   // Prevent access if the organizer is blocked or subscription is expired (unless in preview)
   if (!isPreview && (page.organizer_active === false || page.is_expired === true)) {
-    return <PageNotFound isBlocked={page.organizer_active === false} isExpired={page.is_expired === true} />;
+    return (
+      <PageNotFound
+        isBlocked={page.organizer_active === false}
+        isExpired={page.is_expired === true}
+      />
+    );
   }
 
   const { title, description, header_image_url } = page;

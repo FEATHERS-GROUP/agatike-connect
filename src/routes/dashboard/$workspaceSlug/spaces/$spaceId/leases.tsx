@@ -60,8 +60,8 @@ function TenantsPage() {
             ) : leases.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  No resources are currently leased out. 
-                  Assign a resource when creating or editing a subscription to see it here.
+                  No resources are currently leased out. Assign a resource when creating or editing
+                  a subscription to see it here.
                 </TableCell>
               </TableRow>
             ) : (
@@ -79,9 +79,13 @@ function TenantsPage() {
                   </TableCell>
                   <TableCell>{lease.plan_name}</TableCell>
                   <TableCell>
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      lease.status === 'active' ? 'bg-green-500/90 text-white' : 'bg-muted text-muted-foreground'
-                    }`}>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        lease.status === "active"
+                          ? "bg-green-500/90 text-white"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       {lease.status}
                     </span>
                   </TableCell>

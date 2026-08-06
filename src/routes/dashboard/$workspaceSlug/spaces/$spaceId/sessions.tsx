@@ -1,8 +1,13 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getSpaceSessions, createSpaceSession, updateSpaceSession, deleteSpaceSession,
-  getSessionBookings, createSessionBooking, updateSessionBooking,
+  getSpaceSessions,
+  createSpaceSession,
+  updateSpaceSession,
+  deleteSpaceSession,
+  getSessionBookings,
+  createSessionBooking,
+  updateSessionBooking,
 } from "@/api/space_classes";
 import { getSpaceClasses } from "@/api/space_classes";
 import { getSpaceResources } from "@/api/space_resources";
@@ -11,13 +16,27 @@ import { getWorkspaceUsers } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  CalendarDays, Plus, Trash2, Users, Clock, ChevronRight,
-  UserCheck, X, DollarSign, CheckCircle2, AlertCircle,
+  CalendarDays,
+  Plus,
+  Trash2,
+  Users,
+  Clock,
+  ChevronRight,
+  UserCheck,
+  X,
+  DollarSign,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/sessions")({
@@ -66,8 +85,13 @@ function SessionsPage() {
   // ── create session ─────────────────────────────────────────────
   const [showCreate, setShowCreate] = useState(false);
   const [sessionForm, setSessionForm] = useState({
-    class_id: "", resource_id: "", coach_id: "", coach_name: "",
-    start_time: "", end_time: "", notes: "",
+    class_id: "",
+    resource_id: "",
+    coach_id: "",
+    coach_name: "",
+    start_time: "",
+    end_time: "",
+    notes: "",
   });
 
   const createMutation = useMutation({
@@ -76,14 +100,25 @@ function SessionsPage() {
       queryClient.invalidateQueries({ queryKey: ["space_sessions", spaceId] });
       toast.success("Session scheduled!");
       setShowCreate(false);
-      setSessionForm({ class_id: "", resource_id: "", coach_id: "", coach_name: "", start_time: "", end_time: "", notes: "" });
+      setSessionForm({
+        class_id: "",
+        resource_id: "",
+        coach_id: "",
+        coach_name: "",
+        start_time: "",
+        end_time: "",
+        notes: "",
+      });
     },
     onError: () => toast.error("Failed to schedule session."),
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteSpaceSession,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["space_sessions", spaceId] }); toast.success("Session cancelled."); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["space_sessions", spaceId] });
+      toast.success("Session cancelled.");
+    },
   });
 
   const handleCreate = (e: React.FormEvent) => {
@@ -100,8 +135,8 @@ function SessionsPage() {
           start_time: new Date(sessionForm.start_time).toISOString(),
           end_time: new Date(sessionForm.end_time).toISOString(),
           notes: sessionForm.notes || null,
-        }
-      }
+        },
+      },
     });
   };
 
@@ -129,7 +164,10 @@ function SessionsPage() {
 
   const removeBookingMutation = useMutation({
     mutationFn: updateSessionBooking,
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["session_bookings", selectedSession?.id] }); toast.success("Booking cancelled."); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["session_bookings", selectedSession?.id] });
+      toast.success("Booking cancelled.");
+    },
   });
 
   const handleAddBooking = (e: React.FormEvent) => {
@@ -149,8 +187,8 @@ function SessionsPage() {
           customer_email: sub?.customer_email || "",
           fee_charged: feeCharged,
           billing_status: billingStatus,
-        }
-      }
+        },
+      },
     });
   };
 
@@ -182,7 +220,8 @@ function SessionsPage() {
       {classes.length === 0 && (
         <div className="flex items-center gap-2 text-sm text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          No class templates found. Go to <strong className="mx-1">Classes</strong> to create one first.
+          No class templates found. Go to <strong className="mx-1">Classes</strong> to create one
+          first.
         </div>
       )}
 
@@ -192,7 +231,9 @@ function SessionsPage() {
         <div className="bg-secondary/30 border border-dashed border-border rounded-2xl p-12 text-center">
           <CalendarDays className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
           <h3 className="font-semibold text-lg mb-1">No sessions scheduled</h3>
-          <p className="text-muted-foreground text-sm">Schedule your first class session to start taking bookings.</p>
+          <p className="text-muted-foreground text-sm">
+            Schedule your first class session to start taking bookings.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -212,16 +253,31 @@ function SessionsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-bold text-base">{session.class?.name}</h3>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                        session.status === "scheduled" ? "bg-green-500/10 text-green-500" :
-                        session.status === "completed" ? "bg-blue-500/10 text-blue-500" :
-                        "bg-red-500/10 text-red-500"
-                      }`}>{session.status}</span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                          session.status === "scheduled"
+                            ? "bg-green-500/10 text-green-500"
+                            : session.status === "completed"
+                              ? "bg-blue-500/10 text-blue-500"
+                              : "bg-red-500/10 text-red-500"
+                        }`}
+                      >
+                        {session.status}
+                      </span>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        {new Date(session.start_time).toLocaleDateString()} · {new Date(session.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {new Date(session.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(session.start_time).toLocaleDateString()} ·{" "}
+                        {new Date(session.start_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        –{" "}
+                        {new Date(session.end_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                       {session.coach_name && (
                         <span className="flex items-center gap-1">
@@ -230,18 +286,20 @@ function SessionsPage() {
                         </span>
                       )}
                       {session.resource && (
-                        <span className="flex items-center gap-1">
-                          📍 {session.resource.name}
-                        </span>
+                        <span className="flex items-center gap-1">📍 {session.resource.name}</span>
                       )}
                     </div>
                   </div>
                   <div className="shrink-0 flex items-center gap-4">
                     <div className="text-right">
-                      <p className={`text-sm font-bold ${isFull ? "text-red-500" : "text-green-500"}`}>
+                      <p
+                        className={`text-sm font-bold ${isFull ? "text-red-500" : "text-green-500"}`}
+                      >
                         {isFull ? "Full" : `${spotsLeft} spots left`}
                       </p>
-                      <p className="text-xs text-muted-foreground">{session.bookings?.length || 0} / {session.class?.max_capacity}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {session.bookings?.length || 0} / {session.class?.max_capacity}
+                      </p>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
                   </div>
@@ -262,35 +320,57 @@ function SessionsPage() {
           <form onSubmit={handleCreate} className="space-y-4 py-2">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Class</label>
-              <select value={sessionForm.class_id} onChange={e => setSessionForm(f => ({ ...f, class_id: e.target.value }))}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" required>
-                <option value="" disabled>Select a class...</option>
+              <select
+                value={sessionForm.class_id}
+                onChange={(e) => setSessionForm((f) => ({ ...f, class_id: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+              >
+                <option value="" disabled>
+                  Select a class...
+                </option>
                 {(classes as any[]).map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.duration_minutes} min, max {c.max_capacity})</option>
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.duration_minutes} min, max {c.max_capacity})
+                  </option>
                 ))}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Resource / Room</label>
-                <select value={sessionForm.resource_id} onChange={e => setSessionForm(f => ({ ...f, resource_id: e.target.value }))}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                <select
+                  value={sessionForm.resource_id}
+                  onChange={(e) => setSessionForm((f) => ({ ...f, resource_id: e.target.value }))}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
                   <option value="">No room assigned</option>
                   {(resources as any[]).map((r: any) => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Coach</label>
-                <select value={sessionForm.coach_id} onChange={e => {
-                  const coach = (staff as any[]).find((s: any) => s.id === e.target.value);
-                  setSessionForm(f => ({ ...f, coach_id: e.target.value, coach_name: coach?.name || "" }));
-                }}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                <select
+                  value={sessionForm.coach_id}
+                  onChange={(e) => {
+                    const coach = (staff as any[]).find((s: any) => s.id === e.target.value);
+                    setSessionForm((f) => ({
+                      ...f,
+                      coach_id: e.target.value,
+                      coach_name: coach?.name || "",
+                    }));
+                  }}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
                   <option value="">No coach assigned</option>
                   {(staff as any[]).map((s: any) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -298,20 +378,40 @@ function SessionsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Start Time</label>
-                <Input type="datetime-local" value={sessionForm.start_time} onChange={e => setSessionForm(f => ({ ...f, start_time: e.target.value }))} required />
+                <Input
+                  type="datetime-local"
+                  value={sessionForm.start_time}
+                  onChange={(e) => setSessionForm((f) => ({ ...f, start_time: e.target.value }))}
+                  required
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">End Time</label>
-                <Input type="datetime-local" value={sessionForm.end_time} onChange={e => setSessionForm(f => ({ ...f, end_time: e.target.value }))} required />
+                <Input
+                  type="datetime-local"
+                  value={sessionForm.end_time}
+                  onChange={(e) => setSessionForm((f) => ({ ...f, end_time: e.target.value }))}
+                  required
+                />
               </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Notes (optional)</label>
-              <Input value={sessionForm.notes} onChange={e => setSessionForm(f => ({ ...f, notes: e.target.value }))} placeholder="Any notes for this session..." />
+              <Input
+                value={sessionForm.notes}
+                onChange={(e) => setSessionForm((f) => ({ ...f, notes: e.target.value }))}
+                placeholder="Any notes for this session..."
+              />
             </div>
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending} style={{ background: "var(--gradient-primary)" }}>
+              <Button type="button" variant="ghost" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending}
+                style={{ background: "var(--gradient-primary)" }}
+              >
                 Schedule
               </Button>
             </DialogFooter>
@@ -320,18 +420,37 @@ function SessionsPage() {
       </Dialog>
 
       {/* ── Session Detail Dialog ── */}
-      <Dialog open={!!selectedSession} onOpenChange={open => !open && setSelectedSession(null)}>
+      <Dialog open={!!selectedSession} onOpenChange={(open) => !open && setSelectedSession(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {selectedSession?.class?.name}
-              <span className="ml-2 text-sm font-normal text-muted-foreground">Session Details</span>
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                Session Details
+              </span>
             </DialogTitle>
             <DialogDescription>
               {selectedSession && (
                 <span className="flex flex-wrap gap-3 text-sm mt-1">
-                  <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{new Date(selectedSession.start_time).toLocaleDateString()} · {new Date(selectedSession.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {new Date(selectedSession.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                  {selectedSession.coach_name && <span className="flex items-center gap-1"><UserCheck className="h-3.5 w-3.5" />{selectedSession.coach_name}</span>}
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    {new Date(selectedSession.start_time).toLocaleDateString()} ·{" "}
+                    {new Date(selectedSession.start_time).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    –{" "}
+                    {new Date(selectedSession.end_time).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  {selectedSession.coach_name && (
+                    <span className="flex items-center gap-1">
+                      <UserCheck className="h-3.5 w-3.5" />
+                      {selectedSession.coach_name}
+                    </span>
+                  )}
                   {selectedSession.resource && <span>📍 {selectedSession.resource.name}</span>}
                 </span>
               )}
@@ -352,7 +471,9 @@ function SessionsPage() {
                 {selectedSession?.class?.is_free_with_subscription ? (
                   <span className="text-green-500 font-medium">Free for subscribers</span>
                 ) : (
-                  <span className="font-medium">{Number(selectedSession?.class?.price || 0).toLocaleString()} per session</span>
+                  <span className="font-medium">
+                    {Number(selectedSession?.class?.price || 0).toLocaleString()} per session
+                  </span>
                 )}
               </div>
             </div>
@@ -361,8 +482,13 @@ function SessionsPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-sm">Participants</h4>
-                {(sessionBookings.length < (selectedSession?.class?.max_capacity || 999)) && (
-                  <Button size="sm" variant="outline" className="gap-1.5 rounded-lg h-8 text-xs" onClick={() => setShowBookingForm(true)}>
+                {sessionBookings.length < (selectedSession?.class?.max_capacity || 999) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 rounded-lg h-8 text-xs"
+                    onClick={() => setShowBookingForm(true)}
+                  >
                     <Plus className="h-3 w-3" /> Add Member
                   </Button>
                 )}
@@ -375,24 +501,41 @@ function SessionsPage() {
               ) : (
                 <div className="space-y-2 max-h-56 overflow-auto">
                   {sessionBookings.map((bk: any) => (
-                    <div key={bk.id} className="flex items-center gap-3 p-3 bg-card border border-border/50 rounded-xl">
+                    <div
+                      key={bk.id}
+                      className="flex items-center gap-3 p-3 bg-card border border-border/50 rounded-xl"
+                    >
                       <div className="h-8 w-8 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center text-xs font-bold shrink-0">
                         {(bk.customer_name || "?").charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{bk.customer_name || "—"}</p>
                         {bk.subscription && (
-                          <p className="text-xs text-muted-foreground">{bk.subscription.plan_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {bk.subscription.plan_name}
+                          </p>
                         )}
                       </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${billingBadge(bk.billing_status)}`}>
-                        {bk.billing_status === "included" ? "✓ Included" : bk.billing_status === "free" ? "Free" : bk.billing_status === "paid" ? "Paid" : "Pending"}
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${billingBadge(bk.billing_status)}`}
+                      >
+                        {bk.billing_status === "included"
+                          ? "✓ Included"
+                          : bk.billing_status === "free"
+                            ? "Free"
+                            : bk.billing_status === "paid"
+                              ? "Paid"
+                              : "Pending"}
                       </span>
                       <Button
                         size="icon"
                         variant="ghost"
                         className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 shrink-0"
-                        onClick={() => removeBookingMutation.mutate({ data: { id: bk.id, object: { status: "cancelled" } } })}
+                        onClick={() =>
+                          removeBookingMutation.mutate({
+                            data: { id: bk.id, object: { status: "cancelled" } },
+                          })
+                        }
                       >
                         <X className="h-3.5 w-3.5" />
                       </Button>
@@ -403,22 +546,41 @@ function SessionsPage() {
 
               {/* Add booking inline form */}
               {showBookingForm && (
-                <form onSubmit={handleAddBooking} className="flex gap-2 mt-3 p-3 bg-secondary/30 rounded-xl border border-border/50">
+                <form
+                  onSubmit={handleAddBooking}
+                  className="flex gap-2 mt-3 p-3 bg-secondary/30 rounded-xl border border-border/50"
+                >
                   <select
                     value={bookingSubscriptionId}
-                    onChange={e => setBookingSubscriptionId(e.target.value)}
+                    onChange={(e) => setBookingSubscriptionId(e.target.value)}
                     className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                   >
-                    <option value="" disabled>Select a subscriber...</option>
+                    <option value="" disabled>
+                      Select a subscriber...
+                    </option>
                     {activeSubscriptions.map((s: any) => (
-                      <option key={s.id} value={s.id}>{s.customer_name} — {s.plan_name}</option>
+                      <option key={s.id} value={s.id}>
+                        {s.customer_name} — {s.plan_name}
+                      </option>
                     ))}
                   </select>
-                  <Button type="submit" size="sm" className="h-9 px-4" disabled={addBookingMutation.isPending} style={{ background: "var(--gradient-primary)" }}>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="h-9 px-4"
+                    disabled={addBookingMutation.isPending}
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
                     Book
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" className="h-9" onClick={() => setShowBookingForm(false)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-9"
+                    onClick={() => setShowBookingForm(false)}
+                  >
                     <X className="h-4 w-4" />
                   </Button>
                 </form>
@@ -442,7 +604,9 @@ function SessionsPage() {
               <Trash2 className="h-3.5 w-3.5" />
               Cancel Session
             </Button>
-            <Button variant="secondary" onClick={() => setSelectedSession(null)}>Close</Button>
+            <Button variant="secondary" onClick={() => setSelectedSession(null)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

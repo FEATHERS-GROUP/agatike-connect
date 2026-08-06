@@ -129,8 +129,12 @@ export function ExperienceDashboard() {
           evs.push({
             id: `${e.id}-${idx}`,
             title: `${e.title}${stops.length > 1 ? ` (Stop ${idx + 1})` : ""}`,
-            start: (window as any).Temporal.Instant.from(startDate.toISOString()).toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId()),
-            end: (window as any).Temporal.Instant.from(endDate.toISOString()).toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId()),
+            start: (window as any).Temporal.Instant.from(
+              startDate.toISOString(),
+            ).toZonedDateTimeISO((window as any).Temporal.Now.timeZoneId()),
+            end: (window as any).Temporal.Instant.from(endDate.toISOString()).toZonedDateTimeISO(
+              (window as any).Temporal.Now.timeZoneId(),
+            ),
             allDay: false,
           });
         }

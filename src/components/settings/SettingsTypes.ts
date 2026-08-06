@@ -36,7 +36,7 @@ export interface SettingsProps {
   setSelectedInterests: (i: any) => void;
   initialInterests: string[];
   isUpdatingInterests: boolean;
-  
+
   handleUpdateGeneral: (e: any) => void;
   handleUpdatePassword: (e: any) => void;
   handleSelectAvatar: (url: string) => void;

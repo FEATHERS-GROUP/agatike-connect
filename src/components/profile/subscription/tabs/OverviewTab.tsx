@@ -18,7 +18,9 @@ export function OverviewTab({ space, subscription }: OverviewTabProps) {
 
         {space?.type && (
           <div className="pt-4 border-t border-border/40">
-            <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Facility Type</h4>
+            <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">
+              Facility Type
+            </h4>
             <div className="flex items-center gap-2 text-sm font-medium">
               <Building2 className="h-4 w-4 text-primary" />
               <span className="capitalize">{space.type.replace(/_/g, " ")}</span>
@@ -28,7 +30,9 @@ export function OverviewTab({ space, subscription }: OverviewTabProps) {
 
         {space?.locations && space.locations.length > 0 && (
           <div className="pt-4 border-t border-border/40">
-            <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Locations</h4>
+            <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">
+              Locations
+            </h4>
             <div className="space-y-3">
               {space.locations.map((loc: any, i: number) => (
                 <div key={i} className="flex items-start gap-2 text-sm font-medium">
@@ -42,7 +46,9 @@ export function OverviewTab({ space, subscription }: OverviewTabProps) {
 
         {space?.socials && Object.keys(space.socials).length > 0 && (
           <div className="pt-4 border-t border-border/40">
-            <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">Contact & Socials</h4>
+            <h4 className="text-xs uppercase font-bold tracking-wider text-muted-foreground mb-3">
+              Contact & Socials
+            </h4>
             <div className="flex flex-wrap gap-4">
               {space.socials.phone && (
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -75,10 +81,15 @@ export function OverviewTab({ space, subscription }: OverviewTabProps) {
         {subscription?.invoices?.length > 0 ? (
           <div className="space-y-4">
             {subscription.invoices.map((inv: any) => (
-              <div key={inv.id} className="flex items-center justify-between p-4 rounded-2xl bg-secondary/20 border border-transparent">
+              <div
+                key={inv.id}
+                className="flex items-center justify-between p-4 rounded-2xl bg-secondary/20 border border-transparent"
+              >
                 <div>
                   <p className="text-sm font-bold text-foreground">{inv.invoice_number}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{format(new Date(inv.created_at), "MMM d, yyyy")}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {format(new Date(inv.created_at), "MMM d, yyyy")}
+                  </p>
                 </div>
                 <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 shadow-sm">
                   {inv.status}

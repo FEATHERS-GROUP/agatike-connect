@@ -21,11 +21,7 @@ export function AdminHeader() {
           to="/internal/control/admin"
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <img
-            src={agatikeIcon}
-            alt="Agatike"
-            className="h-7 w-auto object-contain"
-          />
+          <img src={agatikeIcon} alt="Agatike" className="h-7 w-auto object-contain" />
           <span className="text-gray-700 dark:text-[#cccccc] text-xs px-2 border-l border-gray-200 dark:border-[#333333] ml-2">
             Master Control
           </span>

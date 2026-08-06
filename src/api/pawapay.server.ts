@@ -533,7 +533,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 }
               }
             }`,
-            { id: tx.reference_id }
+            { id: tx.reference_id },
           );
 
           const sub = activateSubRes?.update_space_subscriptions_by_pk;
@@ -542,13 +542,19 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             // Generate Invoice & Send Emails (just like Checkout does)
             try {
               const { createInvoiceRecord } = await import("./invoices");
-              const { sendSubscriptionConfirmationEmail, sendSubscriptionInvoiceEmail, sendCompanyRosterEmail, sendMemberWelcomeEmail } = await import("./email");
+              const {
+                sendSubscriptionConfirmationEmail,
+                sendSubscriptionInvoiceEmail,
+                sendCompanyRosterEmail,
+                sendMemberWelcomeEmail,
+              } = await import("./email");
 
               const currency = sub.space?.currency || body?.currency || "RWF";
               const priceDisplay = `${currency} ${Number(sub.price || 0).toLocaleString()}`;
-              const groupPlanName = sub.booking_type === "group" && sub.team_members
-                ? `${sub.plan_name} (Group of ${sub.team_members.length})`
-                : sub.plan_name;
+              const groupPlanName =
+                sub.booking_type === "group" && sub.team_members
+                  ? `${sub.plan_name} (Group of ${sub.team_members.length})`
+                  : sub.plan_name;
 
               const invoice = await createInvoiceRecord({
                 data: {
@@ -562,7 +568,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   startDate: sub.start_date,
                   spaceId: sub.space_id,
                   referenceId: sub.id,
-                }
+                },
               } as any);
 
               const invoiceNumber = invoice?.invoiceNumber || `AGT-${Date.now()}`;
@@ -597,7 +603,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     memberCount: sub.team_members.length,
                     members: sub.team_members,
                     pdfBase64,
-                  }
+                  },
                 } as any);
 
                 // Welcome each member
@@ -612,8 +618,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                         planName: sub.plan_name,
                         startDate: formattedStart,
                         membershipId: m.membership_id || "—",
-                      }
-                    } as any).catch(e => console.error("Error sending welcome email to group member:", e));
+                      },
+                    } as any).catch((e) =>
+                      console.error("Error sending welcome email to group member:", e),
+                    );
                   }
                 }
               } else {
@@ -629,7 +637,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     startDate: sub.start_date,
                     pdfBase64, // attach invoice PDF directly
                     invoiceNumber,
-                  }
+                  },
                 } as any);
               }
             } catch (err) {
@@ -644,7 +652,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const spaceName = sub.space?.name || "the space";
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date
-                ? new Date(sub.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+                ? new Date(sub.start_date).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                 : "today";
 
               const smsText =

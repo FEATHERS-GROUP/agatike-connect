@@ -182,10 +182,10 @@ export const addEventAttendees = createServerFn({ method: "POST" })
         if (qty > currentRemaining) {
           throw new Error(`Sold out! Not enough tickets remaining.`);
         }
-        
+
         const newSold = currentSold + qty;
         const newRemaining = currentRemaining - qty;
-        
+
         updates.push({ id: tid, new_sold: newSold, new_remaining: newRemaining });
       }
 

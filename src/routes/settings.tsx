@@ -806,27 +806,61 @@ function SettingsPage() {
   const getDesktopTabMeta = () =>
     DESKTOP_TABS.flatMap((g) => g.items).find((i) => i.id === desktopTab);
 
-
   const settingsProps = {
-    user, refresh, theme, setTheme, navigate, activeModal, setActiveModal,
-    desktopTab, setDesktopTab, general, setGeneral, isUpdatingGeneral,
-    isOtpStep, setIsOtpStep, generatedOtp, otpInput, setOtpInput,
-    deleteConfirmHandle, setDeleteConfirmHandle, isDeletingAccount,
-    password, setPassword, confirmPassword, setConfirmPassword,
-    isUpdatingPassword, selectedStyle, setSelectedStyle, seed, setSeed,
-    isUpdatingAvatar, stagedAvatar, setStagedAvatar, generatedAvatars,
-    selectedInterests, setSelectedInterests, initialInterests,
-    isUpdatingInterests, handleUpdateGeneral, handleUpdatePassword,
-    handleSelectAvatar, handleUpdateInterests, handleDeleteAccount,
+    user,
+    refresh,
+    theme,
+    setTheme,
+    navigate,
+    activeModal,
+    setActiveModal,
+    desktopTab,
+    setDesktopTab,
+    general,
+    setGeneral,
+    isUpdatingGeneral,
+    isOtpStep,
+    setIsOtpStep,
+    generatedOtp,
+    otpInput,
+    setOtpInput,
+    deleteConfirmHandle,
+    setDeleteConfirmHandle,
+    isDeletingAccount,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    isUpdatingPassword,
+    selectedStyle,
+    setSelectedStyle,
+    seed,
+    setSeed,
+    isUpdatingAvatar,
+    stagedAvatar,
+    setStagedAvatar,
+    generatedAvatars,
+    selectedInterests,
+    setSelectedInterests,
+    initialInterests,
+    isUpdatingInterests,
+    handleUpdateGeneral,
+    handleUpdatePassword,
+    handleSelectAvatar,
+    handleUpdateInterests,
+    handleDeleteAccount,
     getModalTitle: () => "", // simplified or we can extract it
-    DESKTOP_TABS, COUNTRIES, INTEREST_OPTIONS, AVATAR_STYLES
+    DESKTOP_TABS,
+    COUNTRIES,
+    INTEREST_OPTIONS,
+    AVATAR_STYLES,
   };
 
   return (
     <div className="bg-background text-foreground relative">
       <SettingsMobile {...settingsProps} />
       <SettingsDesktop {...settingsProps} />
-      
+
       <style>{`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

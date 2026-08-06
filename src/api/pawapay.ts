@@ -279,8 +279,10 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       },
       customerTimestamp: new Date().toISOString(),
       statementDescription: (() => {
-        const cleaned = (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`)
-          .replace(/[^a-zA-Z0-9 ]/g, "");
+        const cleaned = (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`).replace(
+          /[^a-zA-Z0-9 ]/g,
+          "",
+        );
         const formatted = `AGT ${cleaned}`.substring(0, 22).trim();
         return formatted.length >= 4 ? formatted : "Agatike Payment";
       })(),
@@ -808,7 +810,14 @@ export const sendRefundPayout = createServerFn({ method: "POST" })
     if (!baseUrl) throw new Error("PAWAPAY_API_URL is missing");
 
     let network = "MTN_MOMO_RWA";
-    if (phone.startsWith("073") || phone.startsWith("072") || phone.startsWith("+25073") || phone.startsWith("+25072") || phone.startsWith("25073") || phone.startsWith("25072")) {
+    if (
+      phone.startsWith("073") ||
+      phone.startsWith("072") ||
+      phone.startsWith("+25073") ||
+      phone.startsWith("+25072") ||
+      phone.startsWith("25073") ||
+      phone.startsWith("25072")
+    ) {
       network = "AIRTEL_O_RWA";
     }
 

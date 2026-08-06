@@ -10,7 +10,6 @@ import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { Calendar, Clock, Loader2, CheckCircle2 } from "lucide-react";
 
-
 interface SessionBookingModalProps {
   session: any | null;
   space: any;
@@ -19,7 +18,13 @@ interface SessionBookingModalProps {
   onClose: () => void;
 }
 
-export function SessionBookingModal({ session, space, user, isOpen, onClose }: SessionBookingModalProps) {
+export function SessionBookingModal({
+  session,
+  space,
+  user,
+  isOpen,
+  onClose,
+}: SessionBookingModalProps) {
   const queryClient = useQueryClient();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("MTN");
@@ -27,9 +32,15 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
   const [isSuccess, setIsSuccess] = useState(false);
 
   const bookMutation = useMutation({
-    mutationFn: async ({ fee_charged, payment_status }: { fee_charged: number, payment_status: string }) => {
+    mutationFn: async ({
+      fee_charged,
+      payment_status,
+    }: {
+      fee_charged: number;
+      payment_status: string;
+    }) => {
       const bookingRef = Math.random().toString(36).substring(2, 10).toUpperCase();
-      
+
       const newBooking = await createSessionBooking({
         data: {
           object: {
@@ -38,9 +49,9 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
             customer_name: user?.name || user?.email || "Customer",
             fee_charged,
             billing_status: payment_status,
-            status: "confirmed"
-          }
-        }
+            status: "confirmed",
+          },
+        },
       });
 
       const ticketObj = {
@@ -55,7 +66,7 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
         ticket: ticketObj,
         bookingRef,
         customerName: user?.name || user?.email || "Customer",
-        dateStr: `${format(new Date(session.start_time), "MMM dd, yyyy")} ${format(new Date(session.start_time), "HH:mm")}`
+        dateStr: `${format(new Date(session.start_time), "MMM dd, yyyy")} ${format(new Date(session.start_time), "HH:mm")}`,
       });
 
       if (user?.email) {
@@ -71,8 +82,8 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
               <p><strong>Instructor:</strong> ${session.coach_name || "N/A"}</p>
               <p>Please find your ticket and receipt attached.</p>
             `,
-            attachments: [fallbackPdf]
-          }
+            attachments: [fallbackPdf],
+          },
         });
       }
 
@@ -91,7 +102,7 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
       console.error(err);
       setIsProcessing(false);
       toast.error("Failed to book the session. Please try again.");
-    }
+    },
   });
 
   const handleClose = () => {
@@ -102,7 +113,7 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
 
   const handleBook = () => {
     if (!session) return;
-    
+
     if (session.class?.is_free_with_subscription) {
       setIsProcessing(true);
       bookMutation.mutate({ fee_charged: 0, payment_status: "paid" });
@@ -114,11 +125,11 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
   const handleProceedPayment = async () => {
     if (!session) return;
     setIsProcessing(true);
-    setIsPaymentModalOpen(false); 
-    
-    bookMutation.mutate({ 
-      fee_charged: session.class?.price || 0, 
-      payment_status: "paid" 
+    setIsPaymentModalOpen(false);
+
+    bookMutation.mutate({
+      fee_charged: session.class?.price || 0,
+      payment_status: "paid",
     });
   };
 
@@ -134,7 +145,9 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Spot Secured!</h2>
-              <p className="text-muted-foreground">We've sent your ticket and receipt to your email.</p>
+              <p className="text-muted-foreground">
+                We've sent your ticket and receipt to your email.
+              </p>
             </div>
           ) : (
             <>
@@ -150,30 +163,50 @@ export function SessionBookingModal({ session, space, user, isOpen, onClose }: S
                   <h3 className="font-bold text-lg mb-1">{session.class?.name || "Class"}</h3>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                     <Clock className="w-4 h-4" />
-                    <span>{format(new Date(session.start_time), "MMM d, yyyy")} • {format(new Date(session.start_time), "HH:mm")} - {format(new Date(session.end_time), "HH:mm")}</span>
+                    <span>
+                      {format(new Date(session.start_time), "MMM d, yyyy")} •{" "}
+                      {format(new Date(session.start_time), "HH:mm")} -{" "}
+                      {format(new Date(session.end_time), "HH:mm")}
+                    </span>
                   </div>
                   {session.coach_name && (
-                    <p className="text-sm font-medium">Instructor: <span className="text-foreground">{session.coach_name}</span></p>
+                    <p className="text-sm font-medium">
+                      Instructor: <span className="text-foreground">{session.coach_name}</span>
+                    </p>
                   )}
                 </div>
 
                 <div className="p-4 bg-background border border-border/40 rounded-2xl flex justify-between items-center shadow-sm">
                   <span className="font-semibold">Total Fee:</span>
                   {session.class?.is_free_with_subscription ? (
-                    <span className="text-lg font-black text-primary bg-primary/10 px-3 py-1 rounded-lg">Included in Plan</span>
+                    <span className="text-lg font-black text-primary bg-primary/10 px-3 py-1 rounded-lg">
+                      Included in Plan
+                    </span>
                   ) : (
                     <span className="text-lg font-black text-foreground">
-                      {(session.class?.price || 0).toLocaleString()} <span className="text-sm text-muted-foreground">{space?.workspace?.currency || space?.currency || "RWF"}</span>
+                      {(session.class?.price || 0).toLocaleString()}{" "}
+                      <span className="text-sm text-muted-foreground">
+                        {space?.workspace?.currency || space?.currency || "RWF"}
+                      </span>
                     </span>
                   )}
                 </div>
               </div>
 
               <div className="flex justify-between pt-4 border-t border-border/40 gap-3">
-                <Button variant="outline" className="flex-1 rounded-xl h-12 font-bold" onClick={handleClose} disabled={isProcessing}>
+                <Button
+                  variant="outline"
+                  className="flex-1 rounded-xl h-12 font-bold"
+                  onClick={handleClose}
+                  disabled={isProcessing}
+                >
                   Cancel
                 </Button>
-                <Button className="flex-1 rounded-xl h-12 font-bold" onClick={handleBook} disabled={isProcessing}>
+                <Button
+                  className="flex-1 rounded-xl h-12 font-bold"
+                  onClick={handleBook}
+                  disabled={isProcessing}
+                >
                   {isProcessing ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : session.class?.is_free_with_subscription ? (

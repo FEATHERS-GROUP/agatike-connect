@@ -543,10 +543,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   }, [isSuccess, navigate]);
 
   const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && venueProject && (
-    <div
-      className="absolute -z-50 pointer-events-none"
-      style={{ top: "-9999px", left: "-9999px" }}
-    >
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((t) => (
         <div
           key={t.id}
@@ -566,9 +563,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             price={
               t.tier === "Standard Entry"
                 ? venue?.entrance_fee?.toString() || "0"
-                : venue.pricing_tiers
-                    ?.find((pt: any) => pt.name === t.tier)
-                    ?.amount?.toString() || total.toString()
+                : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                  total.toString()
             }
             currency={venue.currency}
             cover={venueProject.coverImage || ""}
@@ -642,7 +638,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             </strong>
           </p>
         </div>
-      {hiddenTicketRenderer}
+        {hiddenTicketRenderer}
       </>
     );
   }

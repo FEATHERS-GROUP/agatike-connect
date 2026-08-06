@@ -521,12 +521,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
     );
   }
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
-        </div>
+
     const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && movieProject && (
     <div
       className="absolute -z-50 pointer-events-none"
