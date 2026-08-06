@@ -88,7 +88,7 @@ export function EventDetailsMobile({
         </div>
       )}
       {/* Hero Image */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden">
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
         <img
           src={d.ev.cover}
           alt={d.ev.title}
@@ -138,18 +138,18 @@ export function EventDetailsMobile({
           </p>
         </div>
 
+        <EventMerch
+          activeMerch={d.activeMerch}
+          cart={d.cart}
+          setCart={d.setCart}
+          currencyCode={d.currencyCode}
+        />
+
         <EventAttendees attendeesList={d.attendeesList} attendeesCount={d.attendeesCount} />
 
         <EventLineup
           staffList={d.isExperience ? d.staffList : d.lineup}
           isExperience={d.isExperience}
-        />
-
-        <EventMerch
-          activeMerch={d.activeMerch}
-          currencyCode={d.currencyCode}
-          cart={d.cart}
-          setCart={d.setCart}
         />
 
         <EventIncluded isExperience={d.isExperience} included={d.included} />
