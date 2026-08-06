@@ -20,6 +20,7 @@ import {
   renewSpaceSubscription,
 } from "@/api/space_subscriptions";
 import QRCode from "react-qr-code";
+import { PaymentModal } from "@/components/shared/PaymentModal";
 
 export const Route = createFileRoute("/subscriptions")({
   loader: async () => {
@@ -88,6 +89,7 @@ function SubscriptionCard({
   const [showQR, setShowQR] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
   const [isRenewing, setIsRenewing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("pawapay");
 
   const validity = useMemo(() => getSubscriptionValidity(sub), [sub]);
   const latestInvoice = sub.invoices?.[0] || null;
@@ -343,77 +345,84 @@ function SubscriptionCard({
         <Dialog open={showInvoice} onOpenChange={setShowInvoice}>
           <DialogContent className="max-w-sm rounded-3xl w-[90vw]">
             <DialogHeader>
-              <DialogTitle>Recent Invoice</DialogTitle>
+              <DialogTitle>Billing History</DialogTitle>
               <DialogDescription>
                 {sub.plan_name} at {sub.space?.name}
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4 space-y-4 text-sm">
-                <>
-                  <div className="flex justify-between border-b pb-2">
-                    <span className="text-muted-foreground">Invoice #</span>
-                    <span className="font-bold font-mono text-xs">
-                      {latestInvoice?.invoice_number || `INV-${sub.id.substring(0, 8).toUpperCase()}`}
+            <div className="py-2 space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+              {sub.invoices && sub.invoices.length > 0 ? (
+                sub.invoices.map((inv: any, idx: number) => (
+                  <div key={inv.id || idx} className="border border-border/60 rounded-xl p-3 bg-card shadow-sm">
+                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-border/40">
+                      <span className="font-bold font-mono text-xs text-foreground">
+                        {inv.invoice_number}
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 capitalize">
+                        {inv.status || "paid"}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Date</span>
+                        <span className="font-medium text-foreground">{formatDate(inv.created_at)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Amount</span>
+                        <span className="font-bold text-foreground">
+                          {inv.amount} {inv.currency || currency}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="border border-border/60 rounded-xl p-3 bg-card shadow-sm">
+                  <div className="flex justify-between items-center mb-2 pb-2 border-b border-border/40">
+                    <span className="font-bold font-mono text-xs text-foreground">
+                      {`INV-${sub.id.substring(0, 8).toUpperCase()}`}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 capitalize">
+                      paid
                     </span>
                   </div>
-                  <div className="flex justify-between border-b pb-2">
-                    <span className="text-muted-foreground">Amount</span>
-                    <span className="font-bold">
-                      {latestInvoice?.amount || sub.price} {currency}
-                    </span>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Date</span>
+                      <span className="font-medium text-foreground">{formatDate(sub.start_date)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Amount</span>
+                      <span className="font-bold text-foreground">
+                        {sub.price} {currency}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between border-b pb-2">
-                    <span className="text-muted-foreground">Date</span>
-                    <span className="font-medium">{formatDate(latestInvoice?.created_at || sub.start_date)}</span>
-                  </div>
-                  <div className="flex justify-between border-b pb-2">
-                    <span className="text-muted-foreground">Status</span>
-                    <span className="text-green-500 font-bold capitalize">
-                      {latestInvoice?.status || "paid"}
-                    </span>
-                  </div>
-                </>
-              <Button className="w-full mt-4 rounded-xl" onClick={() => setShowInvoice(false)}>
-                Close
-              </Button>
+                </div>
+              )}
             </div>
+            <Button className="w-full mt-4 rounded-xl" onClick={() => setShowInvoice(false)}>
+              Close
+            </Button>
           </DialogContent>
         </Dialog>
       )}
 
       {/* Renew Modal — individual only */}
       {!isGroupSub && (
-        <Dialog open={showRenew} onOpenChange={setShowRenew}>
-          <DialogContent className="max-w-sm rounded-3xl w-[90vw]">
-            <DialogHeader>
-              <DialogTitle>Renew Subscription</DialogTitle>
-              <DialogDescription>
-                You are renewing {sub.plan_name} for another {sub.billing_cycle || "period"}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              <div className="bg-secondary/40 p-4 rounded-2xl flex justify-between items-center">
-                <span className="font-medium">Total Due</span>
-                <span className="text-xl font-bold text-primary">
-                  {sub.price} {currency}
-                </span>
-              </div>
-              <Button
-                className="w-full h-12 rounded-xl text-base font-bold"
-                onClick={handleRenew}
-                disabled={isRenewing}
-              >
-                {isRenewing ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Processing...
-                  </>
-                ) : (
-                  "Confirm Payment"
-                )}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <PaymentModal
+          isOpen={showRenew}
+          onOpenChange={setShowRenew}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          onProceed={handleRenew}
+          isProcessing={isRenewing}
+          isGenerating={false}
+          workspaceId={sub.space?.workspace_id || ""}
+          baseAmount={parseFloat(sub.price || "0")}
+          baseCurrency={sub.space?.currency || "RWF"}
+          itemLabel={sub.plan_name}
+        />
       )}
 
       {/* QR Code / Membership Validation Modal */}
@@ -465,6 +474,52 @@ function SubscriptionsPage() {
   const [linkInput, setLinkInput] = useState("");
   const [isLinking, setIsLinking] = useState(false);
   const [linkError, setLinkError] = useState("");
+
+  const groupedSubscriptions = useMemo(() => {
+    if (!subscriptions) return [];
+    const groups = new Map<string, any>();
+
+    subscriptions.forEach((sub: any) => {
+      const spaceId = sub.space?.id || sub.id; // Fallback to sub.id if no space
+      
+      if (!groups.has(spaceId)) {
+        groups.set(spaceId, { ...sub, invoices: sub.invoices ? [...sub.invoices] : [] });
+      } else {
+        const existing = groups.get(spaceId);
+        
+        // Merge invoices
+        if (sub.invoices && sub.invoices.length > 0) {
+          existing.invoices = [...existing.invoices, ...sub.invoices];
+        }
+        
+        // Pick primary: prefer "active" or later next_billing_date/start_date
+        const existingValid = getSubscriptionValidity(existing).isValid;
+        const subValid = getSubscriptionValidity(sub).isValid;
+        
+        if (subValid && !existingValid) {
+          groups.set(spaceId, { ...sub, invoices: existing.invoices });
+        } else if (subValid && existingValid) {
+             const existingDate = existing.next_billing_date ? new Date(existing.next_billing_date).getTime() : new Date(existing.start_date || 0).getTime();
+             const subDate = sub.next_billing_date ? new Date(sub.next_billing_date).getTime() : new Date(sub.start_date || 0).getTime();
+             if (subDate > existingDate) {
+                 groups.set(spaceId, { ...sub, invoices: existing.invoices });
+             }
+        } else if (!subValid && !existingValid) {
+             const existingDate = existing.next_billing_date ? new Date(existing.next_billing_date).getTime() : new Date(existing.start_date || 0).getTime();
+             const subDate = sub.next_billing_date ? new Date(sub.next_billing_date).getTime() : new Date(sub.start_date || 0).getTime();
+             if (subDate > existingDate) {
+                 groups.set(spaceId, { ...sub, invoices: existing.invoices });
+             }
+        }
+      }
+    });
+    
+    // Sort combined invoices by created_at desc
+    return Array.from(groups.values()).map(group => {
+       group.invoices.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+       return group;
+    });
+  }, [subscriptions]);
 
   const handleLinkSubscription = async () => {
     if (!linkInput.trim()) return;
@@ -525,8 +580,8 @@ function SubscriptionsPage() {
         </div>
 
         <div className="space-y-4">
-          {subscriptions && subscriptions.length > 0 ? (
-            subscriptions.map((sub: any) => (
+          {groupedSubscriptions && groupedSubscriptions.length > 0 ? (
+            groupedSubscriptions.map((sub: any) => (
               <SubscriptionCard
                 key={sub.id}
                 sub={sub}

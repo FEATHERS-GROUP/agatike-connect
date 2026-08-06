@@ -457,27 +457,27 @@ export function PaymentModal({
                           {baseAmount} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between text-primary-foreground/70">
+                      <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Service Fee</span>
                         <span>
                           {simulation.serviceFee.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-end font-medium text-primary-foreground border-t border-primary-foreground/20 pt-1">
+                      <div className="flex justify-end font-medium text-foreground md:text-primary-foreground border-t border-border/40 md:border-primary-foreground/20 pt-1">
                         <span>
                           {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
                       {isBlocked && simulation.structuredError ? (
-                        <div className="mt-4 p-3 bg-red-500/20 text-white text-xs rounded border border-red-500/30 space-y-2">
-                          <div className="font-bold text-red-100">
+                        <div className="mt-4 p-3 bg-red-500/10 text-red-500 text-xs rounded border border-red-500/20 space-y-2">
+                          <div className="font-bold text-red-600 dark:text-red-400">
                             {simulation.structuredError.title}
                           </div>
                           <p>{simulation.structuredError.description}</p>
 
                           {"details" in simulation.structuredError &&
                             simulation.structuredError.details && (
-                              <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
+                              <div className="bg-background/50 p-2 rounded border border-red-500/20 font-mono text-[10px] text-muted-foreground">
                                 <div>
                                   Customer Fee:{" "}
                                   {simulation.structuredError.details.customerServiceFee}

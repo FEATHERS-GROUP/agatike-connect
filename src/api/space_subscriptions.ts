@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie } from "@tanstack/react-start/server";
 import { hasuraRequest } from "./graphql.server";
+import { sendEmail } from "./email";
 
 // Generate a unique membership ID: YYYYMM + 6 random uppercase alphanumeric (no O, 0, I, 1)
 function generateMembershipId(): string {
@@ -324,6 +325,7 @@ export const getUserSubscriptions = createServerFn({ method: "POST" })
               name
               cover_url
               currency
+              workspace_id
             }
             invoices(order_by: { created_at: desc }, limit: 1) {
               id
@@ -818,6 +820,53 @@ export const renewSpaceSubscription = createServerFn({ method: "POST" })
       next_billing_date: newBillingDate.toISOString(),
       status: "active",
     });
+
+    try {
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2 style="color: #000;">Subscription Renewal Receipt</h2>
+          <p>Hi ${sub.customer_name},</p>
+          <p>Your subscription has been successfully renewed! Here are the details of your payment and subscription.</p>
+          
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #111;">${sub.plan_name} at ${sub.space?.name}</h3>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Code / Invoice Number</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${invoiceNumber}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Amount Paid</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${sub.price} ${sub.space?.currency || "RWF"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Fee</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">0 ${sub.space?.currency || "RWF"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Start Time</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${new Date(sub.start_date || Date.now()).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;">Next Billing Date</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: bold;">${newBillingDate.toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <p>Thank you for using Agatike!</p>
+        </div>
+      `;
+
+      await sendEmail({
+        to: [sub.customer_email],
+        subject: `Receipt: Renewal of ${sub.plan_name} at ${sub.space?.name}`,
+        html: emailHtml,
+      });
+    } catch (e) {
+      console.error("Failed to send renewal receipt email:", e);
+    }
 
     return {
       success: true,
