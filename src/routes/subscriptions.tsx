@@ -160,7 +160,7 @@ function SubscriptionCard({
       <div className="bg-card border border-border/60 rounded-2xl overflow-hidden shadow-sm flex flex-col mb-4 transition-all hover:border-primary/40 hover:shadow-md md:rounded-[20px]">
         {/* Top Cover Section */}
         <div 
-          className="relative h-24 md:h-32 w-full cursor-pointer"
+          className="relative h-20 md:h-28 w-full cursor-pointer"
           onClick={() => navigate({ to: '/profile/subscriptions/$subscriptionId', params: { subscriptionId: String(sub.id) } })}
         >
           <img
@@ -279,23 +279,21 @@ function SubscriptionCard({
           <div className="flex gap-2">
             {!isGroupSub && (
               <>
-                {latestInvoice && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 md:h-8 text-xs font-semibold rounded-lg px-3 bg-card"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowInvoice(true);
-                    }}
-                  >
-                    Invoice
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 md:h-8 text-[10px] md:text-xs font-semibold rounded-lg px-2.5 md:px-3 bg-card"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowInvoice(true);
+                  }}
+                >
+                  Invoice
+                </Button>
                 {(!validity.isValid || validity.label === "Expiring Soon") && (
                   <Button
                     size="sm"
-                    className="h-7 md:h-8 text-xs font-bold rounded-lg px-4 shadow-sm"
+                    className="h-7 md:h-8 text-[10px] md:text-xs font-bold rounded-lg px-3 md:px-4 shadow-sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowRenew(true);
@@ -310,11 +308,11 @@ function SubscriptionCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 md:h-8 text-xs font-semibold rounded-lg px-3 text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20 bg-card"
+                className="h-7 md:h-8 text-[10px] md:text-xs font-semibold rounded-lg px-2.5 md:px-3 text-red-500 hover:text-red-600 hover:bg-red-500/10 border-red-500/20 bg-card"
                 onClick={handleUnlink}
                 disabled={isUnlinking}
               >
-                {isUnlinking ? "..." : <Unlink className="h-3.5 w-3.5 mr-1" />}
+                {isUnlinking ? "..." : <Unlink className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />}
                 Unlink
               </Button>
             )}
@@ -333,32 +331,30 @@ function SubscriptionCard({
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4 text-sm">
-              {latestInvoice && (
                 <>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Invoice #</span>
                     <span className="font-bold font-mono text-xs">
-                      {latestInvoice.invoice_number}
+                      {latestInvoice?.invoice_number || `INV-${sub.id.substring(0, 8).toUpperCase()}`}
                     </span>
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Amount</span>
                     <span className="font-bold">
-                      {latestInvoice.amount || sub.price} {currency}
+                      {latestInvoice?.amount || sub.price} {currency}
                     </span>
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Date</span>
-                    <span className="font-medium">{formatDate(latestInvoice.created_at)}</span>
+                    <span className="font-medium">{formatDate(latestInvoice?.created_at || sub.start_date)}</span>
                   </div>
                   <div className="flex justify-between border-b pb-2">
                     <span className="text-muted-foreground">Status</span>
                     <span className="text-green-500 font-bold capitalize">
-                      {latestInvoice.status || "paid"}
+                      {latestInvoice?.status || "paid"}
                     </span>
                   </div>
                 </>
-              )}
               <Button className="w-full mt-4 rounded-xl" onClick={() => setShowInvoice(false)}>
                 Close
               </Button>

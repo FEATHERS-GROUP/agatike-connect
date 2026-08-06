@@ -81,13 +81,12 @@ export function HistoryCard({ ticket: eventGroup }: { ticket: any }) {
                 </Button>
               )}
               {!isRated && (
-                <a 
-                  href={`/f/${eventGroup.eventId}/review`}
-                  onClick={(e) => e.stopPropagation()}
+                <button 
+                  onClick={handleRateClick}
                   className="inline-block text-xs font-bold text-white bg-orange-500 hover:bg-orange-600 px-4 py-1.5 rounded-full transition-colors"
                 >
                   Rate Event
-                </a>
+                </button>
               )}
             </div>
           </div>
@@ -121,13 +120,12 @@ export function HistoryCard({ ticket: eventGroup }: { ticket: any }) {
 
   if (hasEventId) {
     return (
-      <Link
-        to="/events/$eventId"
-        params={{ eventId: eventGroup.eventId }}
-        className="block group outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-3xl"
+      <div
+        onClick={() => navigate({ to: "/events/$eventId", params: { eventId: eventGroup.eventId } })}
+        className="block group outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-3xl cursor-pointer"
       >
         {CardContent}
-      </Link>
+      </div>
     );
   }
 

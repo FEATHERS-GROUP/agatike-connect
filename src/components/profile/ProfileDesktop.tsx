@@ -388,19 +388,6 @@ export function ProfileDesktop({
             </div>
           </div>
 
-          {/* Subscriptions */}
-          {subscriptions && subscriptions.length > 0 && (
-            <div className="bg-card rounded-[24px] border border-border/40 shadow-sm p-6">
-              <h2 className="text-base font-bold text-foreground mb-5 flex items-center gap-2">
-                <Repeat className="h-4 w-4 text-primary" /> Active Subscriptions
-              </h2>
-              <div className="space-y-3">
-                {subscriptions.map((sub: any) => (
-                  <SubscriptionCard key={sub.id} sub={sub} />
-                ))}
-              </div>
-            </div>
-          )}
 
         </div>
       </div>

@@ -146,7 +146,7 @@ export function ProfileMobile({
 
       {/* Tabs */}
       <div className="flex border-b border-border/40 mt-4 px-4 gap-1 overflow-x-auto hide-scrollbar">
-        {(["upcoming", "history", "following", "subscriptions", "work"] as any[]).map((t) => (
+        {(["upcoming", "history", "following", "work"] as any[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -166,11 +166,6 @@ export function ProfileMobile({
               {t === "following" && (
                 <>
                   <Heart className="h-4 w-4" /> Following
-                </>
-              )}
-              {t === "subscriptions" && (
-                <>
-                  <Repeat className="h-4 w-4" /> Subs
                 </>
               )}
               {t === "work" && (
@@ -260,22 +255,6 @@ export function ProfileMobile({
             >
               Discover more organizers <ChevronRight className="h-4 w-4" />
             </Link>
-          </div>
-        )}
-
-        {tab === "subscriptions" && (
-          <div className="space-y-4">
-            {subscriptions && subscriptions.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
-                {subscriptions.map((sub: any) => (
-                  <SubscriptionCard key={sub.id} sub={sub} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
-                <p className="text-muted-foreground text-sm">No active subscriptions.</p>
-              </div>
-            )}
           </div>
         )}
 
