@@ -69,14 +69,6 @@ export function VenuesDesktop() {
                   </select>
                 </div>
               </div>
-
-              <Button
-                className="h-12 px-6 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform"
-                style={{ background: "var(--gradient-primary)" }}
-                onClick={(e) => e.preventDefault()}
-              >
-                Search
-              </Button>
             </div>
           </div>
         </div>

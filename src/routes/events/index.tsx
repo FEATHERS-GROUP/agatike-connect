@@ -342,16 +342,6 @@ function EventsBrowse() {
                   </select>
                 </div>
               </div>
-              <button
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer duration-200 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md h-12 px-6 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform"
-                style={{ background: "var(--gradient-primary)" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Filtering is already reactive, button just provides a visual cue
-                }}
-              >
-                Search
-              </button>
             </div>
           </div>
         </div>
