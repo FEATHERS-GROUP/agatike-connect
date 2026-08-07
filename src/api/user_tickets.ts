@@ -91,6 +91,8 @@ const GET_USER_VENUE_BOOKINGS = `
       attendees_info
       internal_notes
       venue_id
+      booking_type
+      facility_id
       rentable_venue {
         id
         name
@@ -98,6 +100,7 @@ const GET_USER_VENUE_BOOKINGS = `
         cover_url
         currency
         rental_model
+        facilities_data
         opening_hours
         closing_hours
         entrance_fee
@@ -369,6 +372,11 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           }
         }
 
+        const isFacility = booking.booking_type === "facility";
+        const facilities = venue?.facilities_data || [];
+        const facilityObj = isFacility ? facilities.find((f: any) => String(f.id) === String(booking.facility_id)) : null;
+        const facilityName = facilityObj?.name || null;
+
         tickets.push({
           id: t.id,
           bookingId: booking.id,
@@ -389,7 +397,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           passengerProfile: user.profile || null,
           orderId: t.otp || booking.id.substring(0, 8),
           ticketType: t.tier || "Standard Entry",
-          ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
+          ticketCategory: isFacility ? "facility" : venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
           price: ticketPrice,
           isVenueBooking: true,
           status: t.status || booking.status || "Confirmed",
@@ -397,6 +405,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           venueName,
           city,
           workingHours: venue?.opening_hours ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}` : null,
+          facilityName,
           design,
         });
       }
@@ -424,6 +433,11 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         }
         : null;
 
+      const isFacility = booking.booking_type === "facility";
+      const facilities = venue?.facilities_data || [];
+      const facilityObj = isFacility ? facilities.find((f: any) => String(f.id) === String(booking.facility_id)) : null;
+      const facilityName = facilityObj?.name || null;
+
       tickets.push({
         id: booking.id,
         bookingId: booking.id,
@@ -444,7 +458,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         passengerProfile: user.profile || null,
         orderId: booking.id.substring(0, 8),
         ticketType: "Standard Entry",
-        ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
+        ticketCategory: isFacility ? "facility" : venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
         price: booking.amount,
         isVenueBooking: true,
         status: booking.status || "Confirmed",
@@ -452,6 +466,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         venueName,
         city,
         workingHours: venue?.opening_hours ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}` : null,
+        facilityName,
         design,
       });
     }

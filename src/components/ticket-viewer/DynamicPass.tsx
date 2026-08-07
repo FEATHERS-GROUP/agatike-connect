@@ -116,7 +116,7 @@ export function DynamicPass({ ticket }: { ticket: any }) {
         </div>
         <div className="flex justify-between items-end mb-4">
           <div>
-            <p className="font-bold text-lg">{ticket.venue || ticket.city || "Kigali"}</p>
+            <p className="font-bold text-lg">{ticket.venue || ticket.city}</p>
             <p className="text-gray-500 text-xs font-medium mt-1 truncate max-w-[120px]">
               {ticket.venue || "Kigali Arena"}
             </p>
@@ -186,7 +186,7 @@ export function DynamicPass({ ticket }: { ticket: any }) {
       <div className="flex justify-between items-end mb-4">
         <div>
           <p className="font-bold text-lg max-w-[140px] leading-tight truncate">
-            {ticket.venue || ticket.city || "Kigali"}
+            {ticket.venue || ticket.city || "N/A"}
           </p>
           <p className="text-gray-500 text-xs font-medium mt-1">Location</p>
         </div>
@@ -213,11 +213,17 @@ export function DynamicPass({ ticket }: { ticket: any }) {
           <p className="font-bold text-sm truncate">{ticket.ticketType}</p>
         </div>
         <div className="text-center">
-          <p className="text-gray-500 text-xs font-medium mb-1">Gate</p>
+          <p className="text-gray-500 text-xs font-medium mb-1">
+            {ticket.ticketCategory === "facility" ? "Facility" : "Gate"}
+          </p>
           <p
-            className={`font-bold ${ticket.ticketCategory === "sports" ? "text-sm" : "text-[11px]"}`}
+            className={`font-bold ${["sports", "facility"].includes(ticket.ticketCategory) ? "text-sm truncate max-w-[100px] mx-auto" : "text-[11px]"}`}
           >
-            {ticket.ticketCategory === "sports" ? ticket.gate || "Gate 3" : "Main Entrance"}
+            {ticket.ticketCategory === "facility"
+              ? ticket.facilityName || ticket.facility || "Facility"
+              : ticket.ticketCategory === "sports"
+                ? ticket.gate || "Gate 3"
+                : "Main Entrance"}
           </p>
         </div>
         <div className="text-right">

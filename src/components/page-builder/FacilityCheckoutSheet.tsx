@@ -1,3 +1,4 @@
+
 import { Link } from "@tanstack/react-router";
 import { getRentableVenueById } from "@/api/rentable_venues";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
@@ -997,9 +998,9 @@ export function FacilityCheckoutSheet({
                                       maxCapacity === Infinity
                                         ? 0
                                         : Math.min(
-                                            100,
-                                            Math.round((bookedCount / maxCapacity) * 100),
-                                          );
+                                          100,
+                                          Math.round((bookedCount / maxCapacity) * 100),
+                                        );
 
                                     if (fillPercentage >= 100 || isBooked) {
                                       if (fillPercentage >= 100 || maxCapacity === 1) {
@@ -1048,7 +1049,7 @@ export function FacilityCheckoutSheet({
                                         "h-10 rounded-xl transition-all font-medium text-sm border-border/60",
                                         dynamicClass,
                                         isSelected &&
-                                          "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
+                                        "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 border-transparent",
                                       )}
                                       disabled={isBooked}
                                       onClick={() => handleSlotClick(slotMins)}
@@ -1242,21 +1243,21 @@ export function FacilityCheckoutSheet({
         {(isPollingPawaPay ||
           ((bookingMutation.isPending) && paymentMethod === "momo") ||
           isGenerating) && (
-          <CheckYourPhone
-            themeColor={themeColor || "var(--primary)"}
-            status={isGenerating ? "generating" : "payment"}
-            onCancel={async () => {
-              setIsPollingPawaPay(false);
-              if (pawapayDepositId) {
-                try {
-                  await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                } catch (e) {
-                  console.error("Cancel cleanup failed:", e);
+            <CheckYourPhone
+              themeColor={themeColor || "var(--primary)"}
+              status={isGenerating ? "generating" : "payment"}
+              onCancel={async () => {
+                setIsPollingPawaPay(false);
+                if (pawapayDepositId) {
+                  try {
+                    await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                  } catch (e) {
+                    console.error("Cancel cleanup failed:", e);
+                  }
                 }
-              }
-            }}
-          />
-        )}
+              }}
+            />
+          )}
 
         {isGenerating && issuedTickets.length > 0 && venueProject && (
           <div style={{ position: "absolute", left: "-9999px", top: 0, opacity: 0 }}>

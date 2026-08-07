@@ -577,12 +577,16 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
         <div className="w-full text-center space-y-6">
           <div>
             <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
-              {labels.gate || "Gate"}
+              {ticket.ticketCategory === "facility" ? "Facility" : labels.gate || "Gate"}
             </p>
             <p
-              className={`font-black ${ticket.ticketCategory === "sports" ? "text-2xl" : "text-xs"}`}
+              className={`font-black ${["sports", "facility"].includes(ticket.ticketCategory) ? "text-xl truncate px-2" : "text-xs"}`}
             >
-              {ticket.ticketCategory === "sports" ? ticket.gate || "Gate 3" : "Main Entrance"}
+              {ticket.ticketCategory === "facility"
+                ? ticket.facilityName || ticket.facility || "Facility"
+                : ticket.ticketCategory === "sports"
+                  ? ticket.gate || "Gate 3"
+                  : "Main Entrance"}
             </p>
           </div>
           <div>
