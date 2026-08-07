@@ -191,8 +191,14 @@ export function DynamicPass({ ticket }: { ticket: any }) {
           <p className="text-gray-500 text-xs font-medium mt-1">Location</p>
         </div>
         <div className="text-right">
-          <p className="font-bold text-lg">{ticket.time || "18:00"}</p>
-          <p className="text-gray-500 text-xs font-medium mt-1">Doors Open</p>
+          <p className="font-bold text-lg">
+            {["entrance", "venue"].includes(ticket.ticketCategory)
+              ? ticket.workingHours || "09:00 - 18:00"
+              : ticket.time || "18:00"}
+          </p>
+          <p className="text-gray-500 text-xs font-medium mt-1">
+            {["entrance", "venue"].includes(ticket.ticketCategory) ? "Working Hours" : "Doors Open"}
+          </p>
         </div>
       </div>
 
@@ -215,7 +221,9 @@ export function DynamicPass({ ticket }: { ticket: any }) {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-gray-500 text-xs font-medium mb-1">Seat</p>
+          <p className="text-gray-500 text-xs font-medium mb-1">
+            {["entrance", "venue"].includes(ticket.ticketCategory) ? "Name" : "Seat"}
+          </p>
           <p className="font-bold text-sm truncate max-w-[80px]">{ticket.seat || "GA"}</p>
         </div>
       </div>

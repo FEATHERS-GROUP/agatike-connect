@@ -95,6 +95,10 @@ const GET_USER_VENUE_BOOKINGS = `
         cover_url
         currency
         rental_model
+        opening_hours
+        closing_hours
+        entrance_fee
+        pricing_tiers
         ticket_projects(where: { deleted: { _eq: false } }) {
           id
           name
@@ -352,6 +356,14 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
             }
           : null;
 
+        let ticketPrice = venue?.entrance_fee || 0;
+        if (t.tier && venue?.pricing_tiers) {
+          const matchedTier = venue.pricing_tiers.find((pt: any) => pt.name === t.tier);
+          if (matchedTier) {
+            ticketPrice = Number(matchedTier.amount);
+          }
+        }
+
         tickets.push({
           id: t.id,
           bookingId: booking.id,
@@ -373,12 +385,13 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           orderId: t.otp || booking.id.substring(0, 8),
           ticketType: t.tier || "Standard Entry",
           ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
-          price: booking.amount,
+          price: ticketPrice,
           isVenueBooking: true,
           status: t.status || booking.status || "Confirmed",
           eventDate: booking.start_time,
           venueName,
           city,
+          workingHours: venue?.opening_hours ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}` : null,
           design,
         });
       }
@@ -433,6 +446,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         eventDate: booking.start_time,
         venueName,
         city,
+        workingHours: venue?.opening_hours ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}` : null,
         design,
       });
     }
@@ -468,7 +482,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       orderId: booking.qrcode_number || booking.id.substring(0, 8),
       ticketType: booking.ticket_tier?.name || "Standard",
       ticketCategory: "movie",
-      price: booking.total_price,
+      price: booking.total_price ? (booking.total_price / (booking.quantity || 1)) : 0,
       quantity: booking.quantity || 1,
       isVenueBooking: false,
       status: booking.status || "Confirmed",
