@@ -379,8 +379,10 @@ export function FacilityCheckoutSheet({
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
         amount: totalAmount,
         total_amount: totalAmount,
+        payment_method: paymentMethod,
         venue_name: venue.name,
         venue_currency: currency,
+        number_of_attendees: isSharedAccess || isSharedSlot ? quantity : 1,
         booking_type: "facility",
         tickets_data: {
           "Facility Access": isSharedAccess || isSharedSlot ? quantity : 1,

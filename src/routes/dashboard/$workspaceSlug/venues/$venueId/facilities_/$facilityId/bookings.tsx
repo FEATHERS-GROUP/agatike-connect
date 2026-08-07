@@ -363,6 +363,7 @@ function FacilityBookingsPage() {
         amount: totalAmount,
         total_amount: totalAmount,
         booking_type: "facility",
+        number_of_attendees: isSharedSlot || isSharedAccess ? quantity : 1,
         tickets_data: isSharedSlot || isSharedAccess ? { "Facility Access": quantity } : null,
       } as any,
     });
