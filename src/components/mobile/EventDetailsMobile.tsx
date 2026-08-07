@@ -88,15 +88,15 @@ export function EventDetailsMobile({
         </div>
       )}
       {/* Hero Image */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden">
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
         <img
           src={d.ev.cover}
           alt={d.ev.title}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full p-5">
-          <span className="w-fit rounded-full bg-background/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider backdrop-blur-md text-white border border-white/20">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+        <div className="absolute bottom-8 left-0 w-full p-5 z-10">
+          <span className="w-fit rounded-full bg-black/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider backdrop-blur-md text-white border border-white/20">
             {d.category}
           </span>
           <h1 className="mt-3 text-3xl font-bold leading-tight text-white drop-shadow-md">
@@ -105,7 +105,7 @@ export function EventDetailsMobile({
         </div>
       </div>
 
-      <div className="px-5 pt-6 space-y-8">
+      <div className="relative z-20 px-5 pt-8 space-y-8 bg-background rounded-t-[2.5rem] -mt-8 shadow-[0_-8px_40px_rgba(0,0,0,0.12)]">
         {/* Quick Info Grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-border/60 bg-card p-3.5 flex flex-col gap-1.5">
@@ -138,18 +138,18 @@ export function EventDetailsMobile({
           </p>
         </div>
 
+        <EventMerch
+          activeMerch={d.activeMerch}
+          cart={d.cart}
+          setCart={d.setCart}
+          currencyCode={d.currencyCode}
+        />
+
         <EventAttendees attendeesList={d.attendeesList} attendeesCount={d.attendeesCount} />
 
         <EventLineup
           staffList={d.isExperience ? d.staffList : d.lineup}
           isExperience={d.isExperience}
-        />
-
-        <EventMerch
-          activeMerch={d.activeMerch}
-          currencyCode={d.currencyCode}
-          cart={d.cart}
-          setCart={d.setCart}
         />
 
         <EventIncluded isExperience={d.isExperience} included={d.included} />

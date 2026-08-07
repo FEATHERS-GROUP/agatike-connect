@@ -270,7 +270,7 @@ export function PaymentModal({
               <div
                 className={`w-full flex flex-col gap-4 p-4 rounded-2xl border transition-all ${
                   paymentMethod === "momo"
-                    ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]"
+                    ? "border-orange-500/50 bg-orange-500/5 shadow-[0_0_15px_rgba(249,115,22,0.15)]"
                     : "border-border/60 hover:bg-secondary/40"
                 }`}
               >
@@ -278,18 +278,19 @@ export function PaymentModal({
                   onClick={() => setPaymentMethod("momo")}
                   className="w-full flex items-center gap-4 text-left"
                 >
-                  <div className="h-10 w-10 bg-yellow-500 text-yellow-950 rounded-full flex items-center justify-center shrink-0">
-                    <Smartphone className="h-5 w-5" />
+                  <div className="relative h-12 w-12 rounded-[14px] bg-gradient-to-br from-amber-400 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20 ring-1 ring-white/20 overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.3),transparent)]" />
+                    <Smartphone className="h-6 w-6 relative z-10" strokeWidth={2.5} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold">Mobile Money</p>
-                    <p className="text-xs text-muted-foreground">MTN MoMo, Airtel Money, M-Pesa</p>
+                    <p className="font-bold text-[15px] text-foreground">Pay with Phone</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Mobile Money & Wallets</p>
                   </div>
                   <div
-                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-muted-foreground/30"}`}
+                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${paymentMethod === "momo" ? "border-orange-500" : "border-muted-foreground/30"}`}
                   >
                     {paymentMethod === "momo" && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />
                     )}
                   </div>
                 </button>
@@ -457,27 +458,27 @@ export function PaymentModal({
                           {baseAmount} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between text-primary-foreground/70">
+                      <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Service Fee</span>
                         <span>
                           {simulation.serviceFee.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-end font-medium text-primary-foreground border-t border-primary-foreground/20 pt-1">
+                      <div className="flex justify-end font-medium text-foreground md:text-primary-foreground border-t border-border/40 md:border-primary-foreground/20 pt-1">
                         <span>
                           {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
                         </span>
                       </div>
                       {isBlocked && simulation.structuredError ? (
-                        <div className="mt-4 p-3 bg-red-500/20 text-white text-xs rounded border border-red-500/30 space-y-2">
-                          <div className="font-bold text-red-100">
+                        <div className="mt-4 p-3 bg-red-500/10 text-red-500 text-xs rounded border border-red-500/20 space-y-2">
+                          <div className="font-bold text-red-600 dark:text-red-400">
                             {simulation.structuredError.title}
                           </div>
                           <p>{simulation.structuredError.description}</p>
 
                           {"details" in simulation.structuredError &&
                             simulation.structuredError.details && (
-                              <div className="bg-white/50 p-2 rounded border border-red-100 font-mono text-[10px]">
+                              <div className="bg-background/50 p-2 rounded border border-red-500/20 font-mono text-[10px] text-muted-foreground">
                                 <div>
                                   Customer Fee:{" "}
                                   {simulation.structuredError.details.customerServiceFee}
@@ -531,6 +532,7 @@ export function PaymentModal({
                 </div>
               </div>
 
+              {/* Mobile Button */}
               <Button
                 onClick={handleProceed}
                 disabled={
@@ -542,7 +544,28 @@ export function PaymentModal({
                   (paymentMethod === "momo" &&
                     (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
                 }
-                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide hover:opacity-90 md:shadow-xl"
+                className="w-full h-14 rounded-2xl text-lg shadow-lg shadow-orange-500/20 font-bold tracking-wide bg-orange-500 text-white hover:bg-orange-600 block md:hidden"
+              >
+                {isGenerating
+                  ? "Generating..."
+                  : isProcessing
+                    ? "Processing..."
+                    : `Pay ${paymentMethod === "momo" ? targetCurrency : baseCurrency} ${convertedAmount.toLocaleString()}`}
+              </Button>
+
+              {/* Desktop Button */}
+              <Button
+                onClick={handleProceed}
+                disabled={
+                  isProcessing ||
+                  isGenerating ||
+                  isFxLoading ||
+                  isSimulating ||
+                  isBlocked ||
+                  (paymentMethod === "momo" &&
+                    (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
+                }
+                className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide hover:opacity-90 md:shadow-xl hidden md:block"
                 style={{ backgroundColor: "#ffffff", color: themeColor || "var(--primary)" }}
               >
                 {isGenerating

@@ -91,11 +91,7 @@ export function PageBuilderSidebar({
       <div className="flex flex-col w-full h-full bg-card">
         {/* Logo */}
         <div className="flex items-center justify-center px-4 py-3 border-b border-border/60 shrink-0">
-          <img
-            src={agatikeIcon}
-            alt="Agatike"
-            className="h-8 w-auto object-contain"
-          />
+          <img src={agatikeIcon} alt="Agatike" className="h-8 w-auto object-contain" />
         </div>
 
         {/* Search */}

@@ -109,6 +109,9 @@ const GET_SPACE_BY_ID = `
       type
       description
       currency
+      workspace {
+        currency
+      }
       cover_url
       socials
       locations

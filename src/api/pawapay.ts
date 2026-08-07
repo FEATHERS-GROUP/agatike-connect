@@ -255,11 +255,11 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     } = ctx.data as any;
 
     if (!currency) {
-      throw new Error("Currency is required for PawaPay deposit.");
+      throw new Error("Currency is required for Agatike deposit.");
     }
 
     if (!workspaceId) {
-      throw new Error("Workspace ID is required for PawaPay deposit.");
+      throw new Error("Workspace ID is required for Agatike deposit.");
     }
 
     if (!process.env.PAWAPAY_API_KEY) {
@@ -278,9 +278,14 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         address: { value: phone },
       },
       customerTimestamp: new Date().toISOString(),
-      statementDescription: (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`)
-        .replace(/[^a-zA-Z0-9 ]/g, "")
-        .substring(0, 22),
+      statementDescription: (() => {
+        const cleaned = (reason || `Agatike ${type === "event_ticket" ? "Ticket" : "Sub"}`).replace(
+          /[^a-zA-Z0-9 ]/g,
+          "",
+        );
+        const formatted = `AGT ${cleaned}`.substring(0, 22).trim();
+        return formatted.length >= 4 ? formatted : "Agatike Payment";
+      })(),
     };
 
     const baseUrl = process.env.PAWAPAY_API_URL;
@@ -300,7 +305,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     if (data.status === "REJECTED") {
       throw new Error(
-        `PawaPay Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`,
+        `Agatike Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`,
       );
     }
 
@@ -549,7 +554,7 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
           }
         }
       } catch (err) {
-        console.error("[PawaPay] Active polling fallback failed:", err);
+        console.error("[Agatike] Active polling fallback failed:", err);
       }
     }
 
@@ -795,4 +800,56 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
     await hasuraRequest(updateQuery, { id: tx.id, provider_status: data.status || "ACCEPTED" });
 
     return { success: true, data };
+  });
+
+export const sendRefundPayout = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { amount, currency, phone, description } = ctx.data;
+    const baseUrl = process.env.PAWAPAY_API_URL;
+    if (!baseUrl) throw new Error("PAWAPAY_API_URL is missing");
+
+    let network = "MTN_MOMO_RWA";
+    if (
+      phone.startsWith("073") ||
+      phone.startsWith("072") ||
+      phone.startsWith("+25073") ||
+      phone.startsWith("+25072") ||
+      phone.startsWith("25073") ||
+      phone.startsWith("25072")
+    ) {
+      network = "AIRTEL_O_RWA";
+    }
+
+    const { v4: uuidv4 } = await import("uuid");
+    const payoutId = uuidv4();
+
+    const payload = {
+      payoutId,
+      amount: String(amount),
+      currency: currency || "RWF",
+      correspondent: network,
+      recipient: {
+        type: "MSISDN",
+        address: { value: phone.replace("+", "") },
+      },
+      customerTimestamp: new Date().toISOString(),
+      statementDescription: description || "Agatike Refund",
+    };
+
+    const payoutRes = await fetch(`${baseUrl}/v1/payouts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await payoutRes.json();
+    if (!payoutRes.ok) {
+      throw new Error(data.errorMessage || data.message || "PawaPay API error on refund payout");
+    }
+
+    return { success: true, payoutId, data };
   });

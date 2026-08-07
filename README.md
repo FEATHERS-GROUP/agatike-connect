@@ -2778,3 +2778,44 @@ flowchart TD
 ---
 
 _Last updated: August 2026 — Agatike Connect_
+
+---
+
+## 17. Subscription Portal & Bookings
+
+**Route:** `/profile/subscriptions/$subscriptionId`
+
+The Subscription Portal allows active subscribers to view their workspace perks, book class sessions, reserve physical resources (like desks and meeting rooms), and manage their upcoming bookings.
+
+### 17.1 Class Session Booking
+
+**Logic:**
+
+- Subscribers can view an Agenda/Timeline of upcoming classes and sessions (`SessionsTab.tsx`).
+- **Free vs Paid:** When a user selects a session, the `SessionBookingModal` checks if the class is `is_free_with_subscription`.
+  - If free: The booking is instantly confirmed, and a database record is created in `space_session_bookings`.
+  - If paid: The system opens the global `PaymentModal` (PawaPay/Card integration) to collect the fee. The booking is only confirmed after successful payment.
+- **Ticket Fulfillment:** Regardless of free or paid, upon confirmation, a PDF ticket is dynamically generated (`generateFallbackReceipt`) and emailed to the user (`sendTicketsEmail`).
+
+### 17.2 Resource Booking (Availability Engine)
+
+**Logic:**
+
+- Subscribers can reserve physical assets like Hot Desks, Meeting Rooms, or Studios (`ResourcesTab.tsx`).
+- **Organizer Configuration:** Organizers can configure Advanced Booking Rules when creating a resource in the Dashboard (`resources.tsx`). These rules are stored dynamically in the `rules` JSONB column of the `space_resources` table:
+  - `locationId`: Links the resource to a specific workspace location.
+  - `operatingHours`: Sets the bounds (e.g., 09:00 to 17:00) during which the resource can be booked.
+  - `requireExclusiveBooking`: Boolean to prevent double booking.
+- **Validation Engine (`ResourceBookingModal.tsx`):**
+  - When the user selects a date, the system dynamically generates an **hourly dropdown** array (e.g., 09:00, 10:00).
+  - The engine actively fetches all existing `space_resource_bookings` for that resource.
+  - If `requireExclusiveBooking` is true, the engine removes any time slots that overlap with an existing booking.
+  - If a day is completely outside operating hours or fully booked, the dropdown displays "Fully Booked" and disables submission.
+
+### 17.3 My Bookings Tab
+
+**Logic:**
+
+- The `BookingsTab` unifies all of a subscriber's upcoming and past reservations into a single view.
+- **Real-Time UI:** When a user successfully books a new session or resource, the underlying React Query (`space_resource_bookings`) is immediately invalidated. This causes the "My Bookings" tab to instantly re-render with the new reservation, requiring no page refresh.
+- **Design:** Bookings are rendered as high-end glassmorphism cards with dynamic color status bars (e.g., Orange for 'confirmed'), location badges, and exact time constraints.

@@ -39,10 +39,10 @@ export function Movie2(props: TemplateProps) {
     return (
       <div
         id="ticket-preview-container"
-        className="relative flex w-[700px] flex-row overflow-hidden rounded-[12px] shadow-2xl bg-[#f4f1ea] text-[#1a1a1a]"
+        className="relative flex w-[720px] flex-row overflow-hidden rounded-[12px] shadow-2xl bg-[#f4f1ea] text-[#1a1a1a]"
         style={{
           fontFamily: font.css,
-          height: 220,
+          height: 260,
           border: `2px solid ${palette.from}`,
         }}
       >

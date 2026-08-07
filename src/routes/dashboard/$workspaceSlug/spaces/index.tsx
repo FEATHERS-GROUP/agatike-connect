@@ -13,6 +13,14 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useQuery } from "@tanstack/react-query";
 import { getSpaces } from "@/api/spaces";
@@ -160,78 +168,92 @@ function SpacesListingsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-            {spaces.map((space: any) => (
-              <Link
-                key={space.id}
-                to={`/dashboard/${workspaceSlug}/spaces/${space.id}`}
-                className="group flex flex-col rounded-3xl bg-card border border-border/40 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-              >
-                {/* Image side */}
-                <div className="relative w-full aspect-[4/3] overflow-hidden bg-secondary">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
-                  <img
-                    src={
-                      space.cover_url ||
-                      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800"
+          <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Space</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Locations</TableHead>
+                  <TableHead>Plans</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {spaces.map((space: any) => (
+                  <TableRow
+                    key={space.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() =>
+                      navigate({ to: `/dashboard/${workspaceSlug}/spaces/${space.id}` })
                     }
-                    alt={space.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 left-4 z-20 flex gap-2">
-                    <StatusBadge status={(space.status as any) || "Active"} />
-                    <span className="bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                      {space.type}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 z-20">
-                    <h3 className="font-bold text-2xl text-white leading-tight drop-shadow-md truncate">
-                      {space.name}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Content side */}
-                <div className="p-5 flex flex-col flex-1 bg-background">
-                  <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground mb-6">
-                    <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-xl text-primary">
-                      <MapPin className="h-4 w-4" />
-                      <span className="font-bold">{space.locations?.length || 0}</span>
-                      <span className="text-[10px] uppercase tracking-wider font-bold">Locs</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-orange-500/10 px-3 py-1.5 rounded-xl text-orange-500">
-                      <CreditCard className="h-4 w-4" />
-                      <span className="font-bold">{space.plans?.length || 0}</span>
-                      <span className="text-[10px] uppercase tracking-wider font-bold">Plans</span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="mt-auto pt-2 grid grid-cols-2 gap-3">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-2xl h-11 font-semibold hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      Manage
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      className="w-full rounded-2xl h-11 font-semibold gap-2 bg-secondary/60 hover:bg-secondary"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <Users className="h-4 w-4" /> Members
-                    </Button>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                          <img
+                            src={
+                              space.cover_url ||
+                              "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=150"
+                            }
+                            alt={space.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="font-bold">{space.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs font-semibold uppercase tracking-wider">
+                        {space.type}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={(space.status as any) || "Active"} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="font-medium">{space.locations?.length || 0}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <CreditCard className="h-4 w-4" />
+                        <span className="font-medium">{space.plans?.length || 0}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate({ to: `/dashboard/${workspaceSlug}/spaces/${space.id}` });
+                          }}
+                        >
+                          Manage
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Users className="h-3.5 w-3.5" /> Members
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </main>

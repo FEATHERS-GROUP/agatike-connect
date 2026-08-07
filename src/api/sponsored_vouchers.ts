@@ -105,9 +105,6 @@ export async function processSponsoredVouchersForAttendees(attendees: any[]) {
 
     try {
       await hasuraRequest(INSERT_VOUCHERS, { objects: vouchersToInsert });
-      console.log(
-        `[Vouchers] Successfully generated ${vouchersToInsert.length} sponsored vouchers for attendees.`,
-      );
     } catch (e) {
       console.error("[Vouchers] Failed to insert sponsored vouchers:", e);
     }

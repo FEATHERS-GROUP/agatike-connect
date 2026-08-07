@@ -506,9 +506,10 @@ export function VenueCheckoutSheet({
       >
         <SheetTitle className="sr-only">Checkout</SheetTitle>
 
-        {isPollingPawaPay ? (
+        {isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo") ? (
           <CheckYourPhone
             themeColor={themeColor}
+            status={isGenerating ? "generating" : "payment"}
             onCancel={async () => {
               setIsPollingPawaPay(false);
               if (pawapayDepositId) {
@@ -1130,7 +1131,7 @@ export function VenueCheckoutSheet({
               workspaceId={venue.workspace_id}
               quantity={totalTickets}
               itemLabel="Ticket(s)"
-              baseCurrency={venue.currency}
+              baseCurrency={venue?.workspace?.currency || venue?.currency}
               userPhone={undefined}
               themeColor={themeColor}
             />

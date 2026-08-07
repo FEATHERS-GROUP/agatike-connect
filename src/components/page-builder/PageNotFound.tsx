@@ -38,7 +38,11 @@ export function PageNotFound({
           </p>
         </div>
 
-        <Button asChild size="lg" className="rounded-full px-8 shadow-lg hover:shadow-xl hover:scale-105 transition-all mt-4">
+        <Button
+          asChild
+          size="lg"
+          className="rounded-full px-8 shadow-lg hover:shadow-xl hover:scale-105 transition-all mt-4"
+        >
           <Link to="/">Return Home</Link>
         </Button>
       </div>

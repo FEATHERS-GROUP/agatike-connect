@@ -48,23 +48,40 @@ export const Route = createFileRoute("/internal/control/admin/support/$ticketId"
 // ── helpers ──────────────────────────────────────────────────────────────────
 function avatarColor(seed: string) {
   const palette = [
-    "bg-violet-500","bg-blue-500","bg-sky-500","bg-teal-500",
-    "bg-emerald-500","bg-amber-500","bg-orange-500","bg-rose-500",
-    "bg-pink-500","bg-indigo-500",
+    "bg-violet-500",
+    "bg-blue-500",
+    "bg-sky-500",
+    "bg-teal-500",
+    "bg-emerald-500",
+    "bg-amber-500",
+    "bg-orange-500",
+    "bg-rose-500",
+    "bg-pink-500",
+    "bg-indigo-500",
   ];
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) & 0xffff;
   return palette[h % palette.length];
 }
 
-function Avatar({ name, size = "h-8 w-8", text = "text-[11px]" }: { name: string; size?: string; text?: string }) {
+function Avatar({
+  name,
+  size = "h-8 w-8",
+  text = "text-[11px]",
+}: {
+  name: string;
+  size?: string;
+  text?: string;
+}) {
   const parts = (name || "?").trim().split(/\s+/);
   const letters =
     parts.length >= 2
       ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
       : (name[0] || "?").toUpperCase();
   return (
-    <div className={`${size} rounded-full ${avatarColor(name)} flex items-center justify-center text-white ${text} font-bold shrink-0`}>
+    <div
+      className={`${size} rounded-full ${avatarColor(name)} flex items-center justify-center text-white ${text} font-bold shrink-0`}
+    >
       {letters}
     </div>
   );
@@ -82,44 +99,113 @@ function formatTime(dateStr: string) {
 
 function formatFullDate(dateStr: string) {
   return new Date(dateStr).toLocaleString("en-US", {
-    day: "2-digit", month: "short", year: "numeric",
-    hour: "numeric", minute: "2-digit", hour12: true,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   });
 }
 
 // ── constants ─────────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string; bg: string }> = {
-  open:                      { label: "Open",                  icon: AlertCircle,  color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
-  troubleshooting:           { label: "Troubleshooting",       icon: Wrench,       color: "text-purple-600",  bg: "bg-purple-50 border-purple-200" },
-  pending_customer_response: { label: "Waiting on Customer",   icon: Clock,        color: "text-blue-600",    bg: "bg-blue-50 border-blue-200" },
-  on_hold:                   { label: "On Hold",               icon: PauseCircle,  color: "text-amber-600",   bg: "bg-amber-50 border-amber-200" },
-  suspended:                 { label: "Suspended",             icon: MinusCircle,  color: "text-red-600",     bg: "bg-red-50 border-red-200" },
-  under_development:         { label: "Under Development",     icon: Code2,        color: "text-cyan-600",    bg: "bg-cyan-50 border-cyan-200" },
-  in_progress:               { label: "In Progress",           icon: Clock,        color: "text-blue-600",    bg: "bg-blue-50 border-blue-200" },
-  resolved:                  { label: "Resolved",              icon: CheckCircle2, color: "text-green-600",   bg: "bg-green-50 border-green-200" },
-  closed:                    { label: "Closed",                icon: XCircle,      color: "text-gray-500",    bg: "bg-gray-100 border-gray-200" },
+  open: {
+    label: "Open",
+    icon: AlertCircle,
+    color: "text-emerald-600",
+    bg: "bg-emerald-50 border-emerald-200",
+  },
+  troubleshooting: {
+    label: "Troubleshooting",
+    icon: Wrench,
+    color: "text-purple-600",
+    bg: "bg-purple-50 border-purple-200",
+  },
+  pending_customer_response: {
+    label: "Waiting on Customer",
+    icon: Clock,
+    color: "text-blue-600",
+    bg: "bg-blue-50 border-blue-200",
+  },
+  on_hold: {
+    label: "On Hold",
+    icon: PauseCircle,
+    color: "text-amber-600",
+    bg: "bg-amber-50 border-amber-200",
+  },
+  suspended: {
+    label: "Suspended",
+    icon: MinusCircle,
+    color: "text-red-600",
+    bg: "bg-red-50 border-red-200",
+  },
+  under_development: {
+    label: "Under Development",
+    icon: Code2,
+    color: "text-cyan-600",
+    bg: "bg-cyan-50 border-cyan-200",
+  },
+  in_progress: {
+    label: "In Progress",
+    icon: Clock,
+    color: "text-blue-600",
+    bg: "bg-blue-50 border-blue-200",
+  },
+  resolved: {
+    label: "Resolved",
+    icon: CheckCircle2,
+    color: "text-green-600",
+    bg: "bg-green-50 border-green-200",
+  },
+  closed: {
+    label: "Closed",
+    icon: XCircle,
+    color: "text-gray-500",
+    bg: "bg-gray-100 border-gray-200",
+  },
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: "text-gray-500", normal: "text-blue-600", high: "text-red-500", urgent: "text-orange-500", critical: "text-red-700",
+  low: "text-gray-500",
+  normal: "text-blue-600",
+  high: "text-red-500",
+  urgent: "text-orange-500",
+  critical: "text-red-700",
 };
 const PRIORITY_BG: Record<string, string> = {
-  low: "bg-gray-100", normal: "bg-blue-50", high: "bg-red-50", urgent: "bg-orange-50", critical: "bg-red-100",
+  low: "bg-gray-100",
+  normal: "bg-blue-50",
+  high: "bg-red-50",
+  urgent: "bg-orange-50",
+  critical: "bg-red-100",
 };
 
 // ── SideRow: reusable left-panel row ─────────────────────────────────────────
 function SideRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="py-3 px-4 border-b border-gray-100 dark:border-[#252526] last:border-0">
-      <div className="text-[11px] font-semibold text-gray-400 dark:text-[#666] uppercase tracking-wider mb-1.5">{label}</div>
+      <div className="text-[11px] font-semibold text-gray-400 dark:text-[#666] uppercase tracking-wider mb-1.5">
+        {label}
+      </div>
       {children}
     </div>
   );
 }
 
 function SelectRow({
-  label, value, onChange, disabled, children,
-}: { label: string; value: string; onChange: (v: string) => void; disabled?: boolean; children: React.ReactNode }) {
+  label,
+  value,
+  onChange,
+  disabled,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <SideRow label={label}>
       <select
@@ -127,7 +213,11 @@ function SelectRow({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         className="w-full text-[13px] text-gray-800 dark:text-[#e0e0e0] bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded-md px-2.5 py-1.5 outline-none focus:border-blue-400 disabled:opacity-50 appearance-none pr-7 cursor-pointer"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right 8px center",
+        }}
       >
         {children}
       </select>
@@ -145,7 +235,11 @@ function AdminTicketDetailPage() {
   const [activeComposer, setActiveComposer] = useState<"reply" | "note" | "forward">("reply");
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: ticket, isLoading, refetch } = useQuery({
+  const {
+    data: ticket,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["admin-ticket-detail", ticketId],
     queryFn: () => getAdminTicketWithComments({ data: { ticketId } }),
     refetchInterval: 15000,
@@ -158,19 +252,33 @@ function AdminTicketDetailPage() {
 
   const assignMutation = useMutation({
     mutationFn: (adminUserId: string | null) => assignTicket({ data: { ticketId, adminUserId } }),
-    onSuccess: () => { refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
+    onSuccess: () => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+    },
   });
   const statusMutation = useMutation({
     mutationFn: (status: TicketStatus) => updateTicketStatus({ data: { ticketId, status } }),
-    onSuccess: () => { refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
+    onSuccess: () => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+    },
   });
   const priorityMutation = useMutation({
-    mutationFn: (priority: TicketPriority) => updateTicketPriority({ data: { ticketId, priority } }),
-    onSuccess: () => { refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
+    mutationFn: (priority: TicketPriority) =>
+      updateTicketPriority({ data: { ticketId, priority } }),
+    onSuccess: () => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+    },
   });
   const replyMutation = useMutation({
     mutationFn: () => addAdminComment({ data: { ticketId, body: reply } }),
-    onSuccess: () => { setReply(""); refetch(); queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] }); },
+    onSuccess: () => {
+      setReply("");
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+    },
   });
 
   useEffect(() => {
@@ -216,8 +324,12 @@ function AdminTicketDetailPage() {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-[15px] font-semibold text-gray-900 dark:text-white truncate">{ticket.subject}</h1>
-            <span className="text-[12px] font-mono text-gray-400 dark:text-[#666] shrink-0">{ticketShortId}</span>
+            <h1 className="text-[15px] font-semibold text-gray-900 dark:text-white truncate">
+              {ticket.subject}
+            </h1>
+            <span className="text-[12px] font-mono text-gray-400 dark:text-[#666] shrink-0">
+              {ticketShortId}
+            </span>
             <button className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors shrink-0">
               <Pencil className="h-3 w-3" />
             </button>
@@ -225,10 +337,17 @@ function AdminTicketDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <button onClick={() => refetch()} className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors" title="Refresh">
+          <button
+            onClick={() => refetch()}
+            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors"
+            title="Refresh"
+          >
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
-          <Link to="/internal/control/admin/support" className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors">
+          <Link
+            to="/internal/control/admin/support"
+            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors"
+          >
             <X className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -240,12 +359,22 @@ function AdminTicketDetailPage() {
         <div className="w-52 shrink-0 border-r border-gray-200 dark:border-[#252526] bg-white dark:bg-[#111] overflow-y-auto">
           {/* Resolution due */}
           <div className="px-4 py-3 border-b border-gray-100 dark:border-[#252526]">
-            <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Resolution Due</div>
+            <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Resolution Due
+            </div>
             <div className="text-[13px] font-medium text-gray-800 dark:text-[#ddd]">
-              {new Date(ticket.created_at).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })}
+              {new Date(ticket.created_at).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
             </div>
             <div className="text-[12px] text-gray-500 mt-0.5">
-              {new Date(ticket.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })}
+              {new Date(ticket.created_at).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              })}
             </div>
             {/* orange progress bar */}
             <div className="mt-2 h-1 w-full bg-gray-100 dark:bg-[#252526] rounded-full overflow-hidden">
@@ -300,7 +429,9 @@ function AdminTicketDetailPage() {
           >
             <option value="">— Unassigned —</option>
             {(adminUsers as any[]).map((a: any) => (
-              <option key={a.id} value={a.id}>{a.email?.split("@")[0] || a.email}</option>
+              <option key={a.id} value={a.id}>
+                {a.email?.split("@")[0] || a.email}
+              </option>
             ))}
           </SelectRow>
 
@@ -327,15 +458,18 @@ function AdminTicketDetailPage() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50 dark:bg-[#0f0f0f]">
           {/* Messages scroll area */}
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-
             {/* Original message */}
             <div className="flex gap-3">
               <Avatar name={organizerName} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-[13px] font-semibold text-gray-900 dark:text-white">{organizerName}</span>
+                  <span className="text-[13px] font-semibold text-gray-900 dark:text-white">
+                    {organizerName}
+                  </span>
                   <span className="text-[11px] text-gray-400">{formatTime(ticket.created_at)}</span>
-                  <span className="text-[11px] text-gray-400 ml-auto">{formatFullDate(ticket.created_at)}</span>
+                  <span className="text-[11px] text-gray-400 ml-auto">
+                    {formatFullDate(ticket.created_at)}
+                  </span>
                 </div>
                 <div className="text-[11px] text-gray-400 mb-2">
                   To: support@wd.jservicedesk.com
@@ -351,39 +485,50 @@ function AdminTicketDetailPage() {
               const isAdmin = comment.author_type === "admin";
               const isPrivate = (comment as any).is_private;
               const authorName = isAdmin
-                ? ((ticket as any).assignedAdmin?.email?.split("@")[0] || "Support Team")
-                : (comment.author_name || organizerName);
+                ? (ticket as any).assignedAdmin?.email?.split("@")[0] || "Support Team"
+                : comment.author_name || organizerName;
 
               return (
                 <div key={comment.id} className="flex gap-3">
                   <Avatar name={authorName} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[13px] font-semibold text-gray-900 dark:text-white">{authorName}</span>
+                      <span className="text-[13px] font-semibold text-gray-900 dark:text-white">
+                        {authorName}
+                      </span>
                       {isAdmin && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 font-semibold">Replied</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 font-semibold">
+                          Replied
+                        </span>
                       )}
                       {isPrivate && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-semibold flex items-center gap-1">
                           <Lock className="h-2.5 w-2.5" /> private note
                         </span>
                       )}
-                      <span className="text-[11px] text-gray-400">{formatTime(comment.created_at)}</span>
-                      <span className="text-[11px] text-gray-400 ml-auto">{formatFullDate(comment.created_at)}</span>
+                      <span className="text-[11px] text-gray-400">
+                        {formatTime(comment.created_at)}
+                      </span>
+                      <span className="text-[11px] text-gray-400 ml-auto">
+                        {formatFullDate(comment.created_at)}
+                      </span>
                     </div>
                     {isAdmin && (
                       <div className="text-[11px] text-gray-400 mb-2">
                         To: {organizerEmail}
-                        {(ticket as any).assignedAdmin?.email && ` · Cc: ${(ticket as any).assignedAdmin.email}`}
+                        {(ticket as any).assignedAdmin?.email &&
+                          ` · Cc: ${(ticket as any).assignedAdmin.email}`}
                       </div>
                     )}
-                    <div className={`border rounded-lg p-4 text-[13px] leading-relaxed ${
-                      isPrivate
-                        ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800/40 text-yellow-900 dark:text-yellow-200"
-                        : isAdmin
-                        ? "bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-[#2a2a2a] text-gray-700 dark:text-[#ccc]"
-                        : "bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-[#2a2a2a] text-gray-700 dark:text-[#ccc]"
-                    }`}>
+                    <div
+                      className={`border rounded-lg p-4 text-[13px] leading-relaxed ${
+                        isPrivate
+                          ? "bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800/40 text-yellow-900 dark:text-yellow-200"
+                          : isAdmin
+                            ? "bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-[#2a2a2a] text-gray-700 dark:text-[#ccc]"
+                            : "bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-[#2a2a2a] text-gray-700 dark:text-[#ccc]"
+                      }`}
+                    >
                       <div className="whitespace-pre-wrap">{comment.body}</div>
                     </div>
                   </div>
@@ -426,8 +571,8 @@ function AdminTicketDetailPage() {
                 activeComposer === "reply"
                   ? "Type your reply..."
                   : activeComposer === "note"
-                  ? "Add a private note..."
-                  : "Forward this ticket..."
+                    ? "Add a private note..."
+                    : "Forward this ticket..."
               }
               rows={4}
               className={`w-full px-5 py-3 text-[13px] bg-transparent outline-none resize-none text-gray-800 dark:text-[#ddd] placeholder:text-gray-400 ${
@@ -441,7 +586,10 @@ function AdminTicketDetailPage() {
 
             <div className="flex items-center justify-between px-5 py-2.5 border-t border-gray-100 dark:border-[#252526]">
               <div className="flex items-center gap-2">
-                <button className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors" title="Attach file">
+                <button
+                  className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-[#1e1e1e] text-gray-400 transition-colors"
+                  title="Attach file"
+                >
                   <Paperclip className="h-3.5 w-3.5" />
                 </button>
                 <span className="text-[11px] text-gray-400 hidden sm:block">⌘+Enter to send</span>
@@ -460,7 +608,11 @@ function AdminTicketDetailPage() {
                 ) : (
                   <>
                     <Send className="h-3.5 w-3.5" />
-                    {activeComposer === "reply" ? "Reply" : activeComposer === "note" ? "Add Note" : "Forward"}
+                    {activeComposer === "reply"
+                      ? "Reply"
+                      : activeComposer === "note"
+                        ? "Add Note"
+                        : "Forward"}
                   </>
                 )}
               </button>
@@ -472,7 +624,9 @@ function AdminTicketDetailPage() {
         <div className="w-60 shrink-0 border-l border-gray-200 dark:border-[#252526] bg-white dark:bg-[#111] overflow-y-auto">
           {/* Contact details header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-[#252526]">
-            <span className="text-[12px] font-semibold text-gray-600 dark:text-[#aaa]">Contact Details</span>
+            <span className="text-[12px] font-semibold text-gray-600 dark:text-[#aaa]">
+              Contact Details
+            </span>
             <button className="text-gray-400 hover:text-gray-600">
               <X className="h-3.5 w-3.5" />
             </button>
@@ -483,7 +637,9 @@ function AdminTicketDetailPage() {
             <div className="flex items-center gap-3 mb-3">
               <Avatar name={organizerName} size="h-10 w-10" text="text-[13px]" />
               <div>
-                <div className="text-[13px] font-semibold text-gray-900 dark:text-white">{organizerName}</div>
+                <div className="text-[13px] font-semibold text-gray-900 dark:text-white">
+                  {organizerName}
+                </div>
                 <div className="text-[11px] text-gray-400 break-all">{organizerEmail}</div>
               </div>
               <button className="ml-auto text-gray-400 hover:text-gray-600 shrink-0">
@@ -523,35 +679,70 @@ function AdminTicketDetailPage() {
           {/* Extra info rows */}
           {[
             { label: "Language", value: "English" },
-            { label: "Since", value: new Date(ticket.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) },
+            {
+              label: "Since",
+              value: new Date(ticket.created_at).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }),
+            },
           ].map((r) => (
-            <div key={r.label} className="px-4 py-2.5 border-b border-gray-100 dark:border-[#252526]">
-              <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">{r.label}</div>
+            <div
+              key={r.label}
+              className="px-4 py-2.5 border-b border-gray-100 dark:border-[#252526]"
+            >
+              <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-0.5">
+                {r.label}
+              </div>
               <div className="text-[13px] text-gray-700 dark:text-[#ccc]">{r.value}</div>
             </div>
           ))}
 
           {/* Previous Tickets */}
           <div className="px-4 py-3">
-            <div className="text-[12px] font-semibold text-gray-600 dark:text-[#aaa] mb-3">Previous Tickets</div>
+            <div className="text-[12px] font-semibold text-gray-600 dark:text-[#aaa] mb-3">
+              Previous Tickets
+            </div>
             <div className="space-y-3">
               {/* Placeholder previous tickets — in production these would come from API */}
               {[
-                { id: "#" + ticketShortId.slice(1, 4) + "65", subject: "Fridge making strange noises", status: "resolved", priority: "normal", date: "13 Sep 2023, 04:32 PM" },
-                { id: "#" + ticketShortId.slice(1, 4) + "62", subject: "Oven not heating evenly", status: "resolved", priority: "low", date: "06 Aug 2023, 11:27 AM" },
+                {
+                  id: "#" + ticketShortId.slice(1, 4) + "65",
+                  subject: "Fridge making strange noises",
+                  status: "resolved",
+                  priority: "normal",
+                  date: "13 Sep 2023, 04:32 PM",
+                },
+                {
+                  id: "#" + ticketShortId.slice(1, 4) + "62",
+                  subject: "Oven not heating evenly",
+                  status: "resolved",
+                  priority: "low",
+                  date: "06 Aug 2023, 11:27 AM",
+                },
               ].map((pt) => (
-                <div key={pt.id} className="border border-gray-200 dark:border-[#252526] rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer">
+                <div
+                  key={pt.id}
+                  className="border border-gray-200 dark:border-[#252526] rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+                >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400">{pt.id}</span>
+                    <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400">
+                      {pt.id}
+                    </span>
                     <span className="text-[10px] text-gray-400">{pt.date}</span>
                   </div>
-                  <p className="text-[12px] text-gray-600 dark:text-[#bbb] mb-2 leading-snug">{pt.subject}</p>
+                  <p className="text-[12px] text-gray-600 dark:text-[#bbb] mb-2 leading-snug">
+                    {pt.subject}
+                  </p>
                   <div className="flex items-center gap-1.5">
                     <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-semibold">
                       <CheckCircle2 className="h-2.5 w-2.5" />
                       Resolved
                     </span>
-                    <span className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-semibold ${PRIORITY_BG[pt.priority]} ${PRIORITY_COLORS[pt.priority]}`}>
+                    <span
+                      className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-semibold ${PRIORITY_BG[pt.priority]} ${PRIORITY_COLORS[pt.priority]}`}
+                    >
                       {pt.priority.charAt(0).toUpperCase() + pt.priority.slice(1)}
                     </span>
                   </div>
@@ -562,7 +753,9 @@ function AdminTicketDetailPage() {
             {/* Assigned admin */}
             {assigneeName && (
               <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#252526]">
-                <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-2">Assigned Agent</div>
+                <div className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-2">
+                  Assigned Agent
+                </div>
                 <div className="flex items-center gap-2">
                   <Avatar name={assigneeName} size="h-7 w-7" text="text-[10px]" />
                   <span className="text-[13px] text-gray-700 dark:text-[#ccc]">{assigneeName}</span>
@@ -577,7 +770,9 @@ function AdminTicketDetailPage() {
                 <span>Opened {formatTime(ticket.created_at)}</span>
               </div>
               <div className="flex items-center gap-2 text-[11px]">
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] font-medium ${statusCfg.bg} ${statusCfg.color}`}>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[11px] font-medium ${statusCfg.bg} ${statusCfg.color}`}
+                >
                   <StatusIcon className="h-2.5 w-2.5" />
                   {statusCfg.label}
                 </span>

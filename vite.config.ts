@@ -29,6 +29,12 @@ const externalDeps = [
   "@yudiel/react-qr-scanner",
   "react-qr-code",
   "react-barcode",
+  "firebase-admin",
+  "@schedule-x/calendar",
+  "@schedule-x/react",
+  "@schedule-x/events-service",
+  "@schedule-x/theme-default",
+  "@schedule-x/calendar-controls",
 ];
 
 export default defineConfig({

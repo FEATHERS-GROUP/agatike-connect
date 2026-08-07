@@ -39,8 +39,8 @@ export function Movie1(props: TemplateProps) {
     return (
       <div
         id="ticket-preview-container"
-        className={`relative flex w-[760px] max-w-full overflow-hidden rounded-[24px] text-white shadow-2xl ${isBack ? "flex-row-reverse" : "flex-row"}`}
-        style={{ fontFamily: font.css, height: 240 }}
+        className={`relative flex w-[720px] max-w-full overflow-hidden rounded-[24px] text-white shadow-2xl ${isBack ? "flex-row-reverse" : "flex-row"}`}
+        style={{ fontFamily: font.css, height: 260 }}
       >
         {/* Full-bleed background */}
         {cover ? (

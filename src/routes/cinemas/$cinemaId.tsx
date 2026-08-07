@@ -107,7 +107,7 @@ function CinemaDetail() {
           genre: m.genre || "Drama",
           duration: `${m.duration_minutes || 120}m`,
           price: s.ticket_tiers?.[0]?.price_override || 3000,
-          currency: s.ticket_tiers?.[0]?.currency || "RWF",
+          currency: cinema?.workspace?.currency || s.ticket_tiers?.[0]?.currency || "RWF",
           synopsis: m.synopsis || "No synopsis available.",
           showtimes: [],
         });
@@ -247,7 +247,10 @@ function CinemaDetail() {
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-3 border-t border-border/40">
                       <span className="text-sm font-bold text-foreground">
-                        {formatCurrency(movie.price || 8, movie.currency)}
+                        {formatCurrency(
+                          movie.price || 8,
+                          cinema?.workspace?.currency || movie.currency,
+                        )}
                       </span>
                       <Button
                         size="sm"
@@ -346,7 +349,10 @@ function CinemaDetail() {
                       search={{ date: new Date().toISOString().split("T")[0] }}
                     >
                       <Ticket className="mr-2 h-5 w-5" /> Book Ticket —{" "}
-                      {formatCurrency(selectedMovie.price || 3000, selectedMovie.currency)}
+                      {formatCurrency(
+                        selectedMovie.price || 3000,
+                        cinema?.workspace?.currency || selectedMovie.currency,
+                      )}
                     </Link>
                   </Button>
                   <Button

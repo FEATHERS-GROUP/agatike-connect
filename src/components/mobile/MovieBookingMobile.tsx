@@ -340,7 +340,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
-          const attachments = [];
+          const attachments: any[] = [];
 
           const coverUrl = movieProject.coverImage || activeMovie?.cover_url;
           if (coverUrl) {
@@ -356,50 +356,71 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           await new Promise((r) => setTimeout(r, 600));
 
           if (movieProject) {
-            for (const ticket of issuedTickets) {
-              const el = document.getElementById(`ticket-render-${ticket.id}`);
-              if (!el) continue;
-
-              await new Promise((r) => setTimeout(r, 100));
-
-              const imgData = await htmlToImage.toJpeg(el, {
-                pixelRatio: 1.5,
-                quality: 0.8,
-                backgroundColor: "#ffffff",
-                width: 720,
-                height: 260,
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                const el = document.getElementById(`ticket-render-${ticket.id}`);
+                if (!el) return null;
+                try {
+                  const imgData = await htmlToImage.toJpeg(el, {
+                    pixelRatio: 1.5,
+                    quality: 0.8,
+                    backgroundColor: "#ffffff",
+                    width: 720,
+                    height: 260,
+                  });
+                  if (!imgData || imgData === "data:,") {
+                    throw new Error("Empty image data from htmlToImage");
+                  }
+                  const pdf = new jsPDF({
+                    orientation: "landscape",
+                    unit: "px",
+                    format: [720, 260],
+                  });
+                  pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+                  const base64 = pdf.output("datauristring").split(",")[1];
+                  return {
+                    filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                    content: base64,
+                  };
+                } catch (e) {
+                  console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
+                  return await generateFallbackReceipt({
+                    entityName: activeMovie?.title || "Event/Venue",
+                    ticket,
+                    bookingRef: ticket.otp,
+                    customerName: ticket.attendee?.firstName || "Guest",
+                    type: "movie",
+                    dateStr: selectedDate || "",
+                    timeStr: currentSchedule?.start_time || "",
+                    locationStr: cinema?.name || "",
+                    tierName: ticket.tierName,
+                  });
+                }
               });
-
-              if (!imgData || imgData === "data:,")
-                throw new Error("Empty image data from htmlToImage");
-
-              const pdf = new jsPDF({
-                orientation: "landscape",
-                unit: "px",
-                format: [720, 260],
-              });
-              pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
-              const base64 = pdf.output("datauristring").split(",")[1];
-
-              attachments.push({
-                filename: `Ticket_${ticket.tierName.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                content: base64,
-              });
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           } else {
-            for (const ticket of issuedTickets) {
-              const fallbackPdf = await generateFallbackReceipt({
-                entityName: activeMovie?.title || "Event/Venue",
-                ticket,
-                bookingRef: ticket.otp,
-                customerName: ticket.attendee?.firstName || "Guest",
-                type: "movie",
-                dateStr: selectedDate || "",
-                timeStr: currentSchedule?.start_time || "",
-                locationStr: cinema?.name || "",
-                tierName: ticket.tierName,
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                return await generateFallbackReceipt({
+                  entityName: activeMovie?.title || "Event/Venue",
+                  ticket,
+                  bookingRef: ticket.otp,
+                  customerName: ticket.attendee?.firstName || "Guest",
+                  type: "movie",
+                  dateStr: selectedDate || "",
+                  timeStr: currentSchedule?.start_time || "",
+                  locationStr: cinema?.name || "",
+                  tierName: ticket.tierName,
+                });
               });
-              attachments.push(fallbackPdf);
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           }
 
@@ -492,36 +513,101 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     );
   }
 
-  if (isPollingPawaPay) {
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && movieProject && (
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
+      {issuedTickets.map((t) => {
+        const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
+        return (
+          <div
+            key={t.id}
+            id={`ticket-render-${t.id}`}
+            className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+          >
+            <TicketPreview
+              template={finalDesign.template}
+              palette={finalDesign.palette || { from: "#000", to: "#000", name: "Black" }}
+              font={finalDesign.font || { css: "sans-serif", name: "Modern" }}
+              tier={t.tierName}
+              title={activeMovie.title}
+              subtitle={cinema?.name}
+              date={selectedDate!}
+              time={currentSchedule?.start_time?.substring(0, 5)}
+              seat={t.attendee_name}
+              price={(
+                activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0
+              ).toString()}
+              currency={currency}
+              cover={finalDesign.coverImage || activeMovie.cover_url}
+              logoText={finalDesign.logoText || "Agatike"}
+              logoImage={finalDesign.logoImage}
+              logoScale={Number(finalDesign.logoScale || 24)}
+              logoOpacity={Number(finalDesign.logoOpacity ?? 1)}
+              logoColorMode={finalDesign.logoColorMode || "original"}
+              orderId={t.otp}
+              qrValue={`${window.location.origin}/c/${t.otp}`}
+              previewMode="Front"
+              layout={
+                finalDesign.layout || {
+                  titleSize: 30,
+                  subtitleSize: 14,
+                  metaSize: 11,
+                  titleAlign: "left",
+                  titleOffsetY: 0,
+                  subtitleOffsetY: 0,
+                  metaOffsetY: 0,
+                }
+              }
+              back={
+                finalDesign.back || {
+                  backText: "",
+                  backImage: "",
+                  backImageOpacity: 0.3,
+                }
+              }
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
-      <CheckYourPhone
-        onCancel={async () => {
-          setIsPollingPawaPay(false);
-          if (pawapayDepositId) {
-            try {
-              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-            } catch (e) {
-              console.error("Cancel cleanup failed:", e);
+      <>
+        <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
+      <>
+        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
+          </div>
+          <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
+          <p className="text-base text-muted-foreground max-w-md mx-auto mb-8">
+            Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
+            has been sent to {attendeeInfo.email}.
+          </p>
+          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
         </div>
-        <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
-        <p className="text-base text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {activeMovie.title} have been secured. A confirmation with your QR code
-          has been sent to {attendeeInfo.email}.
-        </p>
-        <p className="text-sm text-muted-foreground animate-pulse">Redirecting to movies...</p>
-      </div>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -755,67 +841,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
         userPhone={user?.phone || undefined}
       />
 
-      {/* Hidden Ticket Renderer */}
-      {isGenerating && issuedTickets.length > 0 && movieProject && (
-        <div
-          className="absolute -z-50 pointer-events-none"
-          style={{ top: "-9999px", left: "-9999px" }}
-        >
-          {issuedTickets.map((t) => {
-            const finalDesign = getMergedProjectDesign(movieProject, t.tierId) || movieProject;
-            return (
-              <div
-                key={t.id}
-                id={`ticket-render-${t.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={finalDesign.template}
-                  palette={finalDesign.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={finalDesign.font || { css: "sans-serif", name: "Modern" }}
-                  tier={t.tierName}
-                  title={activeMovie.title}
-                  subtitle={cinema?.name}
-                  date={selectedDate!}
-                  time={currentSchedule?.start_time?.substring(0, 5)}
-                  seat={t.attendee_name}
-                  price={(
-                    activeTiers.find((tier: any) => tier.name === t.tierName)?.price || 0
-                  ).toString()}
-                  currency={currency}
-                  cover={finalDesign.coverImage || activeMovie.cover_url}
-                  logoText={finalDesign.logoText || "Agatike"}
-                  logoImage={finalDesign.logoImage}
-                  logoScale={Number(finalDesign.logoScale || 24)}
-                  logoOpacity={Number(finalDesign.logoOpacity ?? 1)}
-                  logoColorMode={finalDesign.logoColorMode || "original"}
-                  orderId={t.otp}
-                  qrValue={`${window.location.origin}/c/${t.otp}`}
-                  previewMode="Front"
-                  layout={
-                    finalDesign.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    finalDesign.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {hiddenTicketRenderer}
     </div>
   );
 }

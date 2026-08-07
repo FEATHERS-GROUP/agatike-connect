@@ -86,12 +86,12 @@ export function mapDbEventToEvent(e: any): any {
   const isMock = !!e.organizer || !!e.host || !!e.cinema;
   if (isMock) return e;
 
-  const date = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].date : "TBD";
+  const date = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].date : "Upcoming";
   const time = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].time : "";
   const city =
     Array.isArray(e.tour_stops) && e.tour_stops[0]
       ? e.tour_stops[0].city
-      : e.workspaces?.city || "TBD";
+      : e.workspaces?.city || "Upcoming";
   const venue = Array.isArray(e.tour_stops) && e.tour_stops[0] ? e.tour_stops[0].venue : "";
 
   // Count unique people going (distinct by email) — not ticket count

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { TicketCard } from "./TicketCard";
 import { HistoryCard } from "./HistoryCard";
 import { SubscriptionCard } from "./SubscriptionCard";
+import { ProfileBadges } from "./ProfileBadges";
 
 export function ProfileMobile({
   user,
@@ -28,6 +29,7 @@ export function ProfileMobile({
   tab,
   setTab,
   subscriptions,
+  venueBookingsCount,
   staffAssignments = [],
 }: any) {
   const navigate = useNavigate();
@@ -41,31 +43,6 @@ export function ProfileMobile({
 
   return (
     <div className="md:hidden min-h-screen bg-background pb-24 text-foreground">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/40 backdrop-blur-2xl border-none pt-safe-top relative">
-        <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
-        <div className="flex items-center justify-between px-4 py-3 relative z-10">
-          <h1 className="font-bold text-lg tracking-tight">My Profile</h1>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/dashboard"
-              className="p-2 rounded-full hover:bg-secondary/80 transition-colors"
-            >
-              <ScanLine className="h-5 w-5" />
-            </Link>
-            <button className="p-2 rounded-full hover:bg-secondary/80 transition-colors">
-              <Bell className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setShowLogoutModal(true)}
-              className="p-2 rounded-full hover:bg-red-500/10 text-red-500 transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Profile Hero */}
       <div className="relative px-4 pt-4 pb-4">
         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent pointer-events-none -mt-4" />
@@ -115,7 +92,7 @@ export function ProfileMobile({
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-2 relative z-10">
+        <div className="flex relative z-10">
           <Button
             variant="secondary"
             className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
@@ -123,13 +100,17 @@ export function ProfileMobile({
           >
             Edit profile
           </Button>
-          <Button
-            variant="secondary"
-            className="flex-1 h-8 text-[13px] font-bold rounded-lg bg-secondary/80 hover:bg-secondary text-foreground"
-          >
-            Share profile
-          </Button>
         </div>
+      </div>
+
+      <div className="mt-6 border-b border-border/40 pb-5">
+        <ProfileBadges
+          historyCount={historyTicketsList.length}
+          upcomingCount={upcomingTicketsList.length}
+          followingCount={followedOrganizers.length}
+          subscriptionsCount={subscriptions?.length || 0}
+          venueCount={venueBookingsCount}
+        />
       </div>
 
       {/* Favorite Categories */}
@@ -164,7 +145,7 @@ export function ProfileMobile({
 
       {/* Tabs */}
       <div className="flex border-b border-border/40 mt-4 px-4 gap-1 overflow-x-auto hide-scrollbar">
-        {(["upcoming", "history", "following", "subscriptions", "work"] as any[]).map((t) => (
+        {(["upcoming", "history", "following", "work"] as any[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -184,11 +165,6 @@ export function ProfileMobile({
               {t === "following" && (
                 <>
                   <Heart className="h-4 w-4" /> Following
-                </>
-              )}
-              {t === "subscriptions" && (
-                <>
-                  <Repeat className="h-4 w-4" /> Subs
                 </>
               )}
               {t === "work" && (
@@ -278,22 +254,6 @@ export function ProfileMobile({
             >
               Discover more organizers <ChevronRight className="h-4 w-4" />
             </Link>
-          </div>
-        )}
-
-        {tab === "subscriptions" && (
-          <div className="space-y-4">
-            {subscriptions && subscriptions.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
-                {subscriptions.map((sub: any) => (
-                  <SubscriptionCard key={sub.id} sub={sub} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-10 border border-dashed border-border/60 rounded-3xl bg-card">
-                <p className="text-muted-foreground text-sm">No active subscriptions.</p>
-              </div>
-            )}
           </div>
         )}
 

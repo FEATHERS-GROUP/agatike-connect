@@ -167,6 +167,9 @@ const GET_RENTABLE_VENUE_BY_ID = `
       rental_type
       rental_model
       currency
+      workspace {
+        currency
+      }
       cover_url
       images
       status

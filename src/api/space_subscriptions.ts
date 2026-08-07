@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie } from "@tanstack/react-start/server";
 import { hasuraRequest } from "./graphql.server";
+import { sendEmail } from "./email";
 
 // Generate a unique membership ID: YYYYMM + 6 random uppercase alphanumeric (no O, 0, I, 1)
 function generateMembershipId(): string {
@@ -324,6 +325,7 @@ export const getUserSubscriptions = createServerFn({ method: "POST" })
               name
               cover_url
               currency
+              workspace_id
             }
             invoices(order_by: { created_at: desc }, limit: 1) {
               id
@@ -385,10 +387,63 @@ export const getUserSubscriptions = createServerFn({ method: "POST" })
         maxAge: 60 * 60 * 24 * 30, // 30 days
       });
 
-      return subscriptions;
+      return subscriptions.filter(getValidity);
     } catch (e) {
       console.error("Error fetching user subscriptions:", e);
       return [];
+    }
+  });
+
+export const getSubscriptionById = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { id, user_id, email } = ctx.data as any;
+    if (!id) return null;
+
+    try {
+      const query = `
+        query GetSubscriptionById($id: uuid!) {
+          space_subscriptions_by_pk(id: $id) {
+            id
+            plan_name
+            price
+            status
+            billing_cycle
+            start_date
+            next_billing_date
+            booking_type
+            customer_name
+            customer_email
+            customer_phone
+            team_members
+            created_at
+            space_id
+            space {
+              id
+              name
+              description
+              cover_url
+              currency
+              type
+              locations
+              socials
+              plans
+            }
+            invoices(order_by: { created_at: desc }) {
+              id
+              invoice_number
+              amount
+              status
+              created_at
+            }
+          }
+        }
+      `;
+      const data = await hasuraRequest<{ space_subscriptions_by_pk: any }>(query, { id });
+      return data.space_subscriptions_by_pk;
+    } catch (e) {
+      console.error("Error fetching subscription by ID:", e);
+      return null;
     }
   });
 
@@ -560,6 +615,12 @@ const GET_SPACE_SUBSCRIPTIONS = `
       customer_phone
       team_members
       created_at
+      resource_id
+      resource {
+        id
+        name
+        type
+      }
       space {
         name
       }
@@ -760,6 +821,53 @@ export const renewSpaceSubscription = createServerFn({ method: "POST" })
       status: "active",
     });
 
+    try {
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2 style="color: #000;">Subscription Renewal Receipt</h2>
+          <p>Hi ${sub.customer_name},</p>
+          <p>Your subscription has been successfully renewed! Here are the details of your payment and subscription.</p>
+          
+          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #111;">${sub.plan_name} at ${sub.space?.name}</h3>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Code / Invoice Number</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${invoiceNumber}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Amount Paid</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${sub.price} ${sub.space?.currency || "RWF"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Fee</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">0 ${sub.space?.currency || "RWF"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #666;">Start Time</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${new Date(sub.start_date || Date.now()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #666;">Next Billing Date</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: bold;">${newBillingDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <p>Thank you for using Agatike!</p>
+        </div>
+      `;
+
+      await sendEmail({
+        to: [sub.customer_email],
+        subject: `Receipt: Renewal of ${sub.plan_name} at ${sub.space?.name}`,
+        html: emailHtml,
+      });
+    } catch (e) {
+      console.error("Failed to send renewal receipt email:", e);
+    }
+
     return {
       success: true,
       invoiceNumber,
@@ -775,6 +883,160 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
     const { subscription_id } = ctx.data as { subscription_id: string };
     if (!subscription_id) throw new Error("subscription_id required");
 
+    // 1. Fetch subscription details
+    const subQuery = `
+      query GetSubForCancel($id: uuid!) {
+        space_subscriptions_by_pk(id: $id) {
+          id
+          price
+          status
+          start_date
+          customer_phone
+          customer_name
+          booking_type
+          space {
+            id
+            currency
+            workspace_id
+            name
+            workspace {
+              orgnizer_id
+            }
+          }
+        }
+      }
+    `;
+    const subRes = await hasuraRequest<{ space_subscriptions_by_pk: any }>(subQuery, {
+      id: subscription_id,
+    });
+    const sub = subRes.space_subscriptions_by_pk;
+    if (!sub) throw new Error("Subscription not found");
+
+    if (sub.status === "cancelled") {
+      return { success: true, subscription: sub }; // already cancelled
+    }
+
+    if (sub.start_date) {
+      const now = new Date();
+      const startDate = new Date(sub.start_date);
+      // If today is the start date (ignoring time) or after, block cancellation
+      now.setHours(0, 0, 0, 0);
+      startDate.setHours(0, 0, 0, 0);
+      if (now >= startDate) {
+        throw new Error("You cannot cancel a subscription that has already started.");
+      }
+    }
+
+    const price = parseFloat(sub.price || "0");
+
+    // 2. Process Refund if applicable (not a visitor, price > 0)
+    if (price > 0 && sub.booking_type !== "visitor") {
+      const refundAmount = price * 0.5; // 50% refund
+      const workspace_id = sub.space?.workspace_id;
+      const currency = sub.space?.currency || "RWF";
+
+      // 2a. Deduct from organizer wallet
+      if (workspace_id) {
+        const deductMutation = `
+          mutation DeductRefund($workspace_id: uuid!, $amount: numeric!, $updated_at: timestamptz!) {
+            update_wallets(
+              where: { workspace_id: { _eq: $workspace_id }, amount: { _gte: $amount } }
+              _inc: { amount: -$amount }
+              _set: { updated_at: $updated_at }
+            ) {
+              affected_rows
+            }
+          }
+        `;
+        const deductRes = await hasuraRequest<any>(deductMutation, {
+          workspace_id,
+          amount: refundAmount,
+          updated_at: new Date().toISOString(),
+        });
+
+        if (deductRes.update_wallets?.affected_rows === 0) {
+          throw new Error("Organizer wallet does not have sufficient funds for the refund.");
+        }
+      }
+
+      // 2b. Execute PawaPay Refund
+      if (sub.customer_phone) {
+        try {
+          const { sendRefundPayout } = await import("./pawapay");
+          await sendRefundPayout({
+            data: {
+              amount: refundAmount,
+              currency,
+              phone: sub.customer_phone,
+              description: `Agatike Cancel 50% Refund`,
+            },
+          } as any);
+        } catch (e: any) {
+          console.error("Failed to execute pawapay refund", e);
+          throw new Error(`Refund failed: ${e.message}`);
+        }
+      }
+
+      // 2c. Record Invoice for the refund
+      const invoiceNumber = "REF-" + Math.floor(Math.random() * 1000000);
+      const invoiceMutation = `
+        mutation CreateRefundInvoice(
+          $invoice_number: String!
+          $type: String!
+          $space_id: uuid
+          $space_subscription_id: uuid
+          $customer_name: String!
+          $amount: String!
+          $currency: String!
+          $status: String!
+        ) {
+          insert_invoices_one(object: {
+            invoice_number: $invoice_number
+            type: $type
+            space_id: $space_id
+            space_subscription_id: $space_subscription_id
+            customer_name: $customer_name
+            customer_email: "refund"
+            amount: $amount
+            currency: $currency
+            status: $status
+          }) { id }
+        }
+      `;
+      await hasuraRequest(invoiceMutation, {
+        invoice_number: invoiceNumber,
+        type: "subscription_refund",
+        space_id: sub.space?.id,
+        space_subscription_id: sub.id,
+        customer_name: sub.customer_name || "Unknown",
+        amount: String(-refundAmount), // Negative amount for refund
+        currency,
+        status: "completed",
+      });
+
+      // 2d. Send Notifications
+      try {
+        const { getFirebaseAdmin } = await import("../lib/firebase.server");
+        const { db } = getFirebaseAdmin();
+        const orgnizer_id = sub.space?.workspace?.orgnizer_id;
+
+        // Notify organizer
+        if (orgnizer_id) {
+          await db.collection("agatike_notifications").add({
+            type: "subscription_refund",
+            actorId: "system",
+            organizerId: workspace_id,
+            content: `User ${sub.customer_name} cancelled their subscription at ${sub.space?.name}. A 50% refund (${refundAmount} ${currency}) has been deducted from your wallet.`,
+            targetUsers: [orgnizer_id],
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.error("Failed to send notification", e);
+      }
+    }
+
+    // 3. Set status to cancelled
     const mutation = `
       mutation CancelSubscription($id: uuid!) {
         update_space_subscriptions_by_pk(
@@ -786,16 +1048,161 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
         }
       }
     `;
-    const data = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(mutation, {
+    const updateData = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(mutation, {
       id: subscription_id,
     });
-    return { success: true, subscription: data.update_space_subscriptions_by_pk };
+
+    return { success: true, subscription: updateData.update_space_subscriptions_by_pk };
   });
 
 // ── Mark overdue subscriptions as on_hold ────────────────────────────────────
 // Called by the daily cron job at 11:00 UTC.
 // Finds subscriptions where next_billing_date is more than 7 days in the past
 // AND status is not already "on_hold" or "cancelled".
+export const upgradeSpaceSubscription = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const {
+      subscription_id,
+      new_plan_name,
+      new_price,
+      new_billing_cycle,
+      new_next_billing_date,
+      customer_email,
+      customer_name,
+      workspace_id,
+      space_id,
+    } = ctx.data as any;
+
+    if (!subscription_id) throw new Error("Missing subscription_id");
+
+    const updateMutation = `
+      mutation UpgradeSubscription($id: uuid!, $plan_name: String!, $price: String!, $billing_cycle: String!, $next_billing_date: timestamptz!) {
+        update_space_subscriptions_by_pk(
+          pk_columns: { id: $id }
+          _set: {
+            plan_name: $plan_name
+            price: $price
+            billing_cycle: $billing_cycle
+            next_billing_date: $next_billing_date
+            status: "active"
+          }
+        ) {
+          id
+          status
+          plan_name
+          price
+          next_billing_date
+        }
+      }
+    `;
+    const updated = await hasuraRequest<{ update_space_subscriptions_by_pk: any }>(updateMutation, {
+      id: subscription_id,
+      plan_name: new_plan_name,
+      price: String(new_price),
+      billing_cycle: new_billing_cycle,
+      next_billing_date: new_next_billing_date,
+    });
+
+    // Create Invoice for upgrade
+    const invoiceNumber = "UPG-" + Math.floor(Math.random() * 1000000);
+    const createInvoiceMutation = `
+      mutation CreateUpgradeInvoice(
+        $invoice_number: String!
+        $type: String!
+        $space_id: uuid
+        $space_subscription_id: uuid
+        $customer_name: String!
+        $customer_email: String!
+        $amount: String!
+        $currency: String!
+        $plan_name: String
+        $billing_cycle: String
+        $status: String!
+      ) {
+        insert_invoices_one(object: {
+          invoice_number: $invoice_number
+          type: $type
+          space_id: $space_id
+          space_subscription_id: $space_subscription_id
+          customer_name: $customer_name
+          customer_email: $customer_email
+          amount: $amount
+          currency: $currency
+          plan_name: $plan_name
+          billing_cycle: $billing_cycle
+          status: $status
+        }) {
+          id
+        }
+      }
+    `;
+
+    // Attempt to get space currency, fallback to RWF
+    let currency = "RWF";
+    if (space_id) {
+      try {
+        const spaceRes = await hasuraRequest<{ spaces_by_pk: { currency: string } }>(
+          `query GetSpaceCurrency($id: uuid!) { spaces_by_pk(id: $id) { currency } }`,
+          { id: space_id },
+        );
+        if (spaceRes?.spaces_by_pk?.currency) currency = spaceRes.spaces_by_pk.currency;
+      } catch (e) {}
+    }
+
+    try {
+      await hasuraRequest(createInvoiceMutation, {
+        invoice_number: invoiceNumber,
+        type: "subscription_upgrade",
+        space_id: space_id || null,
+        space_subscription_id: subscription_id,
+        customer_name,
+        customer_email,
+        amount: String(new_price),
+        currency: currency,
+        plan_name: new_plan_name,
+        billing_cycle: new_billing_cycle,
+        status: "paid",
+      });
+    } catch (e) {
+      console.error("Failed to create upgrade invoice", e);
+    }
+
+    // Add money to wallet
+    if (workspace_id && parseFloat(new_price) > 0) {
+      try {
+        const { addMoneyToWorkspaceWallet } = await import("./wallet");
+        await addMoneyToWorkspaceWallet({
+          data: { workspace_id, amount: parseFloat(new_price) },
+        } as any);
+      } catch (e) {
+        console.error("Failed to update wallet for upgrade:", e);
+      }
+    }
+
+    // Send Receipt Email
+    try {
+      const { sendSubscriptionInvoiceEmail } = await import("./email");
+      await sendSubscriptionInvoiceEmail({
+        data: {
+          customer_name,
+          customer_email,
+          amount: parseFloat(new_price),
+          plan_name: new_plan_name,
+          billing_cycle: new_billing_cycle,
+          currency: currency,
+          start_date: new Date().toISOString(),
+          end_date: new_next_billing_date,
+          workspace_id: workspace_id,
+        },
+      });
+    } catch (e) {
+      console.error("Failed to send upgrade receipt:", e);
+    }
+
+    return { success: true, subscription: updated.update_space_subscriptions_by_pk };
+  });
+
 export const markOverdueSubscriptionsOnHold = createServerFn({ method: "POST" }).handler(
   async () => {
     const sevenDaysAgo = new Date();

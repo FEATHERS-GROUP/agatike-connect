@@ -94,6 +94,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
   const storageKey = `event_checkout_${eventId}`;
   const [cart, setCart] = useState<Record<string, number>>({});
+  const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
   const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -592,58 +593,72 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         const { paymentDetails, bookingRef } = checkoutContext;
         try {
           await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
-          const attachments = [];
+          const attachments: any[] = [];
           if (eventProject) {
-            for (const ticket of issuedTickets) {
-              const el = document.getElementById(`ticket-render-${ticket.id}`);
-              if (!el) {
-                toast.error(`DOM Element missing for ticket ${ticket.id}`);
-                continue;
-              }
-
-              await new Promise((r) => setTimeout(r, 100));
-
-              try {
-                const imgData = await htmlToImage.toJpeg(el, {
-                  pixelRatio: 1.5,
-                  quality: 0.8,
-                  backgroundColor: "#ffffff",
-                  width: 720,
-                  height: 260,
-                  imagePlaceholder:
-                    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-                });
-
-                if (!imgData || imgData === "data:,") {
-                  throw new Error(
-                    "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-                  );
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                const el = document.getElementById(`ticket-render-${ticket.id}`);
+                if (!el) {
+                  toast.error(`DOM Element missing for ticket ${ticket.id}`);
+                  return null;
                 }
-
-                const width = 720;
-                const height = 260;
-
-                const pdf = new jsPDF({
-                  orientation: "landscape",
-                  unit: "px",
-                  format: [width, height],
-                });
-                pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-                const base64 = pdf.output("datauristring").split(",")[1];
-
-                attachments.push({
-                  filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                  content: base64,
-                });
-              } catch (e) {
-                console.warn(
-                  `[Ticket ${ticket.id}] Custom PDF failed (likely image load error), falling back to default...`,
-                  e,
-                );
+                try {
+                  const imgData = await htmlToImage.toJpeg(el, {
+                    pixelRatio: 1.5,
+                    quality: 0.8,
+                    backgroundColor: "#ffffff",
+                    width: 720,
+                    height: 260,
+                    imagePlaceholder:
+                      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                  });
+                  if (!imgData || imgData === "data:,") {
+                    throw new Error("htmlToImage returned an empty image.");
+                  }
+                  const pdf = new jsPDF({
+                    orientation: "landscape",
+                    unit: "px",
+                    format: [720, 260],
+                  });
+                  pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+                  const base64 = pdf.output("datauristring").split(",")[1];
+                  return {
+                    filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                    content: base64,
+                  };
+                } catch (e) {
+                  console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
+                  const stop =
+                    event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                  return await generateFallbackReceipt({
+                    entityName: event?.title || "Event",
+                    ticket,
+                    bookingRef: ticket.otp,
+                    customerName: ticket.attendee?.firstName || "Guest",
+                    type: "event",
+                    dateStr: stop?.date || "",
+                    timeStr: stop?.time || "",
+                    locationStr: stop?.city || "",
+                    durationStr: event?.duration || "",
+                    tierName: ticket.tier,
+                    quantity: 1,
+                  });
+                }
+              });
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
+            }
+          } else {
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
                 const stop =
                   event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
-                const fallbackPdf = await generateFallbackReceipt({
-                  entityName: event?.title || "Event",
+                return await generateFallbackReceipt({
+                  entityName: event?.title || "Event/Venue",
                   ticket,
                   bookingRef: ticket.otp,
                   customerName: ticket.attendee?.firstName || "Guest",
@@ -655,26 +670,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   tierName: ticket.tier,
                   quantity: 1,
                 });
-                attachments.push(fallbackPdf);
-              }
-            }
-          } else {
-            for (const ticket of issuedTickets) {
-              const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
-              const fallbackPdf = await generateFallbackReceipt({
-                entityName: event?.title || "Event/Venue",
-                ticket,
-                bookingRef: ticket.otp,
-                customerName: ticket.attendee?.firstName || "Guest",
-                type: "event",
-                dateStr: stop?.date || "",
-                timeStr: stop?.time || "",
-                locationStr: stop?.city || "",
-                durationStr: event?.duration || "",
-                tierName: ticket.tier,
-                quantity: 1,
               });
-              attachments.push(fallbackPdf);
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           }
 
@@ -814,101 +812,183 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     );
   }
 
-  if (isPollingPawaPay) {
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && eventProject && (
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
+      {issuedTickets.map((ticket: any) => {
+        const mergedProject = getMergedProjectDesign(
+          eventProject,
+          ticket.attendee.stopIdx,
+          ticket.attendee.tierId,
+        );
+        return (
+          <div
+            key={ticket.id}
+            id={`ticket-render-${ticket.id}`}
+            className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+          >
+            <TicketPreview
+              template={mergedProject.template || "Concert 1"}
+              palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
+              font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
+              tier={ticket.tier}
+              title={event.title}
+              subtitle={event.venue || ""}
+              date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
+              time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
+              seat={
+                ticket.attendee.seat
+                  ? formatSeatDisplay(
+                      ticket.attendee.seatName || ticket.attendee.seat,
+                      ticket.attendee.sectionName,
+                    )
+                  : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
+              }
+              price={
+                getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
+                getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
+                "0"
+              }
+              currency={currency === "FRWS" ? "RWF" : currency}
+              cover={mergedProject.coverImage || event.cover || ""}
+              logoText={
+                mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                  ? mergedProject.logoText
+                  : event.organizer || "Agatike"
+              }
+              logoImage={mergedProject.logoImage}
+              logoScale={Number(mergedProject.logoScale || 24)}
+              logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
+              logoColorMode={mergedProject.logoColorMode || "original"}
+              orderId={ticket.otp}
+              qrValue={`${window.location.origin}/v/${ticket.otp}`}
+              previewMode="Front"
+              layout={
+                mergedProject.layout || {
+                  titleSize: 30,
+                  subtitleSize: 14,
+                  metaSize: 11,
+                  titleAlign: "left",
+                  titleOffsetY: 0,
+                  subtitleOffsetY: 0,
+                  metaOffsetY: 0,
+                }
+              }
+              back={
+                mergedProject.back || {
+                  backText: "",
+                  backImage: "",
+                  backImageOpacity: 0.3,
+                }
+              }
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
-      <CheckYourPhone
-        onCancel={async () => {
-          setIsPollingPawaPay(false);
-          if (pawapayDepositId) {
-            try {
-              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-            } catch (e) {
-              console.error("Cancel cleanup failed:", e);
+      <>
+        <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
             }
-          }
-        }}
-      />
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
-  const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
-
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-        <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
-        <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-          Your tickets for {event.title} have been secured. We've sent them to {attendees[0]?.email}
-          .
-        </p>
-
-        {hasMerchInCart && (
-          <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <svg
-                  className="h-5 w-5 text-primary"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold">Merchandise Order</p>
-                <p className="text-xs text-muted-foreground">Pickup instructions</p>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Your merchandise can be picked up{" "}
-              <strong className="text-foreground">on the day of the event</strong>. Please collect
-              it at the merchandise desk using either method below:
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
-                <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Phone Number Pickup</p>
-                  <p className="text-xs text-muted-foreground">
-                    Show your registered phone number at the merchandise desk.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
-                <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
-                  <p className="text-xs text-muted-foreground">
-                    Show your event ticket QR code — staff will scan it and hand you your order.
-                  </p>
-                </div>
-              </div>
-            </div>
+      <>
+        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
+          <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
           </div>
-        )}
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => {
-              setIsSuccess(false);
-              setPawapayDepositId(null);
-              setIssuedTickets([]);
-              setCart({});
-              setSelectedSeats([]);
-              setAttendees([]);
-            }}
-            className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-          >
-            Buy Another Ticket
-          </button>
-          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
+          <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
+          <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
+            Your tickets for {event.title} have been secured. We've sent them to{" "}
+            {attendees[0]?.email}.
+          </p>
+
+          {hasMerchInCart && (
+            <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <svg
+                    className="h-5 w-5 text-primary"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-semibold">Merchandise Order</p>
+                  <p className="text-xs text-muted-foreground">Pickup instructions</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Your merchandise can be picked up{" "}
+                <strong className="text-foreground">on the day of the event</strong>. Please collect
+                it at the merchandise desk using either method below:
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
+                  <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Phone Number Pickup</p>
+                    <p className="text-xs text-muted-foreground">
+                      Show your registered phone number at the merchandise desk.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
+                  <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
+                    <p className="text-xs text-muted-foreground">
+                      Show your event ticket QR code — staff will scan it and hand you your order.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => {
+                setIsSuccess(false);
+                setPawapayDepositId(null);
+                setIssuedTickets([]);
+                setCart({});
+                setSelectedSeats([]);
+                setAttendees([]);
+              }}
+              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Buy Another Ticket
+            </button>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Or wait to be redirected...
+            </p>
+          </div>
         </div>
-      </div>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -1267,84 +1347,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         userPhone={user?.phone || undefined}
       />
 
-      {/* Hidden container for PDF rendering */}
-      {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <div
-          className="absolute -z-50 pointer-events-none"
-          style={{ top: "-9999px", left: "-9999px" }}
-        >
-          {issuedTickets.map((ticket: any) => {
-            const mergedProject = getMergedProjectDesign(
-              eventProject,
-              ticket.attendee.stopIdx,
-              ticket.attendee.tierId,
-            );
-            return (
-              <div
-                key={ticket.id}
-                id={`ticket-render-${ticket.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={mergedProject.template || "Concert 1"}
-                  palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={ticket.tier}
-                  title={event.title}
-                  subtitle={event.venue || ""}
-                  date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
-                  time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
-                  seat={
-                    ticket.attendee.seat
-                      ? formatSeatDisplay(
-                          ticket.attendee.seatName || ticket.attendee.seat,
-                          ticket.attendee.sectionName,
-                        )
-                      : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
-                  }
-                  price={
-                    getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
-                    getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
-                    "0"
-                  }
-                  currency={currency === "FRWS" ? "RWF" : currency}
-                  cover={mergedProject.coverImage || event.cover || ""}
-                  logoText={
-                    mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                      ? mergedProject.logoText
-                      : event.organizer || "Agatike"
-                  }
-                  logoImage={mergedProject.logoImage}
-                  logoScale={Number(mergedProject.logoScale || 24)}
-                  logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
-                  logoColorMode={mergedProject.logoColorMode || "original"}
-                  orderId={ticket.otp}
-                  qrValue={`${window.location.origin}/v/${ticket.otp}`}
-                  previewMode="Front"
-                  layout={
-                    mergedProject.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    mergedProject.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.3,
-                    }
-                  }
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {hiddenTicketRenderer}
     </div>
   );
 }

@@ -317,6 +317,8 @@ export function EventCheckoutDrawer({
                     const itemQty = cart[cartKey] || 0;
                     const isSelected = itemQty > 0;
 
+                    const isSoldOut = t.remaining === 0;
+
                     const isMapped = currentVenueProject?.sections_data?.some(
                       (s: any) => s.ticketId === t.id,
                     );
@@ -324,36 +326,62 @@ export function EventCheckoutDrawer({
                     return (
                       <div
                         key={t.id}
-                        className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"} ${isMapped ? "cursor-pointer" : ""}`}
+                        className={`w-full rounded-2xl border p-3.5 transition-all duration-300 relative overflow-hidden ${
+                          isSoldOut
+                            ? "border-border/40 bg-secondary/30 opacity-70 cursor-not-allowed"
+                            : isSelected
+                              ? "border-primary bg-primary/10"
+                              : "border-border/40 bg-card/50"
+                        } ${isMapped && !isSoldOut ? "cursor-pointer" : ""}`}
                         onClick={() => {
+                          if (isSoldOut) return;
                           if (isMapped) {
                             setActiveTicketIdForMap(t.id);
                             setIsSeatModalOpen(true);
                           }
                         }}
                       >
-                        <div className="flex items-center justify-between mb-1">
+                        {isSoldOut && (
+                          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                            <div className="border-[3px] border-black text-black px-3 py-1 text-2xl font-black uppercase tracking-widest transform -rotate-12 bg-transparent whitespace-nowrap shadow-sm">
+                              Sold Out
+                            </div>
+                          </div>
+                        )}
+                        <div
+                          className={`flex items-center justify-between mb-1 ${isSoldOut ? "opacity-20" : ""}`}
+                        >
                           <p className="font-bold text-sm">{t.name}</p>
-                          <p className="font-bold text-base text-primary">
+                          <p
+                            className={`font-bold text-base ${isSoldOut ? "text-white" : "text-primary"}`}
+                          >
                             {formatCurrency(t.price, currencyCode)}
                           </p>
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-snug">
+                        <p
+                          className={`text-[11px] leading-snug ${isSoldOut ? "text-white opacity-20" : "text-muted-foreground"}`}
+                        >
                           {t.perks.join(" · ")}
                         </p>
-                        <p className="text-[11px] font-medium text-primary mt-1 mb-3">
-                          {t.remaining} left
-                        </p>
+                        {!isSoldOut && (
+                          <p className="text-[11px] font-medium text-primary mt-1 mb-3">
+                            {t.remaining} left
+                          </p>
+                        )}
 
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            Quantity
-                          </span>
+                        <div
+                          className={`flex items-center justify-between ${isSoldOut ? "mt-2" : "mt-3 pt-3 border-t border-border/40"} ${isSoldOut ? "opacity-20" : ""}`}
+                        >
+                          {!isSoldOut && (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              Quantity
+                            </span>
+                          )}
                           {isSuspended ? (
                             <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
                               Suspended
                             </div>
-                          ) : isMapped ? (
+                          ) : isSoldOut ? null : isMapped ? (
                             itemQty > 0 && (
                               <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                                 {itemQty} Selected
@@ -374,9 +402,11 @@ export function EventCheckoutDrawer({
                                 }
                                 disabled={itemQty === 0}
                               >
-                                <Minus className="h-3 w-3" />
+                                <Minus className="h-3.5 w-3.5" />
                               </button>
-                              <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
+                              <span className="w-4 text-center text-sm font-semibold text-foreground">
+                                {itemQty}
+                              </span>
                               <button
                                 className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                                 onClick={() =>
@@ -384,7 +414,7 @@ export function EventCheckoutDrawer({
                                 }
                                 disabled={itemQty >= t.remaining}
                               >
-                                <Plus className="h-3 w-3" />
+                                <Plus className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           )}
@@ -405,6 +435,7 @@ export function EventCheckoutDrawer({
                       const cartKey = `${selectedStopIdx}_${t.id}`;
                       const itemQty = cart[cartKey] || 0;
                       const isSelected = itemQty > 0;
+                      const isSoldOut = t.remaining === 0;
                       const isMapped = currentVenueProject?.sections_data?.some(
                         (s: any) => s.ticketId === t.id,
                       );
@@ -412,36 +443,60 @@ export function EventCheckoutDrawer({
                       return (
                         <div
                           key={t.id}
-                          className={`w-full rounded-2xl border p-3.5 transition-all duration-300 ${isSelected ? "border-primary bg-primary/10" : "border-border/40 bg-card/50"} ${isMapped ? "cursor-pointer" : ""}`}
+                          className={`w-full rounded-2xl border p-3.5 transition-all duration-300 relative overflow-hidden ${
+                            isSoldOut
+                              ? "border-border/40 bg-secondary/30 opacity-70 cursor-not-allowed"
+                              : isSelected
+                                ? "border-primary bg-primary/10"
+                                : "border-border/40 bg-card/50"
+                          } ${isMapped && !isSoldOut ? "cursor-pointer" : ""}`}
                           onClick={() => {
+                            if (isSoldOut) return;
                             if (isMapped) {
                               setActiveTicketIdForMap(t.id);
                               setIsSeatModalOpen(true);
                             }
                           }}
                         >
-                          <div className="flex items-center justify-between mb-1">
+                          {isSoldOut && (
+                            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                              <div className="border-[3px] border-red-600 text-red-600 px-3 py-1 text-2xl font-black uppercase tracking-widest transform -rotate-12 bg-transparent shadow-sm whitespace-nowrap">
+                                Sold Out
+                              </div>
+                            </div>
+                          )}
+                          <div
+                            className={`flex items-center justify-between mb-1 ${isSoldOut ? "opacity-40" : ""}`}
+                          >
                             <p className="font-bold text-sm">{t.name}</p>
                             <p className="font-bold text-base text-primary">
                               {formatCurrency(t.price, currencyCode)}
                             </p>
                           </div>
-                          <p className="text-[11px] text-muted-foreground leading-snug">
+                          <p
+                            className={`text-[11px] text-muted-foreground leading-snug ${isSoldOut ? "opacity-40" : ""}`}
+                          >
                             {t.perks.join(" · ")}
                           </p>
-                          <p className="text-[11px] font-medium text-primary mt-1 mb-3">
-                            {t.remaining} left
-                          </p>
+                          {!isSoldOut && (
+                            <p className="text-[11px] font-medium text-primary mt-1 mb-3">
+                              {t.remaining} left
+                            </p>
+                          )}
 
-                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-                            <span className="text-xs font-medium text-muted-foreground">
-                              Quantity
-                            </span>
+                          <div
+                            className={`flex items-center justify-between ${isSoldOut ? "mt-2" : "mt-3 pt-3 border-t border-border/40"} ${isSoldOut ? "opacity-40" : ""}`}
+                          >
+                            {!isSoldOut && (
+                              <span className="text-xs font-medium text-muted-foreground">
+                                Quantity
+                              </span>
+                            )}
                             {isSuspended ? (
                               <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
                                 Suspended
                               </div>
-                            ) : isMapped ? (
+                            ) : isSoldOut ? null : isMapped ? (
                               itemQty > 0 && (
                                 <div className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                                   {itemQty} Selected
@@ -462,9 +517,11 @@ export function EventCheckoutDrawer({
                                   }
                                   disabled={itemQty === 0}
                                 >
-                                  <Minus className="h-3 w-3" />
+                                  <Minus className="h-3.5 w-3.5" />
                                 </button>
-                                <span className="w-4 text-center font-bold text-xs">{itemQty}</span>
+                                <span className="w-4 text-center text-sm font-semibold text-foreground">
+                                  {itemQty}
+                                </span>
                                 <button
                                   className="h-7 w-7 flex items-center justify-center rounded-full bg-secondary text-foreground disabled:opacity-50"
                                   onClick={() =>
@@ -472,7 +529,7 @@ export function EventCheckoutDrawer({
                                   }
                                   disabled={itemQty >= t.remaining}
                                 >
-                                  <Plus className="h-3 w-3" />
+                                  <Plus className="h-3.5 w-3.5" />
                                 </button>
                               </div>
                             )}

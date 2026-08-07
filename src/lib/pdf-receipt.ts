@@ -26,19 +26,25 @@ export const generateFallbackReceipt = async (options: {
   } = options;
 
   let displayDate =
-    dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "Valid Anytime";
-  let displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "Open Hours";
+    dateStr && dateStr !== "Upcoming" && dateStr.trim() !== "" ? dateStr : "Valid Anytime";
+  let displayTime =
+    timeStr && timeStr !== "Upcoming" && timeStr.trim() !== "" ? timeStr : "Open Hours";
+
   let displayLocation =
-    locationStr && locationStr !== "TBD" && locationStr.trim() !== ""
+    locationStr && locationStr !== "Upcoming" && locationStr.trim() !== ""
       ? locationStr
-      : "Location on file";
+      : "See Event Details";
 
   if (type === "event" || type === "movie") {
-    displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "TBA";
-    displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "TBA";
+    displayDate =
+      dateStr && dateStr !== "Upcoming" && dateStr.trim() !== "" ? dateStr : "Date Not Set";
+    displayTime =
+      timeStr && timeStr !== "Upcoming" && timeStr.trim() !== "" ? timeStr : "Time Not Set";
   } else if (type === "facility") {
-    displayDate = dateStr && dateStr !== "TBD" && dateStr.trim() !== "" ? dateStr : "Date Not Set";
-    displayTime = timeStr && timeStr !== "TBD" && timeStr.trim() !== "" ? timeStr : "Time Not Set";
+    displayDate =
+      dateStr && dateStr !== "Upcoming" && dateStr.trim() !== "" ? dateStr : "Date Not Set";
+    displayTime =
+      timeStr && timeStr !== "Upcoming" && timeStr.trim() !== "" ? timeStr : "Time Not Set";
   }
 
   const { jsPDF } = await import("jspdf");

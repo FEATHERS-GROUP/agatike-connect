@@ -126,7 +126,7 @@ function FacilityCheckoutPage() {
 
   const hourlyRate = Number(facility?.pricing?.hourly_rate) || 0;
   const dailyRate = Number(facility?.pricing?.daily_rate) || hourlyRate;
-  const currency = venue?.currency || "RWF";
+  const currency = venue?.workspace?.currency || venue?.currency || "RWF";
 
   const { data: bookings = [] } = useQuery({
     queryKey: ["venue_bookings", venueId],

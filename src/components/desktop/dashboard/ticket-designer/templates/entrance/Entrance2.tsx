@@ -35,10 +35,10 @@ export function Entrance2(props: TemplateProps) {
     return (
       <div
         id="ticket-preview-container"
-        className={`relative flex w-[760px] max-w-full overflow-hidden rounded-[20px] shadow-2xl text-white ${isBack ? "flex-row-reverse" : "flex-row"}`}
+        className={`relative flex w-[720px] max-w-full overflow-hidden rounded-[20px] shadow-2xl text-white ${isBack ? "flex-row-reverse" : "flex-row"}`}
         style={{
           fontFamily: font.css,
-          height: 250,
+          height: 260,
           background: `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
         }}
       >

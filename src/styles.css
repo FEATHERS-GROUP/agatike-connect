@@ -419,3 +419,132 @@
 .recharts-active-dot circle {
   filter: drop-shadow(0 0 6px oklch(0.65 0.25 35 / 0.7));
 }
+
+/* ─── Schedule-X Theme Customization ─────────────────────────────────────── */
+.sx-react-calendar-wrapper {
+  --sx-color-primary: var(--primary);
+  --sx-color-on-primary: var(--primary-foreground);
+  --sx-color-primary-container: var(--secondary);
+  --sx-color-on-primary-container: var(--secondary-foreground);
+  --sx-color-secondary: var(--secondary);
+  --sx-color-on-secondary: var(--secondary-foreground);
+  --sx-color-secondary-container: var(--muted);
+  --sx-color-on-secondary-container: var(--muted-foreground);
+  --sx-color-surface: var(--card);
+  --sx-color-surface-dim: var(--background);
+  --sx-color-on-surface: var(--foreground);
+  --sx-color-outline: var(--border);
+  --sx-color-outline-variant: var(--border);
+  --sx-internal-color-text: var(--foreground);
+
+  background-color: var(--card);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Premium Calendar Aesthetics ───────────────────────────────────────── */
+.sx__calendar {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.sx__calendar-header {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 16px 20px !important;
+  background: transparent !important;
+}
+
+.sx__view-container {
+  background: var(--background) !important;
+}
+
+.sx__time-grid-event {
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sx__time-grid-event:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
+  z-index: 10;
+}
+
+.sx__date-picker-popup {
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid var(--border) !important;
+  overflow: hidden;
+}
+
+.sx__month-agenda-day--active .sx__month-agenda-day-number {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: 50% !important;
+  font-weight: 700 !important;
+}
+
+.sx__month-grid-day--today {
+  background: rgba(var(--primary-rgb), 0.05) !important;
+}
+
+.sx__month-grid-day--today .sx__month-grid-day-number {
+  background: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+}
+
+/* Mobile overrides for Schedule-X */
+.sx-mobile-calendar .sx__date-input,
+.sx-mobile-calendar .sx__view-selection-selected-item {
+  height: 36px !important;
+  font-size: 13px !important;
+  padding: 0 10px !important;
+  border-radius: 10px !important;
+}
+
+.sx-mobile-calendar .sx__today-button {
+  height: 36px !important;
+  font-size: 13px !important;
+  padding: 0 14px !important;
+  border-radius: 10px !important;
+}
+
+.sx-mobile-calendar .sx__chevron-wrapper {
+  height: 36px !important;
+  width: 36px !important;
+}
+
+.sx-mobile-calendar .sx__calendar-header {
+  padding: 8px !important;
+  gap: 8px !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.sx-mobile-calendar .sx__range-heading {
+  font-size: 15px !important;
+  margin-left: 8px !important;
+}
+
+.sx-mobile-calendar .sx__date-input-chevron-wrapper {
+  height: 36px !important;
+  width: 36px !important;
+}
+
+.sx-mobile-calendar .sx__date-input-label,
+.sx-mobile-calendar .sx__view-selection-label {
+  display: none !important;
+}

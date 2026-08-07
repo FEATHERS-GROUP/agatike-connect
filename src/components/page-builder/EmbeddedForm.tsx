@@ -243,6 +243,7 @@ export function EmbeddedForm({
     return (
       <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
         <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             setIsProcessingPayment(false);

@@ -55,8 +55,17 @@ function formatDuration(seconds: number) {
   return `${hrs}h ${remMins}m`;
 }
 
-function TrendBadge({ current, previous, label }: { current: number; previous: number; label?: string }) {
-  if (previous === 0 && current === 0) return <span className="text-xs text-gray-400">No data</span>;
+function TrendBadge({
+  current,
+  previous,
+  label,
+}: {
+  current: number;
+  previous: number;
+  label?: string;
+}) {
+  if (previous === 0 && current === 0)
+    return <span className="text-xs text-gray-400">No data</span>;
   const pct = previous === 0 ? 100 : Math.round(((current - previous) / previous) * 100);
   const isUp = pct > 0;
   const isFlat = pct === 0;
@@ -66,8 +75,8 @@ function TrendBadge({ current, previous, label }: { current: number; previous: n
         isFlat
           ? "bg-gray-100 dark:bg-[#2a2a2a] text-gray-500"
           : isUp
-          ? "bg-green-500/10 text-green-500"
-          : "bg-red-500/10 text-red-500"
+            ? "bg-green-500/10 text-green-500"
+            : "bg-red-500/10 text-red-500"
       }`}
     >
       {isFlat ? (
@@ -92,7 +101,13 @@ const CustomTooltipStyle = {
 };
 
 function TelemetryDashboard() {
-  const { data: stats, isLoading, dataUpdatedAt, refetch, isFetching } = useQuery({
+  const {
+    data: stats,
+    isLoading,
+    dataUpdatedAt,
+    refetch,
+    isFetching,
+  } = useQuery({
     queryKey: ["telemetry_stats"],
     queryFn: () => getTelemetryStats(),
     refetchInterval: 30000,
@@ -168,7 +183,9 @@ function TelemetryDashboard() {
 
             {/* Unique Visitors */}
             <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg p-4 flex flex-col gap-1">
-              <span className="text-xs text-gray-500 uppercase tracking-wider">Unique Visitors</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider">
+                Unique Visitors
+              </span>
               <span className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                 {stats?.uniqueVisitorsToday ?? 0}
               </span>
@@ -191,9 +208,7 @@ function TelemetryDashboard() {
             {/* Users */}
             <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg p-4 flex flex-col gap-1">
               <span className="text-xs text-gray-500 uppercase tracking-wider">Users</span>
-              <span className="text-3xl font-bold text-[#3b82f6] mt-1">
-                {userBreakdown.users}
-              </span>
+              <span className="text-3xl font-bold text-[#3b82f6] mt-1">{userBreakdown.users}</span>
               <span className="text-[11px] text-gray-400">registered users today</span>
             </div>
 
@@ -213,28 +228,36 @@ function TelemetryDashboard() {
               <Ghost className="h-8 w-8 text-gray-400 shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">Anonymous</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{userBreakdown.anonymous}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                  {userBreakdown.anonymous}
+                </p>
               </div>
             </div>
             <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg p-4 flex items-center gap-3">
               <Zap className="h-8 w-8 text-yellow-500 shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">Bounce Rate</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.bounceRate ?? 0}%</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                  {stats?.bounceRate ?? 0}%
+                </p>
               </div>
             </div>
             <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg p-4 flex items-center gap-3">
               <BarChart3 className="h-8 w-8 text-purple-500 shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">Yesterday Sessions</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.totalYesterday ?? 0}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                  {stats?.totalYesterday ?? 0}
+                </p>
               </div>
             </div>
             <div className="bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333] rounded-lg p-4 flex items-center gap-3">
               <Eye className="h-8 w-8 text-indigo-500 shrink-0" />
               <div>
                 <p className="text-xs text-gray-500">Yesterday Visitors</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{stats?.uniqueVisitorsYesterday ?? 0}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                  {stats?.uniqueVisitorsYesterday ?? 0}
+                </p>
               </div>
             </div>
           </div>
@@ -247,7 +270,10 @@ function TelemetryDashboard() {
             </h3>
             <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dailyComparison} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart
+                  data={dailyComparison}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
                   <defs>
                     <linearGradient id="gradUsers" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -263,13 +289,50 @@ function TelemetryDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                  <XAxis dataKey="date" stroke="#888" fontSize={11} tickLine={false} axisLine={false} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#888"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
                   <YAxis stroke="#888" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={CustomTooltipStyle} cursor={{ stroke: "#555", strokeWidth: 1 }} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 12 }} />
-                  <Area type="monotone" dataKey="users" name="Users" stroke="#3b82f6" fill="url(#gradUsers)" strokeWidth={2} dot={false} />
-                  <Area type="monotone" dataKey="organizers" name="Organizers" stroke="#f97316" fill="url(#gradOrgs)" strokeWidth={2} dot={false} />
-                  <Area type="monotone" dataKey="anonymous" name="Anonymous" stroke="#8b5cf6" fill="url(#gradAnon)" strokeWidth={2} dot={false} />
+                  <Tooltip
+                    contentStyle={CustomTooltipStyle}
+                    cursor={{ stroke: "#555", strokeWidth: 1 }}
+                  />
+                  <Legend
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="users"
+                    name="Users"
+                    stroke="#3b82f6"
+                    fill="url(#gradUsers)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="organizers"
+                    name="Organizers"
+                    stroke="#f97316"
+                    fill="url(#gradOrgs)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="anonymous"
+                    name="Anonymous"
+                    stroke="#8b5cf6"
+                    fill="url(#gradAnon)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -285,7 +348,10 @@ function TelemetryDashboard() {
               </h3>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={hourlyComparison} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <BarChart
+                    data={hourlyComparison}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                     <XAxis
                       dataKey="hour"
@@ -296,10 +362,29 @@ function TelemetryDashboard() {
                       interval={3}
                     />
                     <YAxis stroke="#888" fontSize={11} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={CustomTooltipStyle} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 12 }} />
-                    <Bar dataKey="today" name="Today" fill="#f97316" radius={[3, 3, 0, 0]} maxBarSize={14} />
-                    <Bar dataKey="yesterday" name="Yesterday" fill="#374151" radius={[3, 3, 0, 0]} maxBarSize={14} />
+                    <Tooltip
+                      contentStyle={CustomTooltipStyle}
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                    />
+                    <Legend
+                      iconType="circle"
+                      iconSize={8}
+                      wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                    />
+                    <Bar
+                      dataKey="today"
+                      name="Today"
+                      fill="#f97316"
+                      radius={[3, 3, 0, 0]}
+                      maxBarSize={14}
+                    />
+                    <Bar
+                      dataKey="yesterday"
+                      name="Yesterday"
+                      fill="#374151"
+                      radius={[3, 3, 0, 0]}
+                      maxBarSize={14}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -347,7 +432,9 @@ function TelemetryDashboard() {
                           />
                           <span className="text-gray-600 dark:text-gray-300">{t.name}</span>
                         </div>
-                        <span className="font-semibold text-gray-900 dark:text-white">{t.value}</span>
+                        <span className="font-semibold text-gray-900 dark:text-white">
+                          {t.value}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -366,9 +453,18 @@ function TelemetryDashboard() {
               </h3>
               <div className="h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyComparison} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <LineChart
+                    data={dailyComparison}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                    <XAxis dataKey="date" stroke="#888" fontSize={11} tickLine={false} axisLine={false} />
+                    <XAxis
+                      dataKey="date"
+                      stroke="#888"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
                     <YAxis stroke="#888" fontSize={11} tickLine={false} axisLine={false} />
                     <Tooltip contentStyle={CustomTooltipStyle} />
                     <Line
@@ -401,7 +497,10 @@ function TelemetryDashboard() {
                     return (
                       <div key={index} className="flex flex-col gap-1">
                         <div className="flex justify-between items-center text-[11px]">
-                          <span className="font-medium text-gray-700 dark:text-gray-300 truncate pr-3 max-w-[160px]" title={item.path}>
+                          <span
+                            className="font-medium text-gray-700 dark:text-gray-300 truncate pr-3 max-w-[160px]"
+                            title={item.path}
+                          >
                             {item.path}
                           </span>
                           <span className="font-bold text-gray-900 dark:text-white shrink-0">
@@ -436,11 +535,16 @@ function TelemetryDashboard() {
               <table className="w-full text-xs text-left">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-[#333]">
-                    {["Session ID", "Type", "Path", "Duration", "Last Active", "Status"].map((h) => (
-                      <th key={h} className="pb-2 pr-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                        {h}
-                      </th>
-                    ))}
+                    {["Session ID", "Type", "Path", "Duration", "Last Active", "Status"].map(
+                      (h) => (
+                        <th
+                          key={h}
+                          className="pb-2 pr-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          {h}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-[#252526]">
@@ -454,30 +558,37 @@ function TelemetryDashboard() {
                     recentSessions.map((session: any) => {
                       const isActive =
                         Date.now() - new Date(session.lastActive).getTime() < 5 * 60 * 1000;
-                      const cleanPath =
-                        session.path?.replace(/^https?:\/\/[^/]+/, "") || "/";
+                      const cleanPath = session.path?.replace(/^https?:\/\/[^/]+/, "") || "/";
                       const typeColor =
                         session.userType === "organizer"
                           ? "bg-[#f97316]/10 text-[#f97316]"
                           : session.userType === "anonymous"
-                          ? "bg-gray-100 dark:bg-[#2a2a2a] text-gray-500"
-                          : "bg-blue-500/10 text-blue-500";
+                            ? "bg-gray-100 dark:bg-[#2a2a2a] text-gray-500"
+                            : "bg-blue-500/10 text-blue-500";
 
                       return (
-                        <tr key={session.sessionId} className="hover:bg-gray-50 dark:hover:bg-[#252526] transition-colors">
+                        <tr
+                          key={session.sessionId}
+                          className="hover:bg-gray-50 dark:hover:bg-[#252526] transition-colors"
+                        >
                           <td className="py-2.5 pr-4 font-mono text-gray-500 truncate max-w-[100px]">
                             {session.sessionId}
                           </td>
                           <td className="py-2.5 pr-4">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${typeColor}`}>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${typeColor}`}
+                            >
                               {session.userType === "organizer"
                                 ? "Organizer"
                                 : session.userType === "anonymous"
-                                ? "Anonymous"
-                                : "User"}
+                                  ? "Anonymous"
+                                  : "User"}
                             </span>
                           </td>
-                          <td className="py-2.5 pr-4 text-gray-600 dark:text-gray-300 truncate max-w-[200px]" title={cleanPath}>
+                          <td
+                            className="py-2.5 pr-4 text-gray-600 dark:text-gray-300 truncate max-w-[200px]"
+                            title={cleanPath}
+                          >
                             {cleanPath}
                           </td>
                           <td className="py-2.5 pr-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">

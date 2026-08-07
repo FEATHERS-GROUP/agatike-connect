@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
-import { Calendar, Clock, QrCode } from "lucide-react";
+import { Calendar, Clock, QrCode, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function TicketCard({ ticket }: { ticket: any }) {
@@ -53,7 +53,7 @@ export function TicketCard({ ticket }: { ticket: any }) {
   return (
     <Link
       to="/ticket/$ticketId"
-      params={{ ticketId: ticket.id }}
+      params={{ ticketId: ticket.eventId || ticket.id }}
       className="block rounded-3xl overflow-hidden border border-border/60 bg-card shadow-[var(--shadow-card)] hover:-translate-y-1 transition-transform"
     >
       <div className="relative h-32">
@@ -69,20 +69,29 @@ export function TicketCard({ ticket }: { ticket: any }) {
         </span>
       </div>
       <div className="px-4 py-3">
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-3">
           <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" />
-            {ticket.date}
+            <Calendar className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{ticket.date}</span>
           </span>
           <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            {ticket.time}
+            <Clock className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{ticket.time}</span>
+          </span>
+          <span className="flex items-center gap-1 col-span-2">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              {ticket.venueName ? `${ticket.venueName}, ${ticket.city}` : ticket.city || "Online"}
+            </span>
           </span>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-1">
           <div>
-            <p className="text-xs text-muted-foreground">{ticket.seat}</p>
-            <p className="text-xs font-mono text-primary mt-0.5">{ticket.orderId}</p>
+            <p className="text-xs font-semibold text-foreground truncate max-w-[150px]">
+              {ticket.passengerName}
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{ticket.seat}</p>
+            <p className="text-[10px] font-mono text-primary mt-0.5">{ticket.orderId}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button

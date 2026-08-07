@@ -91,10 +91,11 @@ export function AdminSidebar() {
         ? location.pathname === n.href
         : location.pathname.startsWith(n.href);
 
-    const cls = `flex w-full items-center gap-3 px-4 py-2 text-xs transition-colors border-l-2 ${isActive
+    const cls = `flex w-full items-center gap-3 px-4 py-2 text-xs transition-colors border-l-2 ${
+      isActive
         ? "border-[#f97316] bg-gray-200 dark:bg-[#252526] text-gray-900 dark:text-white"
         : "border-transparent text-gray-700 dark:text-[#cccccc] hover:bg-gray-200 dark:hover:bg-[#2d2d30] hover:text-gray-900 dark:hover:text-white"
-      }`;
+    }`;
 
     return (
       <Link key={n.label} to={n.href as any} className={cls}>

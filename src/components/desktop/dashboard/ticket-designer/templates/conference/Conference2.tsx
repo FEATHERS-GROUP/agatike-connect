@@ -35,10 +35,10 @@ export function Conference2(props: TemplateProps) {
     return (
       <div
         id="ticket-preview-container"
-        className={`relative flex w-[760px] max-w-full overflow-hidden rounded-[16px] shadow-2xl bg-white text-gray-900 border-l-[12px] ${isBack ? "flex-row-reverse" : "flex-row"}`}
+        className={`relative flex w-[720px] max-w-full overflow-hidden rounded-[16px] shadow-2xl bg-white text-gray-900 border-l-[12px] ${isBack ? "flex-row-reverse" : "flex-row"}`}
         style={{
           fontFamily: font.css,
-          height: 250,
+          height: 260,
           borderColor: palette.from,
         }}
       >

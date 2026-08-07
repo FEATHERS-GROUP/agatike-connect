@@ -42,11 +42,11 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
         0,
       ) || 0;
 
-  const primaryDateStr = isMock ? ev.date : ev.event_requency?.date || ev.date || "TBD";
+  const primaryDateStr = isMock ? ev.date : ev.event_requency?.date || ev.date || "Upcoming";
 
   const schedules = isExperience
     ? [
-        ...(primaryDateStr && primaryDateStr !== "TBD"
+        ...(primaryDateStr && primaryDateStr !== "Upcoming"
           ? [
               {
                 id: `primary-${ev.id}`,
@@ -79,13 +79,39 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const timerDate = currentStop?.timer_date;
   const waitlistUrl = currentStop?.waitlist_url;
 
-  const dateStr = isMock ? ev.date : currentStop.date || "TBD";
+  let derivedDate = currentStop?.date;
+  let derivedTime = currentStop?.time;
+
+  // If the direct date isn't set but schedules exist, use the first schedule's start_date
+  if (
+    !derivedDate &&
+    Array.isArray(ev.schedules) &&
+    ev.schedules.length > 0 &&
+    ev.schedules[0].start_date
+  ) {
+    const scheduleDate = new Date(ev.schedules[0].start_date);
+    if (!isNaN(scheduleDate.getTime())) {
+      derivedDate = scheduleDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      if (!derivedTime) {
+        derivedTime = scheduleDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+    }
+  }
+
+  const dateStr = isMock ? ev.date : derivedDate || "Upcoming";
   const date = isUpcoming
     ? timerDate
       ? `Drops ${new Date(timerDate).toLocaleDateString("en-US")}`
       : "Coming Soon"
     : dateStr;
-  const time = isMock ? ev.time || ev.duration : currentStop.time || "";
+  const time = isMock ? ev.time || ev.duration : derivedTime || "";
   const venue = isMock ? ev.venue || ev.cinema : currentStop.venue || "";
   const city = isMock ? ev.city : currentStop.venue || currentStop.city || "";
 
@@ -217,21 +243,32 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     const rightStop = isExperience
       ? true
       : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
-    // Hide sold-out tiers
-    const hasInventory = t.remaining > 0;
+    // Keep sold-out tiers so the UI can show the 'SOLD OUT' stamp
+    // const hasInventory = t.remaining > 0;
     // Hide expired tiers
     const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
 
-    return rightStop && hasInventory && isNotExpired;
+    return rightStop && isNotExpired;
   });
 
   const isPastEvent = useMemo(() => {
-    if (!date || date === "TBD") return false;
+    const targetDateStr = ev.end_date || date;
+    if (!targetDateStr || targetDateStr === "Upcoming") return false;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const eventDate = new Date(date);
-    return !isNaN(eventDate.getTime()) && eventDate < today;
-  }, [date]);
+
+    const eventDate = new Date(targetDateStr);
+    const fallbackDate = new Date(date);
+
+    if (!isNaN(eventDate.getTime())) {
+      return eventDate < today;
+    } else if (!isNaN(fallbackDate.getTime())) {
+      return fallbackDate < today;
+    }
+
+    return false;
+  }, [date, ev.end_date]);
 
   const { data: eventProducts } = useQuery({
     queryKey: ["event-products", eventId],

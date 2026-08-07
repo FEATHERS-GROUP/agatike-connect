@@ -399,59 +399,65 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     if (isGenerating && issuedTickets.length > 0) {
       const generatePDFs = async () => {
         try {
-          const attachments = [];
+          const attachments: any[] = [];
           if (venueProject) {
-            for (const ticket of issuedTickets) {
-              const el = document.getElementById(`ticket-render-${ticket.id}`);
-              if (!el) continue;
-
-              // Wait a tiny bit more for React to flush the DOM
-              await new Promise((r) => setTimeout(r, 100));
-
-              const rectDebug = el.getBoundingClientRect();
-              console.log("Ticket element dimensions:", rectDebug.width, rectDebug.height);
-
-              const imgData = await htmlToImage.toJpeg(el, {
-                pixelRatio: 1.5,
-                quality: 0.8,
-                backgroundColor: "#ffffff",
-                width: 720,
-                height: 260,
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                const el = document.getElementById(`ticket-render-${ticket.id}`);
+                if (!el) return null;
+                try {
+                  const imgData = await htmlToImage.toJpeg(el, {
+                    pixelRatio: 1.5,
+                    quality: 0.8,
+                    backgroundColor: "#ffffff",
+                    width: 720,
+                    height: 260,
+                  });
+                  if (!imgData || imgData === "data:,") {
+                    throw new Error("htmlToImage returned an empty image.");
+                  }
+                  const pdf = new jsPDF({
+                    orientation: "landscape",
+                    unit: "px",
+                    format: [720, 260],
+                  });
+                  pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+                  const base64 = pdf.output("datauristring").split(",")[1];
+                  return {
+                    filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                    content: base64,
+                  };
+                } catch (e) {
+                  console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
+                  return await generateFallbackReceipt({
+                    entityName: venue?.name || "Event/Venue",
+                    ticket,
+                    bookingRef: ticket.booking_ref || ticket.otp || "",
+                    customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                    type: "venue",
+                  });
+                }
               });
-              console.log("Generated imgData length:", imgData?.length);
-              if (!imgData || imgData === "data:,") {
-                throw new Error(
-                  "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-                );
-              }
-
-              const rect = el.getBoundingClientRect();
-              const width = rect.width || 720;
-              const height = rect.height || 260;
-
-              const pdf = new jsPDF({
-                orientation: "landscape",
-                unit: "px",
-                format: [width, height],
-              });
-              pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-              const base64 = pdf.output("datauristring").split(",")[1];
-
-              attachments.push({
-                filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                content: base64,
-              });
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           } else {
-            for (const ticket of issuedTickets) {
-              const fallbackPdf = await generateFallbackReceipt({
-                entityName: venue?.name || "Event/Venue",
-                ticket,
-                bookingRef: ticket.booking_ref || ticket.otp || "",
-                customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
-                type: "venue",
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                return await generateFallbackReceipt({
+                  entityName: venue?.name || "Event/Venue",
+                  ticket,
+                  bookingRef: ticket.booking_ref || ticket.otp || "",
+                  customerName: name || (attendees && attendees[0] ? attendees[0].name : "Guest"),
+                  type: "venue",
+                });
               });
-              attachments.push(fallbackPdf);
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           }
 
@@ -522,20 +528,82 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     return () => clearTimeout(tm);
   }, [isSuccess, navigate]);
 
-  if (isPollingPawaPay) {
-    return (
-      <CheckYourPhone
-        onCancel={async () => {
-          setIsPollingPawaPay(false);
-          if (pawapayDepositId) {
-            try {
-              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-            } catch (e) {
-              console.error("Cancel cleanup failed:", e);
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && venueProject && (
+    <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
+      {issuedTickets.map((t) => (
+        <div
+          key={t.id}
+          id={`ticket-render-${t.id}`}
+          className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
+        >
+          <TicketPreview
+            template={venueProject.template}
+            palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
+            font={venueProject.font || { css: "sans-serif", name: "Modern" }}
+            tier={t.tier}
+            title={venue.name}
+            subtitle={venue.address || t.attendee_name || name}
+            date={date}
+            time="Opening Hours"
+            seat={t.attendee_name || name || "General"}
+            price={
+              t.tier === "Standard Entry"
+                ? venue?.entrance_fee?.toString() || "0"
+                : venue.pricing_tiers?.find((pt: any) => pt.name === t.tier)?.amount?.toString() ||
+                  total.toString()
             }
-          }
-        }}
-      />
+            currency={venue.currency}
+            cover={venueProject.coverImage || ""}
+            logoText={venueProject.logoText || "Agatike"}
+            logoImage={venueProject.logoImage}
+            logoScale={Number(venueProject.logoScale || 24)}
+            logoOpacity={Number(venueProject.logoOpacity ?? 1)}
+            logoColorMode={venueProject.logoColorMode || "original"}
+            orderId={t.otp}
+            qrValue={`${window.location.origin}/v/${t.otp}`}
+            previewMode="Front"
+            layout={
+              venueProject.design_overrides?.layout || {
+                titleSize: 30,
+                subtitleSize: 14,
+                metaSize: 11,
+                titleAlign: "left",
+                titleOffsetY: 0,
+                subtitleOffsetY: 0,
+                metaOffsetY: 0,
+              }
+            }
+            back={
+              venueProject.design_overrides?.back || {
+                backText: "",
+                backImage: "",
+                backImageOpacity: 0.1,
+              }
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+    return (
+      <>
+        <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
+            }
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -554,102 +622,46 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             </strong>
           </p>
         </div>
-        {/* Hidden Ticket Renderer so html-to-image can find it */}
-        {venueProject && (
-          <div
-            className="absolute -z-50 pointer-events-none"
-            style={{ top: "-9999px", left: "-9999px" }}
-          >
-            {issuedTickets.map((t) => (
-              <div
-                key={t.id}
-                id={`ticket-render-${t.id}`}
-                className="inline-block bg-white relative w-[720px] h-[260px] overflow-hidden"
-              >
-                <TicketPreview
-                  template={venueProject.template}
-                  palette={venueProject.palette || { from: "#000", to: "#000", name: "Black" }}
-                  font={venueProject.font || { css: "sans-serif", name: "Modern" }}
-                  tier={t.tier}
-                  title={venue.name}
-                  subtitle={venue.address || t.attendee_name || name}
-                  date={date}
-                  time="Opening Hours"
-                  seat={t.attendee_name || name || "General"}
-                  price={
-                    t.tier === "Standard Entry"
-                      ? venue?.entrance_fee?.toString() || "0"
-                      : venue.pricing_tiers
-                          ?.find((pt: any) => pt.name === t.tier)
-                          ?.amount?.toString() || total.toString()
-                  }
-                  currency={venue.currency}
-                  cover={venueProject.coverImage || ""}
-                  logoText={venueProject.logoText || "Agatike"}
-                  logoImage={venueProject.logoImage}
-                  logoScale={Number(venueProject.logoScale || 24)}
-                  logoOpacity={Number(venueProject.logoOpacity ?? 1)}
-                  logoColorMode={venueProject.logoColorMode || "original"}
-                  orderId={t.otp}
-                  qrValue={`${window.location.origin}/v/${t.otp}`}
-                  previewMode="Front"
-                  layout={
-                    venueProject.design_overrides?.layout || {
-                      titleSize: 30,
-                      subtitleSize: 14,
-                      metaSize: 11,
-                      titleAlign: "left",
-                      titleOffsetY: 0,
-                      subtitleOffsetY: 0,
-                      metaOffsetY: 0,
-                    }
-                  }
-                  back={
-                    venueProject.design_overrides?.back || {
-                      backText: "",
-                      backImage: "",
-                      backImageOpacity: 0.1,
-                    }
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        {hiddenTicketRenderer}
       </>
     );
   }
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
-        <CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />
-        <h2 className="text-2xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
-        <p className="text-muted-foreground mb-8 px-4">
-          Your ticket for {venue.name} has been secured.
-        </p>
-        <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
-          <Ticket className="w-6 h-6 text-primary" />
-          <span className="font-bold tracking-widest">
-            {Math.random().toString(36).substring(2, 10).toUpperCase()}
-          </span>
+      <>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
+          <CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />
+          <h2 className="text-2xl font-bold tracking-tight mb-2">Booking Confirmed!</h2>
+          <p className="text-muted-foreground mb-8 px-4">
+            Your ticket for {venue.name} has been secured.
+          </p>
+          <div className="bg-secondary/30 p-4 rounded-2xl mb-8 flex items-center justify-center gap-2 font-mono text-xl border border-border/40">
+            <Ticket className="w-6 h-6 text-primary" />
+            <span className="font-bold tracking-widest">
+              {Math.random().toString(36).substring(2, 10).toUpperCase()}
+            </span>
+          </div>
+          <div className="mt-8 space-y-4">
+            <button
+              onClick={() => {
+                setIsSuccess(false);
+                setPawapayDepositId(null);
+                setIssuedTickets([]);
+                setCart({});
+                setAttendees([{ name: "", id_document: "" }]);
+              }}
+              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Buy Another Ticket
+            </button>
+            <p className="text-sm text-muted-foreground animate-pulse">
+              Or wait to be redirected...
+            </p>
+          </div>
         </div>
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => {
-              setIsSuccess(false);
-              setPawapayDepositId(null);
-              setIssuedTickets([]);
-              setCart({});
-              setAttendees([{ name: "", id_document: "" }]);
-            }}
-            className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-          >
-            Buy Another Ticket
-          </button>
-          <p className="text-sm text-muted-foreground animate-pulse">Or wait to be redirected...</p>
-        </div>
-      </div>
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -1231,7 +1243,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
         workspaceId={venue.workspace_id}
         quantity={totalTickets}
         itemLabel="Ticket(s)"
-        baseCurrency={venue.currency}
+        baseCurrency={venue?.workspace?.currency || venue?.currency}
         userPhone={user?.phone || undefined}
       />
     </div>

@@ -107,8 +107,6 @@ export async function deductInventoryFromOrders(orders: any[]) {
         sold_count: String(newSoldCount),
         available_sizes: sizes.length > 0 ? sizes : null,
       });
-
-      console.log(`[Inventory] Successfully updated stock for product ${productId}`);
     } catch (e) {
       console.error(`[Inventory] Failed to deduct inventory for product ${productId}:`, e);
     }

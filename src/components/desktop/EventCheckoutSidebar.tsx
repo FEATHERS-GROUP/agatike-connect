@@ -216,6 +216,8 @@ export function EventCheckoutSidebar({
                     const itemQty = cart[cartKey] || 0;
                     const isSelected = itemQty > 0;
 
+                    const isSoldOut = t.remaining === 0;
+
                     const isMapped = currentVenueProject?.sections_data?.some(
                       (s: any) => s.ticketId === t.id,
                     );
@@ -223,19 +225,31 @@ export function EventCheckoutSidebar({
                     return (
                       <div
                         key={t.id}
-                        className={`w-full rounded-2xl border p-4 text-left transition ${
-                          isSelected
-                            ? "border-primary bg-accent/40"
-                            : "border-border bg-background hover:bg-secondary"
-                        } ${isMapped ? "cursor-pointer" : ""}`}
+                        className={`w-full rounded-2xl border p-4 text-left transition relative overflow-hidden ${
+                          isSoldOut
+                            ? "border-border/40 bg-secondary/30 opacity-70 cursor-not-allowed"
+                            : isSelected
+                              ? "border-primary bg-accent/40"
+                              : "border-border bg-background hover:bg-secondary"
+                        } ${isMapped && !isSoldOut ? "cursor-pointer" : ""}`}
                         onClick={() => {
+                          if (isSoldOut) return;
                           if (isMapped) {
                             setActiveTicketIdForMap(t.id);
                             setIsSeatModalOpen(true);
                           }
                         }}
                       >
-                        <div className="flex items-center justify-between">
+                        {isSoldOut && (
+                          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                            <div className="border-[3px] border-red-600 text-red-600 px-3 py-1 text-2xl font-black uppercase tracking-widest transform -rotate-12 bg-transparent shadow-sm whitespace-nowrap">
+                              Sold Out
+                            </div>
+                          </div>
+                        )}
+                        <div
+                          className={`flex items-center justify-between ${isSoldOut ? "opacity-40" : ""}`}
+                        >
                           <div>
                             <p className="font-medium">{t.name}</p>
                             <p className="font-semibold">{formatCurrency(t.price, currencyCode)}</p>
@@ -245,7 +259,7 @@ export function EventCheckoutSidebar({
                             <div className="bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
                               Suspended
                             </div>
-                          ) : isMapped ? (
+                          ) : isSoldOut ? null : isMapped ? (
                             itemQty > 0 && (
                               <div className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full">
                                 {itemQty} Selected
@@ -285,8 +299,14 @@ export function EventCheckoutSidebar({
                             </div>
                           )}
                         </div>
-                        <p className="mt-2 text-xs text-muted-foreground">{t.perks.join(" · ")}</p>
-                        <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
+                        <p
+                          className={`mt-2 text-xs text-muted-foreground ${isSoldOut ? "opacity-40" : ""}`}
+                        >
+                          {t.perks.join(" · ")}
+                        </p>
+                        {!isSoldOut && (
+                          <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
+                        )}
                       </div>
                     );
                   })}

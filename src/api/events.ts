@@ -91,7 +91,7 @@ export const createEvent = createServerFn({ method: "POST" }).handler(async (ctx
             description: eventData.description || "",
             start: eventData.date,
             end: eventData.end_date || eventData.date,
-            location: eventData.location || "TBA",
+            location: eventData.location || "Upcoming",
           },
         } as any,
       });

@@ -6,6 +6,7 @@ import {
   getPromotionalRules,
   upgradeSubscription,
   PricingPlan,
+  checkLaunchPromoEligibility,
 } from "@/api/billing";
 import {
   getPawaPayNetworks,
@@ -56,6 +57,9 @@ function CheckoutPage() {
   const { planId } = Route.useParams();
   const search: any = Route.useSearch();
   const isAnnually = search.cycle === "annually";
+  // renew=true means this is a renewal of an existing plan; preserve remaining days
+  const isRenewal = search.renew === "true";
+  const currentNextBillingDate: string | undefined = search.currentNextBillingDate;
 
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
@@ -80,6 +84,7 @@ function CheckoutPage() {
 
   // Calculate pricing
   const [finalUSDPrice, setFinalUSDPrice] = useState(0);
+  const [isPromoEligible, setIsPromoEligible] = useState(false);
   const userCurrency = activeWorkspace?.currency;
   const [selectedCurrency, setSelectedCurrency] = useState(userCurrency);
 
@@ -112,13 +117,17 @@ function CheckoutPage() {
   useEffect(() => {
     async function fetchDetails() {
       try {
-        const [plans, rules, networks] = await Promise.all([
+        const [plans, rules, networks, promoEligible] = await Promise.all([
           getPricingPlans(),
           getPromotionalRules(),
           getPawaPayNetworks(),
+          checkLaunchPromoEligibility({
+            data: { organizer_id: activeWorkspace?.orgnizer_id },
+          } as any),
         ]);
 
         setPawaPayNetworks(networks);
+        setIsPromoEligible(promoEligible);
 
         const selectedPlan = plans.find((p) => p.id === planId);
         if (!selectedPlan) {
@@ -139,6 +148,8 @@ function CheckoutPage() {
         let calculatedPrice = basePrice;
 
         if (
+          promoEligible &&
+          !isRenewal &&
           basePrice > 0 &&
           launchPromo &&
           launchPromo.applies_to_cycles.includes(isAnnually ? "annually" : "monthly")
@@ -183,6 +194,9 @@ function CheckoutPage() {
             amount: finalUSDPrice,
             insertEarnings: paymentMethod === "card",
             network: "Card",
+            // Pass renewFromDate so the server extends from the current billing date,
+            // preserving any days the user already paid for
+            renewFromDate: isRenewal && currentNextBillingDate ? currentNextBillingDate : undefined,
           },
         });
 
@@ -204,9 +218,15 @@ function CheckoutPage() {
           amount: finalUSDPrice,
           insertEarnings: paymentMethod === "card",
           network: "Card",
+          // Preserve remaining days: extend from next_billing_date, not today
+          renewFromDate: isRenewal && currentNextBillingDate ? currentNextBillingDate : undefined,
         },
       });
-      toast.success(`Successfully subscribed to ${plan!.name}!`);
+      toast.success(
+        isRenewal
+          ? `Subscription renewed! Your remaining days have been carried over.`
+          : `Successfully subscribed to ${plan!.name}!`,
+      );
       navigate({ to: "/dashboard/billing/subscriptions" });
     }
   };
@@ -313,12 +333,29 @@ function CheckoutPage() {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Order Summary */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
+          <h2 className="text-2xl font-bold mb-6">
+            {isRenewal ? "Renew Subscription" : "Order Summary"}
+          </h2>
           <Card className="bg-secondary/20 border-border/50">
             <CardHeader>
               <CardTitle>{plan.name} Plan</CardTitle>
               <CardDescription>Billed {isAnnually ? "Annually" : "Monthly"}</CardDescription>
-              {plan.name.toLowerCase().includes("basic") && (
+              {isRenewal && currentNextBillingDate && (
+                <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                  <span className="block font-bold mb-1">✅ Your remaining days are safe</span>
+                  Your current subscription expires on{" "}
+                  <strong>
+                    {new Date(currentNextBillingDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </strong>
+                  . Your new billing cycle will start from that date — you won't lose any days you
+                  already paid for.
+                </div>
+              )}
+              {!isRenewal && plan.name.toLowerCase().includes("basic") && (
                 <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg text-xs text-primary font-medium">
                   <span className="block font-bold mb-1">🎁 14-Day Free Trial</span>
                   Get 14 days of full access to all premium modules (limit 1 creation per module).
@@ -331,29 +368,68 @@ function CheckoutPage() {
                 <span className="text-muted-foreground">
                   Base Price ({isAnnually ? "Year" : "Month"})
                 </span>
-                <span>
-                  {formatCurrency(getConvertedAmount(isAnnually ? plan.price * 12 : plan.price))}
-                </span>
+                <div className="text-right">
+                  <div className="font-medium">
+                    {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+                      isAnnually ? plan.price * 12 : plan.price,
+                    )}
+                  </div>
+                  {selectedCurrency !== "USD" && (
+                    <div className="text-xs text-muted-foreground">
+                      ≈{" "}
+                      {formatCurrency(
+                        getConvertedAmount(isAnnually ? plan.price * 12 : plan.price),
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {isAnnually && plan.price > 0 && (
                 <div className="flex justify-between text-sm text-green-500">
                   <span>Annual Discount (20%)</span>
-                  <span>-{formatCurrency(getConvertedAmount(plan.price * 12 * 0.2))}</span>
+                  <div className="text-right">
+                    <div className="font-medium">
+                      -
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format(plan.price * 12 * 0.2)}
+                    </div>
+                    {selectedCurrency !== "USD" && (
+                      <div className="text-xs opacity-80">
+                        ≈ -{formatCurrency(getConvertedAmount(plan.price * 12 * 0.2))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {finalUSDPrice < (isAnnually ? plan.price * 12 * 0.8 : plan.price) && (
-                <div className="flex justify-between text-sm text-primary font-medium">
-                  <span>Launch Promo (50% off first 3 mos)</span>
-                  <span>Applied</span>
-                </div>
-              )}
+              {isPromoEligible &&
+                !isRenewal &&
+                finalUSDPrice < (isAnnually ? plan.price * 12 * 0.8 : plan.price) && (
+                  <div className="flex justify-between text-sm text-primary font-medium">
+                    <span>Launch Promo (50% off first 3 mos)</span>
+                    <span>Applied</span>
+                  </div>
+                )}
 
               <div className="border-t pt-4 mt-4 flex flex-col gap-3">
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>{formatCurrency(getConvertedAmount(finalUSDPrice))}</span>
+                  <span>Total Due</span>
+                  <div className="text-right">
+                    <div>
+                      {new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format(finalUSDPrice)}
+                    </div>
+                    {selectedCurrency !== "USD" && (
+                      <div className="text-sm text-muted-foreground font-normal mt-1">
+                        ≈ {formatCurrency(getConvertedAmount(finalUSDPrice))} {selectedCurrency}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>

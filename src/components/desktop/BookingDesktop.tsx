@@ -54,6 +54,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
   const storageKey = `event_checkout_${eventId}`;
   const [cart, setCart] = useState<Record<string, number>>({});
+  const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
   const [selectedSeats, setSelectedSeats] = useState<any[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isSubdomain, setIsSubdomain] = useState(false);
@@ -601,58 +602,71 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
         const { paymentDetails, bookingRef } = checkoutContext;
         try {
           await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
-          const attachments = [];
+          const attachments: any[] = [];
           if (eventProject) {
-            for (const ticket of issuedTickets) {
-              const el = document.getElementById(`ticket-render-${ticket.id}`);
-              if (!el) {
-                toast.error(`DOM Element missing for ticket ${ticket.id}`);
-                continue;
-              }
-
-              await new Promise((r) => setTimeout(r, 100));
-
-              try {
-                const imgData = await htmlToImage.toJpeg(el, {
-                  pixelRatio: 1.5,
-                  quality: 0.8,
-                  backgroundColor: "#ffffff",
-                  width: 720,
-                  height: 260,
-                  imagePlaceholder:
-                    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-                });
-
-                if (!imgData || imgData === "data:,") {
-                  throw new Error(
-                    "htmlToImage returned an empty image. Usually caused by unloaded fonts or images.",
-                  );
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
+                const el = document.getElementById(`ticket-render-${ticket.id}`);
+                if (!el) {
+                  toast.error(`DOM Element missing for ticket ${ticket.id}`);
+                  return null;
                 }
-
-                const width = 720;
-                const height = 260;
-
-                const pdf = new jsPDF({
-                  orientation: "landscape",
-                  unit: "px",
-                  format: [width, height],
-                });
-                pdf.addImage(imgData, "JPEG", 0, 0, width, height);
-                const base64 = pdf.output("datauristring").split(",")[1];
-
-                attachments.push({
-                  filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
-                  content: base64,
-                });
-              } catch (e) {
-                console.warn(
-                  `[Ticket ${ticket.id}] Custom PDF failed (likely image load error), falling back to default...`,
-                  e,
-                );
+                try {
+                  const imgData = await htmlToImage.toJpeg(el, {
+                    pixelRatio: 1.5,
+                    quality: 0.8,
+                    backgroundColor: "#ffffff",
+                    width: 720,
+                    height: 260,
+                    imagePlaceholder:
+                      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                  });
+                  if (!imgData || imgData === "data:,") {
+                    throw new Error("htmlToImage returned an empty image.");
+                  }
+                  const pdf = new jsPDF({
+                    orientation: "landscape",
+                    unit: "px",
+                    format: [720, 260],
+                  });
+                  pdf.addImage(imgData, "JPEG", 0, 0, 720, 260);
+                  const base64 = pdf.output("datauristring").split(",")[1];
+                  return {
+                    filename: `Ticket_${ticket.tier.replace(/\s+/g, "_")}_${ticket.otp}.pdf`,
+                    content: base64,
+                  };
+                } catch (e) {
+                  console.warn(`[Ticket ${ticket.id}] Custom PDF failed, falling back...`, e);
+                  const stop =
+                    event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
+                  return await generateFallbackReceipt({
+                    entityName: event?.title || "Event",
+                    ticket,
+                    bookingRef: ticket.otp,
+                    customerName: ticket.attendee?.firstName || "Guest",
+                    dateStr: stop?.date || "TBD",
+                    timeStr: stop?.time || "TBD",
+                    locationStr: stop?.city || "TBD",
+                    durationStr: event?.duration || "",
+                    tierName: ticket.tier,
+                    quantity: 1,
+                  });
+                }
+              });
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
+            }
+          } else {
+            const chunkSize = 5;
+            for (let i = 0; i < issuedTickets.length; i += chunkSize) {
+              const chunk = issuedTickets.slice(i, i + chunkSize);
+              const chunkPromises = chunk.map(async (ticket: any) => {
                 const stop =
                   event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
-                const fallbackPdf = await generateFallbackReceipt({
-                  entityName: event?.title || "Event",
+                return await generateFallbackReceipt({
+                  entityName: event?.title || "Event/Venue",
                   ticket,
                   bookingRef: ticket.otp,
                   customerName: ticket.attendee?.firstName || "Guest",
@@ -663,25 +677,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                   tierName: ticket.tier,
                   quantity: 1,
                 });
-                attachments.push(fallbackPdf);
-              }
-            }
-          } else {
-            for (const ticket of issuedTickets) {
-              const stop = event?.tour_stops?.[ticket.attendee?.stopIdx] || event?.tour_stops?.[0];
-              const fallbackPdf = await generateFallbackReceipt({
-                entityName: event?.title || "Event/Venue",
-                ticket,
-                bookingRef: ticket.otp,
-                customerName: ticket.attendee?.firstName || "Guest",
-                dateStr: stop?.date || "TBD",
-                timeStr: stop?.time || "TBD",
-                locationStr: stop?.city || "TBD",
-                durationStr: event?.duration || "",
-                tierName: ticket.tier,
-                quantity: 1,
               });
-              attachments.push(fallbackPdf);
+              const results = await Promise.all(chunkPromises);
+              attachments.push(...results.filter(Boolean));
             }
           }
 
@@ -763,11 +761,25 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     return <CheckoutSkeleton />;
   }
 
-  if (isPollingPawaPay) {
+  const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && eventProject && (
+    <HiddenPDFGenerator
+      issuedTickets={issuedTickets}
+      eventProject={eventProject}
+      event={event}
+      currency={currency}
+      getMergedProjectDesign={getMergedProjectDesign}
+      getStopDetails={getStopDetails}
+      formatSeatDisplay={formatSeatDisplay}
+      getTierDetails={getTierDetails}
+    />
+  );
+
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         {!isSubdomain && <Navbar />}
         <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {
@@ -779,28 +791,30 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             }
           }}
         />
+        {hiddenTicketRenderer}
         {!isSubdomain && <Footer />}
       </div>
     );
   }
 
-  const hasMerchInCart = Object.keys(cart).some((k) => k.startsWith("merch_") && cart[k] > 0);
-
   if (isSuccess) {
     return (
-      <SuccessState
-        eventTitle={event.title}
-        recipientEmail={attendees[0]?.email}
-        hasMerch={hasMerchInCart}
-        onReset={() => {
-          setIsSuccess(false);
-          setPawapayDepositId(null);
-          setIssuedTickets([]);
-          setCart({});
-          setSelectedSeats([]);
-          setAttendees([]);
-        }}
-      />
+      <>
+        <SuccessState
+          eventTitle={event.title}
+          recipientEmail={attendees[0]?.email}
+          hasMerch={hasMerchInCart}
+          onReset={() => {
+            setIsSuccess(false);
+            setPawapayDepositId(null);
+            setIssuedTickets([]);
+            setCart({});
+            setSelectedSeats([]);
+            setAttendees([]);
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
     );
   }
 
@@ -888,18 +902,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       />
 
       {/* Hidden container for PDF rendering */}
-      {isGenerating && issuedTickets.length > 0 && eventProject && (
-        <HiddenPDFGenerator
-          issuedTickets={issuedTickets}
-          eventProject={eventProject}
-          event={event}
-          currency={currency}
-          getMergedProjectDesign={getMergedProjectDesign}
-          getStopDetails={getStopDetails}
-          formatSeatDisplay={formatSeatDisplay}
-          getTierDetails={getTierDetails}
-        />
-      )}
+      {hiddenTicketRenderer}
 
       {!isSubdomain && <Footer />}
       {isSubdomain && <StorefrontFooter />}

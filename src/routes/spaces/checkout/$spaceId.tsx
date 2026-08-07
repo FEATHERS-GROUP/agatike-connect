@@ -268,7 +268,7 @@ function CheckoutPage() {
           }
         }
       } else {
-        // Individual booking — send confirmation + invoice sequentially
+        // Individual booking — send confirmation with invoice PDF attached
         await sendSubscriptionConfirmationEmail({
           data: {
             to: formData.email,
@@ -278,21 +278,8 @@ function CheckoutPage() {
             price: finalPriceString,
             billingCycle,
             startDate: formData.startDate,
-          },
-        } as any);
-
-        await sendSubscriptionInvoiceEmail({
-          data: {
-            to: formData.email,
-            customerName: formData.name,
-            spaceName: space?.name || "Our Space",
-            planName,
-            price: finalPriceString,
-            billingCycle,
-            invoiceDate,
+            pdfBase64, // attach invoice PDF directly
             invoiceNumber,
-            startDate: formData.startDate,
-            pdfBase64, // attach invoice PDF
           },
         } as any);
       }
@@ -951,7 +938,7 @@ function CheckoutPage() {
         baseAmount={finalPriceNum}
         quantity={bookingType === "group" ? teamMembers.length : 1}
         itemLabel="Pass(es)"
-        baseCurrency={space?.currency || "RWF"}
+        baseCurrency={space?.workspace?.currency || space?.currency || "RWF"}
         userPhone={user?.phone || undefined}
       />
 
