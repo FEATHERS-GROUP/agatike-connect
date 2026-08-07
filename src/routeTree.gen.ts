@@ -22,7 +22,6 @@ import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as OrganizersRouteImport } from './routes/organizers'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MoviesRouteImport } from './routes/movies'
 import { Route as MapRouteImport } from './routes/map'
@@ -35,6 +34,7 @@ import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VenuesIndexRouteImport } from './routes/venues/index'
+import { Route as OrganizersIndexRouteImport } from './routes/organizers/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as BusesIndexRouteImport } from './routes/buses/index'
 import { Route as VenuesVenueIdRouteImport } from './routes/venues/$venueId'
@@ -42,6 +42,7 @@ import { Route as VTicketOtpRouteImport } from './routes/v/$ticketOtp'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket/$ticketId'
 import { Route as SpacesSpaceIdRouteImport } from './routes/spaces/$spaceId'
 import { Route as PSplatRouteImport } from './routes/p/$'
+import { Route as OrganizersOrganizerIdRouteImport } from './routes/organizers/$organizerId'
 import { Route as FFormIdRouteImport } from './routes/f/$formId'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 import { Route as DashboardWorkspacesRouteImport } from './routes/dashboard/workspaces'
@@ -296,11 +297,6 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrganizersRoute = OrganizersRouteImport.update({
-  id: '/organizers',
-  path: '/organizers',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -361,6 +357,11 @@ const VenuesIndexRoute = VenuesIndexRouteImport.update({
   path: '/venues/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrganizersIndexRoute = OrganizersIndexRouteImport.update({
+  id: '/organizers/',
+  path: '/organizers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
@@ -394,6 +395,11 @@ const SpacesSpaceIdRoute = SpacesSpaceIdRouteImport.update({
 const PSplatRoute = PSplatRouteImport.update({
   id: '/p/$',
   path: '/p/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganizersOrganizerIdRoute = OrganizersOrganizerIdRouteImport.update({
+  id: '/organizers/$organizerId',
+  path: '/organizers/$organizerId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FFormIdRoute = FFormIdRouteImport.update({
@@ -1512,7 +1518,6 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
-  '/organizers': typeof OrganizersRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -1545,6 +1550,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
+  '/organizers/$organizerId': typeof OrganizersOrganizerIdRoute
   '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -1552,6 +1558,7 @@ export interface FileRoutesByFullPath {
   '/venues/$venueId': typeof VenuesVenueIdRoute
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/organizers/': typeof OrganizersIndexRoute
   '/venues/': typeof VenuesIndexRoute
   '/checkout/$itemType/$itemId': typeof CheckoutItemTypeItemIdRoute
   '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
@@ -1735,7 +1742,6 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
-  '/organizers': typeof OrganizersRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -1768,6 +1774,7 @@ export interface FileRoutesByTo {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
+  '/organizers/$organizerId': typeof OrganizersOrganizerIdRoute
   '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -1775,6 +1782,7 @@ export interface FileRoutesByTo {
   '/venues/$venueId': typeof VenuesVenueIdRoute
   '/buses': typeof BusesIndexRoute
   '/events': typeof EventsIndexRoute
+  '/organizers': typeof OrganizersIndexRoute
   '/venues': typeof VenuesIndexRoute
   '/checkout/$itemType/$itemId': typeof CheckoutItemTypeItemIdRoute
   '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
@@ -1955,7 +1963,6 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/movies': typeof MoviesRoute
   '/onboarding': typeof OnboardingRoute
-  '/organizers': typeof OrganizersRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
@@ -1988,6 +1995,7 @@ export interface FileRoutesById {
   '/dashboard/workspaces': typeof DashboardWorkspacesRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/f/$formId': typeof FFormIdRoute
+  '/organizers/$organizerId': typeof OrganizersOrganizerIdRoute
   '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -1995,6 +2003,7 @@ export interface FileRoutesById {
   '/venues/$venueId': typeof VenuesVenueIdRoute
   '/buses/': typeof BusesIndexRoute
   '/events/': typeof EventsIndexRoute
+  '/organizers/': typeof OrganizersIndexRoute
   '/venues/': typeof VenuesIndexRoute
   '/checkout/$itemType/$itemId': typeof CheckoutItemTypeItemIdRoute
   '/dashboard/$workspaceSlug/community': typeof DashboardWorkspaceSlugCommunityRoute
@@ -2180,7 +2189,6 @@ export interface FileRouteTypes {
     | '/map'
     | '/movies'
     | '/onboarding'
-    | '/organizers'
     | '/pricing'
     | '/privacy'
     | '/profile'
@@ -2213,6 +2221,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
+    | '/organizers/$organizerId'
     | '/p/$'
     | '/spaces/$spaceId'
     | '/ticket/$ticketId'
@@ -2220,6 +2229,7 @@ export interface FileRouteTypes {
     | '/venues/$venueId'
     | '/buses/'
     | '/events/'
+    | '/organizers/'
     | '/venues/'
     | '/checkout/$itemType/$itemId'
     | '/dashboard/$workspaceSlug/community'
@@ -2403,7 +2413,6 @@ export interface FileRouteTypes {
     | '/map'
     | '/movies'
     | '/onboarding'
-    | '/organizers'
     | '/pricing'
     | '/privacy'
     | '/profile'
@@ -2436,6 +2445,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
+    | '/organizers/$organizerId'
     | '/p/$'
     | '/spaces/$spaceId'
     | '/ticket/$ticketId'
@@ -2443,6 +2453,7 @@ export interface FileRouteTypes {
     | '/venues/$venueId'
     | '/buses'
     | '/events'
+    | '/organizers'
     | '/venues'
     | '/checkout/$itemType/$itemId'
     | '/dashboard/$workspaceSlug/community'
@@ -2622,7 +2633,6 @@ export interface FileRouteTypes {
     | '/map'
     | '/movies'
     | '/onboarding'
-    | '/organizers'
     | '/pricing'
     | '/privacy'
     | '/profile'
@@ -2655,6 +2665,7 @@ export interface FileRouteTypes {
     | '/dashboard/workspaces'
     | '/events/$eventId'
     | '/f/$formId'
+    | '/organizers/$organizerId'
     | '/p/$'
     | '/spaces/$spaceId'
     | '/ticket/$ticketId'
@@ -2662,6 +2673,7 @@ export interface FileRouteTypes {
     | '/venues/$venueId'
     | '/buses/'
     | '/events/'
+    | '/organizers/'
     | '/venues/'
     | '/checkout/$itemType/$itemId'
     | '/dashboard/$workspaceSlug/community'
@@ -2846,7 +2858,6 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   MoviesRoute: typeof MoviesRoute
   OnboardingRoute: typeof OnboardingRoute
-  OrganizersRoute: typeof OrganizersRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
@@ -2871,6 +2882,7 @@ export interface RootRouteChildren {
   CinemasCinemaIdRoute: typeof CinemasCinemaIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
+  OrganizersOrganizerIdRoute: typeof OrganizersOrganizerIdRoute
   PSplatRoute: typeof PSplatRoute
   SpacesSpaceIdRoute: typeof SpacesSpaceIdRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
@@ -2878,6 +2890,7 @@ export interface RootRouteChildren {
   VenuesVenueIdRoute: typeof VenuesVenueIdRoute
   BusesIndexRoute: typeof BusesIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
+  OrganizersIndexRoute: typeof OrganizersIndexRoute
   VenuesIndexRoute: typeof VenuesIndexRoute
   CheckoutItemTypeItemIdRoute: typeof CheckoutItemTypeItemIdRoute
   FEventIdReviewRoute: typeof FEventIdReviewRoute
@@ -2987,13 +3000,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/organizers': {
-      id: '/organizers'
-      path: '/organizers'
-      fullPath: '/organizers'
-      preLoaderRoute: typeof OrganizersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -3078,6 +3084,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenuesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/organizers/': {
+      id: '/organizers/'
+      path: '/organizers'
+      fullPath: '/organizers/'
+      preLoaderRoute: typeof OrganizersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/': {
       id: '/events/'
       path: '/events'
@@ -3125,6 +3138,13 @@ declare module '@tanstack/react-router' {
       path: '/p/$'
       fullPath: '/p/$'
       preLoaderRoute: typeof PSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organizers/$organizerId': {
+      id: '/organizers/$organizerId'
+      path: '/organizers/$organizerId'
+      fullPath: '/organizers/$organizerId'
+      preLoaderRoute: typeof OrganizersOrganizerIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/f/$formId': {
@@ -4980,7 +5000,6 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   MoviesRoute: MoviesRoute,
   OnboardingRoute: OnboardingRoute,
-  OrganizersRoute: OrganizersRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
@@ -5005,6 +5024,7 @@ const rootRouteChildren: RootRouteChildren = {
   CinemasCinemaIdRoute: CinemasCinemaIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
+  OrganizersOrganizerIdRoute: OrganizersOrganizerIdRoute,
   PSplatRoute: PSplatRoute,
   SpacesSpaceIdRoute: SpacesSpaceIdRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
@@ -5012,6 +5032,7 @@ const rootRouteChildren: RootRouteChildren = {
   VenuesVenueIdRoute: VenuesVenueIdRoute,
   BusesIndexRoute: BusesIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
+  OrganizersIndexRoute: OrganizersIndexRoute,
   VenuesIndexRoute: VenuesIndexRoute,
   CheckoutItemTypeItemIdRoute: CheckoutItemTypeItemIdRoute,
   FEventIdReviewRoute: FEventIdReviewRoute,

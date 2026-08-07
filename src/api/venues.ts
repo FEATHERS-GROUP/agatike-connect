@@ -206,6 +206,9 @@ const GET_PUBLIC_VENUES = `
       pricing_tiers
       latitude
       longitude
+      description
+      amenities
+      facilities_data
     }
   }
 `;

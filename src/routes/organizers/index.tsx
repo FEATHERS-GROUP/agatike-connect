@@ -32,7 +32,7 @@ import {
 const organizers: any[] = [];
 type Organizer = any;
 
-export const Route = createFileRoute("/organizers")({
+export const Route = createFileRoute("/organizers/")({
   head: () => ({
     meta: [
       { title: "Organizers — Agatike" },
@@ -82,7 +82,7 @@ function OrganizersPage() {
   );
 
   const handleOrgClick = (org: any) => {
-    setSelectedOrg(org);
+    router.navigate({ to: "/organizers/$organizerId", params: { organizerId: org.id } });
   };
 
   const closeProfile = () => {
@@ -198,44 +198,6 @@ function OrganizersPage() {
         <Footer />
       </div>
 
-      {/* Profile Modals */}
-      {isMobile ? (
-        <Drawer open={!!selectedOrg} onOpenChange={(open) => !open && closeProfile()}>
-          <DrawerContent>
-            <DrawerHeader className="sr-only">
-              <DrawerTitle>{selectedOrg?.name}</DrawerTitle>
-              <DrawerDescription>Profile details for {selectedOrg?.name}</DrawerDescription>
-            </DrawerHeader>
-            {selectedOrg && (
-              <OrganizerProfile
-                org={selectedOrg}
-                following={isFollowing(selectedOrg.id)}
-                isLoggedIn={isLoggedIn}
-                rating={ratingsMap[selectedOrg.id]}
-                onFollowToggle={() => toggleFollow(selectedOrg.id)}
-              />
-            )}
-          </DrawerContent>
-        </Drawer>
-      ) : (
-        <Dialog open={!!selectedOrg} onOpenChange={(open) => !open && closeProfile()}>
-          <DialogContent className="sm:max-w-md rounded-3xl">
-            <DialogHeader className="sr-only">
-              <DialogTitle>{selectedOrg?.name}</DialogTitle>
-              <DialogDescription>Profile details for {selectedOrg?.name}</DialogDescription>
-            </DialogHeader>
-            {selectedOrg && (
-              <OrganizerProfile
-                org={selectedOrg}
-                following={isFollowing(selectedOrg.id)}
-                isLoggedIn={isLoggedIn}
-                rating={ratingsMap[selectedOrg.id]}
-                onFollowToggle={() => toggleFollow(selectedOrg.id)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }

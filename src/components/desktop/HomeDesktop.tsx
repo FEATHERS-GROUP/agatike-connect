@@ -230,8 +230,8 @@ export function HomeDesktop() {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative">
-        <div className="relative h-[78vh] min-h-[560px] w-full overflow-hidden">
+      <section className="relative z-50">
+        <div className="relative h-[78vh] min-h-[560px] w-full overflow-visible">
           <img
             src={hero}
             alt="Live event crowd"

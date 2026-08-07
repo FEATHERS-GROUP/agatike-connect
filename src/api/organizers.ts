@@ -388,6 +388,19 @@ export const getOrganizers = createServerFn({ method: "GET" })
     return result.organizers;
   });
 
+export const getOrganizerCountries = createServerFn({ method: "GET" }).handler(async () => {
+  const query = `
+    query GetOrganizerCountries {
+      organizers(where: {country: {_is_null: false, _neq: ""}}) {
+        country
+      }
+    }
+  `;
+  const result = await hasuraRequest<{ organizers: { country: string }[] }>(query, {});
+  const uniqueCountries = Array.from(new Set(result.organizers.map((o) => o.country).filter(Boolean))).sort();
+  return uniqueCountries;
+});
+
 export const getFollowedOrganizers = createServerFn({ method: "POST" }).handler(async () => {
   try {
     const userId = await getUserIdFromCookie();
@@ -423,6 +436,68 @@ export const getFollowedOrganizers = createServerFn({ method: "POST" }).handler(
     throw err;
   }
 });
+
+export const getOrganizerPublicData = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string }) => d)
+  .handler(async (ctx) => {
+    const { organizerId } = ctx.data;
+    const query = `
+      query GetOrganizerPublicData($organizerId: uuid!) {
+        organizers_by_pk(id: $organizerId) {
+          id
+          name
+          handle
+          bio
+          followers
+          image
+          email
+          phone
+          socials
+          active
+          country
+          workspaces {
+            id
+            currency
+            events(where: { allowed_public: { _eq: true } }, order_by: { created_at: desc }) {
+              id
+              title
+              category
+              cover
+              created_at
+              event_type
+              tour_stops
+              workspace_id
+              event_tickets {
+                cost
+                remaining
+              }
+              schedules {
+                start_date
+                end_date
+              }
+            }
+            rentable_venues(order_by: { created_at: desc }) {
+              id
+              name
+              type
+              city
+              cover_url
+              pricing_tiers
+            }
+            cinemas(where: { status: { _eq: "active" } }, order_by: { created_at: desc }) {
+              id
+              name
+              cover_url
+              city
+            }
+          }
+        }
+      }
+    `;
+
+    const result = await hasuraRequest<{ organizers_by_pk: any }>(query, { organizerId });
+    return result.organizers_by_pk;
+  });
 
 export const followOrganizer = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const userId = await getUserIdFromCookie();
