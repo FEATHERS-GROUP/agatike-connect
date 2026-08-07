@@ -144,35 +144,17 @@ export function ProfileMobile({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border/40 mt-4 px-4 gap-1 overflow-x-auto hide-scrollbar">
+      <div className="flex border-b border-border/40 mt-4 px-4 gap-2 overflow-x-auto hide-scrollbar">
         {(["upcoming", "history", "following", "work"] as any[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 min-w-[90px] py-2.5 text-xs font-bold capitalize transition-all rounded-t-lg ${tab === t ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
+            className={`flex-1 py-3 flex items-center justify-center transition-all rounded-t-lg ${tab === t ? "text-primary border-b-2 border-primary bg-primary/5" : "text-muted-foreground hover:text-foreground hover:bg-white/5"}`}
           >
-            <span className="flex items-center justify-center gap-1.5">
-              {t === "upcoming" && (
-                <>
-                  <Ticket className="h-4 w-4" /> Upcoming
-                </>
-              )}
-              {t === "history" && (
-                <>
-                  <Calendar className="h-4 w-4" /> History
-                </>
-              )}
-              {t === "following" && (
-                <>
-                  <Heart className="h-4 w-4" /> Following
-                </>
-              )}
-              {t === "work" && (
-                <>
-                  <User className="h-4 w-4" /> Work
-                </>
-              )}
-            </span>
+            {t === "upcoming" && <Ticket className="h-5 w-5" />}
+            {t === "history" && <Calendar className="h-5 w-5" />}
+            {t === "following" && <Heart className="h-5 w-5" />}
+            {t === "work" && <User className="h-5 w-5" />}
           </button>
         ))}
       </div>
