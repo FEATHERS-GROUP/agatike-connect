@@ -473,7 +473,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-        description: pageSlug ? `PawaPay Deposit::${pageSlug}` : "PawaPay Deposit",
+        description: pageSlug ? `Agatike Deposit::${pageSlug}` : "Agatike Deposit",
       },
     );
 
