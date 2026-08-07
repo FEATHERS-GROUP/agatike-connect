@@ -371,6 +371,10 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
             ticketPrice = Number(matchedTier.amount);
           }
         }
+        if (booking.booking_type === "facility") {
+          const issuedCount = booking.tickets_data?.issued?.length || 1;
+          ticketPrice = booking.amount / issuedCount;
+        }
 
         const isFacility = booking.booking_type === "facility";
         const facilities = venue?.facilities_data || [];
