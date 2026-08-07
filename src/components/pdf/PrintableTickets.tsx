@@ -4,6 +4,7 @@ import QRCode from "react-qr-code";
 import Barcode from "react-barcode";
 import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/TicketPreview";
 import { DEFAULT_TERMS_HTML } from "@/components/desktop/dashboard/ticket-designer/templates/types";
+import AgatikeIcon from "@/assets/logo/Agatike Icon.png";
 
 export type TicketTemplateConfig = {
   layout?: "movie" | "conference" | "default";
@@ -223,9 +224,7 @@ function DynamicPrintablePassBack({
         <div className="absolute -left-4 -bottom-4 w-8 h-8 bg-black rounded-full" />
 
         <div className="w-full text-center space-y-4">
-          <p className="text-sm font-black tracking-wider" style={{ color: accentColor }}>
-            Agatike
-          </p>
+          <img src={AgatikeIcon} alt="Agatike" className="w-10 h-10 object-contain mx-auto" />
           <div>
             <p className="text-[10px] uppercase text-gray-400 font-bold tracking-widest">
               Reference
