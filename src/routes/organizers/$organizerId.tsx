@@ -165,15 +165,17 @@ function OrganizerProfilePage() {
                   <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
                 </div>
                 
-                <Button
-                  onClick={() => toggleFollow(org.id)}
-                  variant={following ? "outline" : "default"}
-                  size="lg"
-                  className={`w-full max-w-xs rounded-full font-bold text-base h-12 mb-4 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
-                  style={following ? undefined : { background: "var(--gradient-primary)" }}
-                >
-                  {following ? "Following" : "Follow"}
-                </Button>
+                {isLoggedIn && (
+                  <Button
+                    onClick={() => toggleFollow(org.id)}
+                    variant={following ? "outline" : "default"}
+                    size="lg"
+                    className={`w-full max-w-xs rounded-full font-bold text-base h-12 mb-4 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                    style={following ? undefined : { background: "var(--gradient-primary)" }}
+                  >
+                    {following ? "Following" : "Follow"}
+                  </Button>
+                )}
                 
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start w-full max-w-xs">
                   {twitterUrl && (

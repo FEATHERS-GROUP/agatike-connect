@@ -257,8 +257,7 @@ export function HomeDesktop() {
               </span>
             </h1>
             <p className="mt-4 max-w-xl text-muted-foreground md:text-lg">
-              Tickets, stories, and after-movies from Africa's best nightlife, festivals, sports and
-              experiences — all in one place.
+              Discover the pulse of Africa. Grab tickets to vibrant festivals, unforgettable nightlife, and thrilling sports, then relive every magical moment through exclusive stories and event highlights.
             </p>
 
             <HeroSearch />

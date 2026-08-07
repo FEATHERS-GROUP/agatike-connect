@@ -51,7 +51,7 @@ function OrganizersPage() {
   const { toggleFollow, isFollowing } = useFollowedOrganizers();
   const { isLoggedIn } = useUserAuth();
 
-  const { data: dbOrganizers } = useQuery({
+  const { data: dbOrganizers, isLoading } = useQuery({
     queryKey: ["organizers"],
     queryFn: () => getOrganizers(),
   });
@@ -127,7 +127,13 @@ function OrganizersPage() {
           </div>
         </header>
 
-        {filteredList.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col gap-3 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-4">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={i} className="h-[340px] rounded-3xl bg-secondary/60 animate-pulse border border-border/40" />
+            ))}
+          </div>
+        ) : filteredList.length === 0 ? (
           <div className="text-center py-16 rounded-3xl border border-dashed border-border/60 text-muted-foreground bg-secondary/20">
             <p className="text-base font-medium">No organizers found matching "{searchTerm}"</p>
           </div>

@@ -3,6 +3,7 @@ import { Search, Plus, Menu, Bus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { NavbarSearch } from "./NavbarSearch";
 
 export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
   const { isLoggedIn, user } = useUserAuth();
@@ -64,24 +65,19 @@ export function Navbar({ hideOnMobile }: { hideOnMobile?: boolean } = {}) {
           </Link>
         </nav>
 
-        <div className="ml-auto hidden flex-1 max-w-sm md:block">
-          <div className="relative">
-            <Bus className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search buses, routes, agencies"
-              className="pl-9 rounded-full bg-secondary/60 border-transparent focus-visible:bg-background"
-            />
-          </div>
-        </div>
+        <div className="flex-1" />
 
-        <div className="ml-auto flex items-center gap-1 sm:gap-2 md:ml-2">
+        <NavbarSearch />
+
+        <div className="flex items-center gap-1 sm:gap-2 md:ml-2">
           <Link to="/dashboard">
             <Button
-              className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4 mr-1 sm:mr-2"
+              size="sm"
+              className="rounded-full shadow-[var(--shadow-glow)] px-3 sm:px-4 mr-1 sm:mr-2 h-9"
               style={{ background: "var(--gradient-primary)" }}
             >
-              <Plus className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline-block text-sm font-medium">Create & Host</span>
+              <Plus className="h-3.5 w-3.5 sm:mr-1" />
+              <span className="hidden sm:inline-block text-xs font-semibold">Create & Host</span>
             </Button>
           </Link>
 
