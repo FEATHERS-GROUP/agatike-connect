@@ -8,7 +8,7 @@ export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: 
   const cards = [
     ...tickets.map((t, i) => ({
       id: t.id || `t-${i}`,
-      type: "ticket",
+      type: "ticket" as const,
       data: t,
     })),
     ...vouchers.flatMap((v, i) => {
@@ -17,7 +17,7 @@ export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: 
         const isSponsored = (v.product?.name || "").toLowerCase().includes("sponsored");
         return {
           id: `${v.id || `v-${i}`}-${j}`,
-          type: "voucher",
+          type: "voucher" as const,
           color: isSponsored ? "bg-orange-600" : "bg-orange-500",
           brand: v.product?.name || "Voucher",
           icon: v.product?.image_url ? (
