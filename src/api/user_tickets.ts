@@ -268,34 +268,34 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       : null;
     const design = mergedProject
       ? {
-          template: mergedProject.template || "default",
-          palette: mergedProject.palette || null,
-          font: mergedProject.font || null,
-          coverImage: mergedProject.coverImage || null,
-          logoText:
-            mergedProject.logoText !== undefined && mergedProject.logoText !== null
-              ? mergedProject.logoText
-              : null,
-          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-          logoImage: mergedProject.logoImage || null,
-          logoColorMode: mergedProject.logoColorMode || null,
-          logoOpacity:
-            mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
-              ? Number(mergedProject.logoOpacity)
-              : null,
-          layout: mergedProject.design_overrides?.layout || null,
-          back: mergedProject.design_overrides?.back || null,
-        }
+        template: mergedProject.template || "default",
+        palette: mergedProject.palette || null,
+        font: mergedProject.font || null,
+        coverImage: mergedProject.coverImage || null,
+        logoText:
+          mergedProject.logoText !== undefined && mergedProject.logoText !== null
+            ? mergedProject.logoText
+            : null,
+        logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+        logoImage: mergedProject.logoImage || null,
+        logoColorMode: mergedProject.logoColorMode || null,
+        logoOpacity:
+          mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+            ? Number(mergedProject.logoOpacity)
+            : null,
+        layout: mergedProject.design_overrides?.layout || null,
+        back: mergedProject.design_overrides?.back || null,
+      }
       : null;
 
     const baseDate = stop?.date || event?.tour_stops?.[0]?.date;
     const scheduleDate = event?.schedules?.[0]?.start_date;
     const formattedScheduleDate = scheduleDate
       ? new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }).format(new Date(scheduleDate))
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(new Date(scheduleDate))
       : null;
 
     tickets.push({
@@ -312,7 +312,8 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       orderId: att.qrcode_number,
       ticketType: att.ticket_type || "Standard",
       ticketCategory,
-      price: mergedProject?.price || Number(att.event_tickets?.cost) || 0,
+      price: Number(att.event_tickets?.cost) || mergedProject?.price || 0,
+      currency: event?.workspaces?.currency,
       isVenueBooking: false,
       status: att.status || "Confirmed",
       eventDate: baseDate || scheduleDate || att.created_at,
@@ -340,24 +341,24 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           : null;
         const design = mergedProject
           ? {
-              template: mergedProject.template || "default",
-              palette: mergedProject.palette || null,
-              font: mergedProject.font || null,
-              coverImage: mergedProject.coverImage || null,
-              logoText:
-                mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                  ? mergedProject.logoText
-                  : null,
-              logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-              logoImage: mergedProject.logoImage || null,
-              logoColorMode: mergedProject.logoColorMode || null,
-              logoOpacity:
-                mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
-                  ? Number(mergedProject.logoOpacity)
-                  : null,
-              layout: mergedProject.design_overrides?.layout || null,
-              back: mergedProject.design_overrides?.back || null,
-            }
+            template: mergedProject.template || "default",
+            palette: mergedProject.palette || null,
+            font: mergedProject.font || null,
+            coverImage: mergedProject.coverImage || null,
+            logoText:
+              mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                ? mergedProject.logoText
+                : null,
+            logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+            logoImage: mergedProject.logoImage || null,
+            logoColorMode: mergedProject.logoColorMode || null,
+            logoOpacity:
+              mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+                ? Number(mergedProject.logoOpacity)
+                : null,
+            layout: mergedProject.design_overrides?.layout || null,
+            back: mergedProject.design_overrides?.back || null,
+          }
           : null;
 
         let ticketPrice = venue?.entrance_fee || 0;
@@ -403,24 +404,24 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       const mergedProject = baseProject ? getMergedProjectDesign(baseProject, 0, "") : null;
       const design = mergedProject
         ? {
-            template: mergedProject.template || "default",
-            palette: mergedProject.palette || null,
-            font: mergedProject.font || null,
-            coverImage: mergedProject.coverImage || null,
-            logoText:
-              mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                ? mergedProject.logoText
-                : null,
-            logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-            logoImage: mergedProject.logoImage || null,
-            logoColorMode: mergedProject.logoColorMode || null,
-            logoOpacity:
-              mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
-                ? Number(mergedProject.logoOpacity)
-                : null,
-            layout: mergedProject.design_overrides?.layout || null,
-            back: mergedProject.design_overrides?.back || null,
-          }
+          template: mergedProject.template || "default",
+          palette: mergedProject.palette || null,
+          font: mergedProject.font || null,
+          coverImage: mergedProject.coverImage || null,
+          logoText:
+            mergedProject.logoText !== undefined && mergedProject.logoText !== null
+              ? mergedProject.logoText
+              : null,
+          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+          logoImage: mergedProject.logoImage || null,
+          logoColorMode: mergedProject.logoColorMode || null,
+          logoOpacity:
+            mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+              ? Number(mergedProject.logoOpacity)
+              : null,
+          layout: mergedProject.design_overrides?.layout || null,
+          back: mergedProject.design_overrides?.back || null,
+        }
         : null;
 
       tickets.push({
@@ -473,10 +474,10 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       cover: coverUrl,
       date: booking.schedule?.show_date
         ? new Intl.DateTimeFormat("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          }).format(new Date(booking.schedule.show_date))
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        }).format(new Date(booking.schedule.show_date))
         : "Upcoming",
       time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "Upcoming",
       duration,

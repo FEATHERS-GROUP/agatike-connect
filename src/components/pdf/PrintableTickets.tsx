@@ -68,8 +68,8 @@ export function PrintableTicket({
             seat={ticket.passengerName}
             seatLabel={ticket.seatLabel}
             price={ticket.price?.toString() || "0"}
-            currency={ticket.isVenueBooking ? ticket.currency || "RWF" : "RWF"}
-            cover={ticket.design.coverImage || ticket.cover || ""}
+            currency={ticket.currency || "RWF"}
+            cover={ticket.design?.coverImage || ticket.cover || ""}
             logoText={ticket.design.logoText || "Agatike"}
             logoImage={ticket.design.logoImage}
             logoScale={ticket.design.logoScale || 24}
@@ -125,8 +125,8 @@ export function PrintableTicket({
             seat={ticket.passengerName}
             seatLabel={ticket.seatLabel}
             price={ticket.price?.toString() || "0"}
-            currency={ticket.isVenueBooking ? ticket.currency || "RWF" : "RWF"}
-            cover={ticket.design.coverImage || ticket.cover || ""}
+            currency={ticket.currency || "RWF"}
+            cover={ticket.design?.coverImage || ticket.cover || ""}
             logoText={ticket.design.logoText || "Agatike"}
             logoImage={ticket.design.logoImage}
             logoScale={ticket.design.logoScale || 24}

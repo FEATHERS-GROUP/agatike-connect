@@ -341,59 +341,61 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
               ];
 
-              let fallbackPdfBase64: string | undefined = undefined;
-              if (firstAtt.events?.id) {
+              const attachments: any[] = [];
+              if (confirmedAttendees.length > 0) {
                 try {
                   const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
                   const { getMergedProjectDesign } = await import("./user_tickets");
 
-                  // Extract time separately for layout
-                  const tourStops = Array.isArray(firstAtt.events.tour_stops)
-                    ? firstAtt.events.tour_stops
-                    : firstAtt.events.tour_stops
-                      ? [firstAtt.events.tour_stops]
-                      : [];
-                  const firstStop = tourStops[0] || {};
-                  
-                  const baseProject = firstAtt.events?.ticket_projects?.[0];
-                  const mergedDesign = baseProject ? getMergedProjectDesign(baseProject, 0, firstAtt.ticket_id) : undefined;
-                  
-                  const seatData = firstAtt.custom_fields?.seat || firstAtt.custom_fields?.section || "";
-                  const hasRealSeat = !!seatData;
-                  const seatStr = seatData || firstAtt.names || "General Admission";
-                  const seatLabelStr = hasRealSeat ? "Seat" : "Name";
-                  const ticketCost = mergedDesign?.price || Number(firstAtt.event_tickets?.cost) || 0;
+                  for (const att of confirmedAttendees) {
+                    if (!att.events?.id) continue;
 
-                  const fallbackRes = await generateFallbackReceipt({
-                    entityName: orgName,
-                    customerName: firstAtt.names,
-                    ticket: { 
-                      id: firstAtt.qrcode_number, 
-                      tier: "Event Ticket",
-                      price: ticketCost,
-                      seat: seatStr,
-                      seatLabel: seatLabelStr,
-                      design: mergedDesign
-                    },
-                    dateStr: firstStop.date || "",
-                    timeStr: firstStop.time || "",
-                    locationStr: eventLocation || "",
-                    bookingRef: tx.reference_id,
-                    type: "event",
-                  });
-                  fallbackPdfBase64 = fallbackRes.content;
+                    const tourStops = Array.isArray(att.events.tour_stops)
+                      ? att.events.tour_stops
+                      : att.events.tour_stops
+                        ? [att.events.tour_stops]
+                        : [];
+                    const firstStop = tourStops[0] || {};
+
+                    const baseProject = att.events?.ticket_projects?.[0];
+                    const mergedDesign = baseProject ? getMergedProjectDesign(baseProject, 0, att.ticket_id) : undefined;
+
+                    const seatData = att.custom_fields?.seat || att.custom_fields?.section || "";
+                    const hasRealSeat = !!seatData;
+                    const seatStr = seatData || att.names || "General";
+                    const seatLabelStr = hasRealSeat ? "Seat" : "Name";
+
+                    const ticketCost = Number(att.event_tickets?.cost) || mergedDesign?.price || 0;
+                    const currency = att.events.workspaces?.currency || "RWF";
+
+                    const fallbackRes = await generateFallbackReceipt({
+                      entityName: orgName,
+                      customerName: att.names,
+                      ticket: {
+                        id: att.qrcode_number,
+                        tier: att.ticket_type || "Event Ticket",
+                        price: ticketCost,
+                        currency: currency,
+                        seat: seatStr,
+                        seatLabel: seatLabelStr,
+                        design: mergedDesign
+                      },
+                      dateStr: firstStop.date || "",
+                      timeStr: firstStop.time || "",
+                      locationStr: eventLocation || "",
+                      bookingRef: tx.reference_id,
+                      type: "event",
+                    });
+
+                    attachments.push({
+                      filename: `Ticket-${att.qrcode_number}.pdf`,
+                      content: fallbackRes.content,
+                      contentType: "application/pdf",
+                    });
+                  }
                 } catch (e) {
-                  console.error("Failed to generate fallback ticket", e);
+                  console.error("Failed to generate fallback tickets", e);
                 }
-              }
-
-              const attachments: any[] = [];
-              if (fallbackPdfBase64) {
-                attachments.push({
-                  filename: `Ticket-${firstAtt.qrcode_number}.pdf`,
-                  content: fallbackPdfBase64,
-                  contentType: "application/pdf",
-                });
               }
 
               let productPdfBase64: string | undefined = undefined;
@@ -615,10 +617,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
               const formattedStart = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
                 : sub.start_date;
 
               if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
@@ -687,10 +689,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
                 : "today";
 
               const smsText =

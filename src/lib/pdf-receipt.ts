@@ -170,7 +170,7 @@ export const generateFallbackReceipt = async (options: {
 
   pdf.setFontSize(12);
   pdf.setTextColor(textColor);
-  const priceStr = ticket?.price !== undefined ? `RWF ${ticket.price}` : "Standard";
+  const priceStr = ticket?.price !== undefined ? `${ticket.currency} ${ticket.price}` : "Standard";
   pdf.text(priceStr, 20, 298);
   const seatStr = ticket?.seat || attendeeName;
   pdf.text(seatStr, 280, 298, { align: "right", maxWidth: 120 });
