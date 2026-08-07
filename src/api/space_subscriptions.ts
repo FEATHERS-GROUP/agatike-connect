@@ -1016,7 +1016,8 @@ export const cancelSpaceSubscription = createServerFn({ method: "POST" })
 
       // 2d. Send Notifications
       try {
-        const { db } = await import("./firebase");
+        const { getFirebaseAdmin } = await import("../lib/firebase.server");
+        const { db } = getFirebaseAdmin();
         const orgnizer_id = sub.space?.workspace?.orgnizer_id;
 
         // Notify organizer
