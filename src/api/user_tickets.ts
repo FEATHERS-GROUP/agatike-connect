@@ -168,7 +168,7 @@ const GET_USER_CINEMA_BOOKINGS = `
   }
 `;
 
-const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
+export const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
   if (!baseProject) return null;
   const overrides = baseProject.design_overrides?.overrides;
   if (!overrides) return baseProject;

@@ -170,12 +170,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   qrcode_number
                   ticket_id
                   custom_fields
+                  event_tickets {
+                    cost
+                  }
                   events {
                     id
                     title
                     tour_stops
                     workspaces {
                       name
+                    }
+                    ticket_projects(where: { deleted: { _eq: false } }) {
+                      template
+                      palette
+                      font
+                      coverImage
+                      logoText
+                      logoImage
+                      logoColorMode
+                      logoScale
+                      logoOpacity
+                      layout
+                      back
+                      design_overrides
                     }
                   }
                 }
@@ -328,6 +345,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               if (firstAtt.events?.id) {
                 try {
                   const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
+                  const { getMergedProjectDesign } = await import("./user_tickets");
 
                   // Extract time separately for layout
                   const tourStops = Array.isArray(firstAtt.events.tour_stops)
@@ -336,11 +354,27 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       ? [firstAtt.events.tour_stops]
                       : [];
                   const firstStop = tourStops[0] || {};
+                  
+                  const baseProject = firstAtt.events?.ticket_projects?.[0];
+                  const mergedDesign = baseProject ? getMergedProjectDesign(baseProject, 0, firstAtt.ticket_id) : undefined;
+                  
+                  const seatData = firstAtt.custom_fields?.seat || firstAtt.custom_fields?.section || "";
+                  const hasRealSeat = !!seatData;
+                  const seatStr = seatData || firstAtt.names || "General Admission";
+                  const seatLabelStr = hasRealSeat ? "Seat" : "Name";
+                  const ticketCost = mergedDesign?.price || Number(firstAtt.event_tickets?.cost) || 0;
 
                   const fallbackRes = await generateFallbackReceipt({
                     entityName: orgName,
                     customerName: firstAtt.names,
-                    ticket: { id: firstAtt.qrcode_number, tier: "Event Ticket" },
+                    ticket: { 
+                      id: firstAtt.qrcode_number, 
+                      tier: "Event Ticket",
+                      price: ticketCost,
+                      seat: seatStr,
+                      seatLabel: seatLabelStr,
+                      design: mergedDesign
+                    },
                     dateStr: firstStop.date || "",
                     timeStr: firstStop.time || "",
                     locationStr: eventLocation || "",
