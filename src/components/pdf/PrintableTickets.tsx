@@ -76,6 +76,7 @@ export function PrintableTicket({
             date={ticket.date}
             time={ticket.time}
             seat={ticket.passengerName}
+            seatLabel={ticket.seatLabel}
             price={ticket.price?.toString() || "0"}
             currency={ticket.isVenueBooking ? ticket.currency || "RWF" : "RWF"}
             cover={ticket.design.coverImage || ticket.cover || ""}
@@ -132,6 +133,7 @@ export function PrintableTicket({
             date={ticket.date}
             time={ticket.time}
             seat={ticket.passengerName}
+            seatLabel={ticket.seatLabel}
             price={ticket.price?.toString() || "0"}
             currency={ticket.isVenueBooking ? ticket.currency || "RWF" : "RWF"}
             cover={ticket.design.coverImage || ticket.cover || ""}
@@ -601,7 +603,7 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
           </div>
           <div>
             <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
-              {labels.seat || "Seat"}
+              {ticket.seatLabel || labels.seat || "Seat"}
             </p>
             <p
               className="text-lg font-black leading-tight px-1"

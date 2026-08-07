@@ -13,6 +13,7 @@ export function Concert1(props: TemplateProps) {
     date,
     time,
     seat,
+    seatLabel,
     price,
     currency,
     cover,
@@ -104,7 +105,7 @@ export function Concert1(props: TemplateProps) {
               <div className="grid grid-cols-4 gap-3" style={{ fontSize: `${layout.metaSize}px` }}>
                 <Cell label="Date" value={date} />
                 <Cell label="Time" value={time} />
-                <Cell label="Seat" value={seat} />
+                <Cell label={seatLabel || "Seat"} value={seat} />
                 <Cell label="Price" value={`${currency}${price}`} />
               </div>
             </div>

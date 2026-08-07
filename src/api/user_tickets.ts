@@ -25,6 +25,9 @@ const GET_USER_EVENT_ATTENDEES = `
       type
       created_at
       custom_fields
+      event_tickets {
+        cost
+      }
       events {
         id
         title
@@ -300,15 +303,16 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       title: event?.title || "Event Ticket",
       cover: event?.cover || "/afrobeats_night.png",
       date: baseDate || formattedScheduleDate || "Upcoming",
-      time: stop?.time || event?.tour_stops?.[0]?.time || "Upcoming",
+      time: stop?.time || event?.tour_stops?.[0]?.time || (scheduleDate ? new Intl.DateTimeFormat("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(scheduleDate)) : "Upcoming"),
       city: stop?.city || event?.tour_stops?.[0]?.city || event?.workspaces?.city || "Online",
-      seat: att.names || "General Admission",
+      seat: att.custom_fields?.seat || att.custom_fields?.section || att.names || "General Admission",
+      seatLabel: (att.custom_fields?.seat || att.custom_fields?.section) ? "Seat" : "Name",
       passengerName: att.names || user.username || "Guest",
       passengerProfile: user.profile || null,
       orderId: att.qrcode_number,
       ticketType: att.ticket_type || "Standard",
       ticketCategory,
-      price: 0,
+      price: mergedProject?.price || Number(att.event_tickets?.cost) || 0,
       isVenueBooking: false,
       status: att.status || "Confirmed",
       eventDate: baseDate || scheduleDate || att.created_at,

@@ -13,6 +13,7 @@ export function Entrance2(props: TemplateProps) {
     date,
     time,
     seat,
+    seatLabel,
     price,
     currency,
     cover,

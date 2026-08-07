@@ -13,6 +13,7 @@ export function Movie2(props: TemplateProps) {
     date,
     time,
     seat,
+    seatLabel,
     price,
     currency,
     cover,
@@ -184,7 +185,7 @@ export function Movie2(props: TemplateProps) {
                   className="text-[12px] font-black uppercase tracking-widest mb-1"
                   style={{ color: palette.from }}
                 >
-                  Row / Seat
+                  {seatLabel ? `Row / ${seatLabel}` : "Row / Seat"}
                 </p>
                 <p
                   className="text-xl font-bold border-2 rounded-lg px-4 py-1"

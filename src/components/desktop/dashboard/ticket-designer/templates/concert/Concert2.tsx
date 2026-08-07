@@ -13,6 +13,7 @@ export function Concert2(props: TemplateProps) {
     date,
     time,
     seat,
+    seatLabel,
     price,
     currency,
     cover,
@@ -175,7 +176,7 @@ export function Concert2(props: TemplateProps) {
                 </div>
                 <div>
                   <p className="text-[8px] uppercase tracking-widest text-white/50 mb-0.5">
-                    Section / Row / Seat
+                    Section / {seatLabel ? `Row / ${seatLabel}` : "Row / Seat"}
                   </p>
                   <p className="font-bold text-sm">{seat}</p>
                 </div>
