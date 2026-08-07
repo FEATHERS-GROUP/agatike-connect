@@ -43,6 +43,7 @@ function TicketViewer() {
 
   const primaryTicket = exactTicket || eventTickets[0];
   const [isDownloading, setIsDownloading] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<any>(null);
   const { user } = useUserAuth();
 
   const { data: productOrders = [], isLoading: isProductsLoading } = useQuery({
@@ -80,13 +81,29 @@ function TicketViewer() {
     if (isDownloading) return;
     setIsDownloading(true);
     try {
+      if (selectedCard?.type === "voucher") {
+        // Simple download for voucher
+        const element = document.getElementById(`voucher-${selectedCard.id}`);
+        if (!element) throw new Error("Voucher element not found");
+        const imgData = await htmlToImage.toPng(element, {
+          pixelRatio: 2,
+          backgroundColor: "#0a0a0a",
+          style: { opacity: "1" },
+        });
+        const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [400, 500] });
+        pdf.addImage(imgData, "PNG", 0, 0, 400, 500);
+        pdf.save(`agatike-voucher-${selectedCard.data.qr_code_string || selectedCard.id}.pdf`);
+        return;
+      }
+
       const elementFront = document.getElementById("printable-ticket-front");
       const elementBack = document.getElementById("printable-ticket-back");
       if (!elementFront || !elementBack) throw new Error("Ticket elements not found");
 
-      const isCustomDesign = !!primaryTicket?.design;
+      const ticketToPrint = selectedCard?.type === "ticket" ? selectedCard.data : primaryTicket;
+      const isCustomDesign = !!ticketToPrint?.design;
       const width = isCustomDesign ? 720 : 800;
-      const height = isCustomDesign ? getCustomTemplateHeight(primaryTicket.design.template) : 300;
+      const height = isCustomDesign ? getCustomTemplateHeight(ticketToPrint.design.template) : 300;
 
       // Capture front
       const imgDataFront = await htmlToImage.toPng(elementFront, {
@@ -120,7 +137,7 @@ function TicketViewer() {
       pdf.addPage([width, height], "landscape");
       pdf.addImage(imgDataBack, "PNG", 0, 0, width, height);
 
-      pdf.save(`agatike-ticket-${primaryTicket?.orderId || ticketId}.pdf`);
+      pdf.save(`agatike-ticket-${ticketToPrint?.orderId || ticketId}.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
     } finally {
@@ -166,9 +183,15 @@ function TicketViewer() {
         </div>
       )}
 
-      {/* Scrollable Container */}
-      <div className="relative z-10 w-full max-w-[420px] mx-auto px-5 py-8 flex flex-col gap-8 pb-40">
-        {/* Header */}
+      {/* Content Container */}
+      <div
+        className={`relative z-10 w-full mx-auto px-5 py-8 flex pb-40 transition-all duration-500 ${
+          selectedCard ? "max-w-[1000px] flex-col md:flex-row items-start md:gap-16" : "max-w-[420px] flex-col gap-8"
+        }`}
+      >
+        {/* Left Side: Event Details & Carousel (Hidden on mobile if card is selected) */}
+        <div className={`flex flex-col gap-8 w-full ${selectedCard ? "hidden md:flex md:w-[420px] shrink-0" : "flex"}`}>
+          {/* Header */}
         <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-700">
           <Link
             to="/profile"
@@ -204,7 +227,7 @@ function TicketViewer() {
         </div>
 
         {/* Carousel Stack */}
-        <CarouselStack tickets={eventTickets} vouchers={vouchers} />
+        <CarouselStack tickets={eventTickets} vouchers={vouchers} onCardClick={setSelectedCard} isCompressed={!!selectedCard} />
 
         {/* Sections Wrapper with Staggered Animation */}
         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
@@ -286,36 +309,132 @@ function TicketViewer() {
         </div>
       </div>
 
-      {/* Download Button - Fixed at bottom with gorgeous glass floating bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none pb-safe-bottom">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent pointer-events-none h-40 bottom-0 top-auto" />
-        <div className="max-w-[420px] mx-auto px-5 pb-6 pointer-events-auto relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500 fill-mode-both">
-          <button
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className="group relative w-full overflow-hidden bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(var(--primary)_/_0.4)] hover:shadow-[0_8px_40px_rgb(var(--primary)_/_0.6)] hover:-translate-y-1 transition-all duration-300 text-[15px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:scale-[0.98]"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            <div className="relative flex items-center gap-2">
-              {isDownloading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Download className="w-5 h-5" />
-              )}
-              {isDownloading ? "Generating PDF..." : "Save PDF Ticket"}
+      {/* Right Side: Selected Card Details (Acts as own page on mobile) */}
+        {selectedCard && (
+          <div className="flex flex-col w-full flex-1 md:sticky md:top-12 animate-in fade-in slide-in-from-right-8 duration-500 items-center justify-start">
+            {/* Mobile Back Button */}
+            <div className="md:hidden flex items-center mb-6 w-full">
+              <button
+                onClick={() => setSelectedCard(null)}
+                className="w-10 h-10 bg-white/[0.08] backdrop-blur-xl rounded-2xl flex items-center justify-center hover:bg-white/[0.15] border border-white/10"
+              >
+                <ChevronLeft className="w-5 h-5 text-white/90" />
+              </button>
+              <span className="ml-4 font-bold text-lg text-white">
+                {selectedCard.type === "ticket" ? "Ticket Details" : "Voucher Details"}
+              </span>
             </div>
-          </button>
-        </div>
+            
+            <div className="hidden md:flex w-full justify-center mb-8">
+              <h2 className="text-white text-3xl font-black tracking-tight drop-shadow-md">
+                {selectedCard.type === "ticket" ? "Ticket Details" : "Voucher Details"}
+              </h2>
+            </div>
+
+            <div className="flex flex-col items-center w-full max-w-[380px]">
+              {selectedCard.type === "ticket" ? (
+                <div className="w-full shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[2rem] transform transition-transform hover:scale-[1.02]">
+                  <DynamicPass ticket={selectedCard.data} />
+                </div>
+              ) : selectedCard.type === "voucher" ? (
+                <div
+                  id={`voucher-${selectedCard.id}`}
+                  className={`relative w-[280px] h-[360px] rounded-[2rem] shadow-2xl ${selectedCard.color} flex flex-col items-center p-6 text-white overflow-hidden border border-white/10`}
+                >
+                  <div
+                    className="absolute left-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10"
+                    style={{ boxShadow: "inset -3px 0px 5px rgba(0,0,0,0.5)" }}
+                  />
+                  <div
+                    className="absolute right-[-16px] top-[60%] w-8 h-8 bg-[#1a1a1a] rounded-full z-10"
+                    style={{ boxShadow: "inset 3px 0px 5px rgba(0,0,0,0.5)" }}
+                  />
+                  <div className="absolute left-6 right-6 top-[60%] border-t-2 border-dashed border-white/30 translate-y-[15px]" />
+
+                  <div className="flex flex-col items-center justify-center flex-1 w-full pb-8">
+                    {selectedCard.icon}
+                    <p
+                      className={`tracking-[0.2em] text-[10px] font-bold uppercase mb-1 opacity-90 ${selectedCard.isSponsored ? "text-yellow-200" : ""}`}
+                    >
+                      {selectedCard.brand}
+                    </p>
+                    
+                    <div className="flex items-baseline gap-1 my-1">
+                      <span className="text-3xl font-black">
+                        {Number(selectedCard.value).toLocaleString()}
+                      </span>
+                      <span className="text-sm font-bold opacity-80">RWF</span>
+                    </div>
+                    {Number(selectedCard.price) > 0 && (
+                      <p className="text-[10px] opacity-75 font-medium mb-1">
+                        Purchased for {Number(selectedCard.price).toLocaleString()} RWF
+                      </p>
+                    )}
+
+                    {selectedCard.total > 1 && (
+                      <p className="text-[10px] opacity-70 mb-4 font-mono mt-1">
+                        Item {selectedCard.index} of {selectedCard.total}
+                      </p>
+                    )}
+
+                    <div className="mt-2 w-full h-12 flex items-center justify-center px-4">
+                      {Array.from({ length: 35 }).map((_, i) => {
+                        const w = (i * 13) % 4 === 0 ? "4px" : (i * 7) % 3 === 0 ? "1px" : "2px";
+                        const mr = (i * 5) % 2 === 0 ? "1px" : "3px";
+                        return (
+                          <div
+                            key={i}
+                            className="h-full bg-white opacity-90"
+                            style={{ width: w, marginRight: mr }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-[10px] tracking-widest font-mono opacity-80 break-all px-4 text-center">
+                      {selectedCard.qrCode}
+                    </p>
+                  </div>
+
+                  <div className="absolute bottom-6 w-full px-8">
+                    <div
+                      className={`w-full backdrop-blur-sm font-bold py-3.5 rounded-full text-[13px] border text-center uppercase tracking-widest ${selectedCard.isSponsored ? "bg-yellow-500/20 text-yellow-200 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]" : "bg-white/10 text-white border-white/20 shadow-sm"}`}
+                    >
+                      {selectedCard.isSponsored ? "Sponsored Gift" : "Gift Card"}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-8 w-full max-w-[380px]">
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="group relative w-full overflow-hidden bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(var(--primary)_/_0.4)] hover:shadow-[0_8px_40px_rgb(var(--primary)_/_0.6)] hover:-translate-y-1 transition-all duration-300 text-[15px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:scale-[0.98]"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <div className="relative flex items-center gap-2">
+                  {isDownloading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
+                  {isDownloading ? "Generating PDF..." : "Save PDF"}
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Hidden PDF Printable Layer */}
-      <PrintableTicket id="printable-ticket" ticket={primaryTicket} />
+      <PrintableTicket id="printable-ticket" ticket={selectedCard?.type === "ticket" ? selectedCard.data : primaryTicket} />
     </div>
   );
 }
 
-function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] }) {
+function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: { tickets: any[]; vouchers: any[]; onCardClick: (card: any) => void; isCompressed?: boolean }) {
   // Map tickets and vouchers to a single cards array.
   // Tickets are placed first, vouchers last so tickets render on top initially (since activeIndex starts at 0).
   const cards = [
@@ -358,7 +477,7 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
 
   return (
     <div className="flex flex-col items-center justify-center w-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
-      <div className="relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6">
+      <div className={`relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6 transition-all duration-500 origin-bottom ${isCompressed ? "scale-75 opacity-70" : "scale-100 opacity-100"}`}>
         {cards.map((card, index) => {
           const offset = index - activeIndex;
           const absOffset = Math.abs(offset);
@@ -376,7 +495,13 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
           return (
             <div
               key={card.id}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => {
+                if (activeIndex === index) {
+                  onCardClick(card);
+                } else {
+                  setActiveIndex(index);
+                }
+              }}
               className="absolute bottom-0 transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] cursor-pointer"
               style={{
                 transform: `translateX(${translateX}px) translateY(${translateY}px) rotateZ(${rotateZ}deg) scale(${scale})`,
