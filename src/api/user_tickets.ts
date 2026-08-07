@@ -376,6 +376,28 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         const facilities = venue?.facilities_data || [];
         const facilityObj = isFacility ? facilities.find((f: any) => String(f.id) === String(booking.facility_id)) : null;
         const facilityName = facilityObj?.name || null;
+        const isSharedAccess = facilityObj?.type === "shared_access";
+
+        const startDt = new Date(booking.start_time);
+        const startTimeStr = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(startDt);
+
+        let timeStr = startTimeStr;
+        if (booking.end_time) {
+          const endDt = new Date(booking.end_time);
+          const endTimeStr = new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }).format(endDt);
+          timeStr = `${startTimeStr} - ${endTimeStr}`;
+        }
+        if (isFacility && isSharedAccess) {
+          timeStr = "Full Day";
+        }
 
         tickets.push({
           id: t.id,
@@ -386,12 +408,8 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
             weekday: "short",
             month: "short",
             day: "numeric",
-          }).format(new Date(booking.start_time)),
-          time: new Intl.DateTimeFormat("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }).format(new Date(booking.start_time)),
+          }).format(startDt),
+          time: timeStr,
           seat: t.attendee_name || booking.customer_name || "Guest",
           passengerName: t.attendee_name || booking.customer_name || user.username || "Guest",
           passengerProfile: user.profile || null,
@@ -399,6 +417,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           ticketType: t.tier || "Standard Entry",
           ticketCategory: isFacility ? "facility" : venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
           price: ticketPrice,
+          currency: venue?.currency || "RWF",
           isVenueBooking: true,
           status: t.status || booking.status || "Confirmed",
           eventDate: booking.start_time,
@@ -437,6 +456,28 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       const facilities = venue?.facilities_data || [];
       const facilityObj = isFacility ? facilities.find((f: any) => String(f.id) === String(booking.facility_id)) : null;
       const facilityName = facilityObj?.name || null;
+      const isSharedAccess = facilityObj?.type === "shared_access";
+
+      const startDt = new Date(booking.start_time);
+      const startTimeStr = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(startDt);
+
+      let timeStr = startTimeStr;
+      if (booking.end_time) {
+        const endDt = new Date(booking.end_time);
+        const endTimeStr = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(endDt);
+        timeStr = `${startTimeStr} - ${endTimeStr}`;
+      }
+      if (isFacility && isSharedAccess) {
+        timeStr = "Full Day";
+      }
 
       tickets.push({
         id: booking.id,
@@ -447,12 +488,8 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           weekday: "short",
           month: "short",
           day: "numeric",
-        }).format(new Date(booking.start_time)),
-        time: new Intl.DateTimeFormat("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }).format(new Date(booking.start_time)),
+        }).format(startDt),
+        time: timeStr,
         seat: booking.customer_name || "Guest",
         passengerName: booking.customer_name || user.username || "Guest",
         passengerProfile: user.profile || null,
@@ -460,6 +497,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         ticketType: "Standard Entry",
         ticketCategory: isFacility ? "facility" : venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
         price: booking.amount,
+        currency: venue?.currency || "RWF",
         isVenueBooking: true,
         status: booking.status || "Confirmed",
         eventDate: booking.start_time,

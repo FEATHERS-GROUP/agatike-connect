@@ -23,6 +23,7 @@ import { DynamicPass } from "@/components/ticket-viewer/DynamicPass";
 import { PrintableTicket, getCustomTemplateHeight } from "@/components/pdf/PrintableTickets";
 import { SelectedCardView } from "@/components/ticket-viewer/SelectedCardView";
 import { PurchasesList } from "@/components/ticket-viewer/PurchasesList";
+import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 
 export const Route = createFileRoute("/ticket/$ticketId")({
   component: TicketViewer,
@@ -106,6 +107,30 @@ function TicketViewer() {
       if (!elementFront || !elementBack) throw new Error("Ticket elements not found");
 
       const ticketToPrint = selectedCard?.type === "ticket" ? selectedCard.data : primaryTicket;
+
+      if (ticketToPrint?.ticketCategory === "facility") {
+        const receipt = await generateFallbackReceipt({
+          entityName: ticketToPrint.venueName || ticketToPrint.title || "Facility",
+          ticket: ticketToPrint,
+          bookingRef: ticketToPrint.orderId,
+          customerName: ticketToPrint.passengerName,
+          dateStr: ticketToPrint.date || ticketToPrint.eventDate,
+          timeStr: ticketToPrint.time || ticketToPrint.workingHours,
+          locationStr: ticketToPrint.city,
+          tierName: ticketToPrint.facilityName || ticketToPrint.ticketType,
+          quantity: 1,
+          type: "facility"
+        });
+
+        const link = document.createElement("a");
+        link.href = `data:application/pdf;base64,${receipt.content}`;
+        link.download = receipt.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
       const isCustomDesign = !!ticketToPrint?.design;
       const width = isCustomDesign ? 720 : 800;
       const height = isCustomDesign ? getCustomTemplateHeight(ticketToPrint.design.template) : 300;

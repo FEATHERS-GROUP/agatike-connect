@@ -197,7 +197,11 @@ export function DynamicPass({ ticket }: { ticket: any }) {
               : ticket.time || "18:00"}
           </p>
           <p className="text-gray-500 text-xs font-medium mt-1">
-            {["entrance", "venue"].includes(ticket.ticketCategory) ? "Working Hours" : "Doors Open"}
+            {["entrance", "venue"].includes(ticket.ticketCategory)
+              ? "Working Hours"
+              : ticket.ticketCategory === "facility"
+                ? "Booking Time"
+                : "Doors Open"}
           </p>
         </div>
       </div>
