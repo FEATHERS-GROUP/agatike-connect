@@ -143,7 +143,7 @@ export const generateFallbackReceipt = async (options: {
 
   pdf.setFontSize(16);
   pdf.setTextColor(textColor);
-  const refCode = bookingRef || ticket.otp || ticket.id;
+  const refCode = ticket.otp || bookingRef || ticket.id;
   pdf.text(refCode, 20, 220);
 
   // Details Row

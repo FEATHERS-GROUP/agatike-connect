@@ -282,6 +282,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             : null,
         venue_name: venue.name,
         venue_currency: venue.currency,
+        booking_type: venue?.rental_model === "ENTIRE_VENUE" ? "entire_venue" : "entrance",
+        payment_method: paymentMethod,
+        total_amount: Number(total),
       };
 
       const res = await createVenueBooking({ data: payload });

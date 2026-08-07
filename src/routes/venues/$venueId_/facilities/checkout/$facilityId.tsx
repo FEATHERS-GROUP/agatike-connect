@@ -321,7 +321,7 @@ function FacilityCheckoutPage() {
     perSessionRate,
   ]);
 
-  const sendEmail = async (bRef: string, atts?: any[]) => {
+  const sendEmail = async (bRef: string, atts?: any[], otps?: string[]) => {
     try {
       const dateRangeStr = date?.from
         ? date.to
@@ -332,6 +332,8 @@ function FacilityCheckoutPage() {
         isSharedAccess || selectedSlots.length === 0
           ? "Full Day"
           : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
+      
+      const codeStr = otps && otps.length > 0 ? otps.join(", ") : bRef;
 
       await sendVenueBookingEmail({
         data: {
@@ -342,7 +344,7 @@ function FacilityCheckoutPage() {
           venueLocation: venue.address || venue.city || "Venue Location",
           dateRange: dateRangeStr,
           timeRange: timeRangeStr,
-          bookingRef: bRef,
+          bookingRef: codeStr,
           attachments: atts,
         },
       } as any);
@@ -351,7 +353,7 @@ function FacilityCheckoutPage() {
     }
   };
 
-  const sendSmsAlert = async (bRef: string) => {
+  const sendSmsAlert = async (bRef: string, otps?: string[]) => {
     try {
       if (!phone) return;
       const dateRangeStr = date?.from
@@ -364,7 +366,8 @@ function FacilityCheckoutPage() {
           ? "Full Day"
           : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
 
-      const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${bRef}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
+      const codeStr = otps && otps.length > 0 ? otps.join(", ") : bRef;
+      const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${codeStr}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
       await sendSMSServer({ data: { to: phone, text: msg, organizerId: venue.workspace_id } });
     } catch (e) {
       console.error("Failed to send SMS:", e);
@@ -639,8 +642,9 @@ function FacilityCheckoutPage() {
           }
 
           if (attachments.length > 0 && email) {
-            await sendEmail(bookingRef, attachments);
-            if (!pawapayDepositId) await sendSmsAlert(bookingRef);
+            const otps = issuedTickets.map((t: any) => t.otp);
+            await sendEmail(bookingRef, attachments, otps);
+            if (!pawapayDepositId) await sendSmsAlert(bookingRef, otps);
 
             toast.success("Booking confirmed and tickets emailed!");
           } else {
@@ -738,9 +742,19 @@ function FacilityCheckoutPage() {
 
           <div className="bg-secondary/30 border border-border/60 rounded-2xl p-6 mb-8 w-full max-w-sm">
             <p className="text-sm text-muted-foreground mb-2">Your Booking Reference (OTP)</p>
-            <p className="text-4xl font-mono font-bold tracking-widest text-primary">
-              {bookingRef}
-            </p>
+            <div className="flex flex-col gap-2">
+              {issuedTickets.length > 0 ? (
+                issuedTickets.map((t: any) => (
+                  <p key={t.id} className="text-3xl font-mono font-bold tracking-widest text-primary">
+                    {t.otp || bookingRef}
+                  </p>
+                ))
+              ) : (
+                <p className="text-4xl font-mono font-bold tracking-widest text-primary">
+                  {bookingRef}
+                </p>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground mt-4">
               Please show this code at the facility.
             </p>
