@@ -107,7 +107,7 @@ function ProfilePage() {
     return new Date(dateInput);
   };
 
-  const upcomingTicketsList = tickets.filter((t: any) => {
+  const rawUpcomingTickets = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return false;
     const eventDate = parseDateInsensitively(t.eventDate);
     const today = new Date();
@@ -115,6 +115,17 @@ function ProfilePage() {
     eventDate.setHours(0, 0, 0, 0);
     return eventDate >= today;
   });
+
+  const upcomingTicketsList = Object.values(
+    rawUpcomingTickets.reduce((acc: any, ticket: any) => {
+      const key = ticket.eventId || ticket.title;
+      if (!acc[key]) {
+        acc[key] = { ...ticket, tickets: [] };
+      }
+      acc[key].tickets.push(ticket);
+      return acc;
+    }, {}),
+  );
 
   const rawHistoryTickets = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return true;

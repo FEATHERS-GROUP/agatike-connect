@@ -60,9 +60,13 @@ function TicketViewer() {
         const prodEventId =
           prod.event?.id || prod.event_id || prod.specs?.eventId || prod.specs?.event_id;
 
-        const isEventMatch = String(prodEventId) === String(primaryTicket.eventId);
+        const isEventMatch =
+          String(prodEventId) === String(primaryTicket.eventId) ||
+          prod.specs?.linked_assets?.some((a: any) => String(a.id) === String(primaryTicket.eventId));
+          
         const isOrderMatch =
-          o.qr_code_string && eventTicketOrderIds.includes(String(o.qr_code_string));
+          (o.qr_code_string && eventTicketOrderIds.includes(String(o.qr_code_string))) ||
+          (o.decrptions && eventTicketOrderIds.includes(String(o.decrptions)));
 
         return isEventMatch || isOrderMatch;
       })
@@ -320,25 +324,30 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
       type: "ticket",
       data: t,
     })),
-    ...vouchers.map((v, i) => ({
-      id: v.id || `v-${i}`,
-      type: "voucher",
-      color: (v.product?.name || "").toLowerCase().includes("sponsored")
-        ? "bg-yellow-600"
-        : ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
-      brand: v.product?.name || "Voucher",
-      offer: v.qty ? `${v.qty}x` : "1x",
-      icon: v.product?.image_url ? (
-        <img
-          src={v.product.image_url}
-          alt=""
-          className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
-        />
-      ) : (
-        <TicketIcon className="w-10 h-10 text-white" />
-      ),
-      data: v,
-    })),
+    ...vouchers.flatMap((v, i) => {
+      const qty = v.qty || 1;
+      return Array.from({ length: qty }).map((_, j) => ({
+        id: `${v.id || `v-${i}`}-${j}`,
+        type: "voucher",
+        color: (v.product?.name || "").toLowerCase().includes("sponsored")
+          ? "bg-yellow-600"
+          : ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
+        brand: v.product?.name || "Voucher",
+        icon: v.product?.image_url ? (
+          <img
+            src={v.product.image_url}
+            alt=""
+            className="w-12 h-12 rounded-full object-cover border-2 border-white/20 mb-3"
+          />
+        ) : (
+          <TicketIcon className="w-10 h-10 text-white mb-3" />
+        ),
+        qrCode: v.qr_code_string || v.id,
+        data: v,
+        index: j + 1,
+        total: qty
+      }));
+    }),
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -390,19 +399,34 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
 
                   {/* Content */}
                   <div className="flex flex-col items-center justify-center flex-1 w-full pb-8">
+                    {card.icon}
                     <p
-                      className={`tracking-[0.2em] text-xs font-bold uppercase mb-4 opacity-90 ${card.brand.toLowerCase().includes("sponsored") ? "text-yellow-200" : ""}`}
+                      className={`tracking-[0.2em] text-[10px] font-bold uppercase mb-1 opacity-90 ${card.brand.toLowerCase().includes("sponsored") ? "text-yellow-200" : ""}`}
                     >
                       {card.brand}
                     </p>
-                    <div className="flex flex-col items-center justify-center mb-6">
-                      <h2
-                        className={`text-5xl font-black text-center px-4 leading-tight ${card.brand.toLowerCase().includes("sponsored") ? "text-yellow-100 drop-shadow-md" : ""}`}
-                      >
-                        {card.offer}
-                      </h2>
+                    {card.total > 1 && (
+                      <p className="text-[10px] opacity-70 mb-4 font-mono">
+                        Item {card.index} of {card.total}
+                      </p>
+                    )}
+
+                    <div className="mt-2 w-full h-12 flex items-center justify-center px-4">
+                      {Array.from({ length: 35 }).map((_, i) => {
+                        const w = (i * 13) % 4 === 0 ? "4px" : (i * 7) % 3 === 0 ? "1px" : "2px";
+                        const mr = (i * 5) % 2 === 0 ? "1px" : "3px";
+                        return (
+                          <div
+                            key={i}
+                            className="h-full bg-white opacity-90"
+                            style={{ width: w, marginRight: mr }}
+                          />
+                        );
+                      })}
                     </div>
-                    {card.icon}
+                    <p className="mt-2 text-[10px] tracking-widest font-mono opacity-80 break-all px-4 text-center">
+                      {card.qrCode}
+                    </p>
                   </div>
 
                   <div className="absolute bottom-6 w-full px-8">

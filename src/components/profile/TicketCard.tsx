@@ -4,6 +4,7 @@ import { Calendar, Clock, QrCode, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function TicketCard({ ticket }: { ticket: any }) {
+  const isMultiple = ticket.tickets && ticket.tickets.length > 1;
   const handleAddToCalendar = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -63,9 +64,13 @@ export function TicketCard({ ticket }: { ticket: any }) {
           {ticket.title}
         </span>
         <span
-          className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${ticket.ticketType === "VIP" ? "bg-primary text-primary-foreground" : "bg-white/20 text-white backdrop-blur-sm"}`}
+          className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+            isMultiple || ticket.ticketType === "VIP"
+              ? "bg-primary text-primary-foreground"
+              : "bg-white/20 text-white backdrop-blur-sm"
+          }`}
         >
-          {ticket.ticketType}
+          {isMultiple ? `${ticket.tickets.length} Tickets` : ticket.ticketType}
         </span>
       </div>
       <div className="px-4 py-3">
@@ -88,10 +93,14 @@ export function TicketCard({ ticket }: { ticket: any }) {
         <div className="flex items-center justify-between border-t border-border/40 pt-3 mt-1">
           <div>
             <p className="text-xs font-semibold text-foreground truncate max-w-[150px]">
-              {ticket.passengerName}
+              {isMultiple ? "Multiple Tickets" : ticket.passengerName}
             </p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{ticket.seat}</p>
-            <p className="text-[10px] font-mono text-primary mt-0.5">{ticket.orderId}</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {isMultiple ? "Multiple Seats" : ticket.seat}
+            </p>
+            <p className="text-[10px] font-mono text-primary mt-0.5">
+              {isMultiple ? "View Details" : ticket.orderId}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
