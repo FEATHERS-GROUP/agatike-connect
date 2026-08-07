@@ -65,7 +65,7 @@ export function FacilityCheckoutSheet({
   themeColor,
 }: FacilityCheckoutSheetProps) {
   const queryClient = useQueryClient();
-  const session = null;
+  const session: any = null;
   const venueId = venue?.id;
   const facilityId = facility?.id?.replace(/^facility_/, "");
 
