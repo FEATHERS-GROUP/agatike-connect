@@ -17,6 +17,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useState } from "react";
 import * as htmlToImage from "html-to-image";
 import { jsPDF } from "jspdf";
+import QRCode from "react-qr-code";
 import { PrintableTicket, getCustomTemplateHeight } from "@/components/pdf/PrintableTickets";
 
 export const Route = createFileRoute("/ticket/$ticketId")({
@@ -168,7 +169,7 @@ function TicketViewer() {
   }
 
   return (
-    <div className="relative min-h-screen font-sans flex flex-col text-foreground bg-[#0a0a0a] overflow-x-hidden selection:bg-primary/30">
+    <div className="relative min-h-[100dvh] font-sans flex flex-col text-foreground bg-[#0a0a0a] overflow-x-hidden selection:bg-primary/30 -mb-[96px] pb-[96px] md:mb-0 md:pb-0">
       {/* Ambient background — blurred cover image with richer overlay */}
       {primaryTicket.cover && (
         <div className="fixed inset-0 z-0 flex items-center justify-center">
@@ -251,7 +252,8 @@ function TicketViewer() {
                 physicalOrders.map((order: any, idx: number) => (
                   <div
                     key={order.id || idx}
-                    className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0 group/item"
+                    onClick={() => setSelectedCard({ type: "physical", data: order })}
+                    className="flex items-center gap-4 py-3 px-2 border-b border-white/5 last:border-0 group/item cursor-pointer hover:bg-white/[0.05] rounded-xl transition-colors"
                   >
                     <div className="h-12 w-12 rounded-xl bg-white/5 overflow-hidden flex items-center justify-center shrink-0 border border-white/10 group-hover/item:scale-105 transition-transform">
                       {order.product?.image_url ? (
@@ -311,27 +313,34 @@ function TicketViewer() {
 
       {/* Right Side: Selected Card Details (Acts as own page on mobile) */}
         {selectedCard && (
-          <div className="flex flex-col w-full flex-1 md:sticky md:top-12 animate-in fade-in slide-in-from-right-8 duration-500 items-center justify-start">
-            {/* Mobile Back Button */}
-            <div className="md:hidden flex items-center mb-6 w-full">
+          <div className="fixed inset-0 z-[100] bg-[#0a0a0a] flex flex-col items-center justify-between overflow-hidden animate-in fade-in slide-in-from-right-8 duration-300 md:static md:z-auto md:bg-transparent md:w-full md:flex-1 md:sticky md:top-12 md:justify-start md:overflow-visible">
+            <style>{`
+              @media (max-width: 768px) {
+                #mobile-nav-container { display: none !important; }
+              }
+            `}</style>
+            {/* Mobile Header */}
+            <div className="md:hidden flex items-center w-full px-5 py-6 shrink-0">
               <button
                 onClick={() => setSelectedCard(null)}
-                className="w-10 h-10 bg-white/[0.08] backdrop-blur-xl rounded-2xl flex items-center justify-center hover:bg-white/[0.15] border border-white/10"
+                className="w-10 h-10 bg-white/[0.08] backdrop-blur-xl rounded-2xl flex items-center justify-center hover:bg-white/[0.15] border border-white/10 transition-colors"
               >
                 <ChevronLeft className="w-5 h-5 text-white/90" />
               </button>
               <span className="ml-4 font-bold text-lg text-white">
-                {selectedCard.type === "ticket" ? "Ticket Details" : "Voucher Details"}
+                {selectedCard.type === "ticket" ? "Ticket Details" : selectedCard.type === "voucher" ? "Voucher Details" : "Product Details"}
               </span>
             </div>
             
-            <div className="hidden md:flex w-full justify-center mb-8">
+            {/* Desktop Header */}
+            <div className="hidden md:flex w-full justify-center mb-8 shrink-0">
               <h2 className="text-white text-3xl font-black tracking-tight drop-shadow-md">
-                {selectedCard.type === "ticket" ? "Ticket Details" : "Voucher Details"}
+                {selectedCard.type === "ticket" ? "Ticket Details" : selectedCard.type === "voucher" ? "Voucher Details" : "Product Details"}
               </h2>
             </div>
 
-            <div className="flex flex-col items-center w-full max-w-[380px]">
+            {/* Card Content - Centered & Scaled to fit */}
+            <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[380px] mx-auto min-h-0 px-4">
               {selectedCard.type === "ticket" ? (
                 <div className="w-full shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[2rem] transform transition-transform hover:scale-[1.02]">
                   <DynamicPass ticket={selectedCard.data} />
@@ -403,26 +412,59 @@ function TicketViewer() {
                     </div>
                   </div>
                 </div>
+              ) : selectedCard.type === "physical" ? (
+                <div className="w-full max-w-[360px] bg-white/[0.03] border border-white/10 rounded-[2rem] p-8 flex flex-col items-center justify-center backdrop-blur-2xl shadow-2xl">
+                  {/* Product image */}
+                  <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-white/10 bg-black/50 flex items-center justify-center">
+                    {selectedCard.data.product?.image_url ? (
+                      <img src={selectedCard.data.product.image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Briefcase className="w-10 h-10 text-white/40" />
+                    )}
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-white mb-2 text-center drop-shadow-md">
+                    {selectedCard.data.product?.name || "Product"}
+                  </h3>
+                  <p className="text-xs font-bold text-white/50 mb-8 tracking-widest uppercase">
+                    QTY: {selectedCard.data.qty || 1} • {selectedCard.data.size || "Standard"}
+                  </p>
+
+                  <div className="bg-white p-4 rounded-2xl mb-8 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                    <QRCode value={selectedCard.data.qr_code_string || selectedCard.data.id} size={160} />
+                  </div>
+
+                  <p className="text-xs font-mono tracking-widest text-white/60 mb-8 break-all text-center px-4">
+                    {selectedCard.data.qr_code_string || selectedCard.data.id}
+                  </p>
+
+                  <div className={`w-full py-3 rounded-full text-center font-bold text-sm tracking-widest uppercase border ${selectedCard.data.picked ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]" : "bg-amber-500/20 text-amber-400 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.2)]"}`}>
+                    {selectedCard.data.picked ? "Item Picked Up" : "Pending Pickup"}
+                  </div>
+                </div>
               ) : null}
             </div>
 
-            <div className="mt-8 w-full max-w-[380px]">
-              <button
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="group relative w-full overflow-hidden bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(var(--primary)_/_0.4)] hover:shadow-[0_8px_40px_rgb(var(--primary)_/_0.6)] hover:-translate-y-1 transition-all duration-300 text-[15px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:scale-[0.98]"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                <div className="relative flex items-center gap-2">
-                  {isDownloading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Download className="w-5 h-5" />
-                  )}
-                  {isDownloading ? "Generating PDF..." : "Save PDF"}
-                </div>
-              </button>
+            {/* Footer / Save PDF */}
+            <div className="w-full px-5 pb-8 pt-4 shrink-0 md:max-w-[380px] mx-auto md:p-0 md:mt-8">
+              {selectedCard.type !== "physical" && (
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="group relative w-full overflow-hidden bg-primary text-primary-foreground font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(var(--primary)_/_0.4)] hover:shadow-[0_8px_40px_rgb(var(--primary)_/_0.6)] hover:-translate-y-1 transition-all duration-300 text-[15px] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:scale-[0.98]"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                  <div className="relative flex items-center gap-2">
+                    {isDownloading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Download className="w-5 h-5" />
+                    )}
+                    {isDownloading ? "Generating PDF..." : "Save PDF"}
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -477,7 +519,7 @@ function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: { ticke
 
   return (
     <div className="flex flex-col items-center justify-center w-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
-      <div className={`relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6 transition-all duration-500 origin-bottom ${isCompressed ? "scale-75 opacity-70" : "scale-100 opacity-100"}`}>
+      <div className={`relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6 transition-all duration-500 origin-bottom ${isCompressed ? "scale-[0.65] md:scale-75 opacity-70" : "scale-[0.82] md:scale-100 opacity-100"}`}>
         {cards.map((card, index) => {
           const offset = index - activeIndex;
           const absOffset = Math.abs(offset);
