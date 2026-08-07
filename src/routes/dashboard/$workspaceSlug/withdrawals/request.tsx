@@ -135,7 +135,6 @@ function RequestWithdrawalPage() {
   const amountToWithdraw = Number(withdrawAmount) || 0;
   const platformPercentage = Number(subscription?.pricing_plan?.withdrawal_fee_percentage) || 0;
   const platformFixed = Number(subscription?.pricing_plan?.withdrawal_fee_fixed) || 0;
-  const agatikeFee = amountToWithdraw * (platformPercentage / 100) + platformFixed;
 
   let netPercentage = 0;
   let netFixed = 0;
@@ -175,8 +174,11 @@ function RequestWithdrawalPage() {
     }
   }
 
+  // Total fee paid by the organizer (inclusive of everything)
+  const totalFee = amountToWithdraw * (platformPercentage / 100) + platformFixed;
   const networkFee = amountToWithdraw * (netPercentage / 100) + netFixed;
-  const totalFee = agatikeFee + networkFee;
+  // Agatike profit is the remainder
+  const platformProfit = totalFee - networkFee;
   const netPayout = amountToWithdraw - totalFee;
 
   const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency || "RWF";
@@ -497,13 +499,13 @@ function RequestWithdrawalPage() {
                   <span className="text-muted-foreground">
                     Processing Fee (
                     {[
-                      platformPercentage + netPercentage > 0
-                        ? `${platformPercentage + netPercentage}%`
+                      platformPercentage > 0
+                        ? `${platformPercentage}%`
                         : null,
-                      platformFixed + netFixed > 0
+                      platformFixed > 0
                         ? showExchange && !isExchangeLoading
-                          ? formatCurrency((platformFixed + netFixed) * rate, targetCurrency)
-                          : formatCurrency(platformFixed + netFixed, wallet?.currency)
+                          ? formatCurrency(platformFixed * rate, targetCurrency)
+                          : formatCurrency(platformFixed, wallet?.currency)
                         : null,
                     ]
                       .filter(Boolean)

@@ -197,7 +197,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
         baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
       const grossAmount = baseAmount + customerFee;
       const organizerFee =
-        baseAmount * (orgCollectionPct / 100) + orgFixed + baseAmount * (orgPlatformPct / 100);
+        baseAmount * (orgCollectionPct / 100) + orgFixed;
 
       // Evaluate tiered rules based on grossAmount
       if (providerFees.is_tiered && providerFees.tiered_rules) {
@@ -401,7 +401,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     // Organizer fee = deducted from their wallet settlement
     let organizerFee =
-      baseAmt * (orgCollectionPct / 100) + orgFixed + baseAmt * (orgPlatformPct / 100);
+      baseAmt * (orgCollectionPct / 100) + orgFixed;
 
     // If there is a shortfall on a micro-transaction, the organizer absorbs it to cover the network cost (README 12.1)
     if (shortfall > 0) {

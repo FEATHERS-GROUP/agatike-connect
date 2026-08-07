@@ -423,7 +423,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
         limit: 1
       ) {
         pricing_plan {
-          organizer_platform_contribution
+          withdrawal_fee_percentage
           withdrawal_fee_fixed
           max_withdrawals_per_week
         }
@@ -432,7 +432,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   `;
   const subRes = await hasuraRequest<{ subscriptions: any[] }>(subQuery);
   const plan = subRes.subscriptions?.[0]?.pricing_plan || {};
-  const withdrawalFeePercentage = parseFloat(plan.organizer_platform_contribution) || 0;
+  const withdrawalFeePercentage = parseFloat(plan.withdrawal_fee_percentage) || 0;
   const withdrawalFeeFixed = parseFloat(plan.withdrawal_fee_fixed) || 0;
 
   const maxWeeklyLimitStr =
@@ -525,11 +525,12 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   }
 
   // 7. Calculate Total Fee and Net Payout
-  // Platform (Agatike) withdrawal fee — from the organizer's dedicated withdrawal plan fields
-  const agatikeFee = amount * (withdrawalFeePercentage / 100) + withdrawalFeeFixed;
+  // The Total Fee is strictly what is defined in the plan (inclusive of network costs)
+  const totalFee = amount * (withdrawalFeePercentage / 100) + withdrawalFeeFixed;
   // Provider (PawaPay) disbursement cost
   const networkFee = amount * (netPercentage / 100) + netFixed;
-  const totalFee = agatikeFee + networkFee;
+  // Agatike's actual profit is the remainder
+  const platformFee = totalFee - networkFee;
   const netAmount = amount - totalFee;
 
   if (netAmount <= 0) {
@@ -553,7 +554,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       country_code: country_code || "RWA",
       target_currency: target_currency || currency,
       exchange_rate: exchange_rate || 1,
-      platform_fee: agatikeFee,
+      platform_fee: platformFee,
       network_fee: networkFee,
     });
 
@@ -576,7 +577,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
       success: true,
       requestId: reqData.insert_withdrawal_requests_one?.id,
       netAmount,
-      agatikeFee,
+      agatikeFee: platformFee,
       networkFee,
       requiresAdminApproval: true,
     };
@@ -603,7 +604,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
         amount,
         netAmount,
         totalFee,
-        platform_fee: agatikeFee,
+        platform_fee: platformFee,
         network_fee: networkFee,
         target_currency,
         exchange_rate,
@@ -618,10 +619,10 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     }
 
     const txId = data.insert_wallet_transactions_one.id;
-    const netProfit = agatikeFee; // Pure agatike margin
+    const netProfit = platformFee; // Pure agatike margin
 
-    // For withdrawals: Platform Revenue = Total fee collected (agatikeFee + networkFee)
-    // Net Profit = Platform Revenue − Provider (PawaPay) payout cost = agatikeFee
+    // For withdrawals: Platform Revenue = Total fee collected (platformFee + networkFee)
+    // Net Profit = Platform Revenue − Provider (PawaPay) payout cost = platformFee
     const earningsQuery = `
       mutation InsertEarnings(
         $tx_id: uuid!, $gross: numeric!, $cost: numeric!,
