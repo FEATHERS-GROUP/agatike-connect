@@ -1205,8 +1205,9 @@ function FacilityCheckoutPage() {
         userPhone={phone}
       />
 
-      {isPollingPawaPay && (
+      {(isPollingPawaPay || isGenerating) && (
         <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

@@ -774,7 +774,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     />
   );
 
-  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo") || isGenerating) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         {!isSubdomain && <Navbar />}

@@ -1223,7 +1223,8 @@ export function FacilityCheckoutSheet({
         />
 
         {(isPollingPawaPay ||
-          ((bookingMutation.isPending || isGenerating) && paymentMethod === "momo")) && (
+          ((bookingMutation.isPending) && paymentMethod === "momo") ||
+          isGenerating) && (
           <CheckYourPhone
             themeColor={themeColor || "var(--primary)"}
             status={isGenerating ? "generating" : "payment"}
