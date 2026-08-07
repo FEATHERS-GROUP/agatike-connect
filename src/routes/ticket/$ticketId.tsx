@@ -326,27 +326,31 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
     })),
     ...vouchers.flatMap((v, i) => {
       const qty = v.qty || 1;
-      return Array.from({ length: qty }).map((_, j) => ({
-        id: `${v.id || `v-${i}`}-${j}`,
-        type: "voucher",
-        color: (v.product?.name || "").toLowerCase().includes("sponsored")
-          ? "bg-yellow-600"
-          : ["bg-blue-600", "bg-emerald-600", "bg-red-600"][i % 3],
-        brand: v.product?.name || "Voucher",
-        icon: v.product?.image_url ? (
-          <img
-            src={v.product.image_url}
-            alt=""
-            className="w-12 h-12 rounded-full object-cover border-2 border-white/20 mb-3"
-          />
-        ) : (
-          <TicketIcon className="w-10 h-10 text-white mb-3" />
-        ),
-        qrCode: v.qr_code_string || v.id,
-        data: v,
-        index: j + 1,
-        total: qty
-      }));
+      return Array.from({ length: qty }).map((_, j) => {
+        const isSponsored = (v.product?.name || "").toLowerCase().includes("sponsored");
+        return {
+          id: `${v.id || `v-${i}`}-${j}`,
+          type: "voucher",
+          color: isSponsored ? "bg-orange-600" : "bg-orange-500",
+          brand: v.product?.name || "Voucher",
+          icon: v.product?.image_url ? (
+            <img
+              src={v.product.image_url}
+              alt=""
+              className="w-12 h-12 rounded-full object-cover border-2 border-white/20 mb-3"
+            />
+          ) : (
+            <TicketIcon className="w-10 h-10 text-white mb-3" />
+          ),
+          qrCode: v.qr_code_string || v.id,
+          data: v,
+          index: j + 1,
+          total: qty,
+          isSponsored,
+          value: Number(v.product?.value_amount) || Number(v.product?.price) || (Number(v.amount_paid) / Number(qty)) || 0,
+          price: Number(v.product?.price) || (Number(v.amount_paid) / Number(qty)) || 0,
+        };
+      });
     }),
   ];
 
@@ -401,12 +405,26 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
                   <div className="flex flex-col items-center justify-center flex-1 w-full pb-8">
                     {card.icon}
                     <p
-                      className={`tracking-[0.2em] text-[10px] font-bold uppercase mb-1 opacity-90 ${card.brand.toLowerCase().includes("sponsored") ? "text-yellow-200" : ""}`}
+                      className={`tracking-[0.2em] text-[10px] font-bold uppercase mb-1 opacity-90 ${card.isSponsored ? "text-yellow-200" : ""}`}
                     >
                       {card.brand}
                     </p>
+                    
+                    {/* Value and Price */}
+                    <div className="flex items-baseline gap-1 my-1">
+                      <span className="text-3xl font-black">
+                        {Number(card.value).toLocaleString()}
+                      </span>
+                      <span className="text-sm font-bold opacity-80">RWF</span>
+                    </div>
+                    {Number(card.price) > 0 && (
+                      <p className="text-[10px] opacity-75 font-medium mb-1">
+                        Purchased for {Number(card.price).toLocaleString()} RWF
+                      </p>
+                    )}
+
                     {card.total > 1 && (
-                      <p className="text-[10px] opacity-70 mb-4 font-mono">
+                      <p className="text-[10px] opacity-70 mb-4 font-mono mt-1">
                         Item {card.index} of {card.total}
                       </p>
                     )}
@@ -431,11 +449,9 @@ function CarouselStack({ tickets, vouchers }: { tickets: any[]; vouchers: any[] 
 
                   <div className="absolute bottom-6 w-full px-8">
                     <div
-                      className={`w-full backdrop-blur-sm font-bold py-3.5 rounded-full text-[13px] border text-center uppercase tracking-widest ${card.brand.toLowerCase().includes("sponsored") ? "bg-yellow-500/20 text-yellow-200 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]" : "bg-white/10 text-white border-white/20"}`}
+                      className={`w-full backdrop-blur-sm font-bold py-3.5 rounded-full text-[13px] border text-center uppercase tracking-widest ${card.isSponsored ? "bg-yellow-500/20 text-yellow-200 border-yellow-500/40 shadow-[0_0_15px_rgba(234,179,8,0.2)]" : "bg-white/10 text-white border-white/20 shadow-sm"}`}
                     >
-                      {card.brand.toLowerCase().includes("sponsored")
-                        ? "Sponsored Gift"
-                        : "Voucher"}
+                      {card.isSponsored ? "Sponsored Gift" : "Gift Card"}
                     </div>
                   </div>
                 </div>
