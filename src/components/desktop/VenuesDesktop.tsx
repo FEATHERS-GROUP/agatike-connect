@@ -5,20 +5,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export function VenuesDesktop() {
   const venues = useLoaderData({ from: "/venues/" }) as any[];
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter]);
 
   const types = ["All", ...Array.from(new Set(venues.map((v) => v.type)))];
 
-  const filteredVenues = venues.filter((venue) => {
+  const filteredVenues = useMemo(() => venues.filter((venue) => {
     if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     if (typeFilter !== "All" && venue.type !== typeFilter) return false;
     return true;
-  });
+  }), [venues, searchTerm, typeFilter]);
+
+  const itemsPerPage = 16;
+  const totalPages = Math.ceil(filteredVenues.length / itemsPerPage);
+  
+  const paginatedVenues = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredVenues.slice(start, start + itemsPerPage);
+  }, [filteredVenues, currentPage]);
 
   return (
     <div className="min-h-screen bg-secondary/20 font-sans">
@@ -82,84 +105,116 @@ export function VenuesDesktop() {
             <p className="text-lg font-medium">No venues found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredVenues.map((venue) => (
-              <div
-                key={venue.id}
-                className="group relative overflow-hidden rounded-3xl border border-border/50 bg-card shadow-[var(--shadow-card)] transition-all hover:shadow-[var(--shadow-glow)] hover:-translate-y-1"
-              >
-                <div className="aspect-video relative overflow-hidden">
-                  <img
-                    src={venue.cover_url}
-                    alt={venue.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-4 right-4 bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold shadow-sm">
-                    {venue.type}
-                  </div>
-                  {venue.status === "Maintenance" && (
-                    <div className="absolute top-4 left-4 bg-orange-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-sm">
-                      Maintenance
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {paginatedVenues.map((venue) => (
+                <div
+                  key={venue.id}
+                  className="group relative overflow-hidden rounded-3xl border border-border/50 bg-card shadow-[var(--shadow-card)] transition-all hover:shadow-[var(--shadow-glow)] hover:-translate-y-1"
+                >
+                  <div className="aspect-video relative overflow-hidden">
+                    <img
+                      src={venue.cover_url}
+                      alt={venue.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-4 right-4 bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold shadow-sm">
+                      {venue.type}
                     </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold tracking-tight">{venue.name}</h3>
-                  <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground font-medium">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" /> {venue.city || venue.address}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" /> {venue.opening_hours || "09:00"} -{" "}
-                      {venue.closing_hours || "22:00"}
-                    </span>
-                  </div>
-                  <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
-                    {venue.description}
-                  </p>
-
-                  <div className="mt-6 flex items-center justify-between border-t border-border/40 pt-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
-                        {venue.source === "space" ? "Starting At" : "Entry Fee"}
-                      </p>
-                      <span className="font-semibold text-lg text-primary">
-                        {venue.pricing_tiers?.[0]?.amount > 0
-                          ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
-                          : "Free"}
-                      </span>
-                    </div>
-                    {venue.status === "Maintenance" ? (
-                      <Button
-                        disabled
-                        className="rounded-xl px-6 bg-muted text-muted-foreground cursor-not-allowed border border-border"
-                      >
+                    {venue.status === "Maintenance" && (
+                      <div className="absolute top-4 left-4 bg-orange-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-sm">
                         Maintenance
-                      </Button>
-                    ) : venue.source === "space" ? (
-                      <Link to="/spaces/$spaceId" params={{ spaceId: venue.id }}>
-                        <Button
-                          className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
-                          style={{ background: "var(--gradient-primary)" }}
-                        >
-                          Explore Space
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Link to="/venues/$venueId" params={{ venueId: venue.id }}>
-                        <Button
-                          className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
-                          style={{ background: "var(--gradient-primary)" }}
-                        >
-                          Get Ticket
-                        </Button>
-                      </Link>
+                      </div>
                     )}
                   </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold tracking-tight">{venue.name}</h3>
+                    <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground font-medium">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" /> {venue.city || venue.address}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" /> {venue.opening_hours || "09:00"} -{" "}
+                        {venue.closing_hours || "22:00"}
+                      </span>
+                    </div>
+                    <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
+                      {venue.description}
+                    </p>
+  
+                    <div className="mt-6 flex items-center justify-between border-t border-border/40 pt-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
+                          {venue.source === "space" ? "Starting At" : "Entry Fee"}
+                        </p>
+                        <span className="font-semibold text-lg text-primary">
+                          {venue.pricing_tiers?.[0]?.amount > 0
+                            ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency)
+                            : "Free"}
+                        </span>
+                      </div>
+                      {venue.status === "Maintenance" ? (
+                        <Button
+                          disabled
+                          className="rounded-xl px-6 bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                        >
+                          Maintenance
+                        </Button>
+                      ) : venue.source === "space" ? (
+                        <Link to="/spaces/$spaceId" params={{ spaceId: venue.id }}>
+                          <Button
+                            className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
+                            style={{ background: "var(--gradient-primary)" }}
+                          >
+                            Explore Space
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link to="/venues/$venueId" params={{ venueId: venue.id }}>
+                          <Button
+                            className="rounded-xl px-6 shadow-[var(--shadow-glow)] transition-all group-hover:scale-105"
+                            style={{ background: "var(--gradient-primary)" }}
+                          >
+                            Get Ticket
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <PaginationItem key={i}>
+                      <PaginationLink
+                        isActive={currentPage === i + 1}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className="cursor-pointer"
+                      >
+                        {i + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </>
         )}
       </section>
 

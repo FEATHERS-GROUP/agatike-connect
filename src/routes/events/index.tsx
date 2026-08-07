@@ -23,7 +23,16 @@ import { Input } from "@/components/ui/input";
 import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
-
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { useEffect } from "react";
 export const Route = createFileRoute("/events/")({
   head: () => ({
     meta: [
@@ -149,6 +158,12 @@ function EventsBrowse() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when searching
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [q, cat]);
   const { isLoggedIn } = useUserAuth();
 
   const { data: dbEvents = [], isLoading } = useQuery({
@@ -207,6 +222,86 @@ function EventsBrowse() {
       return matchesQ && matchesCat && !isPastLimit;
     });
   }, [q, cat, allEvents]);
+
+  const isSearching = !!q || !!cat;
+
+  const grouped = useMemo(() => {
+    if (isSearching) return null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const getStartOfWeek = (d: Date) => {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(date.setDate(diff));
+    };
+
+    const startOfWeek = getStartOfWeek(today);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const week: any[] = [];
+    const month: any[] = [];
+    const past: any[] = [];
+
+    filtered.forEach((e: any) => {
+      const isMock = !!e.organizer || !!e.host || !!e.cinema;
+      const getVal = (key: string) => {
+        if (isMock) return e[key];
+        if (Array.isArray(e.tour_stops)) return e.tour_stops[0]?.[key];
+        if (e.tour_stops && typeof e.tour_stops === "object") return e.tour_stops[key];
+        return "";
+      };
+      
+      const dateStr = getVal("date") || e.event_requency?.date;
+      if (!dateStr || dateStr === "TBD") {
+        // If no date, we can put it in month or week depending on requirements, or skip.
+        // Let's assume upcoming
+        month.push(e);
+        return;
+      }
+      
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return;
+
+      if (d < today) {
+        past.push(e);
+      } else if (d >= startOfWeek && d <= endOfWeek) {
+        week.push(e);
+      } else if (d >= startOfMonth && d <= endOfMonth) {
+        month.push(e);
+      } else {
+        month.push(e); // Dump future events into month/upcoming section
+      }
+    });
+
+    // Sort to show nearest first
+    week.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
+    month.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
+    // Past events newest first
+    past.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+
+    return {
+      week,
+      month,
+      past: past.slice(0, 20),
+    };
+  }, [filtered, isSearching]);
+
+  const itemsPerPage = 16;
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  
+  const paginatedEvents = useMemo(() => {
+    if (!isSearching) return [];
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, isSearching, currentPage]);
 
   const router = useRouter();
 
@@ -378,10 +473,80 @@ function EventsBrowse() {
             )}
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((e: any) => (
-              <EventCard key={e.id} event={e} />
-            ))}
+          <div className="mt-8">
+            {isSearching ? (
+              <>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-8">
+                  {paginatedEvents.map((e: any) => (
+                    <EventCard key={e.id} event={e} />
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            isActive={currentPage === i + 1}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className="cursor-pointer"
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
+            ) : (
+              <div className="space-y-16">
+                {grouped?.week.length ? (
+                  <section>
+                    <h2 className="text-2xl font-bold tracking-tight mb-6">Happening This Week</h2>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {grouped.week.map((e: any) => (
+                        <EventCard key={e.id} event={e} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {grouped?.month.length ? (
+                  <section>
+                    <h2 className="text-2xl font-bold tracking-tight mb-6">Upcoming This Month</h2>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {grouped.month.map((e: any) => (
+                        <EventCard key={e.id} event={e} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {grouped?.past.length ? (
+                  <section>
+                    <h2 className="text-2xl font-bold tracking-tight mb-6">Already Happened</h2>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 opacity-80">
+                      {grouped.past.map((e: any) => (
+                        <EventCard key={e.id} event={e} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            )}
           </div>
         )}
       </div>
