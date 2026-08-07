@@ -27,17 +27,7 @@ export type TicketTemplateConfig = {
 };
 
 export function getCustomTemplateHeight(template: string): number {
-  if (template === "entrance-1" || template === "entrance") return 260;
-  if (template === "entrance-2") return 250;
-  if (template === "concert-1" || template === "concert") return 230;
-  if (template === "concert-2") return 250;
-  if (template === "conference-1" || template === "conference") return 280;
-  if (template === "conference-2") return 250;
-  if (template === "movie-1" || template === "movie") return 240;
-  if (template === "movie-2") return 220;
-  if (template === "experience-1" || template === "experience") return 260;
-  if (template === "experience-2") return 250;
-  return 250;
+  return 260; // All custom templates are hardcoded to 260px height
 }
 
 export function PrintableTicket({
