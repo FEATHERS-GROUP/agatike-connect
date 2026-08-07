@@ -455,6 +455,8 @@ export const getOrganizerPublicData = createServerFn({ method: "POST" })
           socials
           active
           country
+          field
+          speciality
           workspaces {
             id
             currency
@@ -489,6 +491,12 @@ export const getOrganizerPublicData = createServerFn({ method: "POST" })
               name
               cover_url
               city
+            }
+            workspace_pages(where: { is_published: { _eq: true } }, order_by: { updated_at: desc }) {
+              id
+              slug
+              title
+              logo_url
             }
           }
         }

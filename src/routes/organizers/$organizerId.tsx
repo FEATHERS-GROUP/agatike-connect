@@ -18,7 +18,14 @@ import {
   Globe, 
   Film, 
   Ticket,
-  ChevronLeft
+  ChevronLeft,
+  Mail,
+  Phone,
+  BadgeCheck,
+  Facebook,
+  Linkedin,
+  ExternalLink,
+  Tag
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
@@ -57,16 +64,20 @@ function OrganizerProfilePage() {
     return workspaces.flatMap((w: any) => w.cinemas || []);
   }, [workspaces]);
 
+  const allCustomPages = useMemo(() => {
+    return workspaces.flatMap((w: any) => w.workspace_pages || []);
+  }, [workspaces]);
+
   // Separate events into upcoming and past
   const upcomingEvents = useMemo(() => {
     const now = new Date().getTime();
     return allEvents.filter((e: any) => {
-      // Simplistic upcoming check: start_date > now or no schedule so assume upcoming if recent
-      if (e.schedules && e.schedules.length > 0) {
-        return new Date(e.schedules[0].start_date).getTime() >= now;
+      const dateStr = e.schedules?.[0]?.start_date || e.tour_stops?.[0]?.date;
+      if (dateStr) {
+        return new Date(dateStr).getTime() >= now;
       }
-      // fallback if no schedules: if it was created in the last 60 days, treat as upcoming for display
-      return new Date(e.created_at).getTime() > now - 60 * 24 * 60 * 60 * 1000;
+      // If we only have created_at, it's difficult to know if it's upcoming, but usually if it lacks a schedule/tour stop, it's incomplete or a draft. We'll default to past unless explicitly scheduled.
+      return false;
     });
   }, [allEvents]);
 
@@ -105,68 +116,180 @@ function OrganizerProfilePage() {
   }
 
   const avatar = org.image || org.avatar || `https://i.pravatar.cc/150?u=${org.id}`;
-  const twitterUrl = org.socials?.twitter || `https://twitter.com/${org.handle}`;
-  const instagramUrl = org.socials?.instagram || `https://instagram.com/${org.handle}`;
   const followerCount = org.followers ?? 0;
+  
+  // Extract socials
+  const socials = org.socials || {};
+  const twitterUrl = socials.twitter || (org.handle ? `https://twitter.com/${org.handle}` : null);
+  const instagramUrl = socials.instagram || (org.handle ? `https://instagram.com/${org.handle}` : null);
+  const facebookUrl = socials.facebook;
+  const linkedinUrl = socials.linkedin;
+  const websiteUrl = socials.website;
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 md:max-w-md md:mx-auto md:border-x md:border-border/40 lg:max-w-none lg:border-x-0 lg:mx-0 shadow-xl lg:shadow-none flex flex-col">
+    <div className="min-h-screen bg-background text-foreground pb-24 md:pb-0 flex flex-col">
       <div className="hidden md:block">
         <Navbar />
       </div>
 
-      {/* Header Back Button Mobile */}
-      <div className="md:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md px-4 py-3 border-b border-border/40 pt-safe-top flex items-center gap-2">
-        <Link to="/organizers" className="p-1 -ml-1 text-muted-foreground hover:text-foreground">
-          <ChevronLeft className="h-6 w-6" />
-        </Link>
-        <span className="font-semibold text-sm">Organizer Profile</span>
-      </div>
-
-      <main className="flex-1 max-w-5xl mx-auto w-full">
-        {/* Profile Header */}
-        <section className="px-4 py-8 md:py-12 flex flex-col items-center border-b border-border/40">
-          <div className="h-28 w-28 md:h-36 md:w-36 rounded-full overflow-hidden border-2 border-border/60 shadow-lg mb-5 relative">
-            <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight">{org.name}</h1>
-            <CheckCircle2 className="h-6 w-6 md:h-8 md:w-8 text-primary fill-primary/20" />
-          </div>
-          <p className="text-base md:text-lg font-medium text-muted-foreground mb-4">
-            @{org.handle} · {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount} followers
-          </p>
-          
-          <p className="text-center text-sm md:text-base mb-6 max-w-xl text-muted-foreground">
-            {org.bio || "No bio available for this organizer."}
-          </p>
-
-          <div className="flex gap-4 w-full justify-center mb-8">
-            <Button variant="outline" size="icon" className="rounded-full" asChild>
-              <a href={twitterUrl} target="_blank" rel="noopener noreferrer">
-                <Twitter className="h-4 w-4" />
-              </a>
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full" asChild>
-              <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
-                <Instagram className="h-4 w-4" />
-              </a>
+      <main className="flex-1 w-full relative">
+        {/* Cover Banner */}
+        <div className="w-full h-40 md:h-64 lg:h-80 bg-gradient-to-r from-primary/80 via-primary/60 to-purple-500 relative">
+          {/* Desktop Back Button */}
+          <div className="hidden md:flex absolute top-6 left-6 z-10">
+            <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur-md border-border/40 hover:bg-background rounded-full font-medium" asChild>
+              <Link to="/organizers" className="flex items-center gap-2">
+                <ChevronLeft className="h-4 w-4" />
+                Back to Organizers
+              </Link>
             </Button>
           </div>
+          {/* Mobile Back Button */}
+          <div className="md:hidden absolute top-safe-top left-4 z-10 mt-4">
+            <Button variant="secondary" size="icon" className="bg-background/80 backdrop-blur-md rounded-full shadow-sm" asChild>
+              <Link to="/organizers">
+                <ChevronLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
 
-          <Button
-            onClick={() => toggleFollow(org.id)}
-            variant={following ? "outline" : "default"}
-            size="lg"
-            className={`w-full max-w-[280px] rounded-full font-bold text-base h-12 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
-            style={following ? undefined : { background: "var(--gradient-primary)" }}
-          >
-            {following ? "Following" : "Follow"}
-          </Button>
-        </section>
+        {/* Profile Content Wrapper */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full -mt-16 md:-mt-24 lg:-mt-32 relative z-20 mb-8">
+          <div className="bg-card rounded-3xl border border-border/40 shadow-xl overflow-hidden backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+            <div className="p-6 md:p-8 lg:p-10 flex flex-col md:flex-row gap-6 md:gap-10">
+              
+              {/* Left Column: Avatar & Actions */}
+              <div className="flex flex-col items-center md:items-start shrink-0">
+                <div className="h-32 w-32 md:h-40 md:w-40 lg:h-48 lg:w-48 rounded-full overflow-hidden border-4 border-background shadow-2xl bg-muted mb-4 md:mb-6">
+                  <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
+                </div>
+                
+                <Button
+                  onClick={() => toggleFollow(org.id)}
+                  variant={following ? "outline" : "default"}
+                  size="lg"
+                  className={`w-full max-w-xs rounded-full font-bold text-base h-12 mb-4 ${following ? "" : "shadow-[var(--shadow-glow)]"}`}
+                  style={following ? undefined : { background: "var(--gradient-primary)" }}
+                >
+                  {following ? "Following" : "Follow"}
+                </Button>
+                
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start w-full max-w-xs">
+                  {twitterUrl && (
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
+                      <a href={twitterUrl} target="_blank" rel="noopener noreferrer"><Twitter className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    </Button>
+                  )}
+                  {instagramUrl && (
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
+                      <a href={instagramUrl} target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    </Button>
+                  )}
+                  {facebookUrl && (
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
+                      <a href={facebookUrl} target="_blank" rel="noopener noreferrer"><Facebook className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    </Button>
+                  )}
+                  {linkedinUrl && (
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
+                      <a href={linkedinUrl} target="_blank" rel="noopener noreferrer"><Linkedin className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    </Button>
+                  )}
+                  {websiteUrl && (
+                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
+                      <a href={websiteUrl} target="_blank" rel="noopener noreferrer"><Globe className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Details */}
+              <div className="flex-1 flex flex-col text-center md:text-left mt-2 md:mt-16 lg:mt-24">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+                  <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">{org.name}</h1>
+                  {org.business && (
+                    <div className="inline-flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mx-auto md:mx-0">
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      Verified Business
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm md:text-base font-medium text-muted-foreground mb-6">
+                  <span className="text-foreground">@{org.handle}</span>
+                  <span className="hidden md:inline text-border">•</span>
+                  <span className="flex items-center gap-1.5"><Users className="h-4 w-4" /> {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount} followers</span>
+                  {org.country && (
+                    <>
+                      <span className="hidden md:inline text-border">•</span>
+                      <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {org.country}</span>
+                    </>
+                  )}
+                  {org.field && (
+                    <>
+                      <span className="hidden md:inline text-border">•</span>
+                      <span className="text-muted-foreground">{org.field}</span>
+                    </>
+                  )}
+                </div>
+
+                <div className="prose prose-sm md:prose-base dark:prose-invert max-w-2xl mb-4 text-muted-foreground mx-auto md:mx-0">
+                  <p>{org.bio || "This organizer hasn't added a bio yet."}</p>
+                </div>
+
+                {/* Speciality Tags */}
+                {org.speciality?.tags && org.speciality.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
+                    {org.speciality.tags.map((tag: string, i: number) => (
+                      <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground">
+                        <Tag className="w-3 h-3 mr-1 opacity-50" />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Custom Pages (if available) */}
+                {allCustomPages.length > 0 && (
+                  <div className="mb-8 flex flex-wrap gap-2 justify-center md:justify-start">
+                    {allCustomPages.map((page: any) => (
+                      <Button key={page.id} variant="outline" size="sm" className="rounded-full bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary font-medium" asChild>
+                        <Link to="/p/$" params={{ _splat: page.slug }}>
+                          <ExternalLink className="mr-2 h-3.5 w-3.5" /> {page.title || page.slug}
+                        </Link>
+                      </Button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Contact Info (if available) */}
+                {(org.email || org.phone) && (
+                  <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-auto">
+                    {org.email && (
+                      <Button variant="secondary" size="sm" className="rounded-full font-medium" asChild>
+                        <a href={`mailto:${org.email}`}>
+                          <Mail className="mr-2 h-4 w-4" /> Email Organizer
+                        </a>
+                      </Button>
+                    )}
+                    {org.phone && (
+                      <Button variant="secondary" size="sm" className="rounded-full font-medium" asChild>
+                        <a href={`tel:${org.phone}`}>
+                          <Phone className="mr-2 h-4 w-4" /> Call Organizer
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
 
         {/* Content Tabs */}
-        <section className="py-6 px-4">
+        <section className="py-6 px-4 max-w-5xl mx-auto w-full">
           <div className="flex gap-6 border-b border-border/40 mb-6 overflow-x-auto hide-scrollbar">
             <button
               onClick={() => setActiveTab("events")}
@@ -213,7 +336,7 @@ function OrganizerProfilePage() {
                     Infinity,
                   );
                   const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
-                  const date = event.schedules?.[0]?.start_date || event.created_at;
+                  const date = event.schedules?.[0]?.start_date || event.tour_stops?.[0]?.date || event.created_at;
 
                   return (
                     <Link
