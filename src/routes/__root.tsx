@@ -404,7 +404,10 @@ function CartBubble({ hideNav }: { hideNav: boolean }) {
   const settingsBlock = pageData?.components?.find((c: any) => c.type === "page_settings");
   const themeColor = settingsBlock?.themeColor || pageData?.theme_color || undefined;
 
+  const isCustomerPage = !!subdomainSlug || location.pathname.startsWith("/p/");
+
   if (
+    !isCustomerPage ||
     cartCount === 0 ||
     location.pathname.startsWith("/checkout") ||
     location.pathname.startsWith("/dashboard")

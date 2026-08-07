@@ -80,15 +80,17 @@ function Home() {
         </div>
       </Suspense>
 
-      {/* Map Bubble - Visible to everyone */}
-      <Link
-        to="/map"
-        className="fixed bottom-[160px] right-4 md:bottom-[96px] md:right-8 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-glow)] transition-transform hover:scale-105 active:scale-95 border border-border"
-        style={{ background: "var(--gradient-primary)" }}
-        aria-label="Open Map"
-      >
-        <MapPin className="h-6 w-6 text-white" />
-      </Link>
+      {/* Map Bubble - Visible to logged-in users on desktop */}
+      {isLoggedIn && !subdomainSlug && (
+        <Link
+          to="/map"
+          className="fixed bottom-[96px] right-8 z-40 hidden md:flex h-14 w-14 items-center justify-center rounded-full shadow-[var(--shadow-glow)] transition-transform hover:scale-105 active:scale-95 border border-border"
+          style={{ background: "var(--gradient-primary)" }}
+          aria-label="Open Map"
+        >
+          <MapPin className="h-6 w-6 text-white" />
+        </Link>
+      )}
     </>
   );
 }

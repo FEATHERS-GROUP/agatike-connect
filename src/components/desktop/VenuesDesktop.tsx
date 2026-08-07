@@ -43,9 +43,9 @@ export function VenuesDesktop() {
             <div className="flex flex-col md:flex-row gap-3 items-center">
               <div className="flex-1 flex w-full bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
                 <div className="relative flex-1 flex items-center group">
-                  <Search className="absolute left-4 h-5 w-5 text-primary" />
+                  <Search className="absolute left-3 h-4 w-4 text-primary" />
                   <Input
-                    className="w-full pl-12 h-14 bg-transparent border-0 shadow-none text-[15px] font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                    className="w-full pl-9 h-12 bg-transparent border-0 shadow-none text-sm font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60"
                     placeholder="Search for venues..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -53,11 +53,11 @@ export function VenuesDesktop() {
                 </div>
               </div>
 
-              <div className="flex w-full md:w-[250px] shrink-0 bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
+              <div className="flex w-full md:w-[200px] shrink-0 bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
                 <div className="relative flex-1 flex items-center group">
-                  <Ticket className="absolute left-4 h-4 w-4 text-primary" />
+                  <Ticket className="absolute left-3 h-4 w-4 text-primary" />
                   <select
-                    className="w-full pl-11 pr-8 h-14 bg-transparent border-0 text-[14px] font-medium focus:outline-none appearance-none"
+                    className="w-full pl-9 pr-8 h-12 bg-transparent border-0 text-sm font-medium focus:outline-none appearance-none"
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                   >
@@ -71,8 +71,9 @@ export function VenuesDesktop() {
               </div>
 
               <Button
-                className="h-[64px] px-8 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform"
+                className="h-12 px-6 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform"
                 style={{ background: "var(--gradient-primary)" }}
+                onClick={(e) => e.preventDefault()}
               >
                 Search
               </Button>
