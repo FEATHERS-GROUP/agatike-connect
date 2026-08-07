@@ -803,7 +803,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   }
 
                   const vName = bk.rentable_venue?.name || "Venue";
-                  const bRef = bk.tickets_data?.booking_ref || "";
+                  let bRef = "";
+                  if (bk.tickets_data?.issued && bk.tickets_data.issued.length > 0) {
+                    bRef = bk.tickets_data.issued.map((t: any) => t.otp).join(", ");
+                  } else {
+                    bRef = bk.tickets_data?.summary?.booking_ref || bk.tickets_data?.booking_ref || "";
+                  }
                   const sDate = new Date(bk.start_time);
                   const eDate = new Date(bk.end_time);
 
