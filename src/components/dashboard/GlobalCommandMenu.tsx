@@ -226,7 +226,7 @@ export function GlobalCommandMenu() {
   const slug = activeWorkspace?.slug || "";
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
-  const renderCommandItem = (n: any) => {
+  const renderNavItem = (n: any, idx: number) => {
     const fullHref =
       n.href !== undefined
         ? n.href === ""
@@ -237,7 +237,7 @@ export function GlobalCommandMenu() {
     if (!fullHref) return null;
 
     return (
-      <CommandItem key={n.id} onSelect={() => runCommand(() => navigate({ to: fullHref }))}>
+      <CommandItem key={`${n.id}-${idx}`} onSelect={() => runCommand(() => navigate({ to: fullHref }))}>
         {n.icon && <n.icon className="mr-2 h-4 w-4 shrink-0" />}
         <span>{n.label}</span>
       </CommandItem>
@@ -262,7 +262,7 @@ export function GlobalCommandMenu() {
 
         {slug && mainNav.length > 0 && (
           <CommandGroup heading="Navigation">
-            {mainNav.map((n: any) => renderCommandItem(n))}
+            {mainNav.map((n, idx) => renderNavItem(n, idx))}
             {hasBilling && (
               <CommandItem
                 onSelect={() =>
@@ -282,7 +282,7 @@ export function GlobalCommandMenu() {
 
         {slug && studioNav.length > 0 && (
           <CommandGroup heading="Agatike Studio">
-            {studioNav.map((n: any) => renderCommandItem(n))}
+            {studioNav.map((n, idx) => renderNavItem(n, idx))}
           </CommandGroup>
         )}
 

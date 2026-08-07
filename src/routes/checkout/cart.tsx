@@ -395,10 +395,10 @@ export function CartCheckoutPage() {
                   style={
                     selectedPaymentGroup === "momo" && themeColor
                       ? ({
-                          borderColor: themeColor,
-                          backgroundColor: `${themeColor}0A`,
-                          "--tw-ring-color": themeColor,
-                        } as any)
+                        borderColor: themeColor,
+                        backgroundColor: `${themeColor}0A`,
+                        "--tw-ring-color": themeColor,
+                      } as any)
                       : {}
                   }
                 >
@@ -431,10 +431,10 @@ export function CartCheckoutPage() {
                   style={
                     selectedPaymentGroup === "card" && themeColor
                       ? ({
-                          borderColor: themeColor,
-                          backgroundColor: `${themeColor}0A`,
-                          "--tw-ring-color": themeColor,
-                        } as any)
+                        borderColor: themeColor,
+                        backgroundColor: `${themeColor}0A`,
+                        "--tw-ring-color": themeColor,
+                      } as any)
                       : {}
                   }
                 >
@@ -489,7 +489,7 @@ export function CartCheckoutPage() {
           isOpen={isPaymentModalOpen}
           onOpenChange={setIsPaymentModalOpen}
           paymentMethod="momo"
-          setPaymentMethod={() => {}}
+          setPaymentMethod={() => { }}
           workspaceId={workspaceId}
           baseAmount={cartTotal}
           quantity={items.length}
