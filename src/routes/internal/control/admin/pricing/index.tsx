@@ -36,7 +36,6 @@ const defaultFormState = {
   active: "true",
   is_popular: "false",
   customer_service_fee_percentage: 0,
-  organizer_platform_contribution: 2,
   platform_margin_buffer: 0,
   customer_collection_fee_percentage: 0,
   customer_collection_fee_fixed: 0,
@@ -194,7 +193,7 @@ function AdminPricingPage() {
     const customerFixed = Number(selectedPlan.customer_collection_fee_fixed || 0);
     const customerFee = amount * (customerPct / 100) + customerFixed;
 
-    const orgPct = Number(selectedPlan.organizer_platform_contribution || 0);
+    const orgPct = Number(selectedPlan.organizer_collection_fee_percentage || 0);
     const orgFee = amount * (orgPct / 100);
 
     const provPct = Number(selectedProvider.collection_percentage || 0);
@@ -398,27 +397,6 @@ function AdminPricingPage() {
                 Platform Margins (Agatike Profit)
               </h4>
               <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-blue-400/80">
-                    Organizer Platform Contribution (%)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formState.organizer_platform_contribution}
-                    onChange={(e) =>
-                      setFormState({
-                        ...formState,
-                        organizer_platform_contribution: e.target.value,
-                      })
-                    }
-                    className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-4 py-3 text-gray-900 dark:text-white"
-                  />
-                  <p className="text-xs text-blue-400/60">
-                    The primary Agatike profit margin. This percentage is taken from the Organizer's
-                    revenue on every ticket sale and withdrawal.
-                  </p>
-                </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-blue-400/80">
                     Customer Service Fee (%)
@@ -1214,12 +1192,7 @@ function AdminPricingPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1 text-xs">
-                        <div className="flex justify-between w-32">
-                          <span className="text-muted-foreground">Agatike Org Fee:</span>
-                          <span className="text-blue-400 font-bold">
-                            {plan.organizer_platform_contribution || 0}%
-                          </span>
-                        </div>
+
                         <div className="flex justify-between w-32">
                           <span className="text-muted-foreground">Customer Fee:</span>
                           <span className="text-purple-400 font-bold">
@@ -1284,7 +1257,7 @@ function AdminPricingPage() {
                   <option key={p.id} value={p.id}>
                     {p.name} (
                     {activeTab === "sim-collections"
-                      ? `${p.organizer_platform_contribution}% org fee`
+                      ? `${p.organizer_collection_fee_percentage}% org fee`
                       : `${p.withdrawal_fee_percentage}% withdrawal fee`}
                     )
                   </option>

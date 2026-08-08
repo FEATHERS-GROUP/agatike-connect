@@ -432,8 +432,8 @@ function PricingPlansPage() {
                       <span>
                         <strong className="text-foreground font-semibold">Withdrawal:</strong>{" "}
                         {isTieredCountry
-                          ? `Varies (Tiered) + ${plan.organizer_platform_contribution || 0}% platform fee`
-                          : `${(avgDisbursementPct + (plan.organizer_platform_contribution || 0)).toFixed(1)}%`}
+                          ? `Varies (Tiered)`
+                          : `${(avgDisbursementPct).toFixed(1)}%`}
                       </span>
                     </li>
                   </ul>

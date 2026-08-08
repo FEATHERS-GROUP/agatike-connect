@@ -1948,16 +1948,16 @@ To ensure that Agatike never processes a transaction at a loss, the system dynam
 ### 24.1 Plan Choosing & Upgrade Logic (For Organizers)
 
 Organizers subscribe to different tiers (e.g., Free, Pro, Business) to unlock features and lower their platform contribution fees.
-The `pricing_plans` table defines the `organizer_platform_contribution` for each tier (e.g., Free = 4.5%, Enterprise = 1.0%).
+The `pricing_plans` table defines the `withdrawal_fee_percentage` and `organizer_collection_fee_percentage` for each tier.
 
 ```mermaid
 flowchart TD
     Org["Organizer"] -->|Clicks Upgrade| Plans["View Pricing Plans"]
     Plans --> Fetch["Query pricing_plans table"]
     Fetch --> Select{Organizer Selects Plan}
-    Select -->|Free Plan| Free["organizer_platform_contribution = 4.5%"]
-    Select -->|Pro Plan| Pro["organizer_platform_contribution = 3.5%"]
-    Select -->|Business Plan| Bus["organizer_platform_contribution = 2.8%"]
+    Select -->|Free Plan| Free["organizer_collection_fee_percentage = 4.0%"]
+    Select -->|Pro Plan| Pro["organizer_collection_fee_percentage = 4.0%"]
+    Select -->|Business Plan| Bus["organizer_collection_fee_percentage = 3.5%"]
 
     Free & Pro & Bus --> Checkout["MoMo / Card Payment for Subscription"]
     Checkout -->|Success Webhook| DB["Update workspaces_subscriptions"]
@@ -2012,7 +2012,7 @@ When an organizer withdraws funds, the withdrawal fee is a combination of two el
 1. **PawaPay Disbursement Average:** The system automatically calculates network processing fees based on live network configurations.
    - **Tiered Rules Engine:** If a network has complex tiered processing costs (e.g. `{"disbursement": [{"max": 10000, "pct": 2, "fixed": 100}]}`), the backend safely recursively parses the potentially double-stringified JSONB and mathematically isolates the exact tier the withdrawal amount falls into.
    - **Flat Rate Fallback:** If the network has no tier rules, the engine falls back to standard percentage and fixed fees dynamically.
-2. **Agatike Withdrawal Fee:** The organizer's `organizer_platform_contribution` percentage based on their active subscription plan.
+2. **Agatike Withdrawal Fee:** The organizer's `withdrawal_fee_percentage` based on their active subscription plan.
 
 #### 24.3.1 Live Currency Exchange
 

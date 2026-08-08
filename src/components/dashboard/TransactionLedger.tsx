@@ -102,7 +102,11 @@ export function TransactionLedger({
                             txn.type === "credit" ||
                             txn.type === "deposit" ||
                             txn.type === "event_ticket" ||
-                            txn.type === "space_subscription"
+                            txn.type === "portal_event_ticket" ||
+                            txn.type === "venue_booking" ||
+                            txn.type === "portal_venue_booking" ||
+                            txn.type === "space_subscription" ||
+                            txn.type?.startsWith("page_builder_checkout")
                               ? "bg-green-500/10 text-green-500"
                               : "bg-red-500/10 text-red-500"
                           }`}
@@ -110,7 +114,11 @@ export function TransactionLedger({
                           {txn.type === "credit" ||
                           txn.type === "deposit" ||
                           txn.type === "event_ticket" ||
-                          txn.type === "space_subscription" ? (
+                          txn.type === "portal_event_ticket" ||
+                          txn.type === "venue_booking" ||
+                          txn.type === "portal_venue_booking" ||
+                          txn.type === "space_subscription" ||
+                          txn.type?.startsWith("page_builder_checkout") ? (
                             <ArrowDownLeft className="h-5 w-5" />
                           ) : (
                             <ArrowUpRight className="h-5 w-5" />
@@ -118,7 +126,7 @@ export function TransactionLedger({
                         </div>
                         <div>
                           <p className="font-semibold text-foreground">
-                            {txn.description ||
+                            {txn.description?.replace(/PawaPay/gi, "Agatike") ||
                               (txn.type === "credit" || txn.type === "deposit"
                                 ? "Income"
                                 : "Withdrawal")}
@@ -175,7 +183,11 @@ export function TransactionLedger({
                       {txn.type === "credit" ||
                       txn.type === "deposit" ||
                       txn.type === "event_ticket" ||
-                      txn.type === "space_subscription"
+                      txn.type === "portal_event_ticket" ||
+                      txn.type === "venue_booking" ||
+                      txn.type === "portal_venue_booking" ||
+                      txn.type === "space_subscription" ||
+                      txn.type?.startsWith("page_builder_checkout")
                         ? "+"
                         : "-"}
                       {formatCurrency(txn.amount, txn.currency || "RWF")}

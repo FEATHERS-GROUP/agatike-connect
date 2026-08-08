@@ -121,7 +121,6 @@ export const getPricingPlansAdmin = createServerFn({ method: "GET" }).handler(as
         updated_at
         yearly_price
         customer_service_fee_percentage
-        organizer_platform_contribution
         active
         platform_margin_buffer
         max_withdrawals_per_week
@@ -178,7 +177,6 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
         "price",
         "yearly_price",
         "customer_service_fee_percentage",
-        "organizer_platform_contribution",
         "platform_margin_buffer",
         "customer_collection_fee_percentage",
         "customer_collection_fee_fixed",
@@ -266,7 +264,6 @@ export const createPricingPlanAdmin = createServerFn({ method: "POST" })
       "price",
       "yearly_price",
       "customer_service_fee_percentage",
-      "organizer_platform_contribution",
       "platform_margin_buffer",
       "customer_collection_fee_percentage",
       "customer_collection_fee_fixed",

@@ -821,7 +821,6 @@ export const getAdminOrganizerBillingSettings = createServerFn({ method: "POST" 
             billing_cycle
             features
             customer_service_fee_percentage
-            organizer_platform_contribution
             platform_margin_buffer
             max_withdrawals_per_week
           }
@@ -844,7 +843,6 @@ export const getAdminOrganizerBillingSettings = createServerFn({ method: "POST" 
           features
           is_popular
           customer_service_fee_percentage
-          organizer_platform_contribution
           platform_margin_buffer
           max_withdrawals_per_week
         }
@@ -993,7 +991,6 @@ export const getAdminOrganizerSubscriptionsDetail = createServerFn({ method: "PO
             currency
             billing_cycle
             customer_service_fee_percentage
-            organizer_platform_contribution
             platform_margin_buffer
             max_withdrawals_per_week
           }
@@ -1530,6 +1527,8 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
         $payout_method: String!
         $payout_account: String!
         $description: String!
+        $platform_fee: numeric!
+        $network_fee: numeric!
         $raw_callback_data: jsonb
         $updated_at: timestamptz!
       ) {
@@ -1549,6 +1548,8 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
           payout_method: $payout_method
           payout_account: $payout_account
           description: $description
+          platform_fee: $platform_fee
+          network_fee: $network_fee
           status: "pending"
           type: "withdrawal"
           provider_reference: "PENDING"
@@ -1573,6 +1574,8 @@ export const approveAdminPayout = createServerFn({ method: "POST" })
       payout_method: req.payout_method,
       payout_account: req.payout_account,
       description,
+      platform_fee: req.platform_fee || 0,
+      network_fee: req.network_fee || 0,
       raw_callback_data: {
         network_id: overrideNetworkId || req.network_id,
         country_code: req.country_code,

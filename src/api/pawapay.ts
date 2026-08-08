@@ -176,7 +176,6 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
-    const orgPlatformPct = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const planMaxSubsidyPct = parseFloat(plan.max_collection_subsidy_percentage as any) ?? 1.0;
     const withdrawalFeePct = parseFloat(plan.withdrawal_fee_percentage as any) || 0;
@@ -364,7 +363,6 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
-    const orgPlatformPct = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const grossAmount = parseFloat(amount);
     const baseAmt = parseFloat(baseAmount || amount);

@@ -173,8 +173,6 @@ function AdminPricingDetailsPage() {
       "price",
       "yearly_price",
       "customer_service_fee_percentage",
-      "organizer_platform_contribution",
-      "platform_margin_buffer",
       "customer_collection_fee_percentage",
       "customer_collection_fee_fixed",
       "organizer_collection_fee_percentage",
@@ -432,26 +430,6 @@ function AdminPricingDetailsPage() {
                   Core Platform Margins (Profit Settings)
                 </h3>
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-blue-400/80">
-                      Organizer Platform Contribution (%)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formState.organizer_platform_contribution || ""}
-                      onChange={(e) =>
-                        setFormState({
-                          ...formState,
-                          organizer_platform_contribution: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333333] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white"
-                    />
-                    <p className="text-[10px] text-blue-400/60">
-                      Percentage taken from the Organizer on ticket sales and withdrawals.
-                    </p>
-                  </div>
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-blue-400/80">
                       Customer Service Fee (%)
@@ -1203,12 +1181,6 @@ function AdminPricingDetailsPage() {
                   {plan.yearly_price
                     ? formatCurrency(plan.yearly_price, plan.currency || "USD")
                     : "-"}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-blue-400/80 mb-1">Agatike Profit Margin</div>
-                <div className="text-xl font-bold text-blue-400">
-                  {plan.organizer_platform_contribution || 0}%
                 </div>
               </div>
               <div>
