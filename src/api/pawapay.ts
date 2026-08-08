@@ -514,7 +514,8 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
     let tx = data.wallet_transactions?.[0] || null;
 
     // Active Polling Fallback: If webhook hasn't hit or we are on localhost, check PawaPay API directly
-    if (tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
+    const isDev = process.env.NODE_ENV !== "production";
+    if (isDev && tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
       try {
         const baseUrl = process.env.PAWAPAY_API_URL;
         if (!baseUrl) return tx;
@@ -553,6 +554,78 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
         }
       } catch (err) {
         console.error("[Agatike] Active polling fallback failed:", err);
+      }
+    }
+
+    return tx;
+  });
+
+export const getPawaPayPayoutStatus = createServerFn({ method: "POST" })
+  .validator((d: { payoutId: string }) => d)
+  .handler(async (ctx) => {
+    const { payoutId } = ctx.data;
+    if (!payoutId) return null;
+    const { hasuraRequest } = await import("./graphql.server");
+
+    const query = `
+      query GetPayoutStatus($provider_reference: String!) {
+        wallet_transactions(where: { provider_reference: { _eq: $provider_reference } }, limit: 1) {
+          id
+          status
+          provider_status
+          reference_id
+          type
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ wallet_transactions: any[] }>(query, {
+      provider_reference: payoutId,
+    });
+
+    let tx = data.wallet_transactions?.[0] || null;
+
+    // Active Polling Fallback: If webhook hasn't hit or we are on localhost, check PawaPay API directly
+    const isDev = process.env.NODE_ENV !== "production";
+    if (isDev && tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
+      try {
+        const baseUrl = process.env.PAWAPAY_API_URL;
+        if (!baseUrl) return tx;
+        const url = `${baseUrl}/v1/payouts/${payoutId}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`,
+          },
+        });
+
+        if (response.ok) {
+          const pawaData = await response.json();
+          const providerStatus = Array.isArray(pawaData) ? pawaData[0]?.status : pawaData.status;
+
+          if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED" || providerStatus === "REJECTED" || providerStatus === "REVERSED")) {
+            const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
+
+            // Simulate a webhook request to reuse the exact same completion/failure logic
+            const mockRequest = new Request("http://localhost:3000/api/pawapay/payouts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(pawaPayload),
+            });
+
+            const { handlePawaPayWebhook } = await import("./pawapay.server");
+            await handlePawaPayWebhook(mockRequest);
+
+            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
+
+            // Update local object so the frontend sees it immediately
+            tx.status = newStatus;
+            tx.provider_status = providerStatus;
+          }
+        }
+      } catch (err) {
+        console.error("[Agatike] Active polling fallback failed for payout:", err);
       }
     }
 

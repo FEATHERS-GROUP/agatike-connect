@@ -9,7 +9,7 @@ import {
   getExchangeRate,
 } from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
-import { getAllPaymentProviderFees, getPawaPayDepositStatus } from "@/api/pawapay";
+import { getAllPaymentProviderFees, getPawaPayPayoutStatus } from "@/api/pawapay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -205,8 +205,26 @@ function RequestWithdrawalPage() {
   const showExchange = isExchangeLoading || rate !== 1;
 
   const withdrawMutation = useMutation({
-    mutationFn: () =>
-      requestWithdrawal({
+    mutationFn: (vars: { otpToken: string; otp: string; password: string }) => {
+      console.log("Initiating withdrawal with data:", {
+        wallet_id: wallet!.id,
+        workspace_id: activeWorkspace!.id,
+        organizer_id: activeWorkspace!.orgnizer_id,
+        amount: amountToWithdraw,
+        payout_method: payoutMethod,
+        payout_account: payoutAccount,
+        currency: wallet!.currency,
+        network_id: actualNetworkId,
+        country_code: countryCode,
+        target_currency: targetCurrency,
+        exchange_rate: rate,
+        converted_amount: convertedAmount,
+        converted_net_payout: convertedNetPayout,
+        otpToken: vars.otpToken,
+        otp: vars.otp,
+        password: vars.password,
+      });
+      return requestWithdrawal({
         data: {
           wallet_id: wallet!.id,
           workspace_id: activeWorkspace!.id,
@@ -221,12 +239,14 @@ function RequestWithdrawalPage() {
           exchange_rate: rate,
           converted_amount: convertedAmount,
           converted_net_payout: convertedNetPayout,
-          otpToken,
-          otp,
-          password,
+          otpToken: vars.otpToken,
+          otp: vars.otp,
+          password: vars.password,
         },
-      } as any),
+      } as any);
+    },
     onSuccess: (res: any) => {
+      console.log("Withdrawal success response:", res);
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
 
@@ -244,13 +264,17 @@ function RequestWithdrawalPage() {
       }
     },
     onError: (err: any) => {
+      console.error("Withdrawal error response:", err);
       toast.error(err.message || "Failed to submit withdrawal request.");
     },
   });
 
   const { data: pollStatus } = useQuery({
     queryKey: ["withdrawal-poll", pollTxId],
-    queryFn: () => getPawaPayDepositStatus({ data: { depositId: pollTxId } } as any),
+    queryFn: () => {
+      console.log("Polling payout status for tx:", pollTxId);
+      return getPawaPayPayoutStatus({ data: { payoutId: pollTxId } } as any);
+    },
     enabled: !!pollTxId && step === 6,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -260,6 +284,7 @@ function RequestWithdrawalPage() {
 
   // Watch pollStatus to trigger success/failure
   useEffect(() => {
+    console.log("pollStatus updated:", pollStatus);
     if (pollStatus) {
       if (pollStatus.status === "completed") {
         setStep(7); // Success
@@ -291,6 +316,7 @@ function RequestWithdrawalPage() {
   });
 
   const handleInitiateWithdrawal = () => {
+    console.log("handleInitiateWithdrawal called, state:", { amountToWithdraw, payoutMethod, selectedNetworkId, payoutAccount, netPayout });
     if (!withdrawAmount || isNaN(amountToWithdraw) || amountToWithdraw <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -318,7 +344,7 @@ function RequestWithdrawalPage() {
 
     // Large amounts go straight to admin queue — no OTP needed
     if (amountToWithdraw > ADMIN_APPROVAL_THRESHOLD) {
-      withdrawMutation.mutate();
+      withdrawMutation.mutate({ otpToken: "", otp: "", password: "" });
       return;
     }
 
@@ -326,6 +352,7 @@ function RequestWithdrawalPage() {
   };
 
   const handleConfirmWithdrawal = () => {
+    console.log("handleConfirmWithdrawal called");
     if (!otp || otp.length !== 6) {
       toast.error("Please enter the valid 6-digit OTP");
       return;
@@ -335,7 +362,7 @@ function RequestWithdrawalPage() {
       return;
     }
 
-    withdrawMutation.mutate();
+    withdrawMutation.mutate({ otpToken, otp, password });
   };
 
   const formatCurrency = (amount: number, currency: string = "RWF") => {
@@ -697,7 +724,7 @@ function RequestWithdrawalPage() {
               </div>
               <h3 className="font-bold text-2xl">Processing Transfer</h3>
               <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
-                Please do not close this window. Your transaction is currently being processed by the network.
+                Please do not close this window. We are currently transferring the funds to your mobile money account. This usually takes less than 1 minute.
               </p>
               <div className="pt-6">
                 <p className="text-sm text-primary font-medium animate-pulse">

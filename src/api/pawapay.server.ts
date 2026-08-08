@@ -53,7 +53,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         status:
           providerStatus === "COMPLETED"
             ? "completed"
-            : providerStatus === "FAILED"
+            : (providerStatus === "FAILED" || providerStatus === "REJECTED" || providerStatus === "REVERSED")
               ? "failed"
               : "pending",
         raw_callback_data: body,
@@ -898,7 +898,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     id
                     email
                     phone
-                    first_name
+                    name
                   }
                   wallet {
                     id
@@ -911,8 +911,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             const ws = wsRes.workspaces_by_pk;
 
             if (ws && ws.organizer) {
-              const { email, phone, first_name } = ws.organizer;
-              const organizerName = first_name || ws.name || "Organizer";
+              const { email, phone, name } = ws.organizer;
+              const organizerName = name || ws.name || "Organizer";
               const currentBalance = ws.wallet?.balance || 0;
               const netPayout = tx.raw_callback_data?.netAmount || parseFloat(tx.amount);
               
