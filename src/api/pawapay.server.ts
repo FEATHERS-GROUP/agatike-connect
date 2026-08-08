@@ -42,6 +42,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               amount
               net_amount
               workspace_id
+              currency
+              payout_method
+              payout_account
             }
           }
         }
@@ -914,7 +917,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const { email, phone, name } = ws.organizer;
               const organizerName = name || ws.name || "Organizer";
               const currentBalance = ws.wallet?.amount || 0;
-              const netPayout = tx.raw_callback_data?.netAmount || parseFloat(tx.amount);
+              const netPayout = parseFloat(tx.net_amount) || parseFloat(tx.amount);
 
               // 2. Generate PDF Receipt
               const { generateWithdrawalReceipt } = await import("../lib/pdf-withdrawal-receipt");
