@@ -93,108 +93,117 @@ export function TransactionLedger({
                   </td>
                 </tr>
               ) : (
-                currentTransactions.map((txn: any) => (
-                  <tr key={txn.id} className="hover:bg-secondary/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-                            txn.type === "credit" ||
-                            txn.type === "deposit" ||
-                            txn.type === "event_ticket" ||
-                            txn.type === "portal_event_ticket" ||
-                            txn.type === "venue_booking" ||
-                            txn.type === "portal_venue_booking" ||
-                            txn.type === "space_subscription" ||
-                            txn.type?.startsWith("page_builder_checkout")
+                currentTransactions.map((txn: any) => {
+                  const isIncoming =
+                    txn.type === "credit" ||
+                    txn.type === "deposit" ||
+                    txn.type === "event_ticket" ||
+                    txn.type === "portal_event_ticket" ||
+                    txn.type === "venue_booking" ||
+                    txn.type === "portal_venue_booking" ||
+                    txn.type === "space_subscription" ||
+                    txn.type?.startsWith("page_builder_checkout");
+
+                  const isWithdrawal = txn.type === "withdrawal";
+
+                  // Parse payout account and total fee from withdrawal description or raw_callback_data
+                  const withdrawalAccount = txn.payout_account || (() => {
+                    const match = txn.description?.match(/\(([^)]+)\)/);
+                    return match ? match[1] : null;
+                  })();
+                  const withdrawalMethod = txn.payout_method || "MoMo";
+                  const totalFee = isWithdrawal
+                    ? Math.max(0, Number(txn.amount) - Number(txn.net_amount))
+                    : Number(txn.platform_fee || 0) + Number(txn.network_fee || 0);
+
+                  // Clean human-readable title
+                  let txnTitle: string;
+                  if (isWithdrawal) {
+                    txnTitle = `Agatike Withdrawal`;
+                  } else if (txn.type === "credit" || txn.type === "deposit") {
+                    txnTitle = "Agatike Deposit";
+                  } else {
+                    txnTitle =
+                      txn.description?.replace(/PawaPay/gi, "Agatike") ||
+                      (isIncoming ? "Income" : "Withdrawal");
+                  }
+
+                  return (
+                    <tr key={txn.id} className="hover:bg-secondary/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+                              isIncoming
+                                ? "bg-green-500/10 text-green-500"
+                                : "bg-red-500/10 text-red-500"
+                            }`}
+                          >
+                            {isIncoming ? (
+                              <ArrowDownLeft className="h-5 w-5" />
+                            ) : (
+                              <ArrowUpRight className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">{txnTitle}</p>
+                            <p className="text-xs text-muted-foreground capitalize flex items-center gap-1.5 flex-wrap">
+                              {isWithdrawal ? (
+                                <span className="capitalize">
+                                  {withdrawalMethod} · {withdrawalAccount}
+                                </span>
+                              ) : (
+                                <span>
+                                  {txn.type?.startsWith("page_builder_checkout::")
+                                    ? txn.type.split("::")[1]
+                                    : txn.type?.replace(/_/g, " ")}
+                                </span>
+                              )}
+                              {totalFee > 0 && (
+                                <span className="font-medium text-[#f97316]">
+                                  · Processing Fee:{" "}
+                                  {formatCurrency(totalFee, txn.currency || "RWF")}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-muted-foreground">
+                        {new Date(txn.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                            txn.status === "completed" || txn.status === "SUCCESS"
                               ? "bg-green-500/10 text-green-500"
-                              : "bg-red-500/10 text-red-500"
+                              : txn.status === "pending" || txn.status === "PENDING"
+                                ? "bg-orange-500/10 text-orange-500"
+                                : "bg-red-500/10 text-red-500"
                           }`}
                         >
-                          {txn.type === "credit" ||
-                          txn.type === "deposit" ||
-                          txn.type === "event_ticket" ||
-                          txn.type === "portal_event_ticket" ||
-                          txn.type === "venue_booking" ||
-                          txn.type === "portal_venue_booking" ||
-                          txn.type === "space_subscription" ||
-                          txn.type?.startsWith("page_builder_checkout") ? (
-                            <ArrowDownLeft className="h-5 w-5" />
-                          ) : (
-                            <ArrowUpRight className="h-5 w-5" />
+                          {(txn.status === "completed" || txn.status === "SUCCESS") && (
+                            <CheckCircle2 className="h-3 w-3" />
                           )}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground">
-                            {txn.description?.replace(/PawaPay/gi, "Agatike") ||
-                              (txn.type === "credit" || txn.type === "deposit"
-                                ? "Income"
-                                : "Withdrawal")}
-                          </p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {txn.type?.startsWith("page_builder_checkout::")
-                              ? txn.type.split("::")[1]
-                              : txn.type?.replace("_", " ")}
-                            {Number(txn.platform_fee || 0) + Number(txn.network_fee || 0) > 0 ? (
-                              <span className="ml-2 font-medium text-[#f97316]">
-                                · Processing Fee:{" "}
-                                {formatCurrency(
-                                  Number(txn.platform_fee || 0) + Number(txn.network_fee || 0),
-                                  txn.currency || "RWF",
-                                )}
-                              </span>
-                            ) : null}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(txn.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          txn.status === "completed" || txn.status === "SUCCESS"
-                            ? "bg-green-500/10 text-green-500"
-                            : txn.status === "pending" || txn.status === "PENDING"
-                              ? "bg-orange-500/10 text-orange-500"
-                              : "bg-red-500/10 text-red-500"
+                          {(txn.status === "pending" || txn.status === "PENDING") && (
+                            <Clock className="h-3 w-3" />
+                          )}
+                          {txn.status}
+                        </span>
+                      </td>
+                      <td
+                        className={`px-6 py-4 text-right font-bold ${
+                          isIncoming ? "text-green-500" : "text-foreground"
                         }`}
                       >
-                        {(txn.status === "completed" || txn.status === "SUCCESS") && (
-                          <CheckCircle2 className="h-3 w-3" />
-                        )}
-                        {(txn.status === "pending" || txn.status === "PENDING") && (
-                          <Clock className="h-3 w-3" />
-                        )}
-                        {txn.status}
-                      </span>
-                    </td>
-                    <td
-                      className={`px-6 py-4 text-right font-bold ${
-                        txn.type === "credit" ||
-                        txn.type === "deposit" ||
-                        txn.type === "event_ticket" ||
-                        txn.type === "space_subscription"
-                          ? "text-green-500"
-                          : "text-foreground"
-                      }`}
-                    >
-                      {txn.type === "credit" ||
-                      txn.type === "deposit" ||
-                      txn.type === "event_ticket" ||
-                      txn.type === "portal_event_ticket" ||
-                      txn.type === "venue_booking" ||
-                      txn.type === "portal_venue_booking" ||
-                      txn.type === "space_subscription" ||
-                      txn.type?.startsWith("page_builder_checkout")
-                        ? "+"
-                        : "-"}
-                      {formatCurrency(txn.amount, txn.currency || "RWF")}
-                    </td>
-                  </tr>
-                ))
+                        {isIncoming ? "+" : "-"}
+                        {formatCurrency(Number(txn.amount), txn.currency || "RWF")}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
+
             </tbody>
           </table>
         </div>
