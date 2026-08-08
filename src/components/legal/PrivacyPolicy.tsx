@@ -121,7 +121,7 @@ export function PrivacyPolicy() {
             We do not sell your personal data to third parties.
           </p>
           <p style={ps}>
-            We may share limited personal information — including identity verification data, where strictly necessary — with trusted third-party service providers who assist us in operating our platform (such as payment processors, identity verification providers, hosting providers, and analytics services). All third parties are contractually required to handle your data securely, confidentially, and solely for the purposes we specify.
+            We may share limited personal information - including identity verification data, where strictly necessary - with trusted third-party service providers who assist us in operating our platform (such as payment processors, identity verification providers, hosting providers, and analytics services). All third parties are contractually required to handle your data securely, confidentially, and solely for the purposes we specify.
           </p>
           <p style={ps}>
             We may also disclose personal information where required to comply with a legal obligation, enforce our agreements, protect the rights and safety of our users, or respond to a valid request from a governmental or regulatory authority.
@@ -156,7 +156,7 @@ export function PrivacyPolicy() {
 
           <blockquote style={bq}>
             <p style={{ margin: 0, fontSize: "0.9rem", fontStyle: "italic", fontWeight: 600, color: "var(--foreground)", lineHeight: 1.7 }}>
-              By using our platform, you explicitly consent to the collection, processing, and storage of your personal data — including sensitive identity documents — as described in this Privacy Policy, and you confirm: "I agree to provide valid government-issued identification for verification purposes."
+              By using our platform, you explicitly consent to the collection, processing, and storage of your personal data - including sensitive identity documents - as described in this Privacy Policy, and you confirm: "I agree to provide valid government-issued identification for verification purposes."
             </p>
           </blockquote>
         </section>
@@ -271,7 +271,7 @@ export function PrivacyPolicy() {
         <section>
           <h2 style={hs}>13. Consent</h2>
           <p style={ps}>
-            By using our platform, you explicitly consent to the collection, processing, storage, and, where applicable, international transfer of your personal data — including sensitive identity documents — as described in this Privacy Policy.
+            By using our platform, you explicitly consent to the collection, processing, storage, and, where applicable, international transfer of your personal data - including sensitive identity documents - as described in this Privacy Policy.
           </p>
         </section>
 

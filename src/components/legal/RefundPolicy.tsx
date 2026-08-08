@@ -125,7 +125,7 @@ export function RefundPolicy() {
               If an event is <strong style={bold}>cancelled</strong> by the organizer, or a
               venue/space is <strong style={bold}>permanently closed</strong>, responsibility for
               issuing a refund lies with the{" "}
-              <strong style={bold}>organizer, host, or venue owner</strong> — not with our
+              <strong style={bold}>organizer, host, or venue owner</strong> - not with our
               platform. Affected users must negotiate refund terms directly with the relevant
               organizer or host.
             </li>
@@ -227,7 +227,7 @@ export function RefundPolicy() {
 
           <h3 style={shs}>3.4 Partial Refunds</h3>
           <p style={ps}>
-            In some cases, only a partial refund may be issued — for example, when only a portion
+            In some cases, only a partial refund may be issued - for example, when only a portion
             of an order is affected (such as one ticket in a multi-ticket order) or when
             non-refundable fees are deducted from the total.
           </p>

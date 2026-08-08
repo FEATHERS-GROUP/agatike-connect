@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 
 export const Route = createFileRoute("/refunds")({
   head: () => ({
-    meta: [{ title: "Refund Policy — Agatike" }],
+    meta: [{ title: "Refund Policy - Agatike" }],
   }),
   component: RefundsPage,
 });
