@@ -318,7 +318,7 @@ sequenceDiagram
 
     User->>UI: Selects Ticket & Enters Phone Number
     UI->>Srv: handlePawaPayDeposit(Amount, Phone)
-    Srv->>DB: Creates "pending" wallet_transaction
+    Srv->>DB: Atomically creates "pending" wallet_transaction & earnings row
     Srv->>PP: POST /v1/deposits (with Statement Desc)
     PP-->>Srv: 202 Accepted (depositId)
     Srv-->>UI: Returns depositId, begins polling
@@ -339,10 +339,10 @@ sequenceDiagram
     else is NEW / PENDING
         Srv->>DB: Verifies Transaction Signature & Status
         alt is COMPLETED
-            Srv->>DB: Updates status to "completed"
+            Srv->>DB: Atomically updates wallet_transaction & earnings to "completed"
             Srv->>DB: Generates Digital Ticket / RSVP / Sends SMS
         else is REJECTED / FAILED
-            Srv->>DB: Updates status to "failed"
+            Srv->>DB: Atomically updates wallet_transaction & earnings to "failed"
         end
     end
 
