@@ -746,7 +746,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Safely fund the workspace wallet using the exactly computed net_amount (which securely deducts shortfalls!)
-        if (tx.workspace_id && tx.net_amount && tx.type !== "subscription") {
+        if (tx.workspace_id && tx.net_amount && tx.type !== "subscription" && tx.type !== "withdrawal") {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
           await addMoneyToWorkspaceWallet({
             data: {
@@ -902,7 +902,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   }
                   wallet {
                     id
-                    balance
+                    amount
                   }
                 }
               }
@@ -913,9 +913,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             if (ws && ws.organizer) {
               const { email, phone, name } = ws.organizer;
               const organizerName = name || ws.name || "Organizer";
-              const currentBalance = ws.wallet?.balance || 0;
+              const currentBalance = ws.wallet?.amount || 0;
               const netPayout = tx.raw_callback_data?.netAmount || parseFloat(tx.amount);
-              
+
               // 2. Generate PDF Receipt
               const { generateWithdrawalReceipt } = await import("../lib/pdf-withdrawal-receipt");
               const receipt = await generateWithdrawalReceipt({
@@ -938,7 +938,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    from: "Agatike Connect <hello@agatike.com>",
+                    from: "Agatike Connect <finance@agatike.rw>",
                     to: [email],
                     subject: `Withdrawal Successful: ${netPayout} ${tx.currency}`,
                     html: `<p>Hello ${organizerName},</p><p>Your withdrawal of <strong>${netPayout} ${tx.currency}</strong> was successfully completed and sent to your account (${tx.payout_account}).</p><p>Please find your receipt attached.</p>`,
@@ -962,8 +962,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               // 5. Firebase Notification (Firestore)
               const { getFirebaseAdmin } = await import("../lib/firebase.server");
               const admin = await getFirebaseAdmin();
-              if (admin) {
-                const db = admin.firestore();
+              if (admin && admin.db) {
+                const db = admin.db;
                 await db.collection("agatike_notifications").add({
                   actorId: null,
                   actorName: "System",

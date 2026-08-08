@@ -627,6 +627,13 @@ export const getPawaPayPayoutStatus = createServerFn({ method: "POST" })
       } catch (err) {
         console.error("[Agatike] Active polling fallback failed for payout:", err);
       }
+    } else {
+      console.log("[Agatike] Active polling skipped because conditions were not met:", {
+        isDev,
+        hasTx: !!tx,
+        status: tx?.status,
+        hasApiKey: !!process.env.PAWAPAY_API_KEY
+      });
     }
 
     return tx;
@@ -861,6 +868,9 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
       throw new Error(data.errorMessage || data.message || "PawaPay API error");
     }
 
+    const providerStatus = data.status || "ACCEPTED";
+    
+    // Always update the database with the provider_reference (tx.id) so the webhook/polling can find it
     const updateQuery = `
       mutation UpdateTx($id: uuid!, $provider_status: String!, $provider_reference: String!) {
         update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { provider_status: $provider_status, provider_reference: $provider_reference }) {
@@ -870,9 +880,20 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
     `;
     await hasuraRequest(updateQuery, { 
       id: tx.id, 
-      provider_status: data.status || "ACCEPTED",
+      provider_status: providerStatus,
       provider_reference: tx.id
     });
+    
+    // If it's synchronously rejected or failed, we must simulate the webhook to refund the wallet
+    if (providerStatus === "REJECTED" || providerStatus === "FAILED" || providerStatus === "REVERSED") {
+      const mockRequest = new Request("http://localhost:3000/api/pawapay/payouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const { handlePawaPayWebhook } = await import("./pawapay.server");
+      await handlePawaPayWebhook(mockRequest);
+    }
 
     return { success: true, data };
   });
