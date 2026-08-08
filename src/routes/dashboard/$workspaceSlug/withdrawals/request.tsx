@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
@@ -9,7 +9,7 @@ import {
   getExchangeRate,
 } from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
-import { getAllPaymentProviderFees } from "@/api/pawapay";
+import { getAllPaymentProviderFees, getPawaPayDepositStatus } from "@/api/pawapay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,8 @@ function RequestWithdrawalPage() {
   const [otpToken, setOtpToken] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
+
+  const [pollTxId, setPollTxId] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -228,19 +230,50 @@ function RequestWithdrawalPage() {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
 
-      setStep(6);
-
-      setTimeout(() => {
-        navigate({
-          to: "/dashboard/$workspaceSlug/withdrawals",
-          params: { workspaceSlug: activeWorkspace?.slug || "" },
-        });
-      }, 4000);
+      if (res.requiresAdminApproval) {
+        setStep(7); // Show success immediately for admin approval
+        setTimeout(() => {
+          navigate({
+            to: "/dashboard/$workspaceSlug/withdrawals",
+            params: { workspaceSlug: activeWorkspace?.slug || "" },
+          });
+        }, 4000);
+      } else {
+        setPollTxId(res.provider_reference);
+        setStep(6); // Processing modal
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to submit withdrawal request.");
     },
   });
+
+  const { data: pollStatus } = useQuery({
+    queryKey: ["withdrawal-poll", pollTxId],
+    queryFn: () => getPawaPayDepositStatus({ data: { depositId: pollTxId } } as any),
+    enabled: !!pollTxId && step === 6,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "pending" || !status ? 3000 : false;
+    },
+  });
+
+  // Watch pollStatus to trigger success/failure
+  useEffect(() => {
+    if (pollStatus) {
+      if (pollStatus.status === "completed") {
+        setStep(7); // Success
+        setTimeout(() => {
+          navigate({
+            to: "/dashboard/$workspaceSlug/withdrawals",
+            params: { workspaceSlug: activeWorkspace?.slug || "" },
+          });
+        }, 4000);
+      } else if (pollStatus.status === "failed") {
+        setStep(8); // Failure
+      }
+    }
+  }, [pollStatus, navigate, activeWorkspace]);
 
   const sendOtpMutation = useMutation({
     mutationFn: () =>
@@ -655,26 +688,66 @@ function RequestWithdrawalPage() {
             </div>
           )}
 
-          {/* STEP 6: Success / Processing Status */}
+          {/* STEP 6: Processing / Polling */}
           {step === 6 && (
             <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
-              <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <Wallet className="h-12 w-12 animate-pulse" />
+              <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                <div className="absolute inset-0 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <Wallet className="h-10 w-10 animate-pulse" />
+              </div>
+              <h3 className="font-bold text-2xl">Processing Transfer</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Please do not close this window. Your transaction is currently being processed by the network.
+              </p>
+              <div className="pt-6">
+                <p className="text-sm text-primary font-medium animate-pulse">
+                  Waiting for confirmation...
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 7: Success */}
+          {step === 7 && (
+            <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
+              <div className="w-24 h-24 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wallet className="h-12 w-12" />
               </div>
               <h3 className="font-bold text-2xl">
                 {amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
                   ? "Request Submitted"
-                  : "Transfer in Progress!"}
+                  : "Withdrawal Successful!"}
               </h3>
               <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
                 {amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
                   ? "Your withdrawal request is pending admin approval. We will notify you once it is processed."
-                  : "Your funds are on their way to your mobile money account! If the transfer fails for any reason, the funds will be automatically refunded to your wallet."}
+                  : "Your funds have been successfully transferred to your mobile money account."}
               </p>
               <div className="pt-6">
-                <p className="text-sm text-primary font-medium animate-pulse">
+                <p className="text-sm text-green-500 font-medium">
                   Redirecting to your wallet...
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 8: Failure */}
+          {step === 8 && (
+            <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
+              <div className="w-24 h-24 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wallet className="h-12 w-12" />
+              </div>
+              <h3 className="font-bold text-2xl text-destructive">Withdrawal Failed</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Unfortunately, the network rejected this transfer. Your funds have been safely returned to your wallet.
+              </p>
+              <div className="pt-6 flex justify-center gap-4">
+                <Button variant="outline" onClick={() => navigate({ to: "/dashboard/$workspaceSlug/withdrawals", params: { workspaceSlug: activeWorkspace?.slug || "" } })}>
+                  Go Back
+                </Button>
+                <Button onClick={() => setStep(1)}>
+                  Try Again
+                </Button>
               </div>
             </div>
           )}

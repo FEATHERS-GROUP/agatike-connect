@@ -883,7 +883,107 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
       }
 
-      // 3. Handle Failed Withdrawals (Refund the wallet)
+      // 3. Handle Successful Withdrawals
+      if (tx && tx.status === "completed" && tx.type === "withdrawal") {
+        if (tx.workspace_id) {
+          try {
+            // 1. Get Workspace / Organizer Details
+            const wsQuery = `
+              query GetWorkspaceInfo($id: uuid!) {
+                workspaces_by_pk(id: $id) {
+                  id
+                  name
+                  orgnizer_id
+                  organizer {
+                    id
+                    email
+                    phone
+                    first_name
+                  }
+                  wallet {
+                    id
+                    balance
+                  }
+                }
+              }
+            `;
+            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: tx.workspace_id });
+            const ws = wsRes.workspaces_by_pk;
+
+            if (ws && ws.organizer) {
+              const { email, phone, first_name } = ws.organizer;
+              const organizerName = first_name || ws.name || "Organizer";
+              const currentBalance = ws.wallet?.balance || 0;
+              const netPayout = tx.raw_callback_data?.netAmount || parseFloat(tx.amount);
+              
+              // 2. Generate PDF Receipt
+              const { generateWithdrawalReceipt } = await import("../lib/pdf-withdrawal-receipt");
+              const receipt = await generateWithdrawalReceipt({
+                amount: parseFloat(tx.amount),
+                netAmount: netPayout,
+                currency: tx.currency,
+                payoutMethod: tx.payout_method || "momo",
+                payoutAccount: tx.payout_account || "Unknown",
+                referenceId: tx.reference_id || tx.id,
+                date: new Date(),
+                organizerName,
+              });
+
+              // 3. Send Email via Resend with PDF Attachment
+              if (email && process.env.RESEND_API_KEY) {
+                await fetch("https://api.resend.com/emails", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    from: "Agatike Connect <hello@agatike.com>",
+                    to: [email],
+                    subject: `Withdrawal Successful: ${netPayout} ${tx.currency}`,
+                    html: `<p>Hello ${organizerName},</p><p>Your withdrawal of <strong>${netPayout} ${tx.currency}</strong> was successfully completed and sent to your account (${tx.payout_account}).</p><p>Please find your receipt attached.</p>`,
+                    attachments: [
+                      {
+                        filename: receipt.filename,
+                        content: receipt.content,
+                      },
+                    ],
+                  }),
+                });
+              }
+
+              // 4. Send SMS
+              if (phone) {
+                const { sendSMS } = await import("./pindo.server");
+                const smsText = `Agatike Connect: Your withdrawal of ${netPayout} ${tx.currency} was successful. Ref: ${tx.reference_id || tx.id}. Remaining Balance: ${currentBalance} ${tx.currency}.`;
+                await sendSMS(phone, smsText, ws.orgnizer_id);
+              }
+
+              // 5. Firebase Notification (Firestore)
+              const { getFirebaseAdmin } = await import("../lib/firebase.server");
+              const admin = await getFirebaseAdmin();
+              if (admin) {
+                const db = admin.firestore();
+                await db.collection("agatike_notifications").add({
+                  actorId: null,
+                  actorName: "System",
+                  createdAt: new Date().toISOString(),
+                  message: `Your withdrawal of ${netPayout} ${tx.currency} has been successfully completed.`,
+                  organizerId: ws.orgnizer_id,
+                  read: false,
+                  title: "Withdrawal Successful",
+                  type: "withdrawal",
+                  targetId: tx.reference_id || tx.id
+                });
+              }
+            }
+          } catch (e) {
+            console.error("[PawaPay Webhook] Failed to send withdrawal notifications:", e);
+          }
+        }
+      }
+
+      // 4. Handle Failed Withdrawals (Refund the wallet)
       if (tx && tx.status === "failed" && tx.type === "withdrawal") {
         if (tx.workspace_id && tx.amount) {
           console.log(

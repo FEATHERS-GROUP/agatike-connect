@@ -685,8 +685,9 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     return {
       success: true,
       transactionId: txId,
+      provider_reference: txId,
       netAmount,
-      agatikeFee,
+      agatikeFee: platformFee,
       networkFee,
       requiresAdminApproval: false,
     };
