@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
-    meta: [{ title: "Terms and Conditions - Agatike" }],
+    meta: [{ title: "Terms and Conditions Agatike" }],
   }),
   component: TermsPage,
 });
