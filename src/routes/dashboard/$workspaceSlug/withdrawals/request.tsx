@@ -178,19 +178,19 @@ function RequestWithdrawalPage() {
   const totalPercentageFee = amountToWithdraw * (platformPercentage / 100);
   const totalFixedFee = platformFixed + netFixed;
   const networkFee = amountToWithdraw * (netPercentage / 100) + netFixed;
-  
+
   // Total fee deducted from the organizer's withdrawal
   const totalFee = totalPercentageFee + totalFixedFee;
   const platformProfit = totalFee - networkFee;
   const netPayout = amountToWithdraw - totalFee;
 
-  const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency || "RWF";
+  const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency;
 
   const { data: exchangeRate, isLoading: isExchangeLoading } = useQuery({
     queryKey: ["exchange-rate", wallet?.currency, targetCurrency],
     queryFn: () =>
       getExchangeRate({
-        data: { base_currency: wallet?.currency || "RWF", target_currency: targetCurrency },
+        data: { base_currency: wallet?.currency, target_currency: targetCurrency },
       } as any),
     enabled: !!wallet?.currency && !!targetCurrency && wallet.currency !== targetCurrency,
   });
@@ -228,7 +228,7 @@ function RequestWithdrawalPage() {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
 
-      setStep(5);
+      setStep(6);
 
       setTimeout(() => {
         navigate({
@@ -571,15 +571,13 @@ function RequestWithdrawalPage() {
             </div>
           )}
 
-          {/* STEP 4: Security Verification */}
+          {/* STEP 4: OTP Verification */}
           {step === 4 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
-                <h3 className="font-bold text-lg">Security Verification</h3>
+                <h3 className="font-bold text-lg">Security Code</h3>
                 <p className="text-sm text-muted-foreground">
-                  We've sent a 6-digit One-Time Password (OTP) via SMS to your registered phone
-                  number. Please enter it below along with your account password to authorize this
-                  payout.
+                  We've sent an 8-character One-Time Password (OTP) via Email. Please enter it below.
                 </p>
               </div>
 
@@ -592,6 +590,37 @@ function RequestWithdrawalPage() {
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.toUpperCase())}
                 />
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-1/3 h-14 rounded-xl text-lg"
+                  onClick={() => setStep(3)}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-2/3 h-14 rounded-xl text-lg"
+                  disabled={otp.length !== 8}
+                  onClick={() => setStep(5)}
+                >
+                  Verify Code
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Password Verification */}
+          {step === 5 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
+                <h3 className="font-bold text-lg">Final Authorization</h3>
+                <p className="text-sm text-muted-foreground">
+                  Please enter your account password to authorize this withdrawal.
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -610,14 +639,14 @@ function RequestWithdrawalPage() {
                   variant="outline"
                   size="lg"
                   className="w-1/3 h-14 rounded-xl text-lg"
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                 >
                   Back
                 </Button>
                 <Button
                   size="lg"
                   className="w-2/3 h-14 rounded-xl text-lg"
-                  disabled={withdrawMutation.isPending || otp.length !== 8 || !password}
+                  disabled={withdrawMutation.isPending || !password}
                   onClick={handleConfirmWithdrawal}
                 >
                   {withdrawMutation.isPending ? "Authorizing..." : "Submit Withdrawal"}
@@ -626,8 +655,8 @@ function RequestWithdrawalPage() {
             </div>
           )}
 
-          {/* STEP 5: Success / Processing Status */}
-          {step === 5 && (
+          {/* STEP 6: Success / Processing Status */}
+          {step === 6 && (
             <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
               <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
                 <Wallet className="h-12 w-12 animate-pulse" />
