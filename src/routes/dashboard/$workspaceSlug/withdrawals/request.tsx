@@ -174,10 +174,13 @@ function RequestWithdrawalPage() {
     }
   }
 
-  // Total fee paid by the organizer (inclusive of everything)
-  const totalFee = amountToWithdraw * (platformPercentage / 100) + platformFixed;
+  // The plan defines the inclusive percentage fee. Network fixed fees are additive.
+  const totalPercentageFee = amountToWithdraw * (platformPercentage / 100);
+  const totalFixedFee = platformFixed + netFixed;
   const networkFee = amountToWithdraw * (netPercentage / 100) + netFixed;
-  // Agatike profit is the remainder
+  
+  // Total fee deducted from the organizer's withdrawal
+  const totalFee = totalPercentageFee + totalFixedFee;
   const platformProfit = totalFee - networkFee;
   const netPayout = amountToWithdraw - totalFee;
 
@@ -499,13 +502,11 @@ function RequestWithdrawalPage() {
                   <span className="text-muted-foreground">
                     Processing Fee (
                     {[
-                      platformPercentage > 0
-                        ? `${platformPercentage}%`
-                        : null,
-                      platformFixed > 0
+                      platformPercentage > 0 ? `${platformPercentage}%` : null,
+                      (platformFixed + netFixed) > 0
                         ? showExchange && !isExchangeLoading
-                          ? formatCurrency(platformFixed * rate, targetCurrency)
-                          : formatCurrency(platformFixed, wallet?.currency)
+                          ? formatCurrency((platformFixed + netFixed) * rate, targetCurrency)
+                          : formatCurrency(platformFixed + netFixed, wallet?.currency)
                         : null,
                     ]
                       .filter(Boolean)

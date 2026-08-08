@@ -525,10 +525,14 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   }
 
   // 7. Calculate Total Fee and Net Payout
-  // The Total Fee is strictly what is defined in the plan (inclusive of network costs)
-  const totalFee = amount * (withdrawalFeePercentage / 100) + withdrawalFeeFixed;
+  // The plan defines the inclusive percentage fee. Network fixed fees are additive.
+  const totalPercentageFee = amount * (withdrawalFeePercentage / 100);
+  const totalFixedFee = withdrawalFeeFixed + netFixed;
+  const totalFee = totalPercentageFee + totalFixedFee;
+
   // Provider (PawaPay) disbursement cost
   const networkFee = amount * (netPercentage / 100) + netFixed;
+  
   // Agatike's actual profit is the remainder
   const platformFee = totalFee - networkFee;
   const netAmount = amount - totalFee;
