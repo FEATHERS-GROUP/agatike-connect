@@ -789,13 +789,17 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
     }
 
     const updateQuery = `
-      mutation UpdateTx($id: uuid!, $provider_status: String!) {
-        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { provider_status: $provider_status, provider_reference: $id }) {
+      mutation UpdateTx($id: uuid!, $provider_status: String!, $provider_reference: String!) {
+        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { provider_status: $provider_status, provider_reference: $provider_reference }) {
           id
         }
       }
     `;
-    await hasuraRequest(updateQuery, { id: tx.id, provider_status: data.status || "ACCEPTED" });
+    await hasuraRequest(updateQuery, { 
+      id: tx.id, 
+      provider_status: data.status || "ACCEPTED",
+      provider_reference: tx.id
+    });
 
     return { success: true, data };
   });

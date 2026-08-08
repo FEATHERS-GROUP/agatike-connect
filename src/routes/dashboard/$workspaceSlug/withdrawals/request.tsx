@@ -293,8 +293,8 @@ function RequestWithdrawalPage() {
   };
 
   const handleConfirmWithdrawal = () => {
-    if (!otp || otp.length !== 8) {
-      toast.error("Please enter the valid 8-character OTP");
+    if (!otp || otp.length !== 6) {
+      toast.error("Please enter the valid 6-digit OTP");
       return;
     }
     if (!password) {
@@ -577,16 +577,16 @@ function RequestWithdrawalPage() {
               <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
                 <h3 className="font-bold text-lg">Security Code</h3>
                 <p className="text-sm text-muted-foreground">
-                  We've sent an 8-character One-Time Password (OTP) via Email. Please enter it below.
+                  We've sent a 6-digit One-Time Password (OTP) via Email. Please enter it below.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">8-Character Security Code</Label>
+                <Label className="text-sm font-semibold">6-Digit Security Code</Label>
                 <Input
-                  placeholder="e.g. A1B2C3D4"
+                  placeholder="e.g. 123456"
                   className="h-14 rounded-xl font-mono text-center text-lg tracking-widest uppercase"
-                  maxLength={8}
+                  maxLength={6}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.toUpperCase())}
                 />
@@ -604,7 +604,7 @@ function RequestWithdrawalPage() {
                 <Button
                   size="lg"
                   className="w-2/3 h-14 rounded-xl text-lg"
-                  disabled={otp.length !== 8}
+                  disabled={otp.length !== 6}
                   onClick={() => setStep(5)}
                 >
                   Verify Code
