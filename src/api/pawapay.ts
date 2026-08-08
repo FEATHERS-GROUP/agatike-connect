@@ -31,7 +31,6 @@ export const getExchangeRate = createServerFn({ method: "POST" })
 
 export const getPawaPayNetworks = createServerFn({ method: "GET" }).handler(async () => {
   if (!process.env.PAWAPAY_API_KEY) {
-    console.log("[PawaPay] PAWAPAY_API_KEY is missing from env");
     return [];
   }
 
@@ -627,13 +626,6 @@ export const getPawaPayPayoutStatus = createServerFn({ method: "POST" })
       } catch (err) {
         console.error("[Agatike] Active polling fallback failed for payout:", err);
       }
-    } else {
-      console.log("[Agatike] Active polling skipped because conditions were not met:", {
-        isDev,
-        hasTx: !!tx,
-        status: tx?.status,
-        hasApiKey: !!process.env.PAWAPAY_API_KEY
-      });
     }
 
     return tx;

@@ -206,24 +206,6 @@ function RequestWithdrawalPage() {
 
   const withdrawMutation = useMutation({
     mutationFn: (vars: { otpToken: string; otp: string; password: string }) => {
-      console.log("Initiating withdrawal with data:", {
-        wallet_id: wallet!.id,
-        workspace_id: activeWorkspace!.id,
-        organizer_id: activeWorkspace!.orgnizer_id,
-        amount: amountToWithdraw,
-        payout_method: payoutMethod,
-        payout_account: payoutAccount,
-        currency: wallet!.currency,
-        network_id: actualNetworkId,
-        country_code: countryCode,
-        target_currency: targetCurrency,
-        exchange_rate: rate,
-        converted_amount: convertedAmount,
-        converted_net_payout: convertedNetPayout,
-        otpToken: vars.otpToken,
-        otp: vars.otp,
-        password: vars.password,
-      });
       return requestWithdrawal({
         data: {
           wallet_id: wallet!.id,
@@ -246,7 +228,6 @@ function RequestWithdrawalPage() {
       } as any);
     },
     onSuccess: (res: any) => {
-      console.log("Withdrawal success response:", res);
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
 
@@ -272,7 +253,6 @@ function RequestWithdrawalPage() {
   const { data: pollStatus } = useQuery({
     queryKey: ["withdrawal-poll", pollTxId],
     queryFn: () => {
-      console.log("Polling payout status for tx:", pollTxId);
       return getPawaPayPayoutStatus({ data: { payoutId: pollTxId } } as any);
     },
     enabled: !!pollTxId && step === 6,
@@ -284,7 +264,6 @@ function RequestWithdrawalPage() {
 
   // Watch pollStatus to trigger success/failure
   useEffect(() => {
-    console.log("pollStatus updated:", pollStatus);
     if (pollStatus) {
       if (pollStatus.status === "completed") {
         setStep(7); // Success
@@ -316,7 +295,6 @@ function RequestWithdrawalPage() {
   });
 
   const handleInitiateWithdrawal = () => {
-    console.log("handleInitiateWithdrawal called, state:", { amountToWithdraw, payoutMethod, selectedNetworkId, payoutAccount, netPayout });
     if (!withdrawAmount || isNaN(amountToWithdraw) || amountToWithdraw <= 0) {
       toast.error("Please enter a valid amount");
       return;
@@ -352,7 +330,6 @@ function RequestWithdrawalPage() {
   };
 
   const handleConfirmWithdrawal = () => {
-    console.log("handleConfirmWithdrawal called");
     if (!otp || otp.length !== 6) {
       toast.error("Please enter the valid 6-digit OTP");
       return;

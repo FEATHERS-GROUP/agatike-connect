@@ -378,7 +378,6 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     converted_net_payout,
   } = ctx.data as any;
 
-  console.log("requestWithdrawal backend received:", ctx.data);
 
   const ADMIN_APPROVAL_THRESHOLD = 150000;
   const requiresAdminApproval = amount > ADMIN_APPROVAL_THRESHOLD;
