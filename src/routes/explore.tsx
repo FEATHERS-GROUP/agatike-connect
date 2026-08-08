@@ -102,23 +102,36 @@ function ExplorePage() {
   const filteredOrganizers = useMemo(() => {
     if (!query) return [];
     return dbOrganizers.filter((org: any) => {
-      if (cityQuery && cityQuery !== "all" && !org.country?.toLowerCase().includes(cityQuery)) return false;
-      return org.name?.toLowerCase().includes(query) || org.handle?.toLowerCase().includes(query) || org.bio?.toLowerCase().includes(query);
+      if (cityQuery && cityQuery !== "all" && !org.country?.toLowerCase().includes(cityQuery))
+        return false;
+      return (
+        org.name?.toLowerCase().includes(query) ||
+        org.handle?.toLowerCase().includes(query) ||
+        org.bio?.toLowerCase().includes(query)
+      );
     });
   }, [dbOrganizers, query, cityQuery]);
 
   const filteredEvents = useMemo(() => {
     if (!query) return [];
     return dbEvents.filter((e: any) => {
-      if (cityQuery && cityQuery !== "all" && !e.workspaces?.city?.toLowerCase().includes(cityQuery) && !e.workspaces?.country?.toLowerCase().includes(cityQuery)) return false;
+      if (
+        cityQuery &&
+        cityQuery !== "all" &&
+        !e.workspaces?.city?.toLowerCase().includes(cityQuery) &&
+        !e.workspaces?.country?.toLowerCase().includes(cityQuery)
+      )
+        return false;
       const text = [
         e.title,
         e.category,
         e.description,
         e.workspaces?.name,
         e.workspaces?.city,
-        typeof e.tour_stops === 'string' ? e.tour_stops : JSON.stringify(e.tour_stops || {})
-      ].join(" ").toLowerCase();
+        typeof e.tour_stops === "string" ? e.tour_stops : JSON.stringify(e.tour_stops || {}),
+      ]
+        .join(" ")
+        .toLowerCase();
       return text.includes(query);
     });
   }, [dbEvents, query, cityQuery]);
@@ -126,15 +139,25 @@ function ExplorePage() {
   const filteredVenues = useMemo(() => {
     if (!query) return [];
     return dbVenues.filter((v: any) => {
-      if (cityQuery && cityQuery !== "all" && !v.city?.toLowerCase().includes(cityQuery) && !v.country?.toLowerCase().includes(cityQuery)) return false;
+      if (
+        cityQuery &&
+        cityQuery !== "all" &&
+        !v.city?.toLowerCase().includes(cityQuery) &&
+        !v.country?.toLowerCase().includes(cityQuery)
+      )
+        return false;
       const text = [
         v.name,
         v.city,
         v.type,
         v.description,
         ...(Array.isArray(v.amenities) ? v.amenities : []),
-        typeof v.facilities_data === 'string' ? v.facilities_data : JSON.stringify(v.facilities_data || {})
-      ].join(" ").toLowerCase();
+        typeof v.facilities_data === "string"
+          ? v.facilities_data
+          : JSON.stringify(v.facilities_data || {}),
+      ]
+        .join(" ")
+        .toLowerCase();
       return text.includes(query);
     });
   }, [dbVenues, query, cityQuery]);
@@ -167,9 +190,7 @@ function ExplorePage() {
           </div>
         </div>
         <div className="p-4 flex flex-col flex-1">
-          <p className="font-semibold text-sm leading-tight line-clamp-2">
-            {event.title}
-          </p>
+          <p className="font-semibold text-sm leading-tight line-clamp-2">{event.title}</p>
           <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="truncate">{new Date(date).toLocaleDateString()}</span>
             <span>•</span>
@@ -177,9 +198,7 @@ function ExplorePage() {
           </div>
           <div className="mt-auto pt-3 text-[10px] text-muted-foreground font-medium flex items-center gap-1">
             <Users className="h-3 w-3" /> People going ·{" "}
-            {(
-              event.event_attendees_aggregate?.aggregate?.count ?? 0
-            ).toLocaleString()}
+            {(event.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()}
           </div>
         </div>
       </Link>
@@ -256,12 +275,13 @@ function ExplorePage() {
       </div>
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
-        
         {/* Desktop Header / Search Bar */}
         <header className="hidden md:flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">Explore</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Discover events, venues, and experiences.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Discover events, venues, and experiences.
+            </p>
           </div>
           <div className="relative w-full max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -272,7 +292,7 @@ function ExplorePage() {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (e.target.value.length === 0) {
-                   setIsSearchOpen(false);
+                  setIsSearchOpen(false);
                 }
               }}
             />
@@ -282,19 +302,26 @@ function ExplorePage() {
         {query ? (
           <div className="space-y-12">
             {/* SEARCH RESULTS VIEW */}
-            
+
             {filteredOrganizers.length > 0 && (
               <section>
-                <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2"><Users className="h-5 w-5" /> Organizers</h2>
+                <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2">
+                  <Users className="h-5 w-5" /> Organizers
+                </h2>
                 <div className="flex flex-col gap-3 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-4">
-                  {filteredOrganizers.map(org => (
-                    <OrganizerCard 
-                      key={org.id} 
-                      org={org} 
-                      following={isFollowing(org.id)} 
-                      onFollowToggle={() => toggleFollow(org.id)} 
-                      isLoggedIn={!!user} 
-                      onClick={() => router.navigate({ to: "/organizers/$organizerId", params: { organizerId: org.id } })}
+                  {filteredOrganizers.map((org) => (
+                    <OrganizerCard
+                      key={org.id}
+                      org={org}
+                      following={isFollowing(org.id)}
+                      onFollowToggle={() => toggleFollow(org.id)}
+                      isLoggedIn={!!user}
+                      onClick={() =>
+                        router.navigate({
+                          to: "/organizers/$organizerId",
+                          params: { organizerId: org.id },
+                        })
+                      }
                     />
                   ))}
                 </div>
@@ -303,7 +330,9 @@ function ExplorePage() {
 
             {filteredEvents.length > 0 && (
               <section>
-                <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2"><Calendar className="h-5 w-5" /> Events & Experiences</h2>
+                <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2">
+                  <Calendar className="h-5 w-5" /> Events & Experiences
+                </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredEvents.map(renderEventCard)}
                 </div>
@@ -312,138 +341,161 @@ function ExplorePage() {
 
             {filteredVenues.length > 0 && (
               <section>
-                <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2"><MapIcon className="h-5 w-5" /> Venues</h2>
+                <h2 className="text-xl font-bold tracking-tight mb-4 flex items-center gap-2">
+                  <MapIcon className="h-5 w-5" /> Venues
+                </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredVenues.map(renderVenueCard)}
                 </div>
               </section>
             )}
 
-            {filteredOrganizers.length === 0 && filteredEvents.length === 0 && filteredVenues.length === 0 && (
-               <div className="py-20 text-center text-muted-foreground border border-dashed border-border/60 rounded-3xl bg-secondary/20">
-                 <p className="text-base font-medium">No results found for "{query}".</p>
-                 <p className="text-sm mt-1">Try adjusting your search or location.</p>
-               </div>
-            )}
+            {filteredOrganizers.length === 0 &&
+              filteredEvents.length === 0 &&
+              filteredVenues.length === 0 && (
+                <div className="py-20 text-center text-muted-foreground border border-dashed border-border/60 rounded-3xl bg-secondary/20">
+                  <p className="text-base font-medium">No results found for "{query}".</p>
+                  <p className="text-sm mt-1">Try adjusting your search or location.</p>
+                </div>
+              )}
           </div>
         ) : (
           <div className="space-y-12">
-             {/* DEFAULT EXPLORE VIEW */}
-             <section>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold tracking-tight">Trending Nearby</h2>
-                  <Link to="/" className="text-sm text-primary font-medium hover:underline">See all</Link>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                  {isLoadingEvents
-                    ? [1, 2, 3, 4].map((i) => (
-                        <Skeleton
-                          key={i}
-                          className={`rounded-3xl w-full ${i % 2 !== 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
-                        />
-                      ))
-                    : trendingEvents.map((e, i) => {
-                        const city = e.workspaces?.city || e.workspaces?.name || "Local";
-                        return (
-                          <Link
-                            key={e.id}
-                            to="/events/$eventId"
-                            params={{ eventId: e.id }}
-                            className={`group relative rounded-3xl overflow-hidden bg-card shadow-sm border border-border/40 block w-full ${i % 2 === 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
-                          >
-                            <img
-                              src={e.cover}
-                              alt={e.title}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-4">
-                              <div className="text-[10px] font-bold text-primary mb-1.5 uppercase tracking-wider">
-                                {e.category}
-                              </div>
-                              <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
-                                {e.title}
-                              </h3>
-                              <div className="text-white/80 text-xs mt-2 flex flex-col gap-1.5">
-                                <span className="flex items-center gap-1.5">
-                                  <MapPin className="h-3.5 w-3.5" /> {city}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                  <Users className="h-3.5 w-3.5" /> {(e.event_attendees_aggregate?.aggregate?.count ?? 0).toLocaleString()} going
-                                </span>
-                              </div>
+            {/* DEFAULT EXPLORE VIEW */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">Trending Nearby</h2>
+                <Link to="/" className="text-sm text-primary font-medium hover:underline">
+                  See all
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                {isLoadingEvents
+                  ? [1, 2, 3, 4].map((i) => (
+                      <Skeleton
+                        key={i}
+                        className={`rounded-3xl w-full ${i % 2 !== 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
+                      />
+                    ))
+                  : trendingEvents.map((e, i) => {
+                      const city = e.workspaces?.city || e.workspaces?.name || "Local";
+                      return (
+                        <Link
+                          key={e.id}
+                          to="/events/$eventId"
+                          params={{ eventId: e.id }}
+                          className={`group relative rounded-3xl overflow-hidden bg-card shadow-sm border border-border/40 block w-full ${i % 2 === 0 ? "aspect-[3/4]" : "aspect-[4/5]"}`}
+                        >
+                          <img
+                            src={e.cover}
+                            alt={e.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <div className="text-[10px] font-bold text-primary mb-1.5 uppercase tracking-wider">
+                              {e.category}
                             </div>
-                          </Link>
-                        );
-                      })}
-                </div>
-             </section>
+                            <h3 className="text-white font-semibold text-sm leading-tight line-clamp-2">
+                              {e.title}
+                            </h3>
+                            <div className="text-white/80 text-xs mt-2 flex flex-col gap-1.5">
+                              <span className="flex items-center gap-1.5">
+                                <MapPin className="h-3.5 w-3.5" /> {city}
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                <Users className="h-3.5 w-3.5" />{" "}
+                                {(
+                                  e.event_attendees_aggregate?.aggregate?.count ?? 0
+                                ).toLocaleString()}{" "}
+                                going
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+              </div>
+            </section>
 
-             <section>
-               <div className="flex items-center justify-between mb-6">
-                 <h2 className="text-xl md:text-2xl font-bold tracking-tight">Popular Organizers</h2>
-                 <Link to="/organizers" className="text-sm text-primary font-medium hover:underline">See all</Link>
-               </div>
-               {/* Mobile horizontal scroll, Desktop grid */}
-               <div className="flex overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2 md:mx-0 md:px-0 md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
-                 {isLoadingOrganizers
-                   ? [1, 2, 3, 4, 5].map((i) => (
-                       <div key={i} className="w-36 md:w-auto shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center">
-                         <Skeleton className="w-16 h-16 rounded-full mb-3" />
-                         <Skeleton className="h-4 w-24 mb-1" />
-                         <Skeleton className="h-7 w-full rounded-full mt-3" />
-                       </div>
-                     ))
-                   : dbOrganizers.slice(0, 5).map((org) => (
-                       <div key={org.id} className="w-36 md:w-auto shrink-0 block">
-                         <OrganizerCard 
-                           org={org} 
-                           following={isFollowing(org.id)} 
-                           onFollowToggle={() => toggleFollow(org.id)} 
-                           isLoggedIn={!!user} 
-                           onClick={() => router.navigate({ to: "/organizers/$organizerId", params: { organizerId: org.id } })}
-                         />
-                       </div>
-                     ))}
-               </div>
-             </section>
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">Popular Organizers</h2>
+                <Link to="/organizers" className="text-sm text-primary font-medium hover:underline">
+                  See all
+                </Link>
+              </div>
+              {/* Mobile horizontal scroll, Desktop grid */}
+              <div className="flex overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2 md:mx-0 md:px-0 md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {isLoadingOrganizers
+                  ? [1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="w-36 md:w-auto shrink-0 rounded-2xl p-4 bg-card border border-border/40 shadow-sm flex flex-col items-center"
+                      >
+                        <Skeleton className="w-16 h-16 rounded-full mb-3" />
+                        <Skeleton className="h-4 w-24 mb-1" />
+                        <Skeleton className="h-7 w-full rounded-full mt-3" />
+                      </div>
+                    ))
+                  : dbOrganizers.slice(0, 5).map((org) => (
+                      <div key={org.id} className="w-36 md:w-auto shrink-0 block">
+                        <OrganizerCard
+                          org={org}
+                          following={isFollowing(org.id)}
+                          onFollowToggle={() => toggleFollow(org.id)}
+                          isLoggedIn={!!user}
+                          onClick={() =>
+                            router.navigate({
+                              to: "/organizers/$organizerId",
+                              params: { organizerId: org.id },
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
+              </div>
+            </section>
 
-             <section>
-               <div className="flex items-center justify-between mb-6">
-                 <h2 className="text-xl md:text-2xl font-bold tracking-tight">Upcoming Events</h2>
-               </div>
-               <div className="flex overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                 {isLoadingEvents
-                   ? [1, 2, 3, 4].map((i) => (
-                       <div key={i} className="w-60 md:w-auto shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block">
-                         <Skeleton className="aspect-[4/3] w-full" />
-                       </div>
-                     ))
-                   : upcomingEvents.map((event) => (
-                       <div key={event.id} className="w-60 md:w-auto shrink-0 block">
-                          {renderEventCard(event)}
-                       </div>
-                     ))}
-               </div>
-             </section>
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">Upcoming Events</h2>
+              </div>
+              <div className="flex overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {isLoadingEvents
+                  ? [1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="w-60 md:w-auto shrink-0 rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm block"
+                      >
+                        <Skeleton className="aspect-[4/3] w-full" />
+                      </div>
+                    ))
+                  : upcomingEvents.map((event) => (
+                      <div key={event.id} className="w-60 md:w-auto shrink-0 block">
+                        {renderEventCard(event)}
+                      </div>
+                    ))}
+              </div>
+            </section>
 
-             <section>
-               <div className="flex items-center justify-between mb-6">
-                 <h2 className="text-xl md:text-2xl font-bold tracking-tight">Top Venues</h2>
-               </div>
-               <div className="flex overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                 {dbVenues.slice(0, 8).map((venue) => (
-                   <div key={venue.id} className="w-56 md:w-auto shrink-0 block">
-                     {renderVenueCard(venue)}
-                   </div>
-                 ))}
-                 {dbVenues.length === 0 && (
-                   <div className="w-full col-span-full text-center py-6 text-sm text-muted-foreground">
-                     No venues available right now.
-                   </div>
-                 )}
-               </div>
-             </section>
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">Top Venues</h2>
+              </div>
+              <div className="flex overflow-x-auto hide-scrollbar -mx-4 px-4 pb-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {dbVenues.slice(0, 8).map((venue) => (
+                  <div key={venue.id} className="w-56 md:w-auto shrink-0 block">
+                    {renderVenueCard(venue)}
+                  </div>
+                ))}
+                {dbVenues.length === 0 && (
+                  <div className="w-full col-span-full text-center py-6 text-sm text-muted-foreground">
+                    No venues available right now.
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         )}
       </main>

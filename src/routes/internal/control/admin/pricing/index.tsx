@@ -1192,7 +1192,6 @@ function AdminPricingPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1 text-xs">
-
                         <div className="flex justify-between w-32">
                           <span className="text-muted-foreground">Customer Fee:</span>
                           <span className="text-purple-400 font-bold">

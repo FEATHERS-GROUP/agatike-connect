@@ -397,7 +397,9 @@ export const getOrganizerCountries = createServerFn({ method: "GET" }).handler(a
     }
   `;
   const result = await hasuraRequest<{ organizers: { country: string }[] }>(query, {});
-  const uniqueCountries = Array.from(new Set(result.organizers.map((o) => o.country).filter(Boolean))).sort();
+  const uniqueCountries = Array.from(
+    new Set(result.organizers.map((o) => o.country).filter(Boolean)),
+  ).sort();
   return uniqueCountries;
 });
 

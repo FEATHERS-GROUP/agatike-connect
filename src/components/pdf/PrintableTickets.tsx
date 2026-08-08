@@ -450,7 +450,10 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
 
           <div className="relative z-10 p-8 flex flex-col justify-between h-full">
             <div>
-              <p className="font-bold tracking-[0.3em] uppercase text-sm mb-2" style={{ color: accentColor || "#4ade80" }}>
+              <p
+                className="font-bold tracking-[0.3em] uppercase text-sm mb-2"
+                style={{ color: accentColor || "#4ade80" }}
+              >
                 Admission Pass
               </p>
               <h1 className="text-5xl font-black uppercase leading-none drop-shadow-lg max-w-[400px] truncate">
@@ -461,8 +464,12 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
             <div className="flex gap-6 items-end drop-shadow-md bg-black/50 backdrop-blur-sm rounded-lg px-4 py-3">
               <div>
                 <p className="text-[9px] opacity-70 uppercase tracking-widest mb-0.5">Location</p>
-                <p className="text-xs font-bold truncate max-w-[150px]">{ticket.city || ticket.address || ticket.venue}</p>
-                {ticket.venueName && <p className="text-xs opacity-80 truncate max-w-[150px]">{ticket.venueName}</p>}
+                <p className="text-xs font-bold truncate max-w-[150px]">
+                  {ticket.city || ticket.address || ticket.venue}
+                </p>
+                {ticket.venueName && (
+                  <p className="text-xs opacity-80 truncate max-w-[150px]">{ticket.venueName}</p>
+                )}
               </div>
               <div>
                 <p className="text-[9px] opacity-70 uppercase tracking-widest mb-0.5">Date</p>
@@ -471,7 +478,7 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
               <div>
                 <p className="text-[9px] opacity-70 uppercase tracking-widest mb-0.5">Quantity</p>
                 <p className="text-xs font-bold" style={{ color: accentColor || "#4ade80" }}>
-                  {ticket.quantity || 1} Person{ticket.quantity !== 1 ? 's' : ''}
+                  {ticket.quantity || 1} Person{ticket.quantity !== 1 ? "s" : ""}
                 </p>
               </div>
             </div>
@@ -484,12 +491,18 @@ function DynamicPrintablePass({ ticket, config }: { ticket: any; config?: Ticket
 
           <div className="w-full text-center space-y-6">
             <div>
-              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Pass Type</p>
+              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
+                Pass Type
+              </p>
               <p className="font-black text-lg">{ticket.ticketType || "Standard"}</p>
             </div>
             <div>
-              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">Price</p>
-              <p className="text-xl font-black text-green-600">{Number(ticket.price) > 0 ? `${ticket.currency || 'RWF'} ${ticket.price}` : 'Free'}</p>
+              <p className="text-xs uppercase text-gray-400 font-bold tracking-widest mb-1">
+                Price
+              </p>
+              <p className="text-xl font-black text-green-600">
+                {Number(ticket.price) > 0 ? `${ticket.currency || "RWF"} ${ticket.price}` : "Free"}
+              </p>
             </div>
           </div>
         </div>

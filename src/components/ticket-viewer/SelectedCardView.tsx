@@ -146,10 +146,7 @@ export function SelectedCardView({
             </p>
 
             <div className="bg-white p-4 rounded-2xl mb-8 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-              <QRCode
-                value={selectedCard.data.qr_code_string || selectedCard.data.id}
-                size={160}
-              />
+              <QRCode value={selectedCard.data.qr_code_string || selectedCard.data.id} size={160} />
             </div>
 
             <p className="text-xs font-mono tracking-widest text-white/60 mb-8 break-all text-center px-4">

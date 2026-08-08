@@ -2,7 +2,17 @@ import { useState } from "react";
 import { Ticket as TicketIcon, Gift, Sparkles, Navigation } from "lucide-react";
 import { DynamicPass } from "./DynamicPass";
 
-export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: { tickets: any[]; vouchers: any[]; onCardClick: (card: any) => void; isCompressed?: boolean }) {
+export function CarouselStack({
+  tickets,
+  vouchers,
+  onCardClick,
+  isCompressed,
+}: {
+  tickets: any[];
+  vouchers: any[];
+  onCardClick: (card: any) => void;
+  isCompressed?: boolean;
+}) {
   // Map tickets and vouchers to a single cards array.
   // Tickets are placed first, vouchers last so tickets render on top initially (since activeIndex starts at 0).
   const cards = [
@@ -34,8 +44,12 @@ export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: 
           index: j + 1,
           total: qty,
           isSponsored,
-          value: Number(v.product?.value_amount) || Number(v.product?.price) || (Number(v.amount_paid) / Number(qty)) || 0,
-          price: Number(v.product?.price) || (Number(v.amount_paid) / Number(qty)) || 0,
+          value:
+            Number(v.product?.value_amount) ||
+            Number(v.product?.price) ||
+            Number(v.amount_paid) / Number(qty) ||
+            0,
+          price: Number(v.product?.price) || Number(v.amount_paid) / Number(qty) || 0,
         };
       });
     }),
@@ -45,7 +59,9 @@ export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: 
 
   return (
     <div className="flex flex-col items-center justify-center w-full animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200 fill-mode-both">
-      <div className={`relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6 transition-all duration-500 origin-bottom ${isCompressed ? "scale-[0.65] md:scale-75 opacity-70" : "scale-[0.82] md:scale-100 opacity-100"}`}>
+      <div
+        className={`relative w-full h-[380px] flex justify-center items-end perspective-[1000px] mb-8 mt-2 pb-6 transition-all duration-500 origin-bottom ${isCompressed ? "scale-[0.65] md:scale-75 opacity-70" : "scale-[0.82] md:scale-100 opacity-100"}`}
+      >
         {cards.map((card, index) => {
           const offset = index - activeIndex;
           const absOffset = Math.abs(offset);
@@ -102,7 +118,7 @@ export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: 
                     >
                       {card.brand}
                     </p>
-                    
+
                     {/* Value and Price */}
                     <div className="flex items-baseline gap-1 my-1">
                       <span className="text-3xl font-black">
@@ -172,4 +188,3 @@ export function CarouselStack({ tickets, vouchers, onCardClick, isCompressed }: 
     </div>
   );
 }
-

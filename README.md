@@ -280,27 +280,27 @@ flowchart TD
 
 The minimum withdrawal amount is **currency-aware** — it is calibrated per currency to always represent roughly the same real-world value (~$15–20 USD equivalent). This prevents tiny micro-withdrawals regardless of which currency the organizer's workspace uses.
 
-| Rule                   | Value                                           |
-| ---------------------- | ----------------------------------------------- |
-| **Maximum Self-Serve** | **≤ 150,000** (local currency, auto-processed)  |
-| **Large Amount**       | **> 150,000** (local currency, admin review)    |
+| Rule                   | Value                                          |
+| ---------------------- | ---------------------------------------------- |
+| **Maximum Self-Serve** | **≤ 150,000** (local currency, auto-processed) |
+| **Large Amount**       | **> 150,000** (local currency, admin review)   |
 
 **Minimum withdrawal by currency** (defined in `src/lib/withdrawal-limits.ts`):
 
-| Currency | Minimum   | Region                      |
-| -------- | --------- | --------------------------- |
-| RWF      | 20,000    | Rwanda                      |
-| KES      | 2,000     | Kenya                       |
-| UGX      | 70,000    | Uganda                      |
-| TZS      | 50,000    | Tanzania                    |
-| ETB      | 1,000     | Ethiopia                    |
-| NGN      | 25,000    | Nigeria                     |
-| GHS      | 200       | Ghana                       |
-| XOF/XAF  | 12,000    | West/Central Africa (CFA)   |
-| ZAR      | 350       | South Africa                |
-| USD      | 20        | United States               |
-| EUR      | 20        | Euro Zone                   |
-| GBP      | 15        | United Kingdom              |
+| Currency | Minimum | Region                    |
+| -------- | ------- | ------------------------- |
+| RWF      | 20,000  | Rwanda                    |
+| KES      | 2,000   | Kenya                     |
+| UGX      | 70,000  | Uganda                    |
+| TZS      | 50,000  | Tanzania                  |
+| ETB      | 1,000   | Ethiopia                  |
+| NGN      | 25,000  | Nigeria                   |
+| GHS      | 200     | Ghana                     |
+| XOF/XAF  | 12,000  | West/Central Africa (CFA) |
+| ZAR      | 350     | South Africa              |
+| USD      | 20      | United States             |
+| EUR      | 20      | Euro Zone                 |
+| GBP      | 15      | United Kingdom            |
 
 The `getMinWithdrawal(currency)` helper in `src/lib/withdrawal-limits.ts` is shared between the frontend (`request.tsx`) and the backend (`wallet.ts`). Both layers enforce the rule independently so it cannot be bypassed.
 
@@ -372,12 +372,13 @@ flowchart TD
 
 Fees for withdrawals are composed of two parts:
 
-| Component         | Who charges it     | Where configured          |
-| ----------------- | ------------------ | ------------------------- |
-| **Platform fee**  | Agatike            | `subscriptions.pricing_plan.withdrawal_fee_percentage` + `withdrawal_fee_fixed` |
-| **Network fee**   | PawaPay / Telecom  | `payment_provider_fees.tiered_rules.disbursement` |
+| Component        | Who charges it    | Where configured                                                                |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------- |
+| **Platform fee** | Agatike           | `subscriptions.pricing_plan.withdrawal_fee_percentage` + `withdrawal_fee_fixed` |
+| **Network fee**  | PawaPay / Telecom | `payment_provider_fees.tiered_rules.disbursement`                               |
 
 **Formula:**
+
 ```
 Total Fee = (amount × platform_fee_%) + platform_fee_fixed + network_fixed_fee + (amount × network_%)
 Net Payout = amount - Total Fee
@@ -387,12 +388,12 @@ The fee breakdown is displayed to the organizer on the withdrawal UI before they
 
 ### 11.5 Notifications on Withdrawal
 
-| Event           | Channel      | Details                                                      |
-| --------------- | ------------ | ------------------------------------------------------------ |
-| ✅ Success      | Email        | PDF receipt attached (generated via jsPDF, sent via Resend)  |
-| ✅ Success      | SMS          | Confirmation with amount, reference, and remaining balance   |
-| ✅ Success      | Firebase Push| In-app notification with account and amount details          |
-| ❌ Failure      | Firebase Push| In-app notification with refund confirmation                 |
+| Event      | Channel       | Details                                                     |
+| ---------- | ------------- | ----------------------------------------------------------- |
+| ✅ Success | Email         | PDF receipt attached (generated via jsPDF, sent via Resend) |
+| ✅ Success | SMS           | Confirmation with amount, reference, and remaining balance  |
+| ✅ Success | Firebase Push | In-app notification with account and amount details         |
+| ❌ Failure | Firebase Push | In-app notification with refund confirmation                |
 
 ### 11.6 Transaction Ledger Display
 

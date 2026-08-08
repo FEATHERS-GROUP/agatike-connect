@@ -227,7 +227,7 @@ function EventsBrowse() {
 
   const grouped = useMemo(() => {
     if (isSearching) return null;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -258,7 +258,7 @@ function EventsBrowse() {
         if (e.tour_stops && typeof e.tour_stops === "object") return e.tour_stops[key];
         return "";
       };
-      
+
       const dateStr = getVal("date") || e.event_requency?.date;
       if (!dateStr || dateStr === "TBD") {
         // If no date, we can put it in month or week depending on requirements, or skip.
@@ -266,7 +266,7 @@ function EventsBrowse() {
         month.push(e);
         return;
       }
-      
+
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return;
 
@@ -296,7 +296,7 @@ function EventsBrowse() {
 
   const itemsPerPage = 16;
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  
+
   const paginatedEvents = useMemo(() => {
     if (!isSearching) return [];
     const start = (currentPage - 1) * itemsPerPage;
@@ -487,7 +487,9 @@ function EventsBrowse() {
                       <PaginationItem>
                         <PaginationPrevious
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          className={
+                            currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                       {Array.from({ length: totalPages }).map((_, i) => (
@@ -504,7 +506,11 @@ function EventsBrowse() {
                       <PaginationItem>
                         <PaginationNext
                           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>

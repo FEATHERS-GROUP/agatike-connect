@@ -90,7 +90,7 @@ export const generateWithdrawalReceipt = async (options: {
   pdf.setFontSize(10);
   pdf.setTextColor("#64748b");
   pdf.text("Net Payout", 20, 295);
-  
+
   pdf.setFontSize(18);
   pdf.setTextColor("#10b981"); // green for success payout
   pdf.text(`${netAmount} ${currency}`, 20, 310);

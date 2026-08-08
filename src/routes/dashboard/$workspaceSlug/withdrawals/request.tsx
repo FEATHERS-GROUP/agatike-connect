@@ -304,7 +304,9 @@ function RequestWithdrawalPage() {
     }
 
     if (amountToWithdraw < MIN_WITHDRAWAL) {
-      toast.error(`Minimum withdrawal amount is ${formatCurrency(MIN_WITHDRAWAL, wallet?.currency)}`);
+      toast.error(
+        `Minimum withdrawal amount is ${formatCurrency(MIN_WITHDRAWAL, wallet?.currency)}`,
+      );
       return;
     }
 
@@ -548,7 +550,7 @@ function RequestWithdrawalPage() {
                     Processing Fee (
                     {[
                       platformPercentage > 0 ? `${platformPercentage}%` : null,
-                      (platformFixed + netFixed) > 0
+                      platformFixed + netFixed > 0
                         ? showExchange && !isExchangeLoading
                           ? formatCurrency((platformFixed + netFixed) * rate, targetCurrency)
                           : formatCurrency(platformFixed + netFixed, wallet?.currency)
@@ -709,7 +711,8 @@ function RequestWithdrawalPage() {
               </div>
               <h3 className="font-bold text-2xl">Processing Transfer</h3>
               <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
-                Please do not close this window. We are currently transferring the funds to your mobile money account. This usually takes less than 1 minute.
+                Please do not close this window. We are currently transferring the funds to your
+                mobile money account. This usually takes less than 1 minute.
               </p>
               <div className="pt-6">
                 <p className="text-sm text-primary font-medium animate-pulse">
@@ -736,9 +739,7 @@ function RequestWithdrawalPage() {
                   : "Your funds have been successfully transferred to your mobile money account."}
               </p>
               <div className="pt-6">
-                <p className="text-sm text-green-500 font-medium">
-                  Redirecting to your wallet...
-                </p>
+                <p className="text-sm text-green-500 font-medium">Redirecting to your wallet...</p>
               </div>
             </div>
           )}
@@ -751,15 +752,22 @@ function RequestWithdrawalPage() {
               </div>
               <h3 className="font-bold text-2xl text-destructive">Withdrawal Failed</h3>
               <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
-                Unfortunately, the network rejected this transfer. Your funds have been safely returned to your wallet.
+                Unfortunately, the network rejected this transfer. Your funds have been safely
+                returned to your wallet.
               </p>
               <div className="pt-6 flex justify-center gap-4">
-                <Button variant="outline" onClick={() => navigate({ to: "/dashboard/$workspaceSlug/withdrawals", params: { workspaceSlug: activeWorkspace?.slug || "" } })}>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    navigate({
+                      to: "/dashboard/$workspaceSlug/withdrawals",
+                      params: { workspaceSlug: activeWorkspace?.slug || "" },
+                    })
+                  }
+                >
                   Go Back
                 </Button>
-                <Button onClick={() => setStep(1)}>
-                  Try Again
-                </Button>
+                <Button onClick={() => setStep(1)}>Try Again</Button>
               </div>
             </div>
           )}

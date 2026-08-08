@@ -431,9 +431,7 @@ function PricingPlansPage() {
                       <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                       <span>
                         <strong className="text-foreground font-semibold">Withdrawal:</strong>{" "}
-                        {isTieredCountry
-                          ? `Varies (Tiered)`
-                          : `${(avgDisbursementPct).toFixed(1)}%`}
+                        {isTieredCountry ? `Varies (Tiered)` : `${avgDisbursementPct.toFixed(1)}%`}
                       </span>
                     </li>
                   </ul>

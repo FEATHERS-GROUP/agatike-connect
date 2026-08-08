@@ -56,7 +56,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         status:
           providerStatus === "COMPLETED"
             ? "completed"
-            : (providerStatus === "FAILED" || providerStatus === "REJECTED" || providerStatus === "REVERSED")
+            : providerStatus === "FAILED" ||
+                providerStatus === "REJECTED" ||
+                providerStatus === "REVERSED"
               ? "failed"
               : "pending",
         raw_callback_data: body,
@@ -361,7 +363,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     const firstStop = tourStops[0] || {};
 
                     const baseProject = att.events?.ticket_projects?.[0];
-                    const mergedDesign = baseProject ? getMergedProjectDesign(baseProject, 0, att.ticket_id) : undefined;
+                    const mergedDesign = baseProject
+                      ? getMergedProjectDesign(baseProject, 0, att.ticket_id)
+                      : undefined;
 
                     const seatData = att.custom_fields?.seat || att.custom_fields?.section || "";
                     const hasRealSeat = !!seatData;
@@ -381,7 +385,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                         currency: currency,
                         seat: seatStr,
                         seatLabel: seatLabelStr,
-                        design: mergedDesign
+                        design: mergedDesign,
                       },
                       dateStr: firstStop.date || "",
                       timeStr: firstStop.time || "",
@@ -620,10 +624,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
               const formattedStart = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })
                 : sub.start_date;
 
               if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
@@ -692,10 +696,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                 : "today";
 
               const smsText =
@@ -749,7 +753,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Safely fund the workspace wallet using the exactly computed net_amount (which securely deducts shortfalls!)
-        if (tx.workspace_id && tx.net_amount && tx.type !== "subscription" && tx.type !== "withdrawal") {
+        if (
+          tx.workspace_id &&
+          tx.net_amount &&
+          tx.type !== "subscription" &&
+          tx.type !== "withdrawal"
+        ) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
           await addMoneyToWorkspaceWallet({
             data: {
@@ -810,7 +819,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   if (bk.tickets_data?.issued && bk.tickets_data.issued.length > 0) {
                     bRef = bk.tickets_data.issued.map((t: any) => t.otp).join(", ");
                   } else {
-                    bRef = bk.tickets_data?.summary?.booking_ref || bk.tickets_data?.booking_ref || "";
+                    bRef =
+                      bk.tickets_data?.summary?.booking_ref || bk.tickets_data?.booking_ref || "";
                   }
                   const sDate = new Date(bk.start_time);
                   const eDate = new Date(bk.end_time);
@@ -910,7 +920,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 }
               }
             `;
-            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: tx.workspace_id });
+            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+              id: tx.workspace_id,
+            });
             const ws = wsRes.workspaces_by_pk;
 
             if (ws && ws.organizer) {
@@ -976,7 +988,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   read: false,
                   title: "Withdrawal Successful",
                   type: "withdrawal",
-                  targetId: tx.reference_id || tx.id
+                  targetId: tx.reference_id || tx.id,
                 });
               }
             }
@@ -1008,7 +1020,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 }
               }
             `;
-            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: tx.workspace_id });
+            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+              id: tx.workspace_id,
+            });
             const ws = wsRes.workspaces_by_pk;
 
             if (ws && ws.orgnizer_id) {
@@ -1020,12 +1034,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   actorId: null,
                   actorName: "System",
                   createdAt: new Date().toISOString(),
-                  message: `Withdrawal of ${tx.amount} ${tx.currency || 'RWF'} to account ${tx.payout_account || 'account'} failed and has been fully refunded to your wallet.`,
+                  message: `Withdrawal of ${tx.amount} ${tx.currency || "RWF"} to account ${tx.payout_account || "account"} failed and has been fully refunded to your wallet.`,
                   organizerId: ws.orgnizer_id,
                   read: false,
                   title: "Withdrawal Failed",
                   type: "withdrawal",
-                  targetId: tx.reference_id || tx.id
+                  targetId: tx.reference_id || tx.id,
                 });
               }
             }

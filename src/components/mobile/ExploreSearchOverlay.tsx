@@ -66,8 +66,10 @@ export function ExploreSearchOverlay({
           e.description,
           e.workspaces?.name,
           e.workspaces?.city,
-          typeof e.tour_stops === 'string' ? e.tour_stops : JSON.stringify(e.tour_stops || {})
-        ].join(" ").toLowerCase();
+          typeof e.tour_stops === "string" ? e.tour_stops : JSON.stringify(e.tour_stops || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
         return text.includes(query);
       })
       .slice(0, 5);
@@ -83,8 +85,12 @@ export function ExploreSearchOverlay({
           v.type,
           v.description,
           ...(Array.isArray(v.amenities) ? v.amenities : []),
-          typeof v.facilities_data === 'string' ? v.facilities_data : JSON.stringify(v.facilities_data || {})
-        ].join(" ").toLowerCase();
+          typeof v.facilities_data === "string"
+            ? v.facilities_data
+            : JSON.stringify(v.facilities_data || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
         return text.includes(query);
       })
       .slice(0, 5);

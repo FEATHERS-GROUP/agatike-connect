@@ -67,7 +67,8 @@ export function NavbarSearch() {
     (isLoggedIn && isLoadingSubs);
 
   const filteredResults = useMemo(() => {
-    if (!query || query.length < 2) return { events: [], venues: [], movies: [], organizers: [], tickets: [], subscriptions: [] };
+    if (!query || query.length < 2)
+      return { events: [], venues: [], movies: [], organizers: [], tickets: [], subscriptions: [] };
     const lowerQuery = query.toLowerCase();
 
     const events = dbEvents
@@ -76,7 +77,7 @@ export function NavbarSearch() {
         return text.includes(lowerQuery);
       })
       .slice(0, 3);
-      
+
     const venues = dbVenues
       .filter((v: any) => {
         const text = [
@@ -84,8 +85,12 @@ export function NavbarSearch() {
           v.type,
           v.description,
           ...(Array.isArray(v.amenities) ? v.amenities : []),
-          typeof v.facilities_data === 'string' ? v.facilities_data : JSON.stringify(v.facilities_data || {})
-        ].join(" ").toLowerCase();
+          typeof v.facilities_data === "string"
+            ? v.facilities_data
+            : JSON.stringify(v.facilities_data || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
         return text.includes(lowerQuery);
       })
       .slice(0, 3);
@@ -101,19 +106,25 @@ export function NavbarSearch() {
 
     const organizers = dbOrganizers
       .filter((o: any) => {
-        return o.name?.toLowerCase().includes(lowerQuery) || o.handle?.toLowerCase().includes(lowerQuery);
+        return (
+          o.name?.toLowerCase().includes(lowerQuery) || o.handle?.toLowerCase().includes(lowerQuery)
+        );
       })
       .slice(0, 3);
 
-    const tickets = userTickets.filter((t: any) => {
-      const text = [t.id, t.qrcode_number, t.title].join(" ").toLowerCase();
-      return text.includes(lowerQuery);
-    }).slice(0, 3);
+    const tickets = userTickets
+      .filter((t: any) => {
+        const text = [t.id, t.qrcode_number, t.title].join(" ").toLowerCase();
+        return text.includes(lowerQuery);
+      })
+      .slice(0, 3);
 
-    const subscriptions = userSubs.filter((s: any) => {
-      const text = JSON.stringify(s).toLowerCase();
-      return text.includes(lowerQuery);
-    }).slice(0, 3);
+    const subscriptions = userSubs
+      .filter((s: any) => {
+        const text = JSON.stringify(s).toLowerCase();
+        return text.includes(lowerQuery);
+      })
+      .slice(0, 3);
 
     return { events, venues, movies, organizers, tickets, subscriptions };
   }, [query, dbEvents, dbVenues, schedules, dbOrganizers, userTickets, userSubs]);

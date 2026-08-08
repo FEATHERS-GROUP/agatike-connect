@@ -194,8 +194,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       const customerFee =
         baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
       const grossAmount = baseAmount + customerFee;
-      const organizerFee =
-        baseAmount * (orgCollectionPct / 100) + orgFixed;
+      const organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
 
       // Evaluate tiered rules based on grossAmount
       if (providerFees.is_tiered && providerFees.tiered_rules) {
@@ -397,8 +396,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const providerCost = grossAmount * (providerPct / 100) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
-    let organizerFee =
-      baseAmt * (orgCollectionPct / 100) + orgFixed;
+    let organizerFee = baseAmt * (orgCollectionPct / 100) + orgFixed;
 
     // If there is a shortfall on a micro-transaction, the organizer absorbs it to cover the network cost (README 12.1)
     if (shortfall > 0) {
@@ -603,7 +601,13 @@ export const getPawaPayPayoutStatus = createServerFn({ method: "POST" })
           const pawaData = await response.json();
           const providerStatus = Array.isArray(pawaData) ? pawaData[0]?.status : pawaData.status;
 
-          if (providerStatus && (providerStatus === "COMPLETED" || providerStatus === "FAILED" || providerStatus === "REJECTED" || providerStatus === "REVERSED")) {
+          if (
+            providerStatus &&
+            (providerStatus === "COMPLETED" ||
+              providerStatus === "FAILED" ||
+              providerStatus === "REJECTED" ||
+              providerStatus === "REVERSED")
+          ) {
             const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
 
             // Simulate a webhook request to reuse the exact same completion/failure logic
@@ -861,7 +865,7 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
     }
 
     const providerStatus = data.status || "ACCEPTED";
-    
+
     // Always update the database with the provider_reference (tx.id) so the webhook/polling can find it
     const updateQuery = `
       mutation UpdateTx($id: uuid!, $provider_status: String!, $provider_reference: String!) {
@@ -870,14 +874,18 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
         }
       }
     `;
-    await hasuraRequest(updateQuery, { 
-      id: tx.id, 
+    await hasuraRequest(updateQuery, {
+      id: tx.id,
       provider_status: providerStatus,
-      provider_reference: tx.id
+      provider_reference: tx.id,
     });
-    
+
     // If it's synchronously rejected or failed, we must simulate the webhook to refund the wallet
-    if (providerStatus === "REJECTED" || providerStatus === "FAILED" || providerStatus === "REVERSED") {
+    if (
+      providerStatus === "REJECTED" ||
+      providerStatus === "FAILED" ||
+      providerStatus === "REVERSED"
+    ) {
       const mockRequest = new Request("http://localhost:3000/api/pawapay/payouts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

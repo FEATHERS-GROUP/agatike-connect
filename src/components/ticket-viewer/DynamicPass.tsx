@@ -1,4 +1,11 @@
-import { Calendar, Building2, MapPin, Ticket as TicketIcon, ShieldCheck, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Building2,
+  MapPin,
+  Ticket as TicketIcon,
+  ShieldCheck,
+  ChevronRight,
+} from "lucide-react";
 import QRCode from "react-qr-code";
 
 export function DynamicPass({ ticket }: { ticket: any }) {

@@ -32,15 +32,20 @@ export function VenuesMobile() {
 
   const types = ["All", ...Array.from(new Set(venues.map((v) => v.type)))];
 
-  const filteredVenues = useMemo(() => venues.filter((venue) => {
-    if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    if (typeFilter !== "All" && venue.type !== typeFilter) return false;
-    return true;
-  }), [venues, searchTerm, typeFilter]);
+  const filteredVenues = useMemo(
+    () =>
+      venues.filter((venue) => {
+        if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase()))
+          return false;
+        if (typeFilter !== "All" && venue.type !== typeFilter) return false;
+        return true;
+      }),
+    [venues, searchTerm, typeFilter],
+  );
 
   const itemsPerPage = 16;
   const totalPages = Math.ceil(filteredVenues.length / itemsPerPage);
-  
+
   const paginatedVenues = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredVenues.slice(start, start + itemsPerPage);
@@ -217,7 +222,9 @@ export function VenuesMobile() {
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={
+                    currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  }
                 />
               </PaginationItem>
               {Array.from({ length: totalPages }).map((_, i) => {
@@ -237,7 +244,7 @@ export function VenuesMobile() {
                   }
                   return null;
                 }
-                
+
                 return (
                   <PaginationItem key={i}>
                     <PaginationLink
@@ -253,7 +260,9 @@ export function VenuesMobile() {
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={
+                    currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

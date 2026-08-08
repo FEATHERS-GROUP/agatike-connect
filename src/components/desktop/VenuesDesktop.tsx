@@ -29,15 +29,20 @@ export function VenuesDesktop() {
 
   const types = ["All", ...Array.from(new Set(venues.map((v) => v.type)))];
 
-  const filteredVenues = useMemo(() => venues.filter((venue) => {
-    if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    if (typeFilter !== "All" && venue.type !== typeFilter) return false;
-    return true;
-  }), [venues, searchTerm, typeFilter]);
+  const filteredVenues = useMemo(
+    () =>
+      venues.filter((venue) => {
+        if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase()))
+          return false;
+        if (typeFilter !== "All" && venue.type !== typeFilter) return false;
+        return true;
+      }),
+    [venues, searchTerm, typeFilter],
+  );
 
   const itemsPerPage = 16;
   const totalPages = Math.ceil(filteredVenues.length / itemsPerPage);
-  
+
   const paginatedVenues = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredVenues.slice(start, start + itemsPerPage);
@@ -141,7 +146,7 @@ export function VenuesDesktop() {
                     <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
                       {venue.description}
                     </p>
-  
+
                     <div className="mt-6 flex items-center justify-between border-t border-border/40 pt-4">
                       <div>
                         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
@@ -191,7 +196,9 @@ export function VenuesDesktop() {
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={
+                        currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                   {Array.from({ length: totalPages }).map((_, i) => (
@@ -208,7 +215,11 @@ export function VenuesDesktop() {
                   <PaginationItem>
                     <PaginationNext
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>

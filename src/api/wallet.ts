@@ -379,13 +379,14 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
     converted_net_payout,
   } = ctx.data as any;
 
-
   const MIN_WITHDRAWAL = getMinWithdrawal(currency);
   const ADMIN_APPROVAL_THRESHOLD = 150000;
   const requiresAdminApproval = amount > ADMIN_APPROVAL_THRESHOLD;
 
   if (amount < MIN_WITHDRAWAL) {
-    throw new Error(`Minimum withdrawal amount is ${MIN_WITHDRAWAL} ${currency || "RWF"}. Please withdraw at least this amount.`);
+    throw new Error(
+      `Minimum withdrawal amount is ${MIN_WITHDRAWAL} ${currency || "RWF"}. Please withdraw at least this amount.`,
+    );
   }
 
   if (!requiresAdminApproval) {
@@ -539,7 +540,7 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
 
   // Provider (PawaPay) disbursement cost
   const networkFee = amount * (netPercentage / 100) + netFixed;
-  
+
   // Agatike's actual profit is the remainder
   const platformFee = totalFee - networkFee;
   const netAmount = amount - totalFee;

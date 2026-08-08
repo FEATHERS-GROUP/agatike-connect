@@ -107,10 +107,12 @@ export function TransactionLedger({
                   const isWithdrawal = txn.type === "withdrawal";
 
                   // Parse payout account and total fee from withdrawal description or raw_callback_data
-                  const withdrawalAccount = txn.payout_account || (() => {
-                    const match = txn.description?.match(/\(([^)]+)\)/);
-                    return match ? match[1] : null;
-                  })();
+                  const withdrawalAccount =
+                    txn.payout_account ||
+                    (() => {
+                      const match = txn.description?.match(/\(([^)]+)\)/);
+                      return match ? match[1] : null;
+                    })();
                   const withdrawalMethod = txn.payout_method || "MoMo";
                   const totalFee = isWithdrawal
                     ? Math.max(0, Number(txn.amount) - Number(txn.net_amount))
@@ -203,7 +205,6 @@ export function TransactionLedger({
                   );
                 })
               )}
-
             </tbody>
           </table>
         </div>

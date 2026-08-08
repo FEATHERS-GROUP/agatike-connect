@@ -237,7 +237,10 @@ export function GlobalCommandMenu() {
     if (!fullHref) return null;
 
     return (
-      <CommandItem key={`${n.id}-${idx}`} onSelect={() => runCommand(() => navigate({ to: fullHref }))}>
+      <CommandItem
+        key={`${n.id}-${idx}`}
+        onSelect={() => runCommand(() => navigate({ to: fullHref }))}
+      >
         {n.icon && <n.icon className="mr-2 h-4 w-4 shrink-0" />}
         <span>{n.label}</span>
       </CommandItem>

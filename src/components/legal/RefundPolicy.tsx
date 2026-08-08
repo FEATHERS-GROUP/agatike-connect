@@ -63,7 +63,6 @@ export function RefundPolicy() {
 
       {/* ── Body ── */}
       <div style={{ display: "flex", flexDirection: "column", gap: "2.75rem" }}>
-
         {/* 1. Refund Eligibility */}
         <section>
           <h2 style={hs}>1. Refund Eligibility</h2>
@@ -79,11 +78,28 @@ export function RefundPolicy() {
             granted under the following circumstances:
           </p>
           <ul style={ls}>
-            <li style={lis}>The event is <strong style={bold}>cancelled</strong> by the organizer and not rescheduled.</li>
-            <li style={lis}>The event is <strong style={bold}>significantly rescheduled</strong> (date, venue, or lineup changes materially affecting the original purchase).</li>
-            <li style={lis}>A <strong style={bold}>duplicate payment</strong> was made for the same order due to a technical or processing error.</li>
-            <li style={lis}>A <strong style={bold}>verified technical error</strong> on our platform resulted in an incorrect charge (e.g., wrong ticket type, incorrect quantity, or a failed transaction that was still charged).</li>
-            <li style={lis}>The purchase is covered by a <strong style={bold}>mandatory legal refund right</strong> in the buyer's jurisdiction (such as consumer protection laws requiring refunds within a cooling-off period).</li>
+            <li style={lis}>
+              The event is <strong style={bold}>cancelled</strong> by the organizer and not
+              rescheduled.
+            </li>
+            <li style={lis}>
+              The event is <strong style={bold}>significantly rescheduled</strong> (date, venue, or
+              lineup changes materially affecting the original purchase).
+            </li>
+            <li style={lis}>
+              A <strong style={bold}>duplicate payment</strong> was made for the same order due to a
+              technical or processing error.
+            </li>
+            <li style={lis}>
+              A <strong style={bold}>verified technical error</strong> on our platform resulted in
+              an incorrect charge (e.g., wrong ticket type, incorrect quantity, or a failed
+              transaction that was still charged).
+            </li>
+            <li style={lis}>
+              The purchase is covered by a{" "}
+              <strong style={bold}>mandatory legal refund right</strong> in the buyer's jurisdiction
+              (such as consumer protection laws requiring refunds within a cooling-off period).
+            </li>
           </ul>
           <p style={ps}>
             Refunds are evaluated on a case-by-case basis, and approval is not guaranteed simply
@@ -98,10 +114,21 @@ export function RefundPolicy() {
           </p>
           <ul style={ls}>
             <li style={lis}>Change of mind or inability to attend for personal reasons.</li>
-            <li style={lis}>Failure to use a ticket, voucher, or credit before its expiration date.</li>
-            <li style={lis}>Incorrect purchases made due to buyer error (e.g., wrong date, wrong venue, wrong ticket category) where the listing was accurate.</li>
-            <li style={lis}>Minor changes to an event that do not materially affect the core experience (e.g., a supporting act change, small time adjustments, or venue amenities).</li>
-            <li style={lis}>Tickets purchased through unauthorized third-party resellers or secondary marketplaces.</li>
+            <li style={lis}>
+              Failure to use a ticket, voucher, or credit before its expiration date.
+            </li>
+            <li style={lis}>
+              Incorrect purchases made due to buyer error (e.g., wrong date, wrong venue, wrong
+              ticket category) where the listing was accurate.
+            </li>
+            <li style={lis}>
+              Minor changes to an event that do not materially affect the core experience (e.g., a
+              supporting act change, small time adjustments, or venue amenities).
+            </li>
+            <li style={lis}>
+              Tickets purchased through unauthorized third-party resellers or secondary
+              marketplaces.
+            </li>
           </ul>
         </section>
 
@@ -125,28 +152,30 @@ export function RefundPolicy() {
               If an event is <strong style={bold}>cancelled</strong> by the organizer, or a
               venue/space is <strong style={bold}>permanently closed</strong>, responsibility for
               issuing a refund lies with the{" "}
-              <strong style={bold}>organizer, host, or venue owner</strong> - not with our
-              platform. Affected users must negotiate refund terms directly with the relevant
-              organizer or host.
+              <strong style={bold}>organizer, host, or venue owner</strong> - not with our platform.
+              Affected users must negotiate refund terms directly with the relevant organizer or
+              host.
             </li>
             <li style={lis}>
               Upon notice of a cancellation or permanent closure, we will{" "}
-              <strong style={bold}>hold ("block") any remaining funds</strong> owed to the
-              organizer that have not yet been paid out, up to the amount reasonably necessary to
-              cover affected ticket purchases. These funds will not be released to the organizer
-              until a refund arrangement with affected users has been resolved or otherwise
-              confirmed.
+              <strong style={bold}>hold ("block") any remaining funds</strong> owed to the organizer
+              that have not yet been paid out, up to the amount reasonably necessary to cover
+              affected ticket purchases. These funds will not be released to the organizer until a
+              refund arrangement with affected users has been resolved or otherwise confirmed.
             </li>
             <li style={lis}>
-              Any funds <strong style={bold}>already paid out</strong> to the organizer prior to
-              the cancellation notice are{" "}
-              <strong style={bold}>not held or recovered by us</strong> and must be{" "}
-              <strong style={bold}>negotiated directly between the user and the organizer or host</strong>.
+              Any funds <strong style={bold}>already paid out</strong> to the organizer prior to the
+              cancellation notice are <strong style={bold}>not held or recovered by us</strong> and
+              must be{" "}
+              <strong style={bold}>
+                negotiated directly between the user and the organizer or host
+              </strong>
+              .
             </li>
             <li style={lis}>
-              We facilitate communication between users and organizers where possible, but we do
-              not guarantee, underwrite, or issue refunds on the organizer's behalf for cancelled
-              events or permanently closed venues.
+              We facilitate communication between users and organizers where possible, but we do not
+              guarantee, underwrite, or issue refunds on the organizer's behalf for cancelled events
+              or permanently closed venues.
             </li>
             <li style={lis}>
               Users are encouraged to keep records of their purchase (order confirmation, payment
@@ -160,8 +189,13 @@ export function RefundPolicy() {
             choice to:
           </p>
           <ol style={{ ...ls, listStyle: "decimal" }}>
-            <li style={lis}><strong style={bold}>Retain their existing ticket</strong> for the new event date, or</li>
-            <li style={lis}><strong style={bold}>Request a refund</strong> within a specified timeframe communicated at the time of the rescheduling announcement.</li>
+            <li style={lis}>
+              <strong style={bold}>Retain their existing ticket</strong> for the new event date, or
+            </li>
+            <li style={lis}>
+              <strong style={bold}>Request a refund</strong> within a specified timeframe
+              communicated at the time of the rescheduling announcement.
+            </li>
           </ol>
           <p style={ps}>
             If no action is taken within the stated window, tickets may automatically be honored for
@@ -195,7 +229,9 @@ export function RefundPolicy() {
             <li style={lis}>Order or confirmation number</li>
             <li style={lis}>Name and email address associated with the purchase</li>
             <li style={lis}>Reason for the refund request</li>
-            <li style={lis}>Any supporting documentation, if applicable (e.g., proof of duplicate charge)</li>
+            <li style={lis}>
+              Any supporting documentation, if applicable (e.g., proof of duplicate charge)
+            </li>
           </ul>
 
           <h3 style={shs}>3.2 Review Process</h3>
@@ -209,16 +245,20 @@ export function RefundPolicy() {
           <h3 style={shs}>3.3 Processing Time</h3>
           <p style={ps}>
             Once a refund is <strong style={bold}>approved</strong>, it will be processed within a
-            reasonable timeframe, typically{" "}
-            <strong style={bold}>5 to 14 business days</strong>, depending on:
+            reasonable timeframe, typically <strong style={bold}>5 to 14 business days</strong>,
+            depending on:
           </p>
           <ul style={ls}>
-            <li style={lis}>The original payment method (credit card, debit card, digital wallet, bank transfer, etc.)</li>
+            <li style={lis}>
+              The original payment method (credit card, debit card, digital wallet, bank transfer,
+              etc.)
+            </li>
             <li style={lis}>The policies of the issuing bank or payment provider</li>
             <li style={lis}>Whether the transaction involved currency conversion</li>
           </ul>
           <p style={ps}>
-            We are <strong style={{ color: "var(--foreground)" }}>not responsible for delays</strong>{" "}
+            We are{" "}
+            <strong style={{ color: "var(--foreground)" }}>not responsible for delays</strong>{" "}
             caused by banks, card issuers, or third-party payment processors once a refund has been
             initiated on our end. Refunds are generally issued to the original form of payment;
             refunds to an alternate payment method are not guaranteed and may be handled at our
@@ -227,9 +267,9 @@ export function RefundPolicy() {
 
           <h3 style={shs}>3.4 Partial Refunds</h3>
           <p style={ps}>
-            In some cases, only a partial refund may be issued - for example, when only a portion
-            of an order is affected (such as one ticket in a multi-ticket order) or when
-            non-refundable fees are deducted from the total.
+            In some cases, only a partial refund may be issued - for example, when only a portion of
+            an order is affected (such as one ticket in a multi-ticket order) or when non-refundable
+            fees are deducted from the total.
           </p>
         </section>
 
@@ -253,7 +293,9 @@ export function RefundPolicy() {
             <li style={lis}>Denial of the refund request</li>
             <li style={lis}>Reversal of any goods or credits issued</li>
             <li style={lis}>Restriction or suspension of the user's account</li>
-            <li style={lis}>Reporting to relevant payment processors or fraud prevention networks</li>
+            <li style={lis}>
+              Reporting to relevant payment processors or fraud prevention networks
+            </li>
           </ul>
         </section>
 
@@ -319,7 +361,6 @@ export function RefundPolicy() {
             compliance with applicable consumer protection laws in their operating regions.
           </p>
         </blockquote>
-
       </div>
     </article>
   );

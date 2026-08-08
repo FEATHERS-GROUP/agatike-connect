@@ -271,34 +271,34 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       : null;
     const design = mergedProject
       ? {
-        template: mergedProject.template || "default",
-        palette: mergedProject.palette || null,
-        font: mergedProject.font || null,
-        coverImage: mergedProject.coverImage || null,
-        logoText:
-          mergedProject.logoText !== undefined && mergedProject.logoText !== null
-            ? mergedProject.logoText
-            : null,
-        logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-        logoImage: mergedProject.logoImage || null,
-        logoColorMode: mergedProject.logoColorMode || null,
-        logoOpacity:
-          mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
-            ? Number(mergedProject.logoOpacity)
-            : null,
-        layout: mergedProject.design_overrides?.layout || null,
-        back: mergedProject.design_overrides?.back || null,
-      }
+          template: mergedProject.template || "default",
+          palette: mergedProject.palette || null,
+          font: mergedProject.font || null,
+          coverImage: mergedProject.coverImage || null,
+          logoText:
+            mergedProject.logoText !== undefined && mergedProject.logoText !== null
+              ? mergedProject.logoText
+              : null,
+          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+          logoImage: mergedProject.logoImage || null,
+          logoColorMode: mergedProject.logoColorMode || null,
+          logoOpacity:
+            mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+              ? Number(mergedProject.logoOpacity)
+              : null,
+          layout: mergedProject.design_overrides?.layout || null,
+          back: mergedProject.design_overrides?.back || null,
+        }
       : null;
 
     const baseDate = stop?.date || event?.tour_stops?.[0]?.date;
     const scheduleDate = event?.schedules?.[0]?.start_date;
     const formattedScheduleDate = scheduleDate
       ? new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }).format(new Date(scheduleDate))
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }).format(new Date(scheduleDate))
       : null;
 
     tickets.push({
@@ -306,10 +306,20 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       title: event?.title || "Event Ticket",
       cover: event?.cover || "/afrobeats_night.png",
       date: baseDate || formattedScheduleDate || "Upcoming",
-      time: stop?.time || event?.tour_stops?.[0]?.time || (scheduleDate ? new Intl.DateTimeFormat("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(scheduleDate)) : "Upcoming"),
+      time:
+        stop?.time ||
+        event?.tour_stops?.[0]?.time ||
+        (scheduleDate
+          ? new Intl.DateTimeFormat("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }).format(new Date(scheduleDate))
+          : "Upcoming"),
       city: stop?.city || event?.tour_stops?.[0]?.city || event?.workspaces?.city || "Online",
-      seat: att.custom_fields?.seat || att.custom_fields?.section || att.names || "General Admission",
-      seatLabel: (att.custom_fields?.seat || att.custom_fields?.section) ? "Seat" : "Name",
+      seat:
+        att.custom_fields?.seat || att.custom_fields?.section || att.names || "General Admission",
+      seatLabel: att.custom_fields?.seat || att.custom_fields?.section ? "Seat" : "Name",
       passengerName: att.names || user.username || "Guest",
       passengerProfile: user.profile || null,
       orderId: att.qrcode_number,
@@ -344,24 +354,24 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           : null;
         const design = mergedProject
           ? {
-            template: mergedProject.template || "default",
-            palette: mergedProject.palette || null,
-            font: mergedProject.font || null,
-            coverImage: mergedProject.coverImage || null,
-            logoText:
-              mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                ? mergedProject.logoText
-                : null,
-            logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-            logoImage: mergedProject.logoImage || null,
-            logoColorMode: mergedProject.logoColorMode || null,
-            logoOpacity:
-              mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
-                ? Number(mergedProject.logoOpacity)
-                : null,
-            layout: mergedProject.design_overrides?.layout || null,
-            back: mergedProject.design_overrides?.back || null,
-          }
+              template: mergedProject.template || "default",
+              palette: mergedProject.palette || null,
+              font: mergedProject.font || null,
+              coverImage: mergedProject.coverImage || null,
+              logoText:
+                mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                  ? mergedProject.logoText
+                  : null,
+              logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+              logoImage: mergedProject.logoImage || null,
+              logoColorMode: mergedProject.logoColorMode || null,
+              logoOpacity:
+                mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+                  ? Number(mergedProject.logoOpacity)
+                  : null,
+              layout: mergedProject.design_overrides?.layout || null,
+              back: mergedProject.design_overrides?.back || null,
+            }
           : null;
 
         let ticketPrice = venue?.entrance_fee || 0;
@@ -378,7 +388,9 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
 
         const isFacility = booking.booking_type === "facility";
         const facilities = venue?.facilities_data || [];
-        const facilityObj = isFacility ? facilities.find((f: any) => String(f.id) === String(booking.facility_id)) : null;
+        const facilityObj = isFacility
+          ? facilities.find((f: any) => String(f.id) === String(booking.facility_id))
+          : null;
         const facilityName = facilityObj?.name || null;
         const isSharedAccess = facilityObj?.type === "shared_access";
 
@@ -419,7 +431,11 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           passengerProfile: user.profile || null,
           orderId: t.otp || booking.id.substring(0, 8),
           ticketType: t.tier || "Standard Entry",
-          ticketCategory: isFacility ? "facility" : venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
+          ticketCategory: isFacility
+            ? "facility"
+            : venue?.rental_model === "ENTRANCE_ONLY"
+              ? "entrance"
+              : "venue",
           price: ticketPrice,
           currency: venue?.currency || "RWF",
           isVenueBooking: true,
@@ -427,7 +443,9 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           eventDate: booking.start_time,
           venueName,
           city,
-          workingHours: venue?.opening_hours ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}` : null,
+          workingHours: venue?.opening_hours
+            ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}`
+            : null,
           facilityName,
           design,
         });
@@ -436,29 +454,31 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       const mergedProject = baseProject ? getMergedProjectDesign(baseProject, 0, "") : null;
       const design = mergedProject
         ? {
-          template: mergedProject.template || "default",
-          palette: mergedProject.palette || null,
-          font: mergedProject.font || null,
-          coverImage: mergedProject.coverImage || null,
-          logoText:
-            mergedProject.logoText !== undefined && mergedProject.logoText !== null
-              ? mergedProject.logoText
-              : null,
-          logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
-          logoImage: mergedProject.logoImage || null,
-          logoColorMode: mergedProject.logoColorMode || null,
-          logoOpacity:
-            mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
-              ? Number(mergedProject.logoOpacity)
-              : null,
-          layout: mergedProject.design_overrides?.layout || null,
-          back: mergedProject.design_overrides?.back || null,
-        }
+            template: mergedProject.template || "default",
+            palette: mergedProject.palette || null,
+            font: mergedProject.font || null,
+            coverImage: mergedProject.coverImage || null,
+            logoText:
+              mergedProject.logoText !== undefined && mergedProject.logoText !== null
+                ? mergedProject.logoText
+                : null,
+            logoScale: mergedProject.logoScale ? Number(mergedProject.logoScale) : null,
+            logoImage: mergedProject.logoImage || null,
+            logoColorMode: mergedProject.logoColorMode || null,
+            logoOpacity:
+              mergedProject.logoOpacity !== undefined && mergedProject.logoOpacity !== null
+                ? Number(mergedProject.logoOpacity)
+                : null,
+            layout: mergedProject.design_overrides?.layout || null,
+            back: mergedProject.design_overrides?.back || null,
+          }
         : null;
 
       const isFacility = booking.booking_type === "facility";
       const facilities = venue?.facilities_data || [];
-      const facilityObj = isFacility ? facilities.find((f: any) => String(f.id) === String(booking.facility_id)) : null;
+      const facilityObj = isFacility
+        ? facilities.find((f: any) => String(f.id) === String(booking.facility_id))
+        : null;
       const facilityName = facilityObj?.name || null;
       const isSharedAccess = facilityObj?.type === "shared_access";
 
@@ -499,7 +519,11 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         passengerProfile: user.profile || null,
         orderId: booking.id.substring(0, 8),
         ticketType: "Standard Entry",
-        ticketCategory: isFacility ? "facility" : venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
+        ticketCategory: isFacility
+          ? "facility"
+          : venue?.rental_model === "ENTRANCE_ONLY"
+            ? "entrance"
+            : "venue",
         price: booking.amount,
         currency: venue?.currency || "RWF",
         isVenueBooking: true,
@@ -507,7 +531,9 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
         eventDate: booking.start_time,
         venueName,
         city,
-        workingHours: venue?.opening_hours ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}` : null,
+        workingHours: venue?.opening_hours
+          ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}`
+          : null,
         facilityName,
         design,
       });
@@ -531,10 +557,10 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       cover: coverUrl,
       date: booking.schedule?.show_date
         ? new Intl.DateTimeFormat("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        }).format(new Date(booking.schedule.show_date))
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }).format(new Date(booking.schedule.show_date))
         : "Upcoming",
       time: booking.schedule?.start_time ? booking.schedule.start_time.substring(0, 5) : "Upcoming",
       duration,
@@ -544,7 +570,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       orderId: booking.qrcode_number || booking.id.substring(0, 8),
       ticketType: booking.ticket_tier?.name || "Standard",
       ticketCategory: "movie",
-      price: booking.total_price ? (booking.total_price / (booking.quantity || 1)) : 0,
+      price: booking.total_price ? booking.total_price / (booking.quantity || 1) : 0,
       quantity: booking.quantity || 1,
       isVenueBooking: false,
       status: booking.status || "Confirmed",

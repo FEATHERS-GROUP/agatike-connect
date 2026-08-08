@@ -56,8 +56,14 @@ export const generateFallbackReceipt = async (options: {
 
   const hasDesign = !!ticket?.design;
   const bgColor = hasDesign && ticket.design.palette ? ticket.design.palette.from : "#ffffff";
-  const textColor = hasDesign && ticket.design.palette && ticket.design.palette.name === "Dark" ? "#ffffff" : "#000000";
-  const mutedColor = hasDesign && ticket.design.palette && ticket.design.palette.name === "Dark" ? "#9ca3af" : "#64748b";
+  const textColor =
+    hasDesign && ticket.design.palette && ticket.design.palette.name === "Dark"
+      ? "#ffffff"
+      : "#000000";
+  const mutedColor =
+    hasDesign && ticket.design.palette && ticket.design.palette.name === "Dark"
+      ? "#9ca3af"
+      : "#64748b";
 
   pdf.setFillColor(bgColor);
   pdf.rect(0, 0, 300, 480, "F");
@@ -166,24 +172,27 @@ export const generateFallbackReceipt = async (options: {
 
   pdf.setFontSize(10);
   pdf.setTextColor(mutedColor);
-  
+
   if (showPrice) {
     pdf.text("Price", 20, 285);
   }
-  
+
   const seatLabelStr = ticket?.seatLabel || (type === "facility" ? "Guest" : "Name");
   pdf.text(seatLabelStr, 280, 285, { align: "right" });
 
   pdf.setFontSize(12);
   pdf.setTextColor(textColor);
-  
+
   if (showPrice) {
-    const priceStr = ticket?.price !== undefined 
-      ? (ticket.price === 0 ? "Free" : `${ticket.currency || ""} ${ticket.price}`.trim())
-      : "Standard";
+    const priceStr =
+      ticket?.price !== undefined
+        ? ticket.price === 0
+          ? "Free"
+          : `${ticket.currency || ""} ${ticket.price}`.trim()
+        : "Standard";
     pdf.text(priceStr, 20, 298);
   }
-  
+
   const seatStr = ticket?.seat || attendeeName;
   pdf.text(seatStr, 280, 298, { align: "right", maxWidth: 120 });
 

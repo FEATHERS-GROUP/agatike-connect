@@ -130,7 +130,10 @@ function OrganizersPage() {
         {isLoading ? (
           <div className="flex flex-col gap-3 md:grid md:grid-cols-4 lg:grid-cols-5 md:gap-4">
             {Array.from({ length: 15 }).map((_, i) => (
-              <div key={i} className="h-[340px] rounded-3xl bg-secondary/60 animate-pulse border border-border/40" />
+              <div
+                key={i}
+                className="h-[340px] rounded-3xl bg-secondary/60 animate-pulse border border-border/40"
+              />
             ))}
           </div>
         ) : filteredList.length === 0 ? (
@@ -203,7 +206,6 @@ function OrganizersPage() {
       <div className="hidden md:block">
         <Footer />
       </div>
-
     </div>
   );
 }

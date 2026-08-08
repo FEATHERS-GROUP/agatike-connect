@@ -17,7 +17,6 @@ import { Template, TicketLayout, TicketBack } from "./templates/types";
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
 
-
 export { DEFAULT_TERMS_HTML, DEFAULT_EXPERIENCE_BACK_HTML };
 
 export function TicketPreview(props: {

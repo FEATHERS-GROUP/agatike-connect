@@ -9,23 +9,23 @@
 export const MIN_WITHDRAWAL_BY_CURRENCY: Record<string, number> = {
   // East Africa
   RWF: 20000, // Rwandan Franc  (~$15)
-  KES: 2000,  // Kenyan Shilling (~$15)
+  KES: 2000, // Kenyan Shilling (~$15)
   UGX: 70000, // Ugandan Shilling (~$18)
   TZS: 50000, // Tanzanian Shilling (~$19)
-  ETB: 1000,  // Ethiopian Birr (~$18)
+  ETB: 1000, // Ethiopian Birr (~$18)
 
   // West Africa
   NGN: 25000, // Nigerian Naira (~$15)
-  GHS: 200,   // Ghanaian Cedi (~$15)
+  GHS: 200, // Ghanaian Cedi (~$15)
   XOF: 12000, // West African CFA Franc (~$20)
   XAF: 12000, // Central African CFA Franc (~$20)
 
   // Southern Africa
-  ZAR: 350,   // South African Rand (~$19)
+  ZAR: 350, // South African Rand (~$19)
   MWK: 35000, // Malawian Kwacha (~$20)
-  ZMW: 500,   // Zambian Kwacha (~$18)
-  BWP: 270,   // Botswana Pula (~$20)
-  MZN: 1000,  // Mozambican Metical (~$15)
+  ZMW: 500, // Zambian Kwacha (~$18)
+  BWP: 270, // Botswana Pula (~$20)
+  MZN: 1000, // Mozambican Metical (~$15)
 
   // Hard currencies
   USD: 20,

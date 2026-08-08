@@ -54,7 +54,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [attendees, setAttendees] = useState<{ name: string; id_document: string; country?: string; gender?: string }[]>([]);
+  const [attendees, setAttendees] = useState<
+    { name: string; id_document: string; country?: string; gender?: string }[]
+  >([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [idPassport, setIdPassport] = useState("");

@@ -8,15 +8,15 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useFollowedOrganizers } from "@/hooks/useFollowedOrganizers";
 import { useState, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  CheckCircle2, 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Instagram, 
-  Twitter, 
-  Globe, 
-  Film, 
+import {
+  CheckCircle2,
+  MapPin,
+  Calendar,
+  Users,
+  Instagram,
+  Twitter,
+  Globe,
+  Film,
   Ticket,
   ChevronLeft,
   Mail,
@@ -25,7 +25,7 @@ import {
   Facebook,
   Linkedin,
   ExternalLink,
-  Tag
+  Tag,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
@@ -49,11 +49,13 @@ function OrganizerProfilePage() {
 
   // Extract all workspaces data
   const workspaces = org?.workspaces || [];
-  
+
   const allEvents = useMemo(() => {
-    return workspaces.flatMap((w: any) => 
-      (w.events || []).map((e: any) => ({ ...e, currency: w.currency }))
-    ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return workspaces
+      .flatMap((w: any) => (w.events || []).map((e: any) => ({ ...e, currency: w.currency })))
+      .sort(
+        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
   }, [workspaces]);
 
   const allVenues = useMemo(() => {
@@ -105,7 +107,9 @@ function OrganizerProfilePage() {
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center p-4">
           <h1 className="text-2xl font-bold mb-2">Organizer Not Found</h1>
-          <p className="text-muted-foreground mb-6">The organizer you are looking for does not exist.</p>
+          <p className="text-muted-foreground mb-6">
+            The organizer you are looking for does not exist.
+          </p>
           <Button asChild>
             <Link to="/organizers">Back to Organizers</Link>
           </Button>
@@ -117,11 +121,12 @@ function OrganizerProfilePage() {
 
   const avatar = org.image || org.avatar || `https://i.pravatar.cc/150?u=${org.id}`;
   const followerCount = org.followers ?? 0;
-  
+
   // Extract socials
   const socials = org.socials || {};
   const twitterUrl = socials.twitter || (org.handle ? `https://twitter.com/${org.handle}` : null);
-  const instagramUrl = socials.instagram || (org.handle ? `https://instagram.com/${org.handle}` : null);
+  const instagramUrl =
+    socials.instagram || (org.handle ? `https://instagram.com/${org.handle}` : null);
   const facebookUrl = socials.facebook;
   const linkedinUrl = socials.linkedin;
   const websiteUrl = socials.website;
@@ -137,7 +142,12 @@ function OrganizerProfilePage() {
         <div className="w-full h-40 md:h-64 lg:h-80 bg-gradient-to-r from-primary/80 via-primary/60 to-purple-500 relative">
           {/* Desktop Back Button */}
           <div className="hidden md:flex absolute top-6 left-6 z-10">
-            <Button variant="outline" size="sm" className="bg-background/80 backdrop-blur-md border-border/40 hover:bg-background rounded-full font-medium" asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-background/80 backdrop-blur-md border-border/40 hover:bg-background rounded-full font-medium"
+              asChild
+            >
               <Link to="/organizers" className="flex items-center gap-2">
                 <ChevronLeft className="h-4 w-4" />
                 Back to Organizers
@@ -146,7 +156,12 @@ function OrganizerProfilePage() {
           </div>
           {/* Mobile Back Button */}
           <div className="md:hidden absolute top-safe-top left-4 z-10 mt-4">
-            <Button variant="secondary" size="icon" className="bg-background/80 backdrop-blur-md rounded-full shadow-sm" asChild>
+            <Button
+              variant="secondary"
+              size="icon"
+              className="bg-background/80 backdrop-blur-md rounded-full shadow-sm"
+              asChild
+            >
               <Link to="/organizers">
                 <ChevronLeft className="h-5 w-5" />
               </Link>
@@ -158,13 +173,12 @@ function OrganizerProfilePage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full -mt-16 md:-mt-24 lg:-mt-32 relative z-20 mb-8">
           <div className="bg-card rounded-3xl border border-border/40 shadow-xl overflow-hidden backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
             <div className="p-6 md:p-8 lg:p-10 flex flex-col md:flex-row gap-6 md:gap-10">
-              
               {/* Left Column: Avatar & Actions */}
               <div className="flex flex-col items-center md:items-start shrink-0">
                 <div className="h-32 w-32 md:h-40 md:w-40 lg:h-48 lg:w-48 rounded-full overflow-hidden border-4 border-background shadow-2xl bg-muted mb-4 md:mb-6">
                   <img src={avatar} alt={org.name} className="w-full h-full object-cover" />
                 </div>
-                
+
                 {isLoggedIn && (
                   <Button
                     onClick={() => toggleFollow(org.id)}
@@ -176,31 +190,66 @@ function OrganizerProfilePage() {
                     {following ? "Following" : "Follow"}
                   </Button>
                 )}
-                
+
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start w-full max-w-xs">
                   {twitterUrl && (
-                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
-                      <a href={twitterUrl} target="_blank" rel="noopener noreferrer"><Twitter className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full bg-background hover:bg-secondary/50"
+                      asChild
+                    >
+                      <a href={twitterUrl} target="_blank" rel="noopener noreferrer">
+                        <Twitter className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      </a>
                     </Button>
                   )}
                   {instagramUrl && (
-                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
-                      <a href={instagramUrl} target="_blank" rel="noopener noreferrer"><Instagram className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full bg-background hover:bg-secondary/50"
+                      asChild
+                    >
+                      <a href={instagramUrl} target="_blank" rel="noopener noreferrer">
+                        <Instagram className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      </a>
                     </Button>
                   )}
                   {facebookUrl && (
-                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
-                      <a href={facebookUrl} target="_blank" rel="noopener noreferrer"><Facebook className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full bg-background hover:bg-secondary/50"
+                      asChild
+                    >
+                      <a href={facebookUrl} target="_blank" rel="noopener noreferrer">
+                        <Facebook className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      </a>
                     </Button>
                   )}
                   {linkedinUrl && (
-                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
-                      <a href={linkedinUrl} target="_blank" rel="noopener noreferrer"><Linkedin className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full bg-background hover:bg-secondary/50"
+                      asChild
+                    >
+                      <a href={linkedinUrl} target="_blank" rel="noopener noreferrer">
+                        <Linkedin className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      </a>
                     </Button>
                   )}
                   {websiteUrl && (
-                    <Button variant="outline" size="icon" className="rounded-full bg-background hover:bg-secondary/50" asChild>
-                      <a href={websiteUrl} target="_blank" rel="noopener noreferrer"><Globe className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /></a>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full bg-background hover:bg-secondary/50"
+                      asChild
+                    >
+                      <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
+                        <Globe className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      </a>
                     </Button>
                   )}
                 </div>
@@ -217,15 +266,23 @@ function OrganizerProfilePage() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm md:text-base font-medium text-muted-foreground mb-6">
                   <span className="text-foreground">@{org.handle}</span>
                   <span className="hidden md:inline text-border">•</span>
-                  <span className="flex items-center gap-1.5"><Users className="h-4 w-4" /> {followerCount >= 1000 ? (followerCount / 1000).toFixed(1) + "k" : followerCount} followers</span>
+                  <span className="flex items-center gap-1.5">
+                    <Users className="h-4 w-4" />{" "}
+                    {followerCount >= 1000
+                      ? (followerCount / 1000).toFixed(1) + "k"
+                      : followerCount}{" "}
+                    followers
+                  </span>
                   {org.country && (
                     <>
                       <span className="hidden md:inline text-border">•</span>
-                      <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {org.country}</span>
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4" /> {org.country}
+                      </span>
                     </>
                   )}
                   {org.field && (
@@ -244,7 +301,10 @@ function OrganizerProfilePage() {
                 {org.speciality?.tags && org.speciality.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
                     {org.speciality.tags.map((tag: string, i: number) => (
-                      <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground">
+                      <span
+                        key={i}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground"
+                      >
                         <Tag className="w-3 h-3 mr-1 opacity-50" />
                         {tag}
                       </span>
@@ -256,7 +316,13 @@ function OrganizerProfilePage() {
                 {allCustomPages.length > 0 && (
                   <div className="mb-8 flex flex-wrap gap-2 justify-center md:justify-start">
                     {allCustomPages.map((page: any) => (
-                      <Button key={page.id} variant="outline" size="sm" className="rounded-full bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary font-medium" asChild>
+                      <Button
+                        key={page.id}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-primary/5 hover:bg-primary/10 border-primary/20 text-primary font-medium"
+                        asChild
+                      >
                         <Link to="/p/$" params={{ _splat: page.slug }}>
                           <ExternalLink className="mr-2 h-3.5 w-3.5" /> {page.title || page.slug}
                         </Link>
@@ -269,14 +335,24 @@ function OrganizerProfilePage() {
                 {(org.email || org.phone) && (
                   <div className="flex flex-wrap gap-4 justify-center md:justify-start mt-auto">
                     {org.email && (
-                      <Button variant="secondary" size="sm" className="rounded-full font-medium" asChild>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-full font-medium"
+                        asChild
+                      >
                         <a href={`mailto:${org.email}`}>
                           <Mail className="mr-2 h-4 w-4" /> Email Organizer
                         </a>
                       </Button>
                     )}
                     {org.phone && (
-                      <Button variant="secondary" size="sm" className="rounded-full font-medium" asChild>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-full font-medium"
+                        asChild
+                      >
                         <a href={`tel:${org.phone}`}>
                           <Phone className="mr-2 h-4 w-4" /> Call Organizer
                         </a>
@@ -285,7 +361,6 @@ function OrganizerProfilePage() {
                   </div>
                 )}
               </div>
-
             </div>
           </div>
         </div>
@@ -338,7 +413,10 @@ function OrganizerProfilePage() {
                     Infinity,
                   );
                   const price = cheapestTicket && cheapestTicket !== Infinity ? cheapestTicket : 0;
-                  const date = event.schedules?.[0]?.start_date || event.tour_stops?.[0]?.date || event.created_at;
+                  const date =
+                    event.schedules?.[0]?.start_date ||
+                    event.tour_stops?.[0]?.date ||
+                    event.created_at;
 
                   return (
                     <Link
@@ -397,7 +475,10 @@ function OrganizerProfilePage() {
                   >
                     <div className="aspect-[4/3] relative">
                       <img
-                        src={venue.cover_url || "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000"}
+                        src={
+                          venue.cover_url ||
+                          "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000"
+                        }
                         alt={venue.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -420,7 +501,9 @@ function OrganizerProfilePage() {
                 {allVenues.length === 0 && (
                   <div className="col-span-full py-12 text-center text-muted-foreground bg-secondary/20 rounded-3xl border border-dashed border-border/40">
                     <Globe className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                    <p className="font-medium text-sm">No spaces or venues published by this organizer.</p>
+                    <p className="font-medium text-sm">
+                      No spaces or venues published by this organizer.
+                    </p>
                   </div>
                 )}
               </div>
@@ -438,7 +521,11 @@ function OrganizerProfilePage() {
                     className="group rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm transition-transform active:scale-95 block flex items-center p-3 gap-4"
                   >
                     <img
-                      src={movie.cover_url || movie.logo_url || "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1000"}
+                      src={
+                        movie.cover_url ||
+                        movie.logo_url ||
+                        "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1000"
+                      }
                       alt={movie.name}
                       className="w-16 h-16 rounded-2xl object-cover"
                     />
@@ -465,7 +552,7 @@ function OrganizerProfilePage() {
           )}
         </section>
       </main>
-      
+
       <div className="hidden md:block">
         <Footer />
       </div>

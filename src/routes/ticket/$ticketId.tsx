@@ -69,8 +69,10 @@ function TicketViewer() {
 
         const isEventMatch =
           String(prodEventId) === String(primaryTicket.eventId) ||
-          prod.specs?.linked_assets?.some((a: any) => String(a.id) === String(primaryTicket.eventId));
-          
+          prod.specs?.linked_assets?.some(
+            (a: any) => String(a.id) === String(primaryTicket.eventId),
+          );
+
         const isOrderMatch =
           (o.qr_code_string && eventTicketOrderIds.includes(String(o.qr_code_string))) ||
           (o.decrptions && eventTicketOrderIds.includes(String(o.decrptions)));
@@ -119,7 +121,7 @@ function TicketViewer() {
           locationStr: ticketToPrint.city,
           tierName: ticketToPrint.facilityName || ticketToPrint.ticketType,
           quantity: 1,
-          type: "facility"
+          type: "facility",
         });
 
         const link = document.createElement("a");
@@ -216,68 +218,79 @@ function TicketViewer() {
       {/* Content Container */}
       <div
         className={`relative z-10 w-full mx-auto px-5 py-8 flex pb-40 transition-all duration-500 ${
-          selectedCard ? "max-w-[1000px] flex-col md:flex-row items-start md:gap-16" : "max-w-[420px] flex-col gap-8"
+          selectedCard
+            ? "max-w-[1000px] flex-col md:flex-row items-start md:gap-16"
+            : "max-w-[420px] flex-col gap-8"
         }`}
       >
         {/* Left Side: Event Details & Carousel (Hidden on mobile if card is selected) */}
-        <div className={`flex flex-col gap-8 w-full ${selectedCard ? "hidden md:flex md:w-[420px] shrink-0" : "flex"}`}>
+        <div
+          className={`flex flex-col gap-8 w-full ${selectedCard ? "hidden md:flex md:w-[420px] shrink-0" : "flex"}`}
+        >
           {/* Header */}
-        <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-700">
-          <Link
-            to="/profile"
-            className="w-11 h-11 bg-white/[0.08] backdrop-blur-xl rounded-2xl flex items-center justify-center hover:bg-white/[0.15] hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
-          >
-            <ChevronLeft className="w-5 h-5 text-white/90" />
-          </Link>
-          <span className="font-bold text-[13px] tracking-[0.2em] text-white/60 uppercase">
-            {primaryTicket.ticketCategory === "movie"
-              ? "Movie"
-              : primaryTicket.ticketCategory === "conference"
-                ? "Conference"
-                : primaryTicket.ticketCategory === "entrance"
-                  ? "Entrance Pass"
-                  : primaryTicket.ticketCategory === "venue"
-                    ? "Venue Booking"
-                    : "Event Ticket"}
-          </span>
-          <div className="w-11" />
-        </div>
-
-        {/* Event Meta */}
-        <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
-          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md mb-4 shadow-sm">
-            <Calendar className="w-3.5 h-3.5 text-primary" />
-            <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
-              {primaryTicket.date}, {primaryTicket.time || primaryTicket.showtimes?.[0]}
+          <div className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-700">
+            <Link
+              to="/profile"
+              className="w-11 h-11 bg-white/[0.08] backdrop-blur-xl rounded-2xl flex items-center justify-center hover:bg-white/[0.15] hover:scale-105 active:scale-95 transition-all border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.2)]"
+            >
+              <ChevronLeft className="w-5 h-5 text-white/90" />
+            </Link>
+            <span className="font-bold text-[13px] tracking-[0.2em] text-white/60 uppercase">
+              {primaryTicket.ticketCategory === "movie"
+                ? "Movie"
+                : primaryTicket.ticketCategory === "conference"
+                  ? "Conference"
+                  : primaryTicket.ticketCategory === "entrance"
+                    ? "Entrance Pass"
+                    : primaryTicket.ticketCategory === "venue"
+                      ? "Venue Booking"
+                      : "Event Ticket"}
             </span>
+            <div className="w-11" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-2xl leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
-            {primaryTicket.title}
-          </h1>
+
+          {/* Event Meta */}
+          <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-both">
+            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/10 backdrop-blur-md mb-4 shadow-sm">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
+                {primaryTicket.date}, {primaryTicket.time || primaryTicket.showtimes?.[0]}
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white drop-shadow-2xl leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+              {primaryTicket.title}
+            </h1>
+          </div>
+
+          {/* Carousel Stack */}
+          <CarouselStack
+            tickets={eventTickets}
+            vouchers={vouchers}
+            onCardClick={setSelectedCard}
+            isCompressed={!!selectedCard}
+          />
+
+          <PurchasesList
+            isProductsLoading={isProductsLoading}
+            physicalOrders={physicalOrders}
+            primaryTicket={primaryTicket}
+            setSelectedCard={setSelectedCard}
+          />
         </div>
 
-        {/* Carousel Stack */}
-        <CarouselStack tickets={eventTickets} vouchers={vouchers} onCardClick={setSelectedCard} isCompressed={!!selectedCard} />
-
-        <PurchasesList
-          isProductsLoading={isProductsLoading}
-          physicalOrders={physicalOrders}
-          primaryTicket={primaryTicket}
+        <SelectedCardView
+          selectedCard={selectedCard}
           setSelectedCard={setSelectedCard}
+          handleDownload={handleDownload}
+          isDownloading={isDownloading}
         />
       </div>
 
-      <SelectedCardView
-        selectedCard={selectedCard}
-        setSelectedCard={setSelectedCard}
-        handleDownload={handleDownload}
-        isDownloading={isDownloading}
-      />
-      </div>
-
       {/* Hidden PDF Printable Layer */}
-      <PrintableTicket id="printable-ticket" ticket={selectedCard?.type === "ticket" ? selectedCard.data : primaryTicket} />
+      <PrintableTicket
+        id="printable-ticket"
+        ticket={selectedCard?.type === "ticket" ? selectedCard.data : primaryTicket}
+      />
     </div>
   );
 }
-

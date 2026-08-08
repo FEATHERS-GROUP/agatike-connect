@@ -99,9 +99,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine
-      const organizerFee =
-        basePrice * (organizerCollectionPct / 100) +
-        organizerCollectionFixed;
+      const organizerFee = basePrice * (organizerCollectionPct / 100) + organizerCollectionFixed;
 
       // 3. Platform Margin Buffer
       const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc

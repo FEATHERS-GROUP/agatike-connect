@@ -332,7 +332,7 @@ function FacilityCheckoutPage() {
         isSharedAccess || selectedSlots.length === 0
           ? "Full Day"
           : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
-      
+
       const codeStr = otps && otps.length > 0 ? otps.join(", ") : bRef;
 
       await sendVenueBookingEmail({
@@ -747,7 +747,10 @@ function FacilityCheckoutPage() {
             <div className="flex flex-col gap-2">
               {issuedTickets.length > 0 ? (
                 issuedTickets.map((t: any) => (
-                  <p key={t.id} className="text-3xl font-mono font-bold tracking-widest text-primary">
+                  <p
+                    key={t.id}
+                    className="text-3xl font-mono font-bold tracking-widest text-primary"
+                  >
                     {t.otp || bookingRef}
                   </p>
                 ))

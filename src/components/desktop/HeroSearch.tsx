@@ -30,8 +30,6 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 
-
-
 export function HeroSearch() {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -72,29 +70,48 @@ export function HeroSearch() {
 
     const events = dbEvents
       .filter((e: any) => {
-        if (finalCity && !e.workspaces?.city?.toLowerCase().includes(finalCity) && !e.workspaces?.country?.toLowerCase().includes(finalCity)) return false;
+        if (
+          finalCity &&
+          !e.workspaces?.city?.toLowerCase().includes(finalCity) &&
+          !e.workspaces?.country?.toLowerCase().includes(finalCity)
+        )
+          return false;
         const text = [e.title, e.category, e.description].join(" ").toLowerCase();
         return text.includes(lowerQuery);
       })
       .slice(0, 3);
-      
+
     const venues = dbVenues
       .filter((v: any) => {
-        if (finalCity && !v.city?.toLowerCase().includes(finalCity) && !v.country?.toLowerCase().includes(finalCity)) return false;
+        if (
+          finalCity &&
+          !v.city?.toLowerCase().includes(finalCity) &&
+          !v.country?.toLowerCase().includes(finalCity)
+        )
+          return false;
         const text = [
           v.name,
           v.type,
           v.description,
           ...(Array.isArray(v.amenities) ? v.amenities : []),
-          typeof v.facilities_data === 'string' ? v.facilities_data : JSON.stringify(v.facilities_data || {})
-        ].join(" ").toLowerCase();
+          typeof v.facilities_data === "string"
+            ? v.facilities_data
+            : JSON.stringify(v.facilities_data || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
         return text.includes(lowerQuery);
       })
       .slice(0, 3);
 
     const movieMap = new Map();
     schedules.forEach((s: any) => {
-      if (finalCity && !s.cinema?.city?.toLowerCase().includes(finalCity) && !s.cinema?.country?.toLowerCase().includes(finalCity)) return;
+      if (
+        finalCity &&
+        !s.cinema?.city?.toLowerCase().includes(finalCity) &&
+        !s.cinema?.country?.toLowerCase().includes(finalCity)
+      )
+        return;
       const text = [s.movie?.title, s.movie?.genre, s.movie?.synopsis].join(" ").toLowerCase();
       if (text.includes(lowerQuery)) {
         movieMap.set(s.movie.id, s.movie);
@@ -105,7 +122,9 @@ export function HeroSearch() {
     const organizers = dbOrganizers
       .filter((o: any) => {
         if (finalCity && !o.country?.toLowerCase().includes(finalCity)) return false;
-        return o.name?.toLowerCase().includes(lowerQuery) || o.handle?.toLowerCase().includes(lowerQuery);
+        return (
+          o.name?.toLowerCase().includes(lowerQuery) || o.handle?.toLowerCase().includes(lowerQuery)
+        );
       })
       .slice(0, 3);
 
@@ -152,7 +171,6 @@ export function HeroSearch() {
             placeholder="Events, organizers, artists…"
             className="h-12 border-transparent bg-secondary/60 pl-9"
           />
-
         </div>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
