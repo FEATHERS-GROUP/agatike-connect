@@ -2,8 +2,17 @@ import { Search, MapPin, Ticket, Star, ArrowLeft, MessageCircle, Activity } from
 import { Link, useLoaderData, useRouter } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/currency";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MobileNav } from "@/components/mobile/MobileNav";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 
@@ -14,14 +23,33 @@ export function VenuesMobile() {
   const isLoggedIn = !!user;
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter]);
 
   const types = ["All", ...Array.from(new Set(venues.map((v) => v.type)))];
 
-  const filteredVenues = venues.filter((venue) => {
-    if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    if (typeFilter !== "All" && venue.type !== typeFilter) return false;
-    return true;
-  });
+  const filteredVenues = useMemo(
+    () =>
+      venues.filter((venue) => {
+        if (searchTerm && !venue.name.toLowerCase().includes(searchTerm.toLowerCase()))
+          return false;
+        if (typeFilter !== "All" && venue.type !== typeFilter) return false;
+        return true;
+      }),
+    [venues, searchTerm, typeFilter],
+  );
+
+  const itemsPerPage = 16;
+  const totalPages = Math.ceil(filteredVenues.length / itemsPerPage);
+
+  const paginatedVenues = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredVenues.slice(start, start + itemsPerPage);
+  }, [filteredVenues, currentPage]);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -105,7 +133,7 @@ export function VenuesMobile() {
             <p>No venues found</p>
           </div>
         ) : (
-          filteredVenues.map((venue) => {
+          paginatedVenues.map((venue) => {
             const isMaintenance = venue.status === "Maintenance";
             const CardContent = (
               <div
@@ -186,6 +214,61 @@ export function VenuesMobile() {
           })
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="px-4 pb-8 pt-2">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className={
+                    currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }).map((_, i) => {
+                // Simplified mobile pagination - show only limited pages to fit screen
+                if (
+                  totalPages > 5 &&
+                  i !== 0 &&
+                  i !== totalPages - 1 &&
+                  Math.abs(i + 1 - currentPage) > 1
+                ) {
+                  if (i + 1 === currentPage - 2 || i + 1 === currentPage + 2) {
+                    return (
+                      <PaginationItem key={i}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    );
+                  }
+                  return null;
+                }
+
+                return (
+                  <PaginationItem key={i}>
+                    <PaginationLink
+                      isActive={currentPage === i + 1}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className="cursor-pointer"
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className={
+                    currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {

@@ -25,6 +25,9 @@ const GET_USER_EVENT_ATTENDEES = `
       type
       created_at
       custom_fields
+      event_tickets {
+        cost
+      }
       events {
         id
         title
@@ -88,6 +91,8 @@ const GET_USER_VENUE_BOOKINGS = `
       attendees_info
       internal_notes
       venue_id
+      booking_type
+      facility_id
       rentable_venue {
         id
         name
@@ -95,6 +100,11 @@ const GET_USER_VENUE_BOOKINGS = `
         cover_url
         currency
         rental_model
+        facilities_data
+        opening_hours
+        closing_hours
+        entrance_fee
+        pricing_tiers
         ticket_projects(where: { deleted: { _eq: false } }) {
           id
           name
@@ -161,7 +171,7 @@ const GET_USER_CINEMA_BOOKINGS = `
   }
 `;
 
-const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
+export const getMergedProjectDesign = (baseProject: any, stopIdx: number, tierId: string) => {
   if (!baseProject) return null;
   const overrides = baseProject.design_overrides?.overrides;
   if (!overrides) return baseProject;
@@ -296,15 +306,27 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       title: event?.title || "Event Ticket",
       cover: event?.cover || "/afrobeats_night.png",
       date: baseDate || formattedScheduleDate || "Upcoming",
-      time: stop?.time || event?.tour_stops?.[0]?.time || "Upcoming",
+      time:
+        stop?.time ||
+        event?.tour_stops?.[0]?.time ||
+        (scheduleDate
+          ? new Intl.DateTimeFormat("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }).format(new Date(scheduleDate))
+          : "Upcoming"),
       city: stop?.city || event?.tour_stops?.[0]?.city || event?.workspaces?.city || "Online",
-      seat: att.names || "General Admission",
+      seat:
+        att.custom_fields?.seat || att.custom_fields?.section || att.names || "General Admission",
+      seatLabel: att.custom_fields?.seat || att.custom_fields?.section ? "Seat" : "Name",
       passengerName: att.names || user.username || "Guest",
       passengerProfile: user.profile || null,
       orderId: att.qrcode_number,
       ticketType: att.ticket_type || "Standard",
       ticketCategory,
-      price: 0,
+      price: Number(att.event_tickets?.cost) || mergedProject?.price || 0,
+      currency: event?.workspaces?.currency,
       isVenueBooking: false,
       status: att.status || "Confirmed",
       eventDate: baseDate || scheduleDate || att.created_at,
@@ -352,6 +374,47 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
             }
           : null;
 
+        let ticketPrice = venue?.entrance_fee || 0;
+        if (t.tier && venue?.pricing_tiers) {
+          const matchedTier = venue.pricing_tiers.find((pt: any) => pt.name === t.tier);
+          if (matchedTier) {
+            ticketPrice = Number(matchedTier.amount);
+          }
+        }
+        if (booking.booking_type === "facility") {
+          const issuedCount = booking.tickets_data?.issued?.length || 1;
+          ticketPrice = booking.amount / issuedCount;
+        }
+
+        const isFacility = booking.booking_type === "facility";
+        const facilities = venue?.facilities_data || [];
+        const facilityObj = isFacility
+          ? facilities.find((f: any) => String(f.id) === String(booking.facility_id))
+          : null;
+        const facilityName = facilityObj?.name || null;
+        const isSharedAccess = facilityObj?.type === "shared_access";
+
+        const startDt = new Date(booking.start_time);
+        const startTimeStr = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(startDt);
+
+        let timeStr = startTimeStr;
+        if (booking.end_time) {
+          const endDt = new Date(booking.end_time);
+          const endTimeStr = new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }).format(endDt);
+          timeStr = `${startTimeStr} - ${endTimeStr}`;
+        }
+        if (isFacility && isSharedAccess) {
+          timeStr = "Full Day";
+        }
+
         tickets.push({
           id: t.id,
           bookingId: booking.id,
@@ -361,24 +424,29 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
             weekday: "short",
             month: "short",
             day: "numeric",
-          }).format(new Date(booking.start_time)),
-          time: new Intl.DateTimeFormat("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }).format(new Date(booking.start_time)),
+          }).format(startDt),
+          time: timeStr,
           seat: t.attendee_name || booking.customer_name || "Guest",
           passengerName: t.attendee_name || booking.customer_name || user.username || "Guest",
           passengerProfile: user.profile || null,
           orderId: t.otp || booking.id.substring(0, 8),
           ticketType: t.tier || "Standard Entry",
-          ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
-          price: booking.amount,
+          ticketCategory: isFacility
+            ? "facility"
+            : venue?.rental_model === "ENTRANCE_ONLY"
+              ? "entrance"
+              : "venue",
+          price: ticketPrice,
+          currency: venue?.currency || "RWF",
           isVenueBooking: true,
           status: t.status || booking.status || "Confirmed",
           eventDate: booking.start_time,
           venueName,
           city,
+          workingHours: venue?.opening_hours
+            ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}`
+            : null,
+          facilityName,
           design,
         });
       }
@@ -406,6 +474,35 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           }
         : null;
 
+      const isFacility = booking.booking_type === "facility";
+      const facilities = venue?.facilities_data || [];
+      const facilityObj = isFacility
+        ? facilities.find((f: any) => String(f.id) === String(booking.facility_id))
+        : null;
+      const facilityName = facilityObj?.name || null;
+      const isSharedAccess = facilityObj?.type === "shared_access";
+
+      const startDt = new Date(booking.start_time);
+      const startTimeStr = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(startDt);
+
+      let timeStr = startTimeStr;
+      if (booking.end_time) {
+        const endDt = new Date(booking.end_time);
+        const endTimeStr = new Intl.DateTimeFormat("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(endDt);
+        timeStr = `${startTimeStr} - ${endTimeStr}`;
+      }
+      if (isFacility && isSharedAccess) {
+        timeStr = "Full Day";
+      }
+
       tickets.push({
         id: booking.id,
         bookingId: booking.id,
@@ -415,24 +512,29 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
           weekday: "short",
           month: "short",
           day: "numeric",
-        }).format(new Date(booking.start_time)),
-        time: new Intl.DateTimeFormat("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }).format(new Date(booking.start_time)),
+        }).format(startDt),
+        time: timeStr,
         seat: booking.customer_name || "Guest",
         passengerName: booking.customer_name || user.username || "Guest",
         passengerProfile: user.profile || null,
         orderId: booking.id.substring(0, 8),
         ticketType: "Standard Entry",
-        ticketCategory: venue?.rental_model === "ENTRANCE_ONLY" ? "entrance" : "venue",
+        ticketCategory: isFacility
+          ? "facility"
+          : venue?.rental_model === "ENTRANCE_ONLY"
+            ? "entrance"
+            : "venue",
         price: booking.amount,
+        currency: venue?.currency || "RWF",
         isVenueBooking: true,
         status: booking.status || "Confirmed",
         eventDate: booking.start_time,
         venueName,
         city,
+        workingHours: venue?.opening_hours
+          ? `${venue.opening_hours} - ${venue.closing_hours || "23:59"}`
+          : null,
+        facilityName,
         design,
       });
     }
@@ -468,7 +570,7 @@ export const getUserAllTickets = createServerFn({ method: "GET" }).handler(async
       orderId: booking.qrcode_number || booking.id.substring(0, 8),
       ticketType: booking.ticket_tier?.name || "Standard",
       ticketCategory: "movie",
-      price: booking.total_price,
+      price: booking.total_price ? booking.total_price / (booking.quantity || 1) : 0,
       quantity: booking.quantity || 1,
       isVenueBooking: false,
       status: booking.status || "Confirmed",

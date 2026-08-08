@@ -88,7 +88,7 @@ export function DesktopSidebar() {
 
   const workspacePrefix = activeWorkspace ? `/dashboard/${activeWorkspace.slug}` : "/dashboard";
 
-  const renderNavItem = (n: any) => {
+  const renderNavItem = (n: any, idx: number) => {
     // Construct the full href: e.g. /dashboard/kigali-arenas/events
     const fullHref =
       n.href !== undefined
@@ -114,14 +114,14 @@ export function DesktopSidebar() {
     }`;
 
     return fullHref ? (
-      <Link key={n.id} to={fullHref} className={cls}>
+      <Link key={`${n.id}-${idx}`} to={fullHref} className={cls}>
         <n.icon className="h-4 w-4 shrink-0" />
         <span className="truncate flex-1">{n.label}</span>
         {n.label === "Community" && <CommunityBadge />}
         {n.label === "Events" && <ExperienceBadge />}
       </Link>
     ) : (
-      <button key={n.id} className={cls}>
+      <button key={`${n.id}-${idx}`} className={cls}>
         <n.icon className="h-4 w-4 shrink-0" />
         <span className="truncate flex-1">{n.label}</span>
         {n.label === "Community" && <CommunityBadge />}
@@ -142,7 +142,7 @@ export function DesktopSidebar() {
       <WorkspaceSwitcher />
 
       <nav className="space-y-0.5 text-sm flex-1">
-        {mainNav.map((n) => renderNavItem(n))}
+        {mainNav.map((n, idx) => renderNavItem(n, idx))}
 
         {hasBook && (
           <div className="mt-2 space-y-0.5">
@@ -262,7 +262,7 @@ export function DesktopSidebar() {
             </button>
             {isStudioOpen && (
               <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border/40 pl-2">
-                {studioNav.map((n) => renderNavItem(n))}
+                {studioNav.map((n, idx) => renderNavItem(n, idx))}
               </div>
             )}
           </div>

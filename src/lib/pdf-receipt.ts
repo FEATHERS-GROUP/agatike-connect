@@ -54,17 +54,28 @@ export const generateFallbackReceipt = async (options: {
     format: [300, 480],
   });
 
-  pdf.setFillColor(255, 255, 255);
+  const hasDesign = !!ticket?.design;
+  const bgColor = hasDesign && ticket.design.palette ? ticket.design.palette.from : "#ffffff";
+  const textColor =
+    hasDesign && ticket.design.palette && ticket.design.palette.name === "Dark"
+      ? "#ffffff"
+      : "#000000";
+  const mutedColor =
+    hasDesign && ticket.design.palette && ticket.design.palette.name === "Dark"
+      ? "#9ca3af"
+      : "#64748b";
+
+  pdf.setFillColor(bgColor);
   pdf.rect(0, 0, 300, 480, "F");
 
   // Top colored bar depending on type
   if (type === "event" || type === "movie")
-    pdf.setFillColor(236, 72, 153); // pink-500
+    pdf.setFillColor("#ec4899"); // pink-500
   else if (type === "facility")
-    pdf.setFillColor(59, 130, 246); // blue-500
+    pdf.setFillColor("#3b82f6"); // blue-500
   else if (type === "venue")
-    pdf.setFillColor(16, 185, 129); // emerald-500
-  else pdf.setFillColor(100, 116, 139); // slate-500
+    pdf.setFillColor("#10b981"); // emerald-500
+  else pdf.setFillColor("#64748b"); // slate-500
 
   pdf.rect(0, 0, 300, 8, "F");
 
@@ -79,16 +90,16 @@ export const generateFallbackReceipt = async (options: {
           : "EVENT TICKET";
 
   pdf.setFontSize(10);
-  pdf.setTextColor(150, 150, 150);
+  pdf.setTextColor(mutedColor);
   pdf.text(typeLabel, 150, 25, { align: "center" });
 
   // "Passenger" -> Customer Name
   pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(mutedColor);
   pdf.text("Customer", 20, 50);
 
   pdf.setFontSize(16);
-  pdf.setTextColor(0, 0, 0);
+  pdf.setTextColor(textColor);
   const attendeeName =
     customerName ||
     (ticket.attendee ? `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim() : "Guest");
@@ -96,7 +107,7 @@ export const generateFallbackReceipt = async (options: {
 
   // Times row
   pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(mutedColor);
   const timeLabel =
     type === "facility" ? "Booking Time" : type === "venue" ? "Valid Hours" : "Start Time";
   pdf.text(timeLabel, 20, 95);
@@ -105,7 +116,7 @@ export const generateFallbackReceipt = async (options: {
   pdf.text(dateLabel, 280, 95, { align: "right" });
 
   pdf.setFontSize(12);
-  pdf.setTextColor(0, 0, 0);
+  pdf.setTextColor(textColor);
   pdf.text(displayTime, 20, 110, { maxWidth: 100 });
   pdf.text(durationStr || "-", 150, 110, { align: "center" });
   pdf.text(displayDate, 280, 110, { align: "right", maxWidth: 100 });
@@ -119,12 +130,12 @@ export const generateFallbackReceipt = async (options: {
 
   // Locations / Entity
   pdf.setFontSize(14);
-  pdf.setTextColor(0, 0, 0);
+  pdf.setTextColor(textColor);
   pdf.text(entityName, 20, 155, { maxWidth: 120 });
   pdf.text(displayLocation, 280, 155, { align: "right", maxWidth: 120 });
 
   pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(mutedColor);
   const entityLabel =
     type === "facility" ? "Facility Name" : type === "venue" ? "Venue Name" : "Event / Movie";
   pdf.text(entityLabel, 20, 170);
@@ -133,17 +144,17 @@ export const generateFallbackReceipt = async (options: {
 
   // Booking Reference
   pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(mutedColor);
   pdf.text("Booking Reference", 20, 205);
 
   pdf.setFontSize(16);
-  pdf.setTextColor(0, 0, 0);
-  const refCode = bookingRef || ticket.otp || ticket.id;
+  pdf.setTextColor(textColor);
+  const refCode = ticket.otp || bookingRef || ticket.id;
   pdf.text(refCode, 20, 220);
 
   // Details Row
   pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
+  pdf.setTextColor(mutedColor);
   const tierLabel =
     type === "facility" ? "Access Type" : type === "venue" ? "Pass Type" : "Ticket Tier";
   pdf.text(tierLabel, 20, 250);
@@ -151,19 +162,48 @@ export const generateFallbackReceipt = async (options: {
   pdf.text("Status", 280, 250, { align: "right" });
 
   pdf.setFontSize(14);
-  pdf.setTextColor(0, 0, 0);
+  pdf.setTextColor(textColor);
   pdf.text(tierName, 20, 265, { maxWidth: 100 });
   pdf.text(quantity.toString(), 150, 265, { align: "center" });
   pdf.text("Confirmed", 280, 265, { align: "right" });
 
+  // Custom Price and Seat Row
+  const showPrice = !(type === "facility" && (!ticket?.price || ticket?.price === 0));
+
+  pdf.setFontSize(10);
+  pdf.setTextColor(mutedColor);
+
+  if (showPrice) {
+    pdf.text("Price", 20, 285);
+  }
+
+  const seatLabelStr = ticket?.seatLabel || (type === "facility" ? "Guest" : "Name");
+  pdf.text(seatLabelStr, 280, 285, { align: "right" });
+
+  pdf.setFontSize(12);
+  pdf.setTextColor(textColor);
+
+  if (showPrice) {
+    const priceStr =
+      ticket?.price !== undefined
+        ? ticket.price === 0
+          ? "Free"
+          : `${ticket.currency || ""} ${ticket.price}`.trim()
+        : "Standard";
+    pdf.text(priceStr, 20, 298);
+  }
+
+  const seatStr = ticket?.seat || attendeeName;
+  pdf.text(seatStr, 280, 298, { align: "right", maxWidth: 120 });
+
   // Cutouts
   pdf.setFillColor(20, 20, 20);
-  pdf.circle(0, 300, 10, "F");
-  pdf.circle(300, 300, 10, "F");
+  pdf.circle(0, 320, 10, "F");
+  pdf.circle(300, 320, 10, "F");
 
   pdf.setDrawColor(200, 200, 200);
   pdf.setLineDashPattern([4, 4], 0);
-  pdf.line(15, 300, 285, 300);
+  pdf.line(15, 320, 285, 320);
   pdf.setLineDashPattern([], 0);
 
   // QR Code
@@ -184,7 +224,7 @@ export const generateFallbackReceipt = async (options: {
         }
         base64Str = btoa(base64Str);
       }
-      pdf.addImage(`data:image/png;base64,${base64Str}`, "PNG", 75, 315, 150, 150);
+      pdf.addImage(`data:image/png;base64,${base64Str}`, "PNG", 75, 330, 150, 150);
     }
   } catch (e) {
     console.error("Failed to fetch QR Code", e);

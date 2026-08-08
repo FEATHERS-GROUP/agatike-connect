@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import {
@@ -9,7 +9,8 @@ import {
   getExchangeRate,
 } from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
-import { getAllPaymentProviderFees } from "@/api/pawapay";
+import { getAllPaymentProviderFees, getPawaPayPayoutStatus } from "@/api/pawapay";
+import { getMinWithdrawal } from "@/lib/withdrawal-limits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +43,8 @@ function RequestWithdrawalPage() {
   const [otpToken, setOtpToken] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
+
+  const [pollTxId, setPollTxId] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -135,7 +138,6 @@ function RequestWithdrawalPage() {
   const amountToWithdraw = Number(withdrawAmount) || 0;
   const platformPercentage = Number(subscription?.pricing_plan?.withdrawal_fee_percentage) || 0;
   const platformFixed = Number(subscription?.pricing_plan?.withdrawal_fee_fixed) || 0;
-  const agatikeFee = amountToWithdraw * (platformPercentage / 100) + platformFixed;
 
   let netPercentage = 0;
   let netFixed = 0;
@@ -175,17 +177,23 @@ function RequestWithdrawalPage() {
     }
   }
 
+  // The plan defines the inclusive percentage fee. Network fixed fees are additive.
+  const totalPercentageFee = amountToWithdraw * (platformPercentage / 100);
+  const totalFixedFee = platformFixed + netFixed;
   const networkFee = amountToWithdraw * (netPercentage / 100) + netFixed;
-  const totalFee = agatikeFee + networkFee;
+
+  // Total fee deducted from the organizer's withdrawal
+  const totalFee = totalPercentageFee + totalFixedFee;
+  const platformProfit = totalFee - networkFee;
   const netPayout = amountToWithdraw - totalFee;
 
-  const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency || "RWF";
+  const targetCurrency = COUNTRY_CURRENCY_MAP[countryCode] || wallet?.currency;
 
   const { data: exchangeRate, isLoading: isExchangeLoading } = useQuery({
     queryKey: ["exchange-rate", wallet?.currency, targetCurrency],
     queryFn: () =>
       getExchangeRate({
-        data: { base_currency: wallet?.currency || "RWF", target_currency: targetCurrency },
+        data: { base_currency: wallet?.currency, target_currency: targetCurrency },
       } as any),
     enabled: !!wallet?.currency && !!targetCurrency && wallet.currency !== targetCurrency,
   });
@@ -198,8 +206,8 @@ function RequestWithdrawalPage() {
   const showExchange = isExchangeLoading || rate !== 1;
 
   const withdrawMutation = useMutation({
-    mutationFn: () =>
-      requestWithdrawal({
+    mutationFn: (vars: { otpToken: string; otp: string; password: string }) => {
+      return requestWithdrawal({
         data: {
           wallet_id: wallet!.id,
           workspace_id: activeWorkspace!.id,
@@ -214,28 +222,63 @@ function RequestWithdrawalPage() {
           exchange_rate: rate,
           converted_amount: convertedAmount,
           converted_net_payout: convertedNetPayout,
-          otpToken,
-          otp,
-          password,
+          otpToken: vars.otpToken,
+          otp: vars.otp,
+          password: vars.password,
         },
-      } as any),
+      } as any);
+    },
     onSuccess: (res: any) => {
       queryClient.invalidateQueries({ queryKey: ["wallet", activeWorkspace?.id] });
       queryClient.invalidateQueries({ queryKey: ["wallet-transactions", wallet?.id] });
 
-      setStep(5);
-
-      setTimeout(() => {
-        navigate({
-          to: "/dashboard/$workspaceSlug/withdrawals",
-          params: { workspaceSlug: activeWorkspace?.slug || "" },
-        });
-      }, 4000);
+      if (res.requiresAdminApproval) {
+        setStep(7); // Show success immediately for admin approval
+        setTimeout(() => {
+          navigate({
+            to: "/dashboard/$workspaceSlug/withdrawals",
+            params: { workspaceSlug: activeWorkspace?.slug || "" },
+          });
+        }, 4000);
+      } else {
+        setPollTxId(res.provider_reference);
+        setStep(6); // Processing modal
+      }
     },
     onError: (err: any) => {
+      console.error("Withdrawal error response:", err);
       toast.error(err.message || "Failed to submit withdrawal request.");
     },
   });
+
+  const { data: pollStatus } = useQuery({
+    queryKey: ["withdrawal-poll", pollTxId],
+    queryFn: () => {
+      return getPawaPayPayoutStatus({ data: { payoutId: pollTxId } } as any);
+    },
+    enabled: !!pollTxId && step === 6,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "pending" || !status ? 3000 : false;
+    },
+  });
+
+  // Watch pollStatus to trigger success/failure
+  useEffect(() => {
+    if (pollStatus) {
+      if (pollStatus.status === "completed") {
+        setStep(7); // Success
+        setTimeout(() => {
+          navigate({
+            to: "/dashboard/$workspaceSlug/withdrawals",
+            params: { workspaceSlug: activeWorkspace?.slug || "" },
+          });
+        }, 4000);
+      } else if (pollStatus.status === "failed") {
+        setStep(8); // Failure
+      }
+    }
+  }, [pollStatus, navigate, activeWorkspace]);
 
   const sendOtpMutation = useMutation({
     mutationFn: () =>
@@ -253,8 +296,17 @@ function RequestWithdrawalPage() {
   });
 
   const handleInitiateWithdrawal = () => {
+    const MIN_WITHDRAWAL = getMinWithdrawal(wallet?.currency || "N/A");
+
     if (!withdrawAmount || isNaN(amountToWithdraw) || amountToWithdraw <= 0) {
       toast.error("Please enter a valid amount");
+      return;
+    }
+
+    if (amountToWithdraw < MIN_WITHDRAWAL) {
+      toast.error(
+        `Minimum withdrawal amount is ${formatCurrency(MIN_WITHDRAWAL, wallet?.currency)}`,
+      );
       return;
     }
 
@@ -280,7 +332,7 @@ function RequestWithdrawalPage() {
 
     // Large amounts go straight to admin queue — no OTP needed
     if (amountToWithdraw > ADMIN_APPROVAL_THRESHOLD) {
-      withdrawMutation.mutate();
+      withdrawMutation.mutate({ otpToken: "", otp: "", password: "" });
       return;
     }
 
@@ -288,8 +340,8 @@ function RequestWithdrawalPage() {
   };
 
   const handleConfirmWithdrawal = () => {
-    if (!otp || otp.length !== 8) {
-      toast.error("Please enter the valid 8-character OTP");
+    if (!otp || otp.length !== 6) {
+      toast.error("Please enter the valid 6-digit OTP");
       return;
     }
     if (!password) {
@@ -297,7 +349,7 @@ function RequestWithdrawalPage() {
       return;
     }
 
-    withdrawMutation.mutate();
+    withdrawMutation.mutate({ otpToken, otp, password });
   };
 
   const formatCurrency = (amount: number, currency: string = "RWF") => {
@@ -497,9 +549,7 @@ function RequestWithdrawalPage() {
                   <span className="text-muted-foreground">
                     Processing Fee (
                     {[
-                      platformPercentage + netPercentage > 0
-                        ? `${platformPercentage + netPercentage}%`
-                        : null,
+                      platformPercentage > 0 ? `${platformPercentage}%` : null,
                       platformFixed + netFixed > 0
                         ? showExchange && !isExchangeLoading
                           ? formatCurrency((platformFixed + netFixed) * rate, targetCurrency)
@@ -568,27 +618,56 @@ function RequestWithdrawalPage() {
             </div>
           )}
 
-          {/* STEP 4: Security Verification */}
+          {/* STEP 4: OTP Verification */}
           {step === 4 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
-                <h3 className="font-bold text-lg">Security Verification</h3>
+                <h3 className="font-bold text-lg">Security Code</h3>
                 <p className="text-sm text-muted-foreground">
-                  We've sent a 6-digit One-Time Password (OTP) via SMS to your registered phone
-                  number. Please enter it below along with your account password to authorize this
-                  payout.
+                  We've sent a 6-digit One-Time Password (OTP) via Email. Please enter it below.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">8-Character Security Code</Label>
+                <Label className="text-sm font-semibold">6-Digit Security Code</Label>
                 <Input
-                  placeholder="e.g. A1B2C3D4"
+                  placeholder="e.g. 123456"
                   className="h-14 rounded-xl font-mono text-center text-lg tracking-widest uppercase"
-                  maxLength={8}
+                  maxLength={6}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.toUpperCase())}
                 />
+              </div>
+
+              <div className="flex gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-1/3 h-14 rounded-xl text-lg"
+                  onClick={() => setStep(3)}
+                >
+                  Back
+                </Button>
+                <Button
+                  size="lg"
+                  className="w-2/3 h-14 rounded-xl text-lg"
+                  disabled={otp.length !== 6}
+                  onClick={() => setStep(5)}
+                >
+                  Verify Code
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: Password Verification */}
+          {step === 5 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              <div className="bg-primary/10 p-5 rounded-2xl border border-primary/20 text-center space-y-2">
+                <h3 className="font-bold text-lg">Final Authorization</h3>
+                <p className="text-sm text-muted-foreground">
+                  Please enter your account password to authorize this withdrawal.
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -607,14 +686,14 @@ function RequestWithdrawalPage() {
                   variant="outline"
                   size="lg"
                   className="w-1/3 h-14 rounded-xl text-lg"
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                 >
                   Back
                 </Button>
                 <Button
                   size="lg"
                   className="w-2/3 h-14 rounded-xl text-lg"
-                  disabled={withdrawMutation.isPending || otp.length !== 8 || !password}
+                  disabled={withdrawMutation.isPending || !password}
                   onClick={handleConfirmWithdrawal}
                 >
                   {withdrawMutation.isPending ? "Authorizing..." : "Submit Withdrawal"}
@@ -623,26 +702,72 @@ function RequestWithdrawalPage() {
             </div>
           )}
 
-          {/* STEP 5: Success / Processing Status */}
-          {step === 5 && (
+          {/* STEP 6: Processing / Polling */}
+          {step === 6 && (
             <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
-              <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                <Wallet className="h-12 w-12 animate-pulse" />
+              <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                <div className="absolute inset-0 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <Wallet className="h-10 w-10 animate-pulse" />
+              </div>
+              <h3 className="font-bold text-2xl">Processing Transfer</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Please do not close this window. We are currently transferring the funds to your
+                mobile money account. This usually takes less than 1 minute.
+              </p>
+              <div className="pt-6">
+                <p className="text-sm text-primary font-medium animate-pulse">
+                  Waiting for confirmation...
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 7: Success */}
+          {step === 7 && (
+            <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
+              <div className="w-24 h-24 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wallet className="h-12 w-12" />
               </div>
               <h3 className="font-bold text-2xl">
                 {amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
                   ? "Request Submitted"
-                  : "Transfer in Progress!"}
+                  : "Withdrawal Successful!"}
               </h3>
               <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
                 {amountToWithdraw > ADMIN_APPROVAL_THRESHOLD
                   ? "Your withdrawal request is pending admin approval. We will notify you once it is processed."
-                  : "Your funds are on their way to your mobile money account! If the transfer fails for any reason, the funds will be automatically refunded to your wallet."}
+                  : "Your funds have been successfully transferred to your mobile money account."}
               </p>
               <div className="pt-6">
-                <p className="text-sm text-primary font-medium animate-pulse">
-                  Redirecting to your wallet...
-                </p>
+                <p className="text-sm text-green-500 font-medium">Redirecting to your wallet...</p>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 8: Failure */}
+          {step === 8 && (
+            <div className="space-y-6 text-center animate-in zoom-in-95 duration-500 py-12">
+              <div className="w-24 h-24 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wallet className="h-12 w-12" />
+              </div>
+              <h3 className="font-bold text-2xl text-destructive">Withdrawal Failed</h3>
+              <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                Unfortunately, the network rejected this transfer. Your funds have been safely
+                returned to your wallet.
+              </p>
+              <div className="pt-6 flex justify-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    navigate({
+                      to: "/dashboard/$workspaceSlug/withdrawals",
+                      params: { workspaceSlug: activeWorkspace?.slug || "" },
+                    })
+                  }
+                >
+                  Go Back
+                </Button>
+                <Button onClick={() => setStep(1)}>Try Again</Button>
               </div>
             </div>
           )}

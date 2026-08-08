@@ -377,7 +377,7 @@ const GET_BOOKING_PRODUCT_ORDERS = `
 `;
 
 export const getBookingProductOrders = createServerFn({ method: "POST" })
-  .validator((d: { data: { buyer_id?: string } }) => d)
+  .validator((d: { buyer_id?: string }) => d)
   .handler(async (ctx) => {
     const payload = (ctx.data as any).data || ctx.data;
     const { buyer_id } = payload as { buyer_id: string };
@@ -388,7 +388,7 @@ export const getBookingProductOrders = createServerFn({ method: "POST" })
   });
 
 export const checkProductOrderStatus = createServerFn({ method: "POST" })
-  .validator((d: { data: { bookingRef: string } }) => d)
+  .validator((d: { bookingRef: string }) => d)
   .handler(async (ctx) => {
     const payload = (ctx.data as any).data || ctx.data;
     const { bookingRef } = payload as { bookingRef: string };

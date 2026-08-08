@@ -229,10 +229,10 @@ function RootComponent() {
     }
   }, []);
 
-  // Hide bottom nav on detail/booking/community/ticket/f/b pages, dashboard, auth pages, and all subdomains (page builder)
+  // Hide bottom nav on detail/booking/community/f/b pages, dashboard, auth pages, and all subdomains (page builder)
   const hideNav = Boolean(
     isSubdomain ||
-    location.pathname.match(/^\/(events|venues|spaces|book|book-movie|community|ticket|f|b)\/.+/) ||
+    location.pathname.match(/^\/(events|venues|spaces|book|book-movie|community|f|b)\/.+/) ||
     (location.pathname.match(/^\/.+\/message$/) && !!(location.search as any)?.chatId) ||
     (location.pathname.startsWith("/buses/") && location.pathname !== "/buses/mobile") ||
     location.pathname.startsWith("/dashboard") ||
@@ -268,7 +268,7 @@ function RootComponent() {
 
                     {/* Floating Mobile Navigation - Hidden on Desktop */}
                     {!hideNav && (
-                      <div className="md:hidden">
+                      <div className="md:hidden" id="mobile-nav-container">
                         <MobileNav />
                       </div>
                     )}
@@ -404,7 +404,10 @@ function CartBubble({ hideNav }: { hideNav: boolean }) {
   const settingsBlock = pageData?.components?.find((c: any) => c.type === "page_settings");
   const themeColor = settingsBlock?.themeColor || pageData?.theme_color || undefined;
 
+  const isCustomerPage = !!subdomainSlug || location.pathname.startsWith("/p/");
+
   if (
+    !isCustomerPage ||
     cartCount === 0 ||
     location.pathname.startsWith("/checkout") ||
     location.pathname.startsWith("/dashboard")

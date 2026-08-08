@@ -3,7 +3,7 @@ import { MovieBookingDesktop } from "@/components/desktop/MovieBookingDesktop";
 import { MovieBookingMobile } from "@/components/mobile/MovieBookingMobile";
 
 export const Route = createFileRoute("/book-movie/$movieId")({
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { date?: string } => {
     return {
       date: search.date as string | undefined,
     };

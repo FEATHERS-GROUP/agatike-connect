@@ -53,7 +53,9 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
+  const [attendees, setAttendees] = useState<
+    { name: string; id_document: string; country?: string; gender?: string }[]
+  >([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [idPassport, setIdPassport] = useState("");
@@ -270,6 +272,9 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             : null,
         venue_name: venue.name,
         venue_currency: venue.currency,
+        booking_type: venue?.rental_model === "ENTIRE_VENUE" ? "entire_venue" : "entrance",
+        payment_method: paymentMethod,
+        total_amount: Number(total),
       };
 
       const res = await createVenueBooking({ data: payload });
@@ -502,7 +507,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       if (prev.length > requiredAttendees) return prev.slice(0, requiredAttendees);
       const newAttendees = [...prev];
       while (newAttendees.length < requiredAttendees) {
-        newAttendees.push({ name: "", id_document: "" });
+        newAttendees.push({ name: "", id_document: "", country: "", gender: "" });
       }
       return newAttendees;
     });
@@ -1030,6 +1035,47 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
                           }}
                           className="h-10 text-sm bg-secondary/30 border border-border/80"
                         />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                          Country
+                        </label>
+                        <select
+                          value={att.country || ""}
+                          onChange={(e) => {
+                            const newArr = [...attendees];
+                            newArr[idx].country = e.target.value;
+                            setAttendees(newArr);
+                          }}
+                          className="w-full h-10 rounded-md text-sm bg-secondary/30 border border-border/80 px-3"
+                        >
+                          <option value="">Select Country</option>
+                          {countries.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                          Gender
+                        </label>
+                        <select
+                          value={att.gender || ""}
+                          onChange={(e) => {
+                            const newArr = [...attendees];
+                            newArr[idx].gender = e.target.value;
+                            setAttendees(newArr);
+                          }}
+                          className="w-full h-10 rounded-md text-sm bg-secondary/30 border border-border/80 px-3"
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                          <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
                       </div>
                     </div>
                   ))}

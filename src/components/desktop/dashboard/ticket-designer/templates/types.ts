@@ -43,6 +43,7 @@ export interface TicketPreviewProps {
   date: string;
   time: string;
   seat: string;
+  seatLabel?: string;
   price: string;
   currency: string;
   cover: string;

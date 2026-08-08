@@ -19,51 +19,134 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
-
-const CITIES = [
-  "Nairobi, Kenya",
-  "Lagos, Nigeria",
-  "Accra, Ghana",
-  "Kigali, Rwanda",
-  "Cape Town, South Africa",
-  "Johannesburg, South Africa",
-  "Dar es Salaam, Tanzania",
-  "Kampala, Uganda",
-  "Dakar, Senegal",
-  "Abidjan, Ivory Coast",
-  "Cairo, Egypt",
-  "Casablanca, Morocco",
-  "Dubai, UAE",
-  "London, UK",
-  "Paris, France",
-  "New York, USA",
-  "Sydney, Australia",
-  "Berlin, Germany",
-  "Doha, Qatar",
-  "Lisbon, Portugal",
-].sort();
-
-const CATEGORIES = [
-  { name: "Events", icon: Ticket },
-  { name: "Movies", icon: Film },
-  { name: "Experiences", icon: Globe },
-  { name: "Music", icon: Music },
-  { name: "Sports", icon: Trophy },
-  { name: "Comedy", icon: Mic },
-];
+import { useQuery } from "@tanstack/react-query";
+import { getOrganizerCountries, getOrganizers } from "@/api/organizers";
+import { getPublicEvents } from "@/api/events";
+import { getPublicVenues } from "@/api/venues";
+import { getPublicMovieSchedules } from "@/api/cinemas";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 
 export function HeroSearch() {
   const [query, setQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [city, setCity] = useState("");
   const navigate = useNavigate();
+  const { user } = useUserAuth();
+
+  const { data: countries = [] } = useQuery({
+    queryKey: ["organizer-countries"],
+    queryFn: () => getOrganizerCountries(),
+  });
+
+  const { data: dbEvents = [] } = useQuery({
+    queryKey: ["public-events"],
+    queryFn: () => getPublicEvents(),
+  });
+
+  const { data: dbVenues = [] } = useQuery({
+    queryKey: ["public-venues"],
+    queryFn: () => getPublicVenues(),
+  });
+
+  const { data: dbOrganizers = [] } = useQuery({
+    queryKey: ["organizers"],
+    queryFn: () => getOrganizers(),
+  });
+
+  const { data: schedules = [] } = useQuery({
+    queryKey: ["public_schedules_home_desktop"],
+    queryFn: () =>
+      getPublicMovieSchedules({ data: { date: new Date().toISOString().split("T")[0] } } as any),
+  });
+
+  const filteredResults = useMemo(() => {
+    if (!query || query.length < 2) return { events: [], venues: [], movies: [], organizers: [] };
+    const lowerQuery = query.toLowerCase();
+    const finalCity = city === "all" ? "" : city?.toLowerCase();
+
+    const events = dbEvents
+      .filter((e: any) => {
+        if (
+          finalCity &&
+          !e.workspaces?.city?.toLowerCase().includes(finalCity) &&
+          !e.workspaces?.country?.toLowerCase().includes(finalCity)
+        )
+          return false;
+        const text = [e.title, e.category, e.description].join(" ").toLowerCase();
+        return text.includes(lowerQuery);
+      })
+      .slice(0, 3);
+
+    const venues = dbVenues
+      .filter((v: any) => {
+        if (
+          finalCity &&
+          !v.city?.toLowerCase().includes(finalCity) &&
+          !v.country?.toLowerCase().includes(finalCity)
+        )
+          return false;
+        const text = [
+          v.name,
+          v.type,
+          v.description,
+          ...(Array.isArray(v.amenities) ? v.amenities : []),
+          typeof v.facilities_data === "string"
+            ? v.facilities_data
+            : JSON.stringify(v.facilities_data || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return text.includes(lowerQuery);
+      })
+      .slice(0, 3);
+
+    const movieMap = new Map();
+    schedules.forEach((s: any) => {
+      if (
+        finalCity &&
+        !s.cinema?.city?.toLowerCase().includes(finalCity) &&
+        !s.cinema?.country?.toLowerCase().includes(finalCity)
+      )
+        return;
+      const text = [s.movie?.title, s.movie?.genre, s.movie?.synopsis].join(" ").toLowerCase();
+      if (text.includes(lowerQuery)) {
+        movieMap.set(s.movie.id, s.movie);
+      }
+    });
+    const movies = Array.from(movieMap.values()).slice(0, 3);
+
+    const organizers = dbOrganizers
+      .filter((o: any) => {
+        if (finalCity && !o.country?.toLowerCase().includes(finalCity)) return false;
+        return (
+          o.name?.toLowerCase().includes(lowerQuery) || o.handle?.toLowerCase().includes(lowerQuery)
+        );
+      })
+      .slice(0, 3);
+
+    return { events, venues, movies, organizers };
+  }, [query, dbEvents, dbVenues, schedules, dbOrganizers, city]);
+
+  const hasResults =
+    filteredResults.events.length > 0 ||
+    filteredResults.venues.length > 0 ||
+    filteredResults.movies.length > 0 ||
+    filteredResults.organizers.length > 0;
+
+  useEffect(() => {
+    if (user?.country && !city) {
+      setCity(user.country);
+    }
+  }, [user?.country]);
 
   const handleSearch = (e?: React.FormEvent, category?: string) => {
     e?.preventDefault();
     const q = category || query;
     const finalCity = city === "all" ? "" : city;
-    if (!q && !finalCity) return;
 
     // Navigate to explore page with search params
     navigate({
@@ -73,7 +156,7 @@ export function HeroSearch() {
   };
 
   return (
-    <div className="mt-8 max-w-2xl rounded-2xl border border-border/60 bg-background/80 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl">
+    <div className="relative z-50 mt-8 max-w-2xl rounded-2xl border border-border/60 bg-background/80 p-2 shadow-[var(--shadow-card)] backdrop-blur-xl">
       <form
         onSubmit={handleSearch}
         className="grid grid-cols-1 gap-2 md:grid-cols-[1.5fr_1fr_auto]"
@@ -82,6 +165,8 @@ export function HeroSearch() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Events, organizers, artists…"
             className="h-12 border-transparent bg-secondary/60 pl-9"
@@ -91,11 +176,11 @@ export function HeroSearch() {
           <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
           <Select value={city} onValueChange={setCity}>
             <SelectTrigger className="h-12 border-transparent bg-secondary/60 pl-9 pr-4 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none border-0 ring-offset-transparent">
-              <SelectValue placeholder="Select City" />
+              <SelectValue placeholder="Select Country/City" />
             </SelectTrigger>
             <SelectContent className="max-h-[300px]">
-              <SelectItem value="all">All Cities</SelectItem>
-              {CITIES.map((c) => (
+              <SelectItem value="all">All Locations</SelectItem>
+              {countries.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
                 </SelectItem>
@@ -111,19 +196,6 @@ export function HeroSearch() {
           Search
         </Button>
       </form>
-      <div className="mt-3 flex flex-wrap gap-2 px-1">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.name}
-            type="button"
-            onClick={() => handleSearch(undefined, c.name)}
-            className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
-          >
-            <c.icon className="h-3.5 w-3.5" />
-            {c.name}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

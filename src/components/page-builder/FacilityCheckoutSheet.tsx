@@ -65,7 +65,7 @@ export function FacilityCheckoutSheet({
   themeColor,
 }: FacilityCheckoutSheetProps) {
   const queryClient = useQueryClient();
-  const session = null;
+  const session: any = null;
   const venueId = venue?.id;
   const facilityId = facility?.id?.replace(/^facility_/, "");
 
@@ -323,7 +323,7 @@ export function FacilityCheckoutSheet({
     durationMinutes,
   ]);
 
-  const sendSmsAlert = async (bRef: string) => {
+  const sendSmsAlert = async (bRef: string, otps?: string[]) => {
     try {
       if (!phone) return;
       const dateRangeStr = date?.from
@@ -336,7 +336,8 @@ export function FacilityCheckoutSheet({
           ? "Full Day"
           : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
 
-      const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${bRef}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
+      const codeStr = otps && otps.length > 0 ? otps.join(", ") : bRef;
+      const msg = `Booking Confirmed: ${facility?.name || "Facility"} at ${venue.name}. Code: ${codeStr}. Time: ${dateRangeStr} ${timeRangeStr}. Location: ${venue.address || venue.city || "Venue Location"}`;
       await sendSMSServer({ data: { to: phone, text: msg, organizerId: venue.workspace_id } });
     } catch (e) {
       console.error("Failed to send SMS:", e);
@@ -378,8 +379,10 @@ export function FacilityCheckoutSheet({
         payment_status: isPawaPay ? "Pending" : totalAmount > 0 ? "Pending" : "Paid",
         amount: totalAmount,
         total_amount: totalAmount,
+        payment_method: paymentMethod,
         venue_name: venue.name,
         venue_currency: currency,
+        number_of_attendees: isSharedAccess || isSharedSlot ? quantity : 1,
         booking_type: "facility",
         tickets_data: {
           "Facility Access": isSharedAccess || isSharedSlot ? quantity : 1,
@@ -458,6 +461,9 @@ export function FacilityCheckoutSheet({
               ? "Full Day"
               : `${formatSlot(Math.min(...selectedSlots))} - ${formatSlot(Math.max(...selectedSlots) + durationMinutes)}`;
 
+          const codeStr =
+            td?.issued && td.issued.length > 0 ? td.issued.map((t: any) => t.otp).join(", ") : bRef;
+
           await sendVenueBookingEmail({
             data: {
               to: email,
@@ -467,7 +473,7 @@ export function FacilityCheckoutSheet({
               venueLocation: venue.address || venue.city || "Venue Location",
               dateRange: dateRangeStr,
               timeRange: timeRangeStr,
-              bookingRef: bRef,
+              bookingRef: codeStr,
             },
           } as any);
         } catch (e) {
@@ -662,11 +668,16 @@ export function FacilityCheckoutSheet({
                 venueLocation: venue.address || venue.city || "Venue Location",
                 dateRange: dateRangeStr,
                 timeRange: timeRangeStr,
-                bookingRef: bookingRef,
+                bookingRef:
+                  issuedTickets.length > 0
+                    ? issuedTickets.map((t: any) => t.otp).join(", ")
+                    : bookingRef,
                 attachments,
               },
             } as any);
-            await sendSmsAlert(bookingRef);
+
+            const otps = issuedTickets.map((t: any) => t.otp);
+            await sendSmsAlert(bookingRef, otps);
 
             toast.success("Booking confirmed and tickets emailed!");
           } else {
@@ -754,9 +765,22 @@ export function FacilityCheckoutSheet({
 
             <div className="bg-secondary/30 border border-border/60 rounded-2xl p-6 mb-8 w-full max-w-sm">
               <p className="text-sm text-muted-foreground mb-2">Your Booking Reference (OTP)</p>
-              <p className="text-4xl font-mono font-bold tracking-widest text-primary">
-                {bookingRef}
-              </p>
+              <div className="flex flex-col gap-2">
+                {issuedTickets.length > 0 ? (
+                  issuedTickets.map((t: any) => (
+                    <p
+                      key={t.id}
+                      className="text-3xl font-mono font-bold tracking-widest text-primary"
+                    >
+                      {t.otp || bookingRef}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-4xl font-mono font-bold tracking-widest text-primary">
+                    {bookingRef}
+                  </p>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground mt-4">
                 Please show this code at the facility.
               </p>
@@ -1223,7 +1247,8 @@ export function FacilityCheckoutSheet({
         />
 
         {(isPollingPawaPay ||
-          ((bookingMutation.isPending || isGenerating) && paymentMethod === "momo")) && (
+          (bookingMutation.isPending && paymentMethod === "momo") ||
+          isGenerating) && (
           <CheckYourPhone
             themeColor={themeColor || "var(--primary)"}
             status={isGenerating ? "generating" : "payment"}

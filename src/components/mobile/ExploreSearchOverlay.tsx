@@ -59,26 +59,40 @@ export function ExploreSearchOverlay({
   const filteredEvents = useMemo(() => {
     if (!query) return [];
     return dbEvents
-      .filter(
-        (e) =>
-          e.title?.toLowerCase().includes(query) ||
-          e.category?.toLowerCase().includes(query) ||
-          e.workspaces?.name?.toLowerCase().includes(query) ||
-          e.workspaces?.city?.toLowerCase().includes(query) ||
-          e.tour_stops?.some((stop: any) => stop.city?.toLowerCase().includes(query)),
-      )
+      .filter((e) => {
+        const text = [
+          e.title,
+          e.category,
+          e.description,
+          e.workspaces?.name,
+          e.workspaces?.city,
+          typeof e.tour_stops === "string" ? e.tour_stops : JSON.stringify(e.tour_stops || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return text.includes(query);
+      })
       .slice(0, 5);
   }, [dbEvents, query]);
 
   const filteredVenues = useMemo(() => {
     if (!query) return [];
     return dbVenues
-      .filter(
-        (v) =>
-          v.name?.toLowerCase().includes(query) ||
-          v.city?.toLowerCase().includes(query) ||
-          v.type?.toLowerCase().includes(query),
-      )
+      .filter((v) => {
+        const text = [
+          v.name,
+          v.city,
+          v.type,
+          v.description,
+          ...(Array.isArray(v.amenities) ? v.amenities : []),
+          typeof v.facilities_data === "string"
+            ? v.facilities_data
+            : JSON.stringify(v.facilities_data || {}),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return text.includes(query);
+      })
       .slice(0, 5);
   }, [dbVenues, query]);
 

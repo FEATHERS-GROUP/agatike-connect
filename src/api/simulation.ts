@@ -89,7 +89,6 @@ export const simulateTransaction = createServerFn({ method: "POST" })
 
       const organizerCollectionPct = planFees.organizer_collection_fee_percentage ?? 0;
       const organizerCollectionFixed = planFees.organizer_collection_fee_fixed ?? 0;
-      const organizerPlatformContributionPct = planFees.organizer_platform_contribution ?? 0;
 
       // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
       // 1. Customer Fee Engine
@@ -100,10 +99,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine
-      const organizerFee =
-        basePrice * (organizerCollectionPct / 100) +
-        organizerCollectionFixed +
-        basePrice * (organizerPlatformContributionPct / 100);
+      const organizerFee = basePrice * (organizerCollectionPct / 100) + organizerCollectionFixed;
 
       // 3. Platform Margin Buffer
       const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc

@@ -14,6 +14,7 @@ export function Experience2(props: TemplateProps) {
     date,
     time,
     seat,
+    seatLabel,
     price,
     currency,
     cover,
@@ -177,7 +178,9 @@ export function Experience2(props: TemplateProps) {
                   <p className="font-bold text-[#f8fafc] mt-0.5">{tier}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-[#64748b]">Seat / Spot</p>
+                  <p className="text-[9px] uppercase tracking-widest text-[#64748b]">
+                    {seatLabel ? `${seatLabel} / Spot` : "Seat / Spot"}
+                  </p>
                   <p className="font-bold text-[#f8fafc] mt-0.5">{seat}</p>
                 </div>
               </div>

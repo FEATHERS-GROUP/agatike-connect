@@ -23,7 +23,16 @@ import { Input } from "@/components/ui/input";
 import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { Button } from "@/components/ui/button";
 import { getPublicEvents } from "@/api/events";
-
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { useEffect } from "react";
 export const Route = createFileRoute("/events/")({
   head: () => ({
     meta: [
@@ -149,6 +158,12 @@ function EventsBrowse() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when searching
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [q, cat]);
   const { isLoggedIn } = useUserAuth();
 
   const { data: dbEvents = [], isLoading } = useQuery({
@@ -207,6 +222,86 @@ function EventsBrowse() {
       return matchesQ && matchesCat && !isPastLimit;
     });
   }, [q, cat, allEvents]);
+
+  const isSearching = !!q || !!cat;
+
+  const grouped = useMemo(() => {
+    if (isSearching) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const getStartOfWeek = (d: Date) => {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(date.setDate(diff));
+    };
+
+    const startOfWeek = getStartOfWeek(today);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const week: any[] = [];
+    const month: any[] = [];
+    const past: any[] = [];
+
+    filtered.forEach((e: any) => {
+      const isMock = !!e.organizer || !!e.host || !!e.cinema;
+      const getVal = (key: string) => {
+        if (isMock) return e[key];
+        if (Array.isArray(e.tour_stops)) return e.tour_stops[0]?.[key];
+        if (e.tour_stops && typeof e.tour_stops === "object") return e.tour_stops[key];
+        return "";
+      };
+
+      const dateStr = getVal("date") || e.event_requency?.date;
+      if (!dateStr || dateStr === "TBD") {
+        // If no date, we can put it in month or week depending on requirements, or skip.
+        // Let's assume upcoming
+        month.push(e);
+        return;
+      }
+
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return;
+
+      if (d < today) {
+        past.push(e);
+      } else if (d >= startOfWeek && d <= endOfWeek) {
+        week.push(e);
+      } else if (d >= startOfMonth && d <= endOfMonth) {
+        month.push(e);
+      } else {
+        month.push(e); // Dump future events into month/upcoming section
+      }
+    });
+
+    // Sort to show nearest first
+    week.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
+    month.sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime());
+    // Past events newest first
+    past.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+
+    return {
+      week,
+      month,
+      past: past.slice(0, 20),
+    };
+  }, [filtered, isSearching]);
+
+  const itemsPerPage = 16;
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  const paginatedEvents = useMemo(() => {
+    if (!isSearching) return [];
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, isSearching, currentPage]);
 
   const router = useRouter();
 
@@ -316,20 +411,20 @@ function EventsBrowse() {
             <div className="flex flex-col md:flex-row gap-3 items-center">
               <div className="flex-1 flex w-full bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
                 <div className="relative flex-1 flex items-center group">
-                  <Search className="absolute left-4 h-5 w-5 text-primary" aria-hidden="true" />
+                  <Search className="absolute left-3 h-4 w-4 text-primary" aria-hidden="true" />
                   <input
-                    className="flex rounded-xl border-input px-4 py-2 transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-primary/10 hover:border-border/80 md:text-sm w-full pl-12 h-14 bg-transparent border-0 shadow-none text-[15px] font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60"
+                    className="flex rounded-xl border-input px-3 py-2 transition-all duration-200 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-primary/10 hover:border-border/80 md:text-sm w-full pl-9 h-12 bg-transparent border-0 shadow-none text-sm font-medium focus-visible:ring-0 placeholder:text-muted-foreground/60"
                     placeholder="Search for events..."
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                   />
                 </div>
               </div>
-              <div className="flex w-full md:w-[250px] shrink-0 bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
+              <div className="flex w-full md:w-[200px] shrink-0 bg-background rounded-2xl shadow-sm border border-border/40 p-1 relative overflow-hidden focus-within:ring-2 focus-within:ring-primary/20">
                 <div className="relative flex-1 flex items-center group">
-                  <Ticket className="absolute left-4 h-4 w-4 text-primary" aria-hidden="true" />
+                  <Ticket className="absolute left-3 h-4 w-4 text-primary" aria-hidden="true" />
                   <select
-                    className="w-full pl-11 pr-8 h-14 bg-transparent border-0 text-[14px] font-medium focus:outline-none appearance-none"
+                    className="w-full pl-9 pr-8 h-12 bg-transparent border-0 text-sm font-medium focus:outline-none appearance-none"
                     value={cat || "All"}
                     onChange={(e) => setCat(e.target.value === "All" ? null : e.target.value)}
                   >
@@ -342,12 +437,6 @@ function EventsBrowse() {
                   </select>
                 </div>
               </div>
-              <button
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer duration-200 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md py-2 h-[64px] px-8 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 shrink-0 w-full md:w-auto active:scale-[0.98] transition-transform"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                Search
-              </button>
             </div>
           </div>
         </div>
@@ -384,10 +473,86 @@ function EventsBrowse() {
             )}
           </div>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {filtered.map((e: any) => (
-              <EventCard key={e.id} event={e} />
-            ))}
+          <div className="mt-8">
+            {isSearching ? (
+              <>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-8">
+                  {paginatedEvents.map((e: any) => (
+                    <EventCard key={e.id} event={e} />
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          className={
+                            currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            isActive={currentPage === i + 1}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className="cursor-pointer"
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
+            ) : (
+              <div className="space-y-16">
+                {grouped?.week.length ? (
+                  <section>
+                    <h2 className="text-2xl font-bold tracking-tight mb-6">Happening This Week</h2>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {grouped.week.map((e: any) => (
+                        <EventCard key={e.id} event={e} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {grouped?.month.length ? (
+                  <section>
+                    <h2 className="text-2xl font-bold tracking-tight mb-6">Upcoming This Month</h2>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {grouped.month.map((e: any) => (
+                        <EventCard key={e.id} event={e} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {grouped?.past.length ? (
+                  <section>
+                    <h2 className="text-2xl font-bold tracking-tight mb-6">Already Happened</h2>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 opacity-80">
+                      {grouped.past.map((e: any) => (
+                        <EventCard key={e.id} event={e} />
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+              </div>
+            )}
           </div>
         )}
       </div>

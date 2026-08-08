@@ -42,6 +42,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               amount
               net_amount
               workspace_id
+              currency
+              payout_method
+              payout_account
             }
           }
         }
@@ -53,7 +56,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         status:
           providerStatus === "COMPLETED"
             ? "completed"
-            : providerStatus === "FAILED"
+            : providerStatus === "FAILED" ||
+                providerStatus === "REJECTED" ||
+                providerStatus === "REVERSED"
               ? "failed"
               : "pending",
         raw_callback_data: body,
@@ -170,12 +175,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   qrcode_number
                   ticket_id
                   custom_fields
+                  event_tickets {
+                    cost
+                  }
                   events {
                     id
                     title
                     tour_stops
                     workspaces {
                       name
+                    }
+                    ticket_projects(where: { deleted: { _eq: false } }) {
+                      template
+                      palette
+                      font
+                      coverImage
+                      logoText
+                      logoImage
+                      logoColorMode
+                      logoScale
+                      logoOpacity
+                      layout
+                      back
+                      design_overrides
                     }
                   }
                 }
@@ -324,42 +346,63 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
               ];
 
-              let fallbackPdfBase64: string | undefined = undefined;
-              if (firstAtt.events?.id) {
+              const attachments: any[] = [];
+              if (confirmedAttendees.length > 0) {
                 try {
                   const { generateFallbackReceipt } = await import("../lib/pdf-receipt");
+                  const { getMergedProjectDesign } = await import("./user_tickets");
 
-                  // Extract time separately for layout
-                  const tourStops = Array.isArray(firstAtt.events.tour_stops)
-                    ? firstAtt.events.tour_stops
-                    : firstAtt.events.tour_stops
-                      ? [firstAtt.events.tour_stops]
-                      : [];
-                  const firstStop = tourStops[0] || {};
+                  for (const att of confirmedAttendees) {
+                    if (!att.events?.id) continue;
 
-                  const fallbackRes = await generateFallbackReceipt({
-                    entityName: orgName,
-                    customerName: firstAtt.names,
-                    ticket: { id: firstAtt.qrcode_number, tier: "Event Ticket" },
-                    dateStr: firstStop.date || "",
-                    timeStr: firstStop.time || "",
-                    locationStr: eventLocation || "",
-                    bookingRef: tx.reference_id,
-                    type: "event",
-                  });
-                  fallbackPdfBase64 = fallbackRes.content;
+                    const tourStops = Array.isArray(att.events.tour_stops)
+                      ? att.events.tour_stops
+                      : att.events.tour_stops
+                        ? [att.events.tour_stops]
+                        : [];
+                    const firstStop = tourStops[0] || {};
+
+                    const baseProject = att.events?.ticket_projects?.[0];
+                    const mergedDesign = baseProject
+                      ? getMergedProjectDesign(baseProject, 0, att.ticket_id)
+                      : undefined;
+
+                    const seatData = att.custom_fields?.seat || att.custom_fields?.section || "";
+                    const hasRealSeat = !!seatData;
+                    const seatStr = seatData || att.names || "General";
+                    const seatLabelStr = hasRealSeat ? "Seat" : "Name";
+
+                    const ticketCost = Number(att.event_tickets?.cost) || mergedDesign?.price || 0;
+                    const currency = att.events.workspaces?.currency || "RWF";
+
+                    const fallbackRes = await generateFallbackReceipt({
+                      entityName: orgName,
+                      customerName: att.names,
+                      ticket: {
+                        id: att.qrcode_number,
+                        tier: att.ticket_type || "Event Ticket",
+                        price: ticketCost,
+                        currency: currency,
+                        seat: seatStr,
+                        seatLabel: seatLabelStr,
+                        design: mergedDesign,
+                      },
+                      dateStr: firstStop.date || "",
+                      timeStr: firstStop.time || "",
+                      locationStr: eventLocation || "",
+                      bookingRef: tx.reference_id,
+                      type: "event",
+                    });
+
+                    attachments.push({
+                      filename: `Ticket-${att.qrcode_number}.pdf`,
+                      content: fallbackRes.content,
+                      contentType: "application/pdf",
+                    });
+                  }
                 } catch (e) {
-                  console.error("Failed to generate fallback ticket", e);
+                  console.error("Failed to generate fallback tickets", e);
                 }
-              }
-
-              const attachments: any[] = [];
-              if (fallbackPdfBase64) {
-                attachments.push({
-                  filename: `Ticket-${firstAtt.qrcode_number}.pdf`,
-                  content: fallbackPdfBase64,
-                  contentType: "application/pdf",
-                });
               }
 
               let productPdfBase64: string | undefined = undefined;
@@ -710,7 +753,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
 
         // Safely fund the workspace wallet using the exactly computed net_amount (which securely deducts shortfalls!)
-        if (tx.workspace_id && tx.net_amount && tx.type !== "subscription") {
+        if (
+          tx.workspace_id &&
+          tx.net_amount &&
+          tx.type !== "subscription" &&
+          tx.type !== "withdrawal"
+        ) {
           const { addMoneyToWorkspaceWallet } = await import("./wallet");
           await addMoneyToWorkspaceWallet({
             data: {
@@ -767,7 +815,13 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   }
 
                   const vName = bk.rentable_venue?.name || "Venue";
-                  const bRef = bk.tickets_data?.booking_ref || "";
+                  let bRef = "";
+                  if (bk.tickets_data?.issued && bk.tickets_data.issued.length > 0) {
+                    bRef = bk.tickets_data.issued.map((t: any) => t.otp).join(", ");
+                  } else {
+                    bRef =
+                      bk.tickets_data?.summary?.booking_ref || bk.tickets_data?.booking_ref || "";
+                  }
                   const sDate = new Date(bk.start_time);
                   const eDate = new Date(bk.end_time);
 
@@ -842,7 +896,109 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
         }
       }
 
-      // 3. Handle Failed Withdrawals (Refund the wallet)
+      // 3. Handle Successful Withdrawals
+      if (tx && tx.status === "completed" && tx.type === "withdrawal") {
+        if (tx.workspace_id) {
+          try {
+            // 1. Get Workspace / Organizer Details
+            const wsQuery = `
+              query GetWorkspaceInfo($id: uuid!) {
+                workspaces_by_pk(id: $id) {
+                  id
+                  name
+                  orgnizer_id
+                  organizer {
+                    id
+                    email
+                    phone
+                    name
+                  }
+                  wallet {
+                    id
+                    amount
+                  }
+                }
+              }
+            `;
+            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+              id: tx.workspace_id,
+            });
+            const ws = wsRes.workspaces_by_pk;
+
+            if (ws && ws.organizer) {
+              const { email, phone, name } = ws.organizer;
+              const organizerName = name || ws.name || "Organizer";
+              const currentBalance = ws.wallet?.amount || 0;
+              const netPayout = parseFloat(tx.net_amount) || parseFloat(tx.amount);
+
+              // 2. Generate PDF Receipt
+              const { generateWithdrawalReceipt } = await import("../lib/pdf-withdrawal-receipt");
+              const receipt = await generateWithdrawalReceipt({
+                amount: parseFloat(tx.amount),
+                netAmount: netPayout,
+                currency: tx.currency,
+                payoutMethod: tx.payout_method || "momo",
+                payoutAccount: tx.payout_account || "Unknown",
+                referenceId: tx.reference_id || tx.id,
+                date: new Date(),
+                organizerName,
+              });
+
+              // 3. Send Email via Resend with PDF Attachment
+              if (email && process.env.RESEND_API_KEY) {
+                await fetch("https://api.resend.com/emails", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    from: "Agatike Connect <finance@agatike.rw>",
+                    to: [email],
+                    subject: `Withdrawal Successful: ${netPayout} ${tx.currency}`,
+                    html: `<p>Hello ${organizerName},</p><p>Your withdrawal of <strong>${netPayout} ${tx.currency}</strong> was successfully completed and sent to your account (${tx.payout_account}).</p><p>Please find your receipt attached.</p>`,
+                    attachments: [
+                      {
+                        filename: receipt.filename,
+                        content: receipt.content,
+                      },
+                    ],
+                  }),
+                });
+              }
+
+              // 4. Send SMS
+              if (phone) {
+                const { sendSMS } = await import("./pindo.server");
+                const smsText = `Agatike Connect: Your withdrawal of ${netPayout} ${tx.currency} was successful. Ref: ${tx.reference_id || tx.id}. Remaining Balance: ${currentBalance} ${tx.currency}.`;
+                await sendSMS(phone, smsText, ws.orgnizer_id);
+              }
+
+              // 5. Firebase Notification (Firestore)
+              const { getFirebaseAdmin } = await import("../lib/firebase.server");
+              const admin = await getFirebaseAdmin();
+              if (admin && admin.db) {
+                const db = admin.db;
+                await db.collection("agatike_notifications").add({
+                  actorId: null,
+                  actorName: "System",
+                  createdAt: new Date().toISOString(),
+                  message: `Withdrawal of ${netPayout} ${tx.currency} to account ${tx.payout_account} was successfully withdrawn.`,
+                  organizerId: ws.orgnizer_id,
+                  read: false,
+                  title: "Withdrawal Successful",
+                  type: "withdrawal",
+                  targetId: tx.reference_id || tx.id,
+                });
+              }
+            }
+          } catch (e) {
+            console.error("[PawaPay Webhook] Failed to send withdrawal notifications:", e);
+          }
+        }
+      }
+
+      // 4. Handle Failed Withdrawals (Refund the wallet)
       if (tx && tx.status === "failed" && tx.type === "withdrawal") {
         if (tx.workspace_id && tx.amount) {
           console.log(
@@ -855,6 +1011,41 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               amount: parseFloat(tx.amount),
             },
           } as any);
+
+          try {
+            const wsQuery = `
+              query GetWorkspaceInfo($id: uuid!) {
+                workspaces_by_pk(id: $id) {
+                  orgnizer_id
+                }
+              }
+            `;
+            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, {
+              id: tx.workspace_id,
+            });
+            const ws = wsRes.workspaces_by_pk;
+
+            if (ws && ws.orgnizer_id) {
+              const { getFirebaseAdmin } = await import("../lib/firebase.server");
+              const admin = await getFirebaseAdmin();
+              if (admin && admin.db) {
+                const db = admin.db;
+                await db.collection("agatike_notifications").add({
+                  actorId: null,
+                  actorName: "System",
+                  createdAt: new Date().toISOString(),
+                  message: `Withdrawal of ${tx.amount} ${tx.currency || "RWF"} to account ${tx.payout_account || "account"} failed and has been fully refunded to your wallet.`,
+                  organizerId: ws.orgnizer_id,
+                  read: false,
+                  title: "Withdrawal Failed",
+                  type: "withdrawal",
+                  targetId: tx.reference_id || tx.id,
+                });
+              }
+            }
+          } catch (e) {
+            console.error("[PawaPay Webhook] Failed to send failed withdrawal notification:", e);
+          }
         }
       }
     }

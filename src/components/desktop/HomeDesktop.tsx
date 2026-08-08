@@ -230,8 +230,8 @@ export function HomeDesktop() {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative">
-        <div className="relative h-[78vh] min-h-[560px] w-full overflow-hidden">
+      <section className="relative z-50">
+        <div className="relative h-[78vh] min-h-[560px] w-full overflow-visible">
           <img
             src={hero}
             alt="Live event crowd"
@@ -257,8 +257,9 @@ export function HomeDesktop() {
               </span>
             </h1>
             <p className="mt-4 max-w-xl text-muted-foreground md:text-lg">
-              Tickets, stories, and after-movies from Africa's best nightlife, festivals, sports and
-              experiences — all in one place.
+              Discover the pulse of Africa. Grab tickets to vibrant festivals, unforgettable
+              nightlife, and thrilling sports, then relive every magical moment through exclusive
+              stories and event highlights.
             </p>
 
             <HeroSearch />

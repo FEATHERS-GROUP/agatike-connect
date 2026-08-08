@@ -31,7 +31,6 @@ export const getExchangeRate = createServerFn({ method: "POST" })
 
 export const getPawaPayNetworks = createServerFn({ method: "GET" }).handler(async () => {
   if (!process.env.PAWAPAY_API_KEY) {
-    console.log("[PawaPay] PAWAPAY_API_KEY is missing from env");
     return [];
   }
 
@@ -176,7 +175,6 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
-    const orgPlatformPct = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const planMaxSubsidyPct = parseFloat(plan.max_collection_subsidy_percentage as any) ?? 1.0;
     const withdrawalFeePct = parseFloat(plan.withdrawal_fee_percentage as any) || 0;
@@ -196,8 +194,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       const customerFee =
         baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
       const grossAmount = baseAmount + customerFee;
-      const organizerFee =
-        baseAmount * (orgCollectionPct / 100) + orgFixed + baseAmount * (orgPlatformPct / 100);
+      const organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
 
       // Evaluate tiered rules based on grossAmount
       if (providerFees.is_tiered && providerFees.tiered_rules) {
@@ -364,7 +361,6 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
-    const orgPlatformPct = parseFloat(plan.organizer_platform_contribution as any) || 0;
 
     const grossAmount = parseFloat(amount);
     const baseAmt = parseFloat(baseAmount || amount);
@@ -400,8 +396,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const providerCost = grossAmount * (providerPct / 100) + providerFixed;
 
     // Organizer fee = deducted from their wallet settlement
-    let organizerFee =
-      baseAmt * (orgCollectionPct / 100) + orgFixed + baseAmt * (orgPlatformPct / 100);
+    let organizerFee = baseAmt * (orgCollectionPct / 100) + orgFixed;
 
     // If there is a shortfall on a micro-transaction, the organizer absorbs it to cover the network cost (README 12.1)
     if (shortfall > 0) {
@@ -473,7 +468,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-        description: pageSlug ? `PawaPay Deposit::${pageSlug}` : "PawaPay Deposit",
+        description: pageSlug ? `Agatike Deposit::${pageSlug}` : "Agatike Deposit",
       },
     );
 
@@ -516,7 +511,8 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
     let tx = data.wallet_transactions?.[0] || null;
 
     // Active Polling Fallback: If webhook hasn't hit or we are on localhost, check PawaPay API directly
-    if (tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
+    const isDev = process.env.NODE_ENV !== "production";
+    if (isDev && tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
       try {
         const baseUrl = process.env.PAWAPAY_API_URL;
         if (!baseUrl) return tx;
@@ -555,6 +551,84 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
         }
       } catch (err) {
         console.error("[Agatike] Active polling fallback failed:", err);
+      }
+    }
+
+    return tx;
+  });
+
+export const getPawaPayPayoutStatus = createServerFn({ method: "POST" })
+  .validator((d: { payoutId: string }) => d)
+  .handler(async (ctx) => {
+    const { payoutId } = ctx.data;
+    if (!payoutId) return null;
+    const { hasuraRequest } = await import("./graphql.server");
+
+    const query = `
+      query GetPayoutStatus($provider_reference: String!) {
+        wallet_transactions(where: { provider_reference: { _eq: $provider_reference } }, limit: 1) {
+          id
+          status
+          provider_status
+          reference_id
+          type
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ wallet_transactions: any[] }>(query, {
+      provider_reference: payoutId,
+    });
+
+    let tx = data.wallet_transactions?.[0] || null;
+
+    // Active Polling Fallback: If webhook hasn't hit or we are on localhost, check PawaPay API directly
+    const isDev = process.env.NODE_ENV !== "production";
+    if (isDev && tx && tx.status === "pending" && process.env.PAWAPAY_API_KEY) {
+      try {
+        const baseUrl = process.env.PAWAPAY_API_URL;
+        if (!baseUrl) return tx;
+        const url = `${baseUrl}/v1/payouts/${payoutId}`;
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.PAWAPAY_API_KEY}`,
+          },
+        });
+
+        if (response.ok) {
+          const pawaData = await response.json();
+          const providerStatus = Array.isArray(pawaData) ? pawaData[0]?.status : pawaData.status;
+
+          if (
+            providerStatus &&
+            (providerStatus === "COMPLETED" ||
+              providerStatus === "FAILED" ||
+              providerStatus === "REJECTED" ||
+              providerStatus === "REVERSED")
+          ) {
+            const pawaPayload = Array.isArray(pawaData) ? pawaData[0] : pawaData;
+
+            // Simulate a webhook request to reuse the exact same completion/failure logic
+            const mockRequest = new Request("http://localhost:3000/api/pawapay/payouts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(pawaPayload),
+            });
+
+            const { handlePawaPayWebhook } = await import("./pawapay.server");
+            await handlePawaPayWebhook(mockRequest);
+
+            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
+
+            // Update local object so the frontend sees it immediately
+            tx.status = newStatus;
+            tx.provider_status = providerStatus;
+          }
+        }
+      } catch (err) {
+        console.error("[Agatike] Active polling fallback failed for payout:", err);
       }
     }
 
@@ -790,14 +864,36 @@ export const triggerPawaPayPayout = createServerFn({ method: "POST" })
       throw new Error(data.errorMessage || data.message || "PawaPay API error");
     }
 
+    const providerStatus = data.status || "ACCEPTED";
+
+    // Always update the database with the provider_reference (tx.id) so the webhook/polling can find it
     const updateQuery = `
-      mutation UpdateTx($id: uuid!, $provider_status: String!) {
-        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { provider_status: $provider_status, provider_reference: $id }) {
+      mutation UpdateTx($id: uuid!, $provider_status: String!, $provider_reference: String!) {
+        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { provider_status: $provider_status, provider_reference: $provider_reference }) {
           id
         }
       }
     `;
-    await hasuraRequest(updateQuery, { id: tx.id, provider_status: data.status || "ACCEPTED" });
+    await hasuraRequest(updateQuery, {
+      id: tx.id,
+      provider_status: providerStatus,
+      provider_reference: tx.id,
+    });
+
+    // If it's synchronously rejected or failed, we must simulate the webhook to refund the wallet
+    if (
+      providerStatus === "REJECTED" ||
+      providerStatus === "FAILED" ||
+      providerStatus === "REVERSED"
+    ) {
+      const mockRequest = new Request("http://localhost:3000/api/pawapay/payouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const { handlePawaPayWebhook } = await import("./pawapay.server");
+      await handlePawaPayWebhook(mockRequest);
+    }
 
     return { success: true, data };
   });

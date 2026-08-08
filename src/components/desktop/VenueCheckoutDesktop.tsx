@@ -54,7 +54,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [date, setDate] = useState("");
   const [ticketsData, setTicketsData] = useState<Record<string, number>>({});
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [attendees, setAttendees] = useState<{ name: string; id_document: string }[]>([]);
+  const [attendees, setAttendees] = useState<
+    { name: string; id_document: string; country?: string; gender?: string }[]
+  >([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [idPassport, setIdPassport] = useState("");
@@ -282,6 +284,9 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
             : null,
         venue_name: venue.name,
         venue_currency: venue.currency,
+        booking_type: venue?.rental_model === "ENTIRE_VENUE" ? "entire_venue" : "entrance",
+        payment_method: paymentMethod,
+        total_amount: Number(total),
       };
 
       const res = await createVenueBooking({ data: payload });
@@ -516,7 +521,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       if (prev.length > requiredAttendees) return prev.slice(0, requiredAttendees);
       const newAttendees = [...prev];
       while (newAttendees.length < requiredAttendees) {
-        newAttendees.push({ name: "", id_document: "" });
+        newAttendees.push({ name: "", id_document: "", country: "", gender: "" });
       }
       return newAttendees;
     });
@@ -1027,37 +1032,82 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
 
                       <div className="space-y-4">
                         {attendees.map((att, idx) => (
-                          <div key={idx} className="flex gap-4 items-start">
-                            <div className="flex-1 space-y-1.5">
-                              <label className="text-sm font-medium text-muted-foreground">
-                                Attendee {idx + 2} Name
-                              </label>
-                              <Input
-                                required
-                                placeholder="Full Name"
-                                value={att.name}
-                                onChange={(e) => {
-                                  const newArr = [...attendees];
-                                  newArr[idx].name = e.target.value;
-                                  setAttendees(newArr);
-                                }}
-                                className="h-12 rounded-xl bg-secondary/40"
-                              />
+                          <div key={idx} className="flex flex-col gap-4 mb-4">
+                            <div className="flex gap-4 items-start">
+                              <div className="flex-1 space-y-1.5">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                  Attendee {idx + 2} Name
+                                </label>
+                                <Input
+                                  required
+                                  placeholder="Full Name"
+                                  value={att.name}
+                                  onChange={(e) => {
+                                    const newArr = [...attendees];
+                                    newArr[idx].name = e.target.value;
+                                    setAttendees(newArr);
+                                  }}
+                                  className="h-12 rounded-xl bg-secondary/40"
+                                />
+                              </div>
+                              <div className="flex-1 space-y-1.5">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                  ID / Passport
+                                </label>
+                                <Input
+                                  placeholder="Optional"
+                                  value={att.id_document}
+                                  onChange={(e) => {
+                                    const newArr = [...attendees];
+                                    newArr[idx].id_document = e.target.value;
+                                    setAttendees(newArr);
+                                  }}
+                                  className="h-12 rounded-xl bg-secondary/40"
+                                />
+                              </div>
                             </div>
-                            <div className="flex-1 space-y-1.5">
-                              <label className="text-sm font-medium text-muted-foreground">
-                                ID / Passport
-                              </label>
-                              <Input
-                                placeholder="Optional"
-                                value={att.id_document}
-                                onChange={(e) => {
-                                  const newArr = [...attendees];
-                                  newArr[idx].id_document = e.target.value;
-                                  setAttendees(newArr);
-                                }}
-                                className="h-12 rounded-xl bg-secondary/40"
-                              />
+                            <div className="flex gap-4 items-start">
+                              <div className="flex-1 space-y-1.5">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                  Country
+                                </label>
+                                <select
+                                  value={att.country || ""}
+                                  onChange={(e) => {
+                                    const newArr = [...attendees];
+                                    newArr[idx].country = e.target.value;
+                                    setAttendees(newArr);
+                                  }}
+                                  className="w-full h-12 rounded-xl bg-secondary/40 border border-input px-3"
+                                >
+                                  <option value="">Select Country</option>
+                                  {countries.map((c) => (
+                                    <option key={c} value={c}>
+                                      {c}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="flex-1 space-y-1.5">
+                                <label className="text-sm font-medium text-muted-foreground">
+                                  Gender
+                                </label>
+                                <select
+                                  value={att.gender || ""}
+                                  onChange={(e) => {
+                                    const newArr = [...attendees];
+                                    newArr[idx].gender = e.target.value;
+                                    setAttendees(newArr);
+                                  }}
+                                  className="w-full h-12 rounded-xl bg-secondary/40 border border-input px-3"
+                                >
+                                  <option value="">Select Gender</option>
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Other">Other</option>
+                                  <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
+                              </div>
                             </div>
                           </div>
                         ))}

@@ -45,9 +45,8 @@ import { HistoryCard } from "@/components/profile/HistoryCard";
 import { favoriteCategories } from "@/components/profile/mockData";
 import { ProfileDesktop } from "@/components/profile/ProfileDesktop";
 import { ProfileMobile } from "@/components/profile/ProfileMobile";
-import { getUserStaffAssignments } from "@/api/staff";
 
-type Tab = "upcoming" | "history" | "following" | "subscriptions" | "work";
+type Tab = "upcoming" | "history" | "following" | "subscriptions";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -90,12 +89,6 @@ function ProfilePage() {
     enabled: !!user,
   });
 
-  const { data: staffAssignments = [], isLoading: isLoadingStaff } = useQuery({
-    queryKey: ["user-staff-assignments", user?.id],
-    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id } } as any),
-    enabled: !!user,
-  });
-
   const parseDateInsensitively = (dateInput: any) => {
     if (!dateInput) return new Date();
     if (typeof dateInput === "string") {
@@ -107,7 +100,7 @@ function ProfilePage() {
     return new Date(dateInput);
   };
 
-  const upcomingTicketsList = tickets.filter((t: any) => {
+  const rawUpcomingTickets = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return false;
     const eventDate = parseDateInsensitively(t.eventDate);
     const today = new Date();
@@ -115,6 +108,17 @@ function ProfilePage() {
     eventDate.setHours(0, 0, 0, 0);
     return eventDate >= today;
   });
+
+  const upcomingTicketsList = Object.values(
+    rawUpcomingTickets.reduce((acc: any, ticket: any) => {
+      const key = ticket.eventId || ticket.title;
+      if (!acc[key]) {
+        acc[key] = { ...ticket, tickets: [] };
+      }
+      acc[key].tickets.push(ticket);
+      return acc;
+    }, {}),
+  );
 
   const rawHistoryTickets = tickets.filter((t: any) => {
     if (t.status === "Cancelled") return true;
@@ -244,7 +248,6 @@ function ProfilePage() {
         setShowLogoutModal={setShowLogoutModal}
         subscriptions={subscriptions}
         venueBookingsCount={venueBookingsCount}
-        staffAssignments={staffAssignments}
         tab={tab}
         setTab={setTab}
       />

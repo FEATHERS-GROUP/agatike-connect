@@ -16,16 +16,6 @@ import { Template, TicketLayout, TicketBack } from "./templates/types";
 
 import QRCodeImport from "react-qr-code";
 const QRCode = (QRCodeImport as any).default || QRCodeImport;
-import {
-  Ticket as TicketIcon,
-  Crown,
-  Film,
-  Mountain,
-  Briefcase,
-  Calendar,
-  MapPin,
-  Clock,
-} from "lucide-react";
 
 export { DEFAULT_TERMS_HTML, DEFAULT_EXPERIENCE_BACK_HTML };
 
@@ -39,6 +29,7 @@ export function TicketPreview(props: {
   date: string;
   time: string;
   seat: string;
+  seatLabel?: string;
   price: string;
   currency: string;
   cover: string;
@@ -63,6 +54,7 @@ export function TicketPreview(props: {
     date,
     time,
     seat,
+    seatLabel,
     price,
     currency,
     cover,

@@ -887,7 +887,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     </div>
   );
 
-  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo") || isGenerating) {
     return (
       <>
         <CheckYourPhone

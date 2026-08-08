@@ -17,7 +17,6 @@ export interface PricingPlan {
   customer_service_fee_percentage?: number;
   customer_collection_fee_percentage?: number;
   customer_collection_fee_fixed?: number;
-  organizer_platform_contribution?: number;
   organizer_collection_fee_percentage?: number;
   organizer_collection_fee_fixed?: number;
   platform_margin_buffer?: number;
@@ -54,7 +53,6 @@ const GET_PLANS = `
       customer_service_fee_percentage
       customer_collection_fee_percentage
       customer_collection_fee_fixed
-      organizer_platform_contribution
       organizer_collection_fee_percentage
       organizer_collection_fee_fixed
       platform_margin_buffer
@@ -84,7 +82,6 @@ const GET_ACTIVE_SUB = `
         name
         usage_limits
         customer_service_fee_percentage
-        organizer_platform_contribution
         platform_margin_buffer
         max_withdrawals_per_week
         withdrawal_fee_percentage
@@ -110,7 +107,6 @@ const GET_ACTIVE_PLAN_FEES = `
         customer_service_fee_percentage
         customer_collection_fee_percentage
         customer_collection_fee_fixed
-        organizer_platform_contribution
         organizer_collection_fee_percentage
         organizer_collection_fee_fixed
         withdrawal_fee_percentage
@@ -133,7 +129,6 @@ export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
         customer_service_fee_percentage: 2.0,
         customer_collection_fee_percentage: 2.0,
         customer_collection_fee_fixed: 0,
-        organizer_platform_contribution: 0,
         organizer_collection_fee_percentage: 0,
         organizer_collection_fee_fixed: 0,
         withdrawal_fee_percentage: 0,
@@ -151,7 +146,6 @@ export const getWorkspaceActivePlanFees = createServerFn({ method: "POST" })
       customer_service_fee_percentage: plan?.customer_service_fee_percentage ?? 2.0,
       customer_collection_fee_percentage: plan?.customer_collection_fee_percentage ?? 2.0,
       customer_collection_fee_fixed: plan?.customer_collection_fee_fixed ?? 0,
-      organizer_platform_contribution: plan?.organizer_platform_contribution ?? 0,
       organizer_collection_fee_percentage: plan?.organizer_collection_fee_percentage ?? 0,
       organizer_collection_fee_fixed: plan?.organizer_collection_fee_fixed ?? 0,
       withdrawal_fee_percentage: plan?.withdrawal_fee_percentage ?? 0,
