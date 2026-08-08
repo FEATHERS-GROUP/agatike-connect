@@ -14,8 +14,8 @@ function RefundsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
-      <main className="flex-1 py-12 px-6 sm:px-8">
-        <div className="max-w-3xl mx-auto bg-card border border-border/40 p-8 sm:p-12 rounded-3xl shadow-sm">
+      <main className="flex-1 py-12 px-4 sm:px-8">
+        <div className="max-w-5xl mx-auto p-6 sm:p-12">
           <RefundPolicy />
         </div>
       </main>
