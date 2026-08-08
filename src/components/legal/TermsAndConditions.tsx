@@ -65,11 +65,17 @@ export function TermsAndConditions() {
               "Merchandise and product sales",
               "Page builder tools for hosts, organizers, and businesses",
               "Space and venue management tools",
-              "Activities and experience management"
+              "Activities and experience management",
+              "Financial tools, including procurement and invoicing",
+              "Event planning and note-taking tools",
+              "Ticket scanning and entry management at events",
+              "Vendor integration for on-site event and venue services",
+              "Multi-currency payment support",
+              "Ticket, venue, and badge design tools"
             ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            By accessing or using the Platform, you acknowledge that you have read, understood, and agree to be bound by these Terms, as well as our Privacy Policy and Refund Policy, which are incorporated herein by reference. If you do not agree to these Terms, you must not access or use the Platform.
+            By accessing or using the Platform, you acknowledge that you have read, understood, and agree to be bound by these Terms, as well as our Privacy Policy and Refund Policy, which are incorporated herein by reference. <strong style={{ color: "var(--foreground)" }}>If you do not agree to these Terms, you must not access or use the Platform.</strong>
           </p>
         </section>
 
@@ -83,7 +89,7 @@ export function TermsAndConditions() {
             {[
               "Be at least 18 years old, or the age of legal majority in your jurisdiction, whichever is greater",
               "Have the legal capacity to enter into a binding agreement",
-              "Not be barred from using the Platform under the laws of your jurisdiction or any applicable trade, export, or sanctions regulations",
+              "Not be barred from using the Platform under the laws of your jurisdiction or any applicable trade, export, or sanctions regulations"
             ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
@@ -103,14 +109,14 @@ export function TermsAndConditions() {
               "Maintain and promptly update your account information as needed",
               "Maintain the confidentiality of your login credentials, including passwords and verification codes",
               "Accept full responsibility for all activities that occur under your account",
-              "Notify us immediately at our official support channels of any unauthorized access, suspected breach, or security concern related to your account",
+              "Notify us immediately at our official support channels of any unauthorized access, suspected breach, or security concern related to your account"
             ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            We are not liable for any loss or damage arising from your failure to safeguard your account credentials or from unauthorized use of your account, except where such loss results directly from our own gross negligence or willful misconduct.
+            <strong style={{ color: "var(--foreground)" }}>We are not liable for any loss or damage arising from your failure to safeguard your account credentials or from unauthorized use of your account</strong>, except where such loss results directly from our own gross negligence or willful misconduct.
           </p>
           <p style={ps}>
-            Certain features — such as listing a venue, space, or office for rent, creating events, or selling merchandise — may require you to register as a Host, Venue Owner, or Organizer account, which is subject to additional terms set out in Section 5 below.
+            Certain features such as listing a venue, space, or office for rent, creating events, or selling merchandise may require you to register as a <strong style={{ color: "var(--foreground)" }}>Host, Venue Owner, or Organizer</strong> account, which is subject to additional terms set out in Section 5 below.
           </p>
         </section>
 
@@ -126,7 +132,7 @@ export function TermsAndConditions() {
             {["Purchase, sell, or distribute tickets for events","Verify ticket authenticity through our systems","Manage event attendance, reservations, and related transactions"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            Events listed on the Platform are created and managed by independent third-party organizers. We are not responsible for event cancellations, postponements, changes in event details, or any misconduct on the part of an organizer. Refund matters relating to cancelled or rescheduled events are governed separately by our Refund Policy.
+            Events listed on the Platform are created and managed by independent third-party organizers. <strong style={{ color: "var(--foreground)" }}>We are not responsible for event cancellations, postponements, changes in event details, or any misconduct on the part of an organizer.</strong> Refund matters relating to cancelled or rescheduled events are governed separately by our Refund Policy.
           </p>
 
           <h3 style={shs}>4.2 Office and Facility Access Services</h3>
@@ -134,12 +140,12 @@ export function TermsAndConditions() {
           <ul style={ls}>
             {["Digital access credentials (e.g., QR codes, NFC tags, or similar technology)","Entry management systems for buildings, offices, or other facilities"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
-          <p style={ps}>When using access services, you agree not to:</p>
+          <p style={ps}>When using access services, you agree <strong style={{ color: "var(--foreground)" }}>not</strong> to:</p>
           <ul style={ls}>
             {["Share access credentials with unauthorized individuals","Tamper with, duplicate, circumvent, or attempt to reverse-engineer access systems","Use access privileges for any purpose other than their intended use"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            Violation of this section may result in immediate suspension of access privileges, account termination, and — where applicable — referral to relevant facility owners or law enforcement authorities.
+            Violation of this section may result in immediate suspension of access privileges, account termination, and where applicable referral to relevant facility owners or law enforcement authorities.
           </p>
 
           <h3 style={shs}>4.3 Social Networking Features</h3>
@@ -153,10 +159,10 @@ export function TermsAndConditions() {
           
           <h3 style={shs}>4.4 Venue Listings, Space &amp; Facility Rentals</h3>
           <p style={ps}>
-            The Platform allows Hosts, Venue Owners, and Organizers to list venues, offices, private rooms, gyms, studios, and other spaces or facilities ("Listed Spaces") for rental, booking, or event use by other users. Detailed obligations for those listing and renting out spaces are set out in Section 5 (Host, Venue Owner &amp; Organizer Terms) below.
+            The Platform allows Hosts, Venue Owners, and Organizers to list venues, offices, private rooms, gyms, studios, and other spaces or facilities ("Listed Spaces") for rental, booking, or event use by other users. Detailed obligations for those listing and renting out spaces are set out in <strong style={{ color: "var(--foreground)" }}>Section 5 (Host, Venue Owner &amp; Organizer Terms)</strong> below.
           </p>
           <p style={ps}>
-            We act solely as a platform connecting users with Hosts and Venue Owners. We are not the owner, lessor, or operator of any Listed Space and are not a party to any rental, lease, or booking agreement formed between a user and a Host or Venue Owner.
+            We act solely as a platform connecting users with Hosts and Venue Owners. <strong style={{ color: "var(--foreground)" }}>We are not the owner, lessor, or operator of any Listed Space</strong> and are not a party to any rental, lease, or booking agreement formed between a user and a Host or Venue Owner.
           </p>
 
           <h3 style={shs}>4.5 Merchandise and Product Sales</h3>
@@ -180,6 +186,59 @@ export function TermsAndConditions() {
           <p style={ps}>
             The Platform enables Hosts and Organizers to list, manage, and sell bookings for activities and experiences (e.g., classes, tours, workshops, recreational sessions). As with events and venue listings, we are not responsible for the conduct, quality, safety, or delivery of any activity or experience offered by a Host or Organizer, though we may require Hosts to meet certain listing standards as described in Section 5.
           </p>
+
+          <h3 style={shs}>4.8 Financial Tools &amp; Procurement Invoicing</h3>
+          <p style={ps}>
+            The Platform may provide Hosts, Organizers, and customers with tools to generate procurement documents and invoices in connection with bookings, ticket purchases, venue rentals, or Merchandise orders. These tools are provided for convenience and record-keeping purposes only. <strong style={{ color: "var(--foreground)" }}>We do not provide accounting, tax, or financial advisory services</strong>, and Hosts and users remain solely responsible for the accuracy of any invoice they generate, and for meeting their own tax, accounting, and regulatory obligations.
+          </p>
+
+          <h3 style={shs}>4.9 Notes &amp; Event Planning Tools</h3>
+          <p style={ps}>
+            The Platform may allow users, Hosts, and Organizers to create and store notes related to bookings, events, venues, or transactions for planning and organizational purposes. These notes are considered User Content and are subject to Section 6 (User Content) of these Terms.
+          </p>
+
+          <h3 style={shs}>4.10 Ticket Scanning &amp; Entry Management</h3>
+          <p style={ps}>
+            The Platform may provide a scanning tool that allows Organizers, Hosts, and their authorized staff to validate and scan tickets at the entrance of an event or venue in order to manage attendance and prevent unauthorized entry or ticket fraud. Organizers and Hosts are responsible for ensuring that only authorized personnel use the scanning tool, and for the accuracy of attendance records generated through its use. We are not responsible for entry disputes, denied access, or attendance errors arising from an Organizer's or Host's use, misuse, or failure to use the scanning tool.
+          </p>
+
+          <h3 style={shs}>4.11 Vendor Integration</h3>
+          <p style={ps}>
+            The Platform may allow Organizers and Hosts to integrate and coordinate with third-party vendors (e.g., catering, security, equipment, or other on-site service providers) operating at an event or venue. Any agreement, arrangement, or dispute between an Organizer or Host and a vendor is strictly between those parties. <strong style={{ color: "var(--foreground)" }}>We are not responsible for the performance, conduct, quality, or fees of any vendor</strong>, whether or not they are integrated with or discoverable through the Platform.
+          </p>
+
+          <h3 style={shs}>4.12 Multi-Currency Support &amp; Organizer Payouts</h3>
+          <p style={ps}>
+            The Platform supports transactions in multiple currencies. Organizers and Hosts may configure their preferred payout currency and payment method, subject to availability in their region and any requirements of our payment processing partners. Where a transaction involves a currency conversion:
+          </p>
+          <ul style={ls}>
+            {[
+              "Applicable exchange rates are determined at the time of the transaction or payout and may fluctuate",
+              "We are not responsible for losses arising from currency fluctuations, conversion fees, or charges imposed by banks, card issuers, or payment processors",
+              "Organizers and Hosts are responsible for selecting a payout currency and method appropriate to their needs and for any tax implications arising from currency conversion"
+            ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
+          </ul>
+
+          <h3 style={shs}>4.13 Ticket, Venue &amp; Badge Design Tools</h3>
+          <p style={ps}>
+            The Platform may provide design tools that allow Organizers and Hosts to design and customize tickets, event or venue layouts, and electronic badges (e.g., for conference or event attendees), and to connect these designs to a specific event, space, or venue listing. Organizers and Hosts are solely responsible for the content, accuracy, and appropriateness of any design they create, including ensuring that ticket, badge, or venue designs do not infringe the intellectual property rights of any third party or otherwise violate Section 6 (User Content) or Section 7 (Prohibited Activities) of these Terms. We reserve the right to remove or disable any design that violates these Terms.
+          </p>
+
+          <h3 style={shs}>4.14 Third-Party Productivity Integrations</h3>
+          <p style={ps}>
+            The Platform may allow Organizers and Hosts to connect their account to third-party productivity services, including but not limited to <strong style={{ color: "var(--foreground)" }}>Google Calendar, Google Drive, and Microsoft 365</strong> tools, for purposes such as syncing event schedules, storing or accessing event-related files, and managing planning documents.
+          </p>
+          <p style={ps}>Where an Organizer or Host chooses to enable such an integration, they:</p>
+          <ul style={ls}>
+            {[
+              "Authorize the Platform to access, read, write, or sync data with the connected third-party account to the extent necessary to provide the integration",
+              "Remain solely responsible for the accuracy, confidentiality, and management of any data stored in or shared with the connected third-party service",
+              "Acknowledge that use of the connected service is also governed by that provider's own terms of service and privacy policy, which we do not control"
+            ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
+          </ul>
+          <p style={ps}>
+            <strong style={{ color: "var(--foreground)" }}>We are not responsible for the availability, performance, security, or data practices of Google, Microsoft, or any other third-party integration provider.</strong> An Organizer or Host may disconnect an integration at any time through their account settings; disconnecting may affect the availability of certain features that rely on that integration.
+          </p>
         </section>
 
         <div style={divider} />
@@ -193,7 +252,7 @@ export function TermsAndConditions() {
 
           <h3 style={shs}>5.1 Role of the Platform</h3>
           <p style={ps}>
-            We provide the technology that allows Hosts to list and manage their venues, spaces, offices, events, activities, and Merchandise, and that allows users to discover and book them. We are not a party to, and do not guarantee the performance of, any agreement formed between a Host and a user (including bookings, rentals, ticket sales, or purchases). Any such agreement is strictly between the Host and the user.
+            We provide the technology that allows Hosts to list and manage their venues, spaces, offices, events, activities, and Merchandise, and that allows users to discover and book them. <strong style={{ color: "var(--foreground)" }}>We are not a party to, and do not guarantee the performance of, any agreement formed between a Host and a user</strong> (including bookings, rentals, ticket sales, or purchases). Any such agreement is strictly between the Host and the user.
           </p>
 
           <h3 style={shs}>5.2 Host Responsibilities</h3>
@@ -269,7 +328,7 @@ export function TermsAndConditions() {
         {/* 7 */}
         <section>
           <h2 style={hs}>7. Prohibited Activities</h2>
-          <p style={ps}>When using the Platform, you agree that you will not:</p>
+          <p style={ps}>When using the Platform, you agree that you will <strong style={{ color: "var(--foreground)" }}>not</strong>:</p>
           <ul style={ls}>
             {[
               "Use the Platform for any unlawful purpose or in violation of any applicable law",
@@ -284,7 +343,7 @@ export function TermsAndConditions() {
             ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            Violation of this section may result in content removal, account suspension, permanent termination, forfeiture of associated credits or benefits, and — where applicable — referral to law enforcement authorities.
+            Violation of this section may result in content removal, account suspension, permanent termination, forfeiture of associated credits or benefits, and where applicable referral to law enforcement authorities.
           </p>
         </section>
 
@@ -303,7 +362,7 @@ export function TermsAndConditions() {
             ].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            We are not responsible for errors, delays, or failures caused by third-party payment processors, banks, or card issuers.
+            <strong style={{ color: "var(--foreground)" }}>We are not responsible for errors, delays, or failures caused by third-party payment processors, banks, or card issuers.</strong>
           </p>
         </section>
 
@@ -317,13 +376,13 @@ export function TermsAndConditions() {
             {["The policies set by the relevant Host, event organizer, or venue owner","The type of ticket, booking, product, or service purchased","Applicable local consumer protection laws"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            We do not guarantee refunds unless explicitly stated in our Refund Policy or required by law. Where an event is cancelled, a booking is cancelled, or a venue/facility is permanently closed, resolution and refund arrangements are the responsibility of the relevant organizer, host, or venue owner, as detailed in our Refund Policy.
+            <strong style={{ color: "var(--foreground)" }}>We do not guarantee refunds unless explicitly stated in our Refund Policy or required by law.</strong> Where an event is cancelled, a booking is cancelled, or a venue/facility is permanently closed, resolution and refund arrangements are the responsibility of the relevant organizer, host, or venue owner, as detailed in our Refund Policy.
           </p>
           <p style={ps}>
             For office access subscriptions or other digital services, refunds may be issued only in cases of verified system failure or confirmed billing errors on our part.
           </p>
           <p style={ps}>
-            Full details, timelines, and procedures for requesting a refund are set out in our Refund Policy, which forms part of these Terms.
+            Full details, timelines, and procedures for requesting a refund are set out in our <strong style={{ color: "var(--foreground)" }}>Refund Policy</strong>, which forms part of these Terms.
           </p>
         </section>
 
@@ -333,7 +392,7 @@ export function TermsAndConditions() {
         <section>
           <h2 style={hs}>10. Privacy Policy</h2>
           <p style={ps}>
-            Your use of the Platform is also governed by our Privacy Policy, which explains in detail how we collect, use, share, retain, and protect your personal data, including identity verification (KYC) information where applicable.
+            Your use of the Platform is also governed by our <strong style={{ color: "var(--foreground)" }}>Privacy Policy</strong>, which explains in detail how we collect, use, share, retain, and protect your personal data, including identity verification (KYC) information where applicable.
           </p>
           <p style={ps}>
             We are committed to complying with applicable international privacy and data protection principles, including GDPR-aligned practices where applicable to our operations and users. By using the Platform, you consent to the data practices described in our Privacy Policy.
@@ -383,7 +442,7 @@ export function TermsAndConditions() {
         <section>
           <h2 style={hs}>13. Intellectual Property</h2>
           <p style={ps}>
-            All content on the Platform — excluding User Content — including but not limited to:
+            All content on the Platform excluding User Content including but not limited to:
           </p>
           <ul style={ls}>
             {["Logos and trademarks","Software and source code","Design elements and user interface","Features and functionality","Branding materials"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
@@ -406,7 +465,7 @@ export function TermsAndConditions() {
             {["Payment processors","Identity verification providers","Independent event organizers, hosts, and venue owners","Analytics and performance-monitoring tools"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            These third-party services operate independently of us and are governed by their own terms and privacy policies. We are not responsible for the content, accuracy, availability, or conduct of any third-party service, and your interactions with such third parties are solely between you and them.
+            These third-party services operate independently of us and are governed by their own terms and privacy policies. <strong style={{ color: "var(--foreground)" }}>We are not responsible for the content, accuracy, availability, or conduct of any third-party service</strong>, and your interactions with such third parties are solely between you and them.
           </p>
         </section>
 
@@ -435,7 +494,7 @@ export function TermsAndConditions() {
         <section>
           <h2 style={hs}>16. Disclaimer of Warranties</h2>
           <p style={ps}>
-            The Platform is provided on an "as is" and "as available" basis, without warranties of any kind, whether express or implied. To the fullest extent permitted by law, we disclaim all warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+            The Platform is provided on an <strong style={{ color: "var(--foreground)" }}>"as is"</strong> and <strong style={{ color: "var(--foreground)" }}>"as available"</strong> basis, without warranties of any kind, whether express or implied. To the fullest extent permitted by law, we disclaim all warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
           </p>
           <p style={ps}>We make no warranty that:</p>
           <ul style={ls}>
@@ -468,7 +527,7 @@ export function TermsAndConditions() {
         <section>
           <h2 style={hs}>18. International Use</h2>
           <p style={ps}>
-            The Platform is intended for global use. If you access the Platform from outside Rwanda, you do so on your own initiative and are solely responsible for compliance with the laws applicable in your jurisdiction.
+            The Platform is intended for global use. If you access the Platform from outside Africa, you do so on your own initiative and are solely responsible for compliance with the laws applicable in your jurisdiction.
           </p>
           <p style={ps}>
             We make no representation that the Platform, or any content available through it, is appropriate, legal, or available for use in every country or region.
@@ -481,7 +540,7 @@ export function TermsAndConditions() {
         <section>
           <h2 style={hs}>19. Governing Law and Dispute Resolution</h2>
           <p style={ps}>
-            These Terms shall be governed by and construed in accordance with the laws of the Republic of Rwanda, without regard to conflict-of-law principles.
+            These Terms shall be governed by and construed in accordance with the laws of the <strong style={{ color: "var(--foreground)" }}>Republic of Rwanda</strong>, without regard to conflict-of-law principles.
           </p>
           <p style={ps}>In the event of a dispute arising out of or relating to these Terms or the Platform, the parties agree to attempt resolution in the following order:</p>
           <ol style={{ ...ls, listStyle: "decimal" }}>
@@ -505,7 +564,7 @@ export function TermsAndConditions() {
             {["Post the updated Terms within the app or on our website","Update the \"Last Updated\" date at the top of this document"].map((x,i)=><li key={i} style={lis}>{x}</li>)}
           </ul>
           <p style={ps}>
-            Your continued use of the Platform following the posting of updated Terms constitutes your acceptance of those changes. If you do not agree to the revised Terms, you must discontinue use of the Platform.
+            <strong style={{ color: "var(--foreground)" }}>Your continued use of the Platform following the posting of updated Terms constitutes your acceptance of those changes.</strong> If you do not agree to the revised Terms, you must discontinue use of the Platform.
           </p>
         </section>
 
