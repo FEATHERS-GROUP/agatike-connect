@@ -580,12 +580,7 @@ export function TermsAndConditions() {
           </ul>
         </section>
 
-        {/* Disclaimer */}
-        <blockquote style={bq}>
-          <p style={{ margin: 0, fontSize: "0.875rem", fontStyle: "italic", color: "var(--muted-foreground)", lineHeight: 1.7 }}>
-            This document is provided for general informational purposes and does not constitute legal advice. We recommend that this document be reviewed by qualified legal counsel to ensure full compliance with applicable laws in all jurisdictions where the Platform operates.
-          </p>
-        </blockquote>
+
 
       </div>
     </article>
@@ -635,12 +630,4 @@ const divider: React.CSSProperties = {
   background: "var(--border)",
   opacity: 0.45,
   marginTop: "-0.5rem",
-};
-
-const bq: React.CSSProperties = {
-  margin: "0.5rem 0 0.5rem",
-  padding: "1.2rem 1.5rem",
-  borderLeft: "3px solid var(--primary)",
-  background: "color-mix(in oklch, var(--primary) 7%, transparent)",
-  borderRadius: "0 0.5rem 0.5rem 0",
 };
