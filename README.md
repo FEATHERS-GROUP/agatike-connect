@@ -272,19 +272,152 @@ flowchart TD
 
 - **Wallets:** Every Workspace has a dedicated Wallet (`wallets` table) that tracks their aggregate balance across all events.
 - **Transaction Ledger:** The `wallet_transactions` table acts as a double-entry ledger tracking money moving in and out of the workspace.
-  - **Credits:** Incoming funds from ticket sales or merchandise.
+  - **Credits:** Incoming funds from ticket sales, venue bookings, and merchandise.
   - **Debits:** Outgoing funds when an organizer requests a withdrawal.
-- **Withdrawal Requests:** Organizers request payouts (via MTN MoMo, Bank Transfer, etc.) from the Withdrawals Dashboard. This inserts a `pending` Debit transaction.
-- **Reconciliation:** The admin or automated system processes the payout and updates the `status` to `completed`, referencing the external payout provider's ID.
+- **Wallet Currency:** Each workspace wallet is assigned a base currency (e.g. `RWF`, `USD`). All amounts and formatting respect this currency everywhere on the dashboard.
+
+### 11.1 Withdrawal Rules & Limits
+
+The minimum withdrawal amount is **currency-aware** — it is calibrated per currency to always represent roughly the same real-world value (~$15–20 USD equivalent). This prevents tiny micro-withdrawals regardless of which currency the organizer's workspace uses.
+
+| Rule                   | Value                                           |
+| ---------------------- | ----------------------------------------------- |
+| **Maximum Self-Serve** | **≤ 150,000** (local currency, auto-processed)  |
+| **Large Amount**       | **> 150,000** (local currency, admin review)    |
+
+**Minimum withdrawal by currency** (defined in `src/lib/withdrawal-limits.ts`):
+
+| Currency | Minimum   | Region                      |
+| -------- | --------- | --------------------------- |
+| RWF      | 20,000    | Rwanda                      |
+| KES      | 2,000     | Kenya                       |
+| UGX      | 70,000    | Uganda                      |
+| TZS      | 50,000    | Tanzania                    |
+| ETB      | 1,000     | Ethiopia                    |
+| NGN      | 25,000    | Nigeria                     |
+| GHS      | 200       | Ghana                       |
+| XOF/XAF  | 12,000    | West/Central Africa (CFA)   |
+| ZAR      | 350       | South Africa                |
+| USD      | 20        | United States               |
+| EUR      | 20        | Euro Zone                   |
+| GBP      | 15        | United Kingdom              |
+
+The `getMinWithdrawal(currency)` helper in `src/lib/withdrawal-limits.ts` is shared between the frontend (`request.tsx`) and the backend (`wallet.ts`). Both layers enforce the rule independently so it cannot be bypassed.
+
+Attempting to withdraw below the minimum will display an error toast on the UI, and the server will throw an error as a second line of defence.
+
+### 11.2 Withdrawal Flow (Self-Serve ≤ 150,000)
+
+The self-serve withdrawal path is fully automated via PawaPay and requires **OTP + Password** verification for security.
+
+```mermaid
+sequenceDiagram
+    participant Org as Organizer (Dashboard)
+    participant UI as Withdrawal UI (request.tsx)
+    participant Srv as Agatike Server (wallet.ts)
+    participant PP as PawaPay API
+    participant DB as Hasura DB
+    participant WH as PawaPay Webhook
+
+    Org->>UI: Enters amount, selects network & account
+    UI->>UI: Validates (min 20k, sufficient balance, network selected)
+    UI->>Srv: sendWithdrawalOtp()
+    Srv-->>Org: OTP sent via email
+
+    Org->>UI: Enters OTP + Password → clicks Confirm
+    UI->>Srv: requestWithdrawal(amount, account, otpToken, otp, password)
+
+    Note over Srv: 1. Verify OTP JWT<br/>2. Verify bcrypt password<br/>3. Check wallet balance
+
+    Srv->>DB: Atomically deduct amount from wallet + insert wallet_transaction (pending)
+    Srv->>DB: Insert earnings record (pending)
+    Srv->>PP: POST /v1/payouts (net_amount after fees)
+    PP-->>Srv: 202 Accepted (payoutId)
+    Srv->>DB: Update transaction: provider_reference = tx.id, provider_status = ACCEPTED
+    Srv-->>UI: { success: true, transactionId }
+
+    UI->>UI: Starts polling getPawaPayPayoutStatus every 3s
+
+    alt Payout COMPLETED (webhook)
+        WH->>Srv: POST /api/pawapay/payouts (COMPLETED)
+        Srv->>DB: Update status = completed, provider_status = COMPLETED
+        Srv->>Org: Send email receipt (PDF attached via Resend)
+        Srv->>Org: Send SMS confirmation (via Pindo)
+        Srv->>DB: Push Firebase notification
+    else Payout REJECTED/FAILED (webhook or synchronous)
+        WH->>Srv: POST /api/pawapay/payouts (REJECTED)
+        Srv->>DB: Update status = failed
+        Srv->>DB: Refund full amount back to wallet (_inc: amount)
+        Srv->>DB: Push Firebase notification (failure message)
+    end
+
+    UI->>DB: Poll detects final status
+    UI->>Org: Shows Success or Failure screen
+```
+
+### 11.3 Withdrawal Flow (Admin Approval > 150,000)
+
+For large withdrawals, no money is deducted upfront. A request is created in `withdrawal_requests` and an admin must review and approve it before any PawaPay call is made.
 
 ```mermaid
 flowchart TD
-  WS["Workspace"] --> Wallet["Wallet"]
-  Sales["Ticket/Merch Sales"] -->|Credits| Ledger["wallet_transactions"]
-  Ledger --> Balance["Total Balance"]
-  Balance -->|Request Payout| Withdraw["Pending Debit"]
-  Withdraw --> Admin["Admin / MoMo / PawaPay Payouts"]
-  Admin -->|Processed| Completed["Completed Debit"]
+    Org["Organizer requests > 150,000"] --> Srv["Insert withdrawal_requests row (pending)"]
+    Srv --> Slack["Slack alert sent to admin channel"]
+    Admin["Admin reviews in /admin/withdrawals"] --> Approve{Approve or Reject?}
+    Approve -->|Approve| Deduct["Deduct wallet + trigger PawaPay payout"]
+    Approve -->|Reject| Notify["Organizer notified of rejection reason"]
+```
+
+### 11.4 Fee Calculation
+
+Fees for withdrawals are composed of two parts:
+
+| Component         | Who charges it     | Where configured          |
+| ----------------- | ------------------ | ------------------------- |
+| **Platform fee**  | Agatike            | `subscriptions.pricing_plan.withdrawal_fee_percentage` + `withdrawal_fee_fixed` |
+| **Network fee**   | PawaPay / Telecom  | `payment_provider_fees.tiered_rules.disbursement` |
+
+**Formula:**
+```
+Total Fee = (amount × platform_fee_%) + platform_fee_fixed + network_fixed_fee + (amount × network_%)
+Net Payout = amount - Total Fee
+```
+
+The fee breakdown is displayed to the organizer on the withdrawal UI before they confirm, and is also shown on the Transaction Ledger next to each withdrawal row.
+
+### 11.5 Notifications on Withdrawal
+
+| Event           | Channel      | Details                                                      |
+| --------------- | ------------ | ------------------------------------------------------------ |
+| ✅ Success      | Email        | PDF receipt attached (generated via jsPDF, sent via Resend)  |
+| ✅ Success      | SMS          | Confirmation with amount, reference, and remaining balance   |
+| ✅ Success      | Firebase Push| In-app notification with account and amount details          |
+| ❌ Failure      | Firebase Push| In-app notification with refund confirmation                 |
+
+### 11.6 Transaction Ledger Display
+
+Withdrawals appear in the `TransactionLedger` component with a clean layout matching deposits:
+
+```
+🔴  Agatike Withdrawal
+    momo · 250780000000  ·  Processing Fee: RF 1,060
+                                         [completed]   -RF 100,000
+```
+
+The processing fee is computed as `amount - net_amount` (always mathematically correct) and displayed in the orange Agatike brand colour.
+
+```mermaid
+flowchart TD
+    WS["Workspace"] --> Wallet["Wallet"]
+    Sales["Ticket/Venue Sales"] -->|Credits| Ledger["wallet_transactions"]
+    Ledger --> Balance["Total Balance"]
+    Balance -->|"amount ≥ 20,000"| Withdraw["Request Withdrawal"]
+    Withdraw -->|"≤ 150,000"| SelfServe["Self-Serve: OTP + Password → PawaPay"]
+    Withdraw -->|"> 150,000"| AdminQ["Admin Approval Queue"]
+    SelfServe -->|Completed| Receipt["Email PDF + SMS + Push Notification"]
+    SelfServe -->|Rejected| Refund["Full Refund to Wallet + Push Notification"]
+    AdminQ -->|Approved| SelfServe
+    AdminQ -->|Rejected| OrgNotify["Organizer Notified"]
 ```
 
 ---

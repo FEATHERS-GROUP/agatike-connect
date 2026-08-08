@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { getSession } from "./auth";
 import { triggerPawaPayPayout } from "./pawapay";
+import { getMinWithdrawal } from "../lib/withdrawal-limits";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET || "super_secret_key_12345");
 
@@ -379,8 +380,13 @@ export const requestWithdrawal = createServerFn({ method: "POST" }).handler(asyn
   } = ctx.data as any;
 
 
+  const MIN_WITHDRAWAL = getMinWithdrawal(currency);
   const ADMIN_APPROVAL_THRESHOLD = 150000;
   const requiresAdminApproval = amount > ADMIN_APPROVAL_THRESHOLD;
+
+  if (amount < MIN_WITHDRAWAL) {
+    throw new Error(`Minimum withdrawal amount is ${MIN_WITHDRAWAL} ${currency || "RWF"}. Please withdraw at least this amount.`);
+  }
 
   if (!requiresAdminApproval) {
     // --- SELF-SERVE FLOW (≤ 150,000) ---

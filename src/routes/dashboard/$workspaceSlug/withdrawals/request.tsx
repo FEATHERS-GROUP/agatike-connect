@@ -10,6 +10,7 @@ import {
 } from "@/api/wallet";
 import { getActiveSubscription } from "@/api/billing";
 import { getAllPaymentProviderFees, getPawaPayPayoutStatus } from "@/api/pawapay";
+import { getMinWithdrawal } from "@/lib/withdrawal-limits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -295,8 +296,15 @@ function RequestWithdrawalPage() {
   });
 
   const handleInitiateWithdrawal = () => {
+    const MIN_WITHDRAWAL = getMinWithdrawal(wallet?.currency || "N/A");
+
     if (!withdrawAmount || isNaN(amountToWithdraw) || amountToWithdraw <= 0) {
       toast.error("Please enter a valid amount");
+      return;
+    }
+
+    if (amountToWithdraw < MIN_WITHDRAWAL) {
+      toast.error(`Minimum withdrawal amount is ${formatCurrency(MIN_WITHDRAWAL, wallet?.currency)}`);
       return;
     }
 
