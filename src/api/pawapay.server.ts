@@ -971,7 +971,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   actorId: null,
                   actorName: "System",
                   createdAt: new Date().toISOString(),
-                  message: `Your withdrawal of ${netPayout} ${tx.currency} has been successfully completed.`,
+                  message: `Withdrawal of ${netPayout} ${tx.currency} to account ${tx.payout_account} was successfully withdrawn.`,
                   organizerId: ws.orgnizer_id,
                   read: false,
                   title: "Withdrawal Successful",
@@ -999,6 +999,39 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               amount: parseFloat(tx.amount),
             },
           } as any);
+
+          try {
+            const wsQuery = `
+              query GetWorkspaceInfo($id: uuid!) {
+                workspaces_by_pk(id: $id) {
+                  orgnizer_id
+                }
+              }
+            `;
+            const wsRes = await hasuraRequest<{ workspaces_by_pk: any }>(wsQuery, { id: tx.workspace_id });
+            const ws = wsRes.workspaces_by_pk;
+
+            if (ws && ws.orgnizer_id) {
+              const { getFirebaseAdmin } = await import("../lib/firebase.server");
+              const admin = await getFirebaseAdmin();
+              if (admin && admin.db) {
+                const db = admin.db;
+                await db.collection("agatike_notifications").add({
+                  actorId: null,
+                  actorName: "System",
+                  createdAt: new Date().toISOString(),
+                  message: `Withdrawal of ${tx.amount} ${tx.currency || 'RWF'} to account ${tx.payout_account || 'account'} failed and has been fully refunded to your wallet.`,
+                  organizerId: ws.orgnizer_id,
+                  read: false,
+                  title: "Withdrawal Failed",
+                  type: "withdrawal",
+                  targetId: tx.reference_id || tx.id
+                });
+              }
+            }
+          } catch (e) {
+            console.error("[PawaPay Webhook] Failed to send failed withdrawal notification:", e);
+          }
         }
       }
     }
