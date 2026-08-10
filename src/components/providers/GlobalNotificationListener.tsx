@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import app, { db } from "@/lib/firebase";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
@@ -31,9 +31,10 @@ export function GlobalNotificationListener() {
   const navigate = useNavigate();
   // Keep track of the first load so we don't spam notifications on mount
   const isFirstLoadRef = useRef(true);
+  const onMessageUnsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    // Request permission and get FCM token on mount
+    // Request permission, get FCM token, and wire up foreground message handler
     const setupFCM = async () => {
       if (
         typeof window !== "undefined" &&
@@ -43,10 +44,8 @@ export function GlobalNotificationListener() {
         try {
           const permission = await Notification.requestPermission();
           if (permission === "granted" && activeWorkspace?.orgnizer_id) {
-            // Note: The VAPID key should be placed here or in environment variables
             const vapidKey = import.meta.env.FIREBASE_VAPID_KEY;
 
-            // Register the service worker manually so we can pass config or just ensure it's loaded
             const registration = await navigator.serviceWorker.register(
               `/firebase-messaging-sw.js?apiKey=${import.meta.env.FIREBASE_API_KEY}&projectId=${import.meta.env.FIREBASE_PROJECT_ID}&messagingSenderId=${import.meta.env.FIREBASE_MESSAGING_SENDER_ID}&appId=${import.meta.env.FIREBASE_APP_ID}`,
             );
@@ -60,6 +59,27 @@ export function GlobalNotificationListener() {
             if (token) {
               await saveFCMToken({ data: { userId: activeWorkspace.orgnizer_id, token } });
             }
+
+            // Foreground handler: FCM suppresses OS notifications when the app is focused;
+            // this re-shows them via the service worker so the user always sees them.
+            onMessageUnsubRef.current?.();
+            onMessageUnsubRef.current = onMessage(messaging, (payload) => {
+              const title = payload.notification?.title || "New Notification";
+              const body = payload.notification?.body || "";
+              if (Notification.permission === "granted") {
+                navigator.serviceWorker.ready
+                  .then((reg) => {
+                    reg.showNotification(title, {
+                      body,
+                      icon: "/agatike-icon.png",
+                      data: payload.data || {},
+                    });
+                  })
+                  .catch(() => {
+                    new Notification(title, { body, icon: "/agatike-icon.png" });
+                  });
+              }
+            });
           }
         } catch (error) {
           console.warn(
@@ -71,6 +91,11 @@ export function GlobalNotificationListener() {
     };
 
     setupFCM();
+
+    return () => {
+      onMessageUnsubRef.current?.();
+      onMessageUnsubRef.current = null;
+    };
   }, [activeWorkspace?.orgnizer_id]);
 
   useEffect(() => {

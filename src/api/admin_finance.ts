@@ -184,7 +184,6 @@ export const updatePricingPlanAdmin = createServerFn({ method: "POST" })
         "organizer_collection_fee_fixed",
         "withdrawal_fee_percentage",
         "max_collection_subsidy_percentage",
-        "withdrawal_fee_fixed",
       ];
 
       if (numericColumns.includes(k)) return "numeric";
@@ -270,7 +269,6 @@ export const createPricingPlanAdmin = createServerFn({ method: "POST" })
       "organizer_collection_fee_percentage",
       "organizer_collection_fee_fixed",
       "withdrawal_fee_percentage",
-      "withdrawal_fee_fixed",
       "max_collection_subsidy_percentage",
     ];
     for (const field of numericFields) {

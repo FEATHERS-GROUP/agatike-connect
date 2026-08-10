@@ -178,7 +178,6 @@ function AdminPricingDetailsPage() {
       "organizer_collection_fee_percentage",
       "organizer_collection_fee_fixed",
       "withdrawal_fee_percentage",
-      "withdrawal_fee_fixed",
       "max_collection_subsidy_percentage",
     ];
     for (const field of numericFields) {

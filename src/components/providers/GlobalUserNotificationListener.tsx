@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import app, { db } from "@/lib/firebase";
 import { useUserAuth } from "@/contexts/UserAuthContext";
+import { saveFCMToken } from "@/api/users";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { MessageCircle, Bell, CalendarDays, Film } from "lucide-react";
@@ -10,14 +12,70 @@ export function GlobalUserNotificationListener() {
   const { user } = useUserAuth();
   const navigate = useNavigate();
   const isFirstLoadRef = useRef(true);
+  const onMessageUnsubRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        Notification.requestPermission();
+    // Request permission, register FCM token, and wire up foreground message handler
+    const setupFCM = async () => {
+      if (
+        typeof window === "undefined" ||
+        !("Notification" in window) ||
+        !("serviceWorker" in navigator) ||
+        !user?.id
+      )
+        return;
+
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") return;
+
+        const vapidKey = import.meta.env.FIREBASE_VAPID_KEY;
+        const registration = await navigator.serviceWorker.register(
+          `/firebase-messaging-sw.js?apiKey=${import.meta.env.FIREBASE_API_KEY}&projectId=${import.meta.env.FIREBASE_PROJECT_ID}&messagingSenderId=${import.meta.env.FIREBASE_MESSAGING_SENDER_ID}&appId=${import.meta.env.FIREBASE_APP_ID}`,
+        );
+
+        const messaging = getMessaging(app);
+        const token = await getToken(messaging, {
+          vapidKey,
+          serviceWorkerRegistration: registration,
+        });
+
+        if (token) {
+          await saveFCMToken({ data: { userId: user.id, token } });
+        }
+
+        // Foreground handler: FCM suppresses OS notifications when the app is focused;
+        // this re-shows them via the service worker so the user always sees them.
+        onMessageUnsubRef.current?.();
+        onMessageUnsubRef.current = onMessage(messaging, (payload) => {
+          const title = payload.notification?.title || "New Notification";
+          const body = payload.notification?.body || "";
+          if (Notification.permission === "granted") {
+            navigator.serviceWorker.ready
+              .then((reg) => {
+                reg.showNotification(title, {
+                  body,
+                  icon: "/agatike-icon.png",
+                  data: payload.data || {},
+                });
+              })
+              .catch(() => {
+                new Notification(title, { body, icon: "/agatike-icon.png" });
+              });
+          }
+        });
+      } catch (error) {
+        console.warn("FCM setup failed. Push notifications may not work in background.", error);
       }
-    }
-  }, []);
+    };
+
+    setupFCM();
+
+    return () => {
+      onMessageUnsubRef.current?.();
+      onMessageUnsubRef.current = null;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user?.id) return;
