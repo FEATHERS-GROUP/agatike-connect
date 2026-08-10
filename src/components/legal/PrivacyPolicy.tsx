@@ -431,23 +431,7 @@ export function PrivacyPolicy() {
           </p>
         </section>
 
-        {/* Disclaimer */}
-        <blockquote style={bq}>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "0.875rem",
-              fontStyle: "italic",
-              color: "var(--muted-foreground)",
-              lineHeight: 1.7,
-            }}
-          >
-            This policy is provided for general informational purposes and does not constitute legal
-            advice. Businesses should have this document reviewed by qualified legal counsel to
-            ensure compliance with applicable data protection laws in their operating regions (e.g.,
-            GDPR, CCPA, or other regional regulations).
-          </p>
-        </blockquote>
+
       </div>
     </article>
   );
