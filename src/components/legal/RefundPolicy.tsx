@@ -337,30 +337,7 @@ export function RefundPolicy() {
           </p>
         </section>
 
-        {/* Disclaimer */}
-        <blockquote
-          style={{
-            margin: "0 0 2rem",
-            padding: "1.2rem 1.5rem",
-            borderLeft: "3px solid var(--primary)",
-            background: "color-mix(in oklch, var(--primary) 7%, transparent)",
-            borderRadius: "0 0.5rem 0.5rem 0",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: "0.875rem",
-              fontStyle: "italic",
-              color: "var(--muted-foreground)",
-              lineHeight: 1.7,
-            }}
-          >
-            This policy is provided for general informational purposes and does not constitute legal
-            advice. Businesses should have this document reviewed by legal counsel to ensure
-            compliance with applicable consumer protection laws in their operating regions.
-          </p>
-        </blockquote>
+
       </div>
     </article>
   );
