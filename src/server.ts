@@ -38,6 +38,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 }
 
 import { handlePawaPayWebhook } from "./api/pawapay.server";
+import { handleResendWebhook } from "./api/resend.server";
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
@@ -45,6 +46,10 @@ export default {
       const url = new URL(request.url);
       if (url.pathname.startsWith("/api/pawapay")) {
         return await handlePawaPayWebhook(request);
+      }
+
+      if (url.pathname === "/api/resend/inbound" || url.pathname === "/api/resend/inbound/") {
+        return await handleResendWebhook(request);
       }
 
       const handler = await getServerEntry();
