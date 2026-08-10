@@ -336,8 +336,6 @@ export function RefundPolicy() {
             app.
           </p>
         </section>
-
-
       </div>
     </article>
   );

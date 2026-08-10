@@ -430,8 +430,6 @@ export function PrivacyPolicy() {
             listed on our website or mobile application.
           </p>
         </section>
-
-
       </div>
     </article>
   );
