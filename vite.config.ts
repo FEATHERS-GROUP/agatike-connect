@@ -105,6 +105,24 @@ export default defineConfig({
           },
         },
       },
+      // Polyfill __dirname/__filename for CJS deps (e.g. google-gax) bundled in ESM output
+      rollupConfig: {
+        plugins: [
+          {
+            name: "cjs-globals-polyfill",
+            banner() {
+              return [
+                `import { fileURLToPath as __fileURLToPath__ } from 'url';`,
+                `import { dirname as __dirname__ } from 'path';`,
+                `if (typeof __dirname === 'undefined') {`,
+                `  var __filename = __fileURLToPath__(import.meta.url);`,
+                `  var __dirname = __dirname__(__filename);`,
+                `}`,
+              ].join("\n");
+            },
+          },
+        ],
+      },
     }),
     viteReact(),
     tsConfigPaths({
