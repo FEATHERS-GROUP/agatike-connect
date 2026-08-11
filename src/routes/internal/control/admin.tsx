@@ -65,7 +65,7 @@ function AdminLayout() {
           <div className="flex flex-1 overflow-hidden">
             {isOrganizerDetails ? <AdminOrganizerSidebar /> : <AdminSidebar />}
 
-            <main className="flex-1 overflow-y-auto p-4 bg-white dark:bg-[#111111]">
+            <main className="flex-1 overflow-y-auto py-4 px-3 bg-white dark:bg-[#111111]">
               <Outlet />
             </main>
           </div>

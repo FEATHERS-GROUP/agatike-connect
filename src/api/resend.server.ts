@@ -58,7 +58,10 @@ export async function handleResendWebhook(request: Request): Promise<Response> {
 
       // Auto-create a lead if none exists — inbound email = potential sales opportunity
       if (!lead) {
-        const inferredName = senderEmail.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+        const inferredName = senderEmail
+          .split("@")[0]
+          .replace(/[._-]/g, " ")
+          .replace(/\b\w/g, (c: string) => c.toUpperCase());
 
         const createMutation = `
           mutation CreateLeadFromInboundEmail($name: String!, $email: String!, $notes: String, $profile: jsonb) {
@@ -85,18 +88,19 @@ export async function handleResendWebhook(request: Request): Promise<Response> {
           hasAttachments: !!(attachments && attachments.length > 0),
         };
 
-        const createRes = await hasuraRequest<{ insert_leads_one: { id: string; customer_profile: any } }>(
-          createMutation,
-          {
-            name: inferredName,
-            email: senderEmail,
-            notes: `Auto-created from inbound email. Subject: ${subject}`,
-            profile: { communications: [firstComm] },
-          },
-        );
+        const createRes = await hasuraRequest<{
+          insert_leads_one: { id: string; customer_profile: any };
+        }>(createMutation, {
+          name: inferredName,
+          email: senderEmail,
+          notes: `Auto-created from inbound email. Subject: ${subject}`,
+          profile: { communications: [firstComm] },
+        });
 
         lead = createRes.insert_leads_one;
-        console.log(`Auto-created new lead for ${senderEmail} (id: ${lead?.id}) from inbound email.`);
+        console.log(
+          `Auto-created new lead for ${senderEmail} (id: ${lead?.id}) from inbound email.`,
+        );
       } else {
         // Lead exists — append the email to their communication history
         const profile = lead.customer_profile || {};

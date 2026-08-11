@@ -397,7 +397,7 @@ function TransactionsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {selectedTx && (
         <ApprovalModal
           tx={selectedTx}
@@ -507,13 +507,13 @@ function TransactionsPage() {
             <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
               <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Organizer</th>
-                  <th className="px-6 py-4 font-medium">Payout Details</th>
-                  <th className="px-6 py-4 font-medium">Amount Requested</th>
-                  <th className="px-6 py-4 font-medium">Net Payout</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium">Date</th>
-                  <th className="px-6 py-4 font-medium text-right">Action</th>
+                  <th className="px-4 py-3 font-medium">Organizer</th>
+                  <th className="px-4 py-3 font-medium">Payout Details</th>
+                  <th className="px-4 py-3 font-medium">Amount Requested</th>
+                  <th className="px-4 py-3 font-medium">Net Payout</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Date</th>
+                  <th className="px-4 py-3 font-medium text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
@@ -627,12 +627,12 @@ function TransactionsPage() {
             <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
               <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Organizer</th>
-                  <th className="px-6 py-4 font-medium">Plan</th>
-                  <th className="px-6 py-4 font-medium">Amount</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium">Next Billing</th>
-                  <th className="px-6 py-4 font-medium">Invoice Date</th>
+                  <th className="px-4 py-3 font-medium">Organizer</th>
+                  <th className="px-4 py-3 font-medium">Plan</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Next Billing</th>
+                  <th className="px-4 py-3 font-medium">Invoice Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
@@ -655,7 +655,7 @@ function TransactionsPage() {
                         key={tx.id}
                         className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
                               {org.image ? (
@@ -678,7 +678,7 @@ function TransactionsPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <div className="font-medium text-gray-900 dark:text-white">
                             {plan.name || "Custom Plan"}
                           </div>
@@ -686,10 +686,10 @@ function TransactionsPage() {
                             Subscription
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">
+                        <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">
                           {tx.amount === 0 ? "Free" : `${plan.currency || "USD"} ${tx.amount}`}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <span
                             className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
                               tx.status === "paid"
@@ -702,7 +702,7 @@ function TransactionsPage() {
                             {tx.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
                           {sub.next_billing_date
                             ? new Date(sub.next_billing_date).toLocaleDateString("en-GB", {
                                 year: "numeric",
@@ -711,7 +711,7 @@ function TransactionsPage() {
                               })
                             : "—"}
                         </td>
-                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
                           {tx.created_at
                             ? new Date(tx.created_at).toLocaleDateString("en-GB", {
                                 year: "numeric",
