@@ -823,6 +823,7 @@ export const getAdminOrganizerBillingSettings = createServerFn({ method: "POST" 
             customer_service_fee_percentage
             platform_margin_buffer
             max_withdrawals_per_week
+            is_popular
           }
         }
         workspaces(where: { orgnizer_id: { _eq: $id } }, order_by: { created_at: desc }) {
@@ -934,6 +935,66 @@ export const updateAdminOrganizerSubscriptionPlan = createServerFn({ method: "PO
       },
     });
     return data.insert_subscriptions_one;
+  });
+
+// ----------------------------------------------------
+// EXTEND TRIAL (admin only — max 30 days from start_date)
+// ----------------------------------------------------
+export const extendAdminOrganizerTrial = createServerFn({ method: "POST" })
+  .validator((d: { organizerId: string; newEndDate: string }) => d)
+  .handler(async (ctx) => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
+
+    const { organizerId, newEndDate } = ctx.data;
+
+    // 1. Load the active free subscription
+    const query = `
+      query GetFreeSub($id: uuid!) {
+        subscriptions(
+          where: { organizer_id: { _eq: $id }, amount: { _eq: 0 }, status: { _eq: "active" } }
+          order_by: { start_date: asc }
+          limit: 1
+        ) {
+          id
+          start_date
+          next_billing_date
+        }
+      }
+    `;
+    const res = await hasuraRequest<any>(query, { id: organizerId });
+    const sub = (res.subscriptions || [])[0];
+    if (!sub) throw new Error("No active free trial found for this organizer.");
+
+    // 2. Enforce 30-day cap from original start_date
+    const startDate = new Date(sub.start_date);
+    const cap = new Date(startDate);
+    cap.setDate(cap.getDate() + 30);
+
+    const requested = new Date(newEndDate);
+    if (requested > cap) {
+      throw new Error(
+        `Trial cannot exceed 30 days from start date (cap: ${cap.toLocaleDateString("en-US")}).`,
+      );
+    }
+    if (requested <= new Date()) {
+      throw new Error("New end date must be in the future.");
+    }
+
+    // 3. Update next_billing_date
+    const mutation = `
+      mutation ExtendTrial($id: uuid!, $newDate: timestamptz!) {
+        update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { next_billing_date: $newDate }) {
+          id
+          next_billing_date
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(mutation, {
+      id: sub.id,
+      newDate: requested.toISOString(),
+    });
+    return data.update_subscriptions_by_pk;
   });
 
 // ----------------------------------------------------
