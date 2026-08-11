@@ -36,7 +36,7 @@ function UsersPage() {
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -69,17 +69,17 @@ function UsersPage() {
         </div>
       </div>
 
-      <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
+      <div className="hidden sm:block bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
             <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
               <tr>
-                <th className="px-6 py-4 font-medium">User Profile</th>
-                <th className="px-6 py-4 font-medium">Contact</th>
-                <th className="px-6 py-4 font-medium">Location</th>
-                <th className="px-6 py-4 font-medium">Joined Date</th>
-                <th className="px-6 py-4 font-medium">Achievements</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <th className="px-4 py-3 font-medium">User Profile</th>
+                <th className="px-4 py-3 font-medium">Contact</th>
+                <th className="px-4 py-3 font-medium">Location</th>
+                <th className="px-4 py-3 font-medium">Joined Date</th>
+                <th className="px-4 py-3 font-medium">Achievements</th>
+                <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
@@ -98,7 +98,7 @@ function UsersPage() {
                     key={user.id}
                     className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] overflow-hidden shrink-0 border border-gray-300 dark:border-[#444444] flex items-center justify-center">
                           {user.profile?.avatar_url ? (
@@ -121,7 +121,7 @@ function UsersPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="text-sm text-gray-900 dark:text-white">
                         {user.email || "No email"}
                       </div>
@@ -129,7 +129,7 @@ function UsersPage() {
                         ID: {user.id.slice(0, 8)}...
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       {user.country ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-200 dark:bg-[#333333] text-xs">
                           <LucideIcons.MapPin className="w-3 h-3 text-gray-600 dark:text-[#aaaaaa]" />
@@ -139,7 +139,7 @@ function UsersPage() {
                         <span className="text-xs text-gray-500 dark:text-[#888888]">Unknown</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-xs text-gray-600 dark:text-[#aaaaaa]">
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-[#aaaaaa]">
                       {user.created_at
                         ? new Date(user.created_at).toLocaleDateString(undefined, {
                             year: "numeric",
@@ -148,7 +148,7 @@ function UsersPage() {
                           })
                         : "Unknown"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       {(() => {
                         const totalEvents = user.totalEvents || 0;
                         const totalSubscriptions = user.totalSubscriptions || 0;
@@ -216,7 +216,7 @@ function UsersPage() {
                         );
                       })()}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-3 text-right">
                       <Link
                         to={`/internal/control/admin/agatike-users/${user.id}`}
                         className="p-2 text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#333333] rounded-lg transition-colors inline-block"
@@ -231,6 +231,88 @@ function UsersPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* ── Mobile card list (shown only on small screens) ─────────── */}
+      <div className="sm:hidden space-y-3">
+        {paginatedUsers.length === 0 ? (
+          <div className="text-center py-10 text-gray-500 dark:text-[#888888] text-sm">
+            No users found. {searchQuery && "Try a different search query."}
+          </div>
+        ) : (
+          paginatedUsers.map((user: any) => {
+            const totalEvents = user.totalEvents || 0;
+            const totalSubscriptions = user.totalSubscriptions || 0;
+            const totalVenueBookings = user.totalVenueBookings || 0;
+            const followingCount = user.totalFollowing || 0;
+            const badges: { title: string; Icon: any; color: string }[] = [];
+            if (totalEvents >= 10) badges.push({ title: "Event Explorer", Icon: ExplorerIcon, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" });
+            if (totalEvents >= 50) badges.push({ title: "Enthusiast", Icon: EnthusiastIcon, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" });
+            if (totalEvents >= 100) badges.push({ title: "VIP Attendee", Icon: VipIcon, color: "text-orange-500 bg-orange-500/20 border-orange-500/30" });
+            if (followingCount >= 25) badges.push({ title: "Social Butterfly", Icon: SocialIcon, color: "text-orange-400 bg-orange-400/10 border-orange-400/20" });
+            if (totalSubscriptions >= 5) badges.push({ title: "Loyal Subscriber", Icon: SubscriberIcon, color: "text-red-500 bg-red-500/10 border-red-500/20" });
+            if (totalVenueBookings >= 50) badges.push({ title: "Space Booker", Icon: VenueIcon, color: "text-orange-400 bg-orange-300/10 border-orange-400/20" });
+
+            return (
+              <div
+                key={user.id}
+                className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-4 flex items-start gap-3"
+              >
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] overflow-hidden shrink-0 border border-gray-300 dark:border-[#444444] flex items-center justify-center">
+                  {user.profile?.avatar_url ? (
+                    <img src={user.profile.avatar_url} alt={user.username || "User"} className="w-full h-full object-cover" />
+                  ) : (
+                    <LucideIcons.User className="w-5 h-5 text-gray-500 dark:text-[#888888]" />
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{user.username || "Anonymous"}</p>
+                      <p className="text-xs text-[#f97316]">@{user.handle || user.id.slice(0, 8)}</p>
+                    </div>
+                    <Link
+                      to={`/internal/control/admin/agatike-users/${user.id}`}
+                      className="p-2 text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#333333] rounded-lg transition-colors shrink-0"
+                    >
+                      <LucideIcons.ExternalLink className="w-4 h-4" />
+                    </Link>
+                  </div>
+
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-600 dark:text-[#aaaaaa] truncate">{user.email || "No email"}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {user.country && (
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-[#888888]">
+                          <LucideIcons.MapPin className="w-3 h-3" />
+                          {user.country}
+                        </span>
+                      )}
+                      {user.created_at && (
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-[#888888]">
+                          <LucideIcons.CalendarDays className="w-3 h-3" />
+                          {new Date(user.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                        </span>
+                      )}
+                    </div>
+                    {badges.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {badges.map((b, i) => (
+                          <div key={i} title={b.title} className={`p-1 rounded-md border ${b.color} flex items-center justify-center cursor-help`}>
+                            <b.Icon className="w-3.5 h-3.5" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {totalPages > 1 && (

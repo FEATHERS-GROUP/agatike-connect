@@ -64,7 +64,7 @@ function UserDetailsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full space-y-6 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link
@@ -221,25 +221,23 @@ function UserDetailsPage() {
                 platform.
               </p>
 
-              <div className="flex flex-col gap-4 border border-gray-200 dark:border-[#333333] rounded-lg p-4 bg-white dark:bg-[#111111]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                      Deactivate Account
-                    </h4>
-                    <p className="text-xs text-gray-500 dark:text-[#888888] mt-0.5 max-w-sm">
-                      Deactivating an account will prevent the user from logging in and using the
-                      platform until it is reactivated.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleToggleActive}
-                    disabled={isToggling}
-                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                  >
-                    {isToggling ? "Processing..." : user.active ? "Deactivate" : "Activate"}
-                  </button>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-gray-200 dark:border-[#333333] rounded-lg p-4 bg-white dark:bg-[#111111]">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                    Deactivate Account
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-[#888888] mt-0.5">
+                    Deactivating an account will prevent the user from logging in and using the
+                    platform until it is reactivated.
+                  </p>
                 </div>
+                <button
+                  onClick={handleToggleActive}
+                  disabled={isToggling}
+                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap w-full sm:w-auto"
+                >
+                  {isToggling ? "Processing..." : user.active ? "Deactivate" : "Activate"}
+                </button>
               </div>
             </div>
           </div>
@@ -260,51 +258,47 @@ function UserDetailsPage() {
                 This user has not purchased any event tickets.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
-                  <thead className="bg-gray-50 dark:bg-[#1b1b1c] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
-                    <tr>
-                      <th className="px-6 py-3 font-medium">Event</th>
-                      <th className="px-6 py-3 font-medium">Attendee Name</th>
-                      <th className="px-6 py-3 font-medium">Ticket Type</th>
-                      <th className="px-6 py-3 font-medium">Status</th>
-                      <th className="px-6 py-3 font-medium">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
-                    {attendees.map((att: any) => (
-                      <tr
-                        key={att.id}
-                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                      >
-                        <td className="px-6 py-3 font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                          {att.events?.title || "Unknown Event"}
-                        </td>
-                        <td className="px-6 py-3">{att.names || "N/A"}</td>
-                        <td className="px-6 py-3">
-                          <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">
-                            {att.ticket_type || "Standard"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs ${
-                              att.status === "confirmed" || !att.status
-                                ? "bg-green-500/10 text-green-500"
-                                : "bg-yellow-500/10 text-yellow-500"
-                            }`}
-                          >
-                            {att.status || "Confirmed"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-3 text-gray-500 dark:text-[#888888] text-xs">
-                          {new Date(att.created_at).toLocaleDateString()}
-                        </td>
+              <>
+                {/* Desktop table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+                    <thead className="bg-gray-50 dark:bg-[#1b1b1c] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Event</th>
+                        <th className="px-4 py-3 font-medium">Attendee Name</th>
+                        <th className="px-4 py-3 font-medium">Ticket Type</th>
+                        <th className="px-4 py-3 font-medium">Status</th>
+                        <th className="px-4 py-3 font-medium">Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
+                      {attendees.map((att: any) => (
+                        <tr key={att.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{att.events?.title || "Unknown Event"}</td>
+                          <td className="px-4 py-3">{att.names || "N/A"}</td>
+                          <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">{att.ticket_type || "Standard"}</span></td>
+                          <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${att.status === "confirmed" || !att.status ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{att.status || "Confirmed"}</span></td>
+                          <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">{new Date(att.created_at).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Mobile cards */}
+                <div className="sm:hidden divide-y divide-gray-200 dark:divide-[#333333]">
+                  {attendees.map((att: any) => (
+                    <div key={att.id} className="p-4 space-y-1">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">{att.events?.title || "Unknown Event"}</p>
+                      <p className="text-xs text-gray-500 dark:text-[#888888]">{att.names || "N/A"}</p>
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">{att.ticket_type || "Standard"}</span>
+                        <span className={`px-2 py-0.5 rounded text-xs ${att.status === "confirmed" || !att.status ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{att.status || "Confirmed"}</span>
+                        <span className="text-xs text-gray-500 dark:text-[#888888]">{new Date(att.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -320,47 +314,47 @@ function UserDetailsPage() {
                 This user has not booked any venues.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
-                  <thead className="bg-gray-50 dark:bg-[#1b1b1c] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
-                    <tr>
-                      <th className="px-6 py-3 font-medium">Venue</th>
-                      <th className="px-6 py-3 font-medium">Customer</th>
-                      <th className="px-6 py-3 font-medium">Amount</th>
-                      <th className="px-6 py-3 font-medium">Status</th>
-                      <th className="px-6 py-3 font-medium">Booking Date</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
-                    {venues.map((venue: any) => (
-                      <tr
-                        key={venue.id}
-                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                      >
-                        <td className="px-6 py-3 font-medium text-gray-900 dark:text-white">
-                          {venue.rentable_venue?.name || "Unknown Venue"}
-                        </td>
-                        <td className="px-6 py-3">{venue.customer_name || "N/A"}</td>
-                        <td className="px-6 py-3">{venue.amount || "0"}</td>
-                        <td className="px-6 py-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs ${
-                              venue.status === "confirmed" || venue.status === "approved"
-                                ? "bg-green-500/10 text-green-500"
-                                : "bg-yellow-500/10 text-yellow-500"
-                            }`}
-                          >
-                            {venue.status || "Pending"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-3 text-gray-500 dark:text-[#888888] text-xs">
-                          {new Date(venue.start_time).toLocaleDateString()}
-                        </td>
+              <>
+                {/* Desktop table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+                    <thead className="bg-gray-50 dark:bg-[#1b1b1c] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Venue</th>
+                        <th className="px-4 py-3 font-medium">Customer</th>
+                        <th className="px-4 py-3 font-medium">Amount</th>
+                        <th className="px-4 py-3 font-medium">Status</th>
+                        <th className="px-4 py-3 font-medium">Booking Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
+                      {venues.map((venue: any) => (
+                        <tr key={venue.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{venue.rentable_venue?.name || "Unknown Venue"}</td>
+                          <td className="px-4 py-3">{venue.customer_name || "N/A"}</td>
+                          <td className="px-4 py-3">{venue.amount || "0"}</td>
+                          <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${venue.status === "confirmed" || venue.status === "approved" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{venue.status || "Pending"}</span></td>
+                          <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">{new Date(venue.start_time).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Mobile cards */}
+                <div className="sm:hidden divide-y divide-gray-200 dark:divide-[#333333]">
+                  {venues.map((venue: any) => (
+                    <div key={venue.id} className="p-4 space-y-1">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">{venue.rentable_venue?.name || "Unknown Venue"}</p>
+                      <p className="text-xs text-gray-500 dark:text-[#888888]">{venue.customer_name || "N/A"}</p>
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <span className="text-xs font-mono text-gray-700 dark:text-[#cccccc]">{venue.amount || "0"}</span>
+                        <span className={`px-2 py-0.5 rounded text-xs ${venue.status === "confirmed" || venue.status === "approved" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{venue.status || "Pending"}</span>
+                        <span className="text-xs text-gray-500 dark:text-[#888888]">{new Date(venue.start_time).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -379,56 +373,51 @@ function UserDetailsPage() {
               This user does not have any active or past subscriptions.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
-                <thead className="bg-gray-50 dark:bg-[#1b1b1c] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
-                  <tr>
-                    <th className="px-6 py-3 font-medium">Space & Plan</th>
-                    <th className="px-6 py-3 font-medium">Price</th>
-                    <th className="px-6 py-3 font-medium">Billing Cycle</th>
-                    <th className="px-6 py-3 font-medium">Status</th>
-                    <th className="px-6 py-3 font-medium">Next Billing</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
-                  {subscriptions.map((sub: any) => (
-                    <tr
-                      key={sub.id}
-                      className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                    >
-                      <td className="px-6 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {sub.space?.name || "Unknown Space"}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-[#888888] mt-0.5">
-                          {sub.plan_name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-3 font-mono">{sub.price || "0"}</td>
-                      <td className="px-6 py-3 capitalize">{sub.billing_cycle || "Monthly"}</td>
-                      <td className="px-6 py-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs ${
-                            sub.status === "active"
-                              ? "bg-green-500/10 text-green-500"
-                              : sub.status === "cancelled"
-                                ? "bg-red-500/10 text-red-500"
-                                : "bg-yellow-500/10 text-yellow-500"
-                          }`}
-                        >
-                          {sub.status || "Unknown"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3 text-gray-500 dark:text-[#888888] text-xs">
-                        {sub.next_billing_date
-                          ? new Date(sub.next_billing_date).toLocaleDateString()
-                          : "N/A"}
-                      </td>
+            <>
+              {/* Desktop table */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+                  <thead className="bg-gray-50 dark:bg-[#1b1b1c] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Space & Plan</th>
+                      <th className="px-4 py-3 font-medium">Price</th>
+                      <th className="px-4 py-3 font-medium">Billing Cycle</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                      <th className="px-4 py-3 font-medium">Next Billing</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
+                    {subscriptions.map((sub: any) => (
+                      <tr key={sub.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900 dark:text-white">{sub.space?.name || "Unknown Space"}</div>
+                          <div className="text-xs text-gray-500 dark:text-[#888888] mt-0.5">{sub.plan_name}</div>
+                        </td>
+                        <td className="px-4 py-3 font-mono">{sub.price || "0"}</td>
+                        <td className="px-4 py-3 capitalize">{sub.billing_cycle || "Monthly"}</td>
+                        <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${sub.status === "active" ? "bg-green-500/10 text-green-500" : sub.status === "cancelled" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}`}>{sub.status || "Unknown"}</span></td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">{sub.next_billing_date ? new Date(sub.next_billing_date).toLocaleDateString() : "N/A"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* Mobile cards */}
+              <div className="sm:hidden divide-y divide-gray-200 dark:divide-[#333333]">
+                {subscriptions.map((sub: any) => (
+                  <div key={sub.id} className="p-4 space-y-1">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">{sub.space?.name || "Unknown Space"}</p>
+                    <p className="text-xs text-gray-500 dark:text-[#888888]">{sub.plan_name}</p>
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                      <span className="text-xs font-mono text-gray-700 dark:text-[#cccccc]">{sub.price || "0"}</span>
+                      <span className="text-xs capitalize text-gray-500 dark:text-[#888888]">{sub.billing_cycle || "Monthly"}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${sub.status === "active" ? "bg-green-500/10 text-green-500" : sub.status === "cancelled" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}`}>{sub.status || "Unknown"}</span>
+                      {sub.next_billing_date && <span className="text-xs text-gray-500 dark:text-[#888888]">Next: {new Date(sub.next_billing_date).toLocaleDateString()}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}
