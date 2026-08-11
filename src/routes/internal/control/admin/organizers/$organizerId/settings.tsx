@@ -252,7 +252,9 @@ function OrganizerSettings() {
         await extendAdminOrganizerTrial({
           data: { organizerId: overview.id, newEndDate: chosen.toISOString() },
         } as any);
-        toast.success(`Trial extended to ${chosen.toLocaleDateString("en-US", { dateStyle: "long" })}`);
+        toast.success(
+          `Trial extended to ${chosen.toLocaleDateString("en-US", { dateStyle: "long" })}`,
+        );
         setTrialEndDate("");
         router.invalidate();
       },
