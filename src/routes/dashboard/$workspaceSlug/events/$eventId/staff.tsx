@@ -20,13 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -391,8 +385,6 @@ function EditAccessModal({
 
 function StaffView() {
   const { eventId, workspaceSlug } = Route.useParams();
-  const [selectedStaff, setSelectedStaff] = useState<any>(null);
-  const [badgeSide, setBadgeSide] = useState<"front" | "back">("front");
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
@@ -434,7 +426,7 @@ function StaffView() {
   });
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto w-full">
+    <div className="space-y-6 w-full">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Team & Staff</h1>
@@ -530,7 +522,9 @@ function StaffView() {
                     <tr
                       key={s.id}
                       className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                      onClick={() => setSelectedStaff({ ...s, sectionObjs: assignedSections })}
+                      onClick={() => navigate({
+                        to: `/dashboard/${workspaceSlug}/events/${eventId}/staff/${s.id}`
+                      })}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -685,106 +679,6 @@ function StaffView() {
         </TabsContent>
       </Tabs>
 
-      <Sheet open={!!selectedStaff} onOpenChange={(open) => !open && setSelectedStaff(null)}>
-        <SheetContent className="sm:max-w-md w-full overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle>Digital Badge Preview</SheetTitle>
-            <SheetDescription>
-              This is how the badge looks on the staff member's phone.
-            </SheetDescription>
-          </SheetHeader>
-
-          {selectedStaff && (
-            <div className="flex flex-col items-center mt-4">
-              <div className="flex bg-secondary/50 p-1 rounded-full mb-8 shadow-sm border border-border/50">
-                <Button
-                  variant={badgeSide === "front" ? "default" : "ghost"}
-                  size="sm"
-                  className={`rounded-full px-6 transition-all ${badgeSide === "front" ? "shadow-md" : "hover:bg-secondary"}`}
-                  onClick={() => setBadgeSide("front")}
-                >
-                  Front
-                </Button>
-                <Button
-                  variant={badgeSide === "back" ? "default" : "ghost"}
-                  size="sm"
-                  className={`rounded-full px-6 transition-all ${badgeSide === "back" ? "shadow-md" : "hover:bg-secondary"}`}
-                  onClick={() => setBadgeSide("back")}
-                >
-                  <FlipHorizontal className="h-3 w-3 mr-2" /> Back
-                </Button>
-              </div>
-
-              {badgeProject ? (
-                <div className="w-[340px] relative origin-top mx-auto">
-                  <BadgePreview
-                    activeSide={badgeSide}
-                    config={{
-                      theme: badgeProject.theme,
-                      fontFamily: badgeProject.font_family,
-                      gradientClass: badgeProject.gradient_class,
-                      bgImageUrl: badgeProject.bg_image_url,
-                      logoText: badgeProject.logo_text,
-                      showUserImage: badgeProject.show_user_image,
-                      accentColor: badgeProject.accent_color,
-                      ...(badgeProject.front_design || {}),
-                      backText: badgeProject.back_design?.text || "",
-                    }}
-                    isDesigner={false}
-                    mockUser={{
-                      name:
-                        !selectedStaff.user_id &&
-                        (selectedStaff.first_name || selectedStaff.last_name)
-                          ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim() ||
-                            selectedStaff.email
-                          : selectedStaff.first_name || selectedStaff.last_name
-                            ? `${selectedStaff.first_name || ""} ${selectedStaff.last_name || ""}`.trim()
-                            : `User ${selectedStaff.user_id?.substring(0, 6) || "Unknown"}`,
-                      role: selectedStaff.role,
-                      qrString: selectedStaff.badge_qr_string,
-                      sectionName: selectedStaff.allowed_sections?.includes("*")
-                        ? "ALL ACCESS"
-                        : selectedStaff.sectionObjs && selectedStaff.sectionObjs.length > 0
-                          ? selectedStaff.sectionObjs.map((s: any) => s.name).join(", ")
-                          : "NO ACCESS",
-                      initials:
-                        `${selectedStaff.first_name?.[0] || ""}${selectedStaff.last_name?.[0] || ""}`.toUpperCase(),
-                      profileImage: selectedStaff.profile_image,
-                    }}
-                    sponsors={badgeProject.sponsors_json || []}
-                  />
-                </div>
-              ) : (
-                <div className="p-12 text-center text-muted-foreground border border-dashed rounded-2xl w-full flex flex-col items-center">
-                  <Palette className="h-10 w-10 text-muted-foreground/50 mb-3" />
-                  <p>No Badge Design created for this event yet.</p>
-                  <Link
-                    to="/dashboard/$workspaceSlug/badge-designer/$projectId"
-                    params={{ workspaceSlug, projectId: "new" }}
-                    search={{ eventId }}
-                    className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
-                  >
-                    Create Badge Design
-                  </Link>
-                </div>
-              )}
-
-              <div className="mt-8 flex gap-3 w-full">
-                <Button
-                  className="flex-1"
-                  variant="outline"
-                  onClick={() => toast.success("Copied secure link!")}
-                >
-                  Copy Link
-                </Button>
-                <Button className="flex-1" style={{ background: "var(--gradient-primary)" }}>
-                  Send via Email
-                </Button>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }

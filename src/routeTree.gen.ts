@@ -226,6 +226,7 @@ import { Route as InternalControlAdminOrganizersOrganizerIdBookInvoicesRouteImpo
 import { Route as InternalControlAdminOrganizersOrganizerIdBookRouteImport } from './routes/internal/control/admin/organizers/$organizerId/book'
 import { Route as InternalControlAdminOrganizersOrganizerIdAttendeesRouteImport } from './routes/internal/control/admin/organizers/$organizerId/attendees'
 import { Route as DashboardWorkspaceSlugEventsEventIdStaffAddRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/staff_.add'
+import { Route as DashboardWorkspaceSlugEventsEventIdStaffStaffIdRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/staff_.$staffId'
 import { Route as DashboardWorkspaceSlugEventsEventIdProductsNewRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/products_.new'
 import { Route as DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRouteImport } from './routes/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
 import { Route as DashboardWorkspaceSlugEventsEventIdProductsProductIdIndexRouteImport } from './routes/dashboard/$workspaceSlug/events/$eventId/products_.$productId.index'
@@ -1473,6 +1474,12 @@ const DashboardWorkspaceSlugEventsEventIdStaffAddRoute =
     path: '/$workspaceSlug/events/$eventId/staff/add',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute =
+  DashboardWorkspaceSlugEventsEventIdStaffStaffIdRouteImport.update({
+    id: '/$workspaceSlug/events/$eventId/staff_/$staffId',
+    path: '/$workspaceSlug/events/$eventId/staff/$staffId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardWorkspaceSlugEventsEventIdProductsNewRoute =
   DashboardWorkspaceSlugEventsEventIdProductsNewRouteImport.update({
     id: '/$workspaceSlug/events/$eventId/products_/new',
@@ -1707,6 +1714,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
   '/dashboard/$workspaceSlug/events/$eventId/products/new': typeof DashboardWorkspaceSlugEventsEventIdProductsNewRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff/$staffId': typeof DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute
   '/dashboard/$workspaceSlug/events/$eventId/staff/add': typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
@@ -1927,6 +1935,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/support': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
   '/dashboard/$workspaceSlug/events/$eventId/products/new': typeof DashboardWorkspaceSlugEventsEventIdProductsNewRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff/$staffId': typeof DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute
   '/dashboard/$workspaceSlug/events/$eventId/staff/add': typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
@@ -2152,6 +2161,7 @@ export interface FileRoutesById {
   '/internal/control/admin/support/': typeof InternalControlAdminSupportIndexRoute
   '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId': typeof DashboardWorkspaceSlugCinemaCinemaIdReceiptBookingIdRoute
   '/dashboard/$workspaceSlug/events/$eventId/products_/new': typeof DashboardWorkspaceSlugEventsEventIdProductsNewRoute
+  '/dashboard/$workspaceSlug/events/$eventId/staff_/$staffId': typeof DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute
   '/dashboard/$workspaceSlug/events/$eventId/staff_/add': typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   '/internal/control/admin/organizers/$organizerId/attendees': typeof InternalControlAdminOrganizersOrganizerIdAttendeesRoute
   '/internal/control/admin/organizers/$organizerId/book': typeof InternalControlAdminOrganizersOrganizerIdBookRoute
@@ -2378,6 +2388,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/support/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
     | '/dashboard/$workspaceSlug/events/$eventId/products/new'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff/$staffId'
     | '/dashboard/$workspaceSlug/events/$eventId/staff/add'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
@@ -2598,6 +2609,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/support'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
     | '/dashboard/$workspaceSlug/events/$eventId/products/new'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff/$staffId'
     | '/dashboard/$workspaceSlug/events/$eventId/staff/add'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
@@ -2822,6 +2834,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/support/'
     | '/dashboard/$workspaceSlug/Cinema/$cinemaId/receipt/$bookingId'
     | '/dashboard/$workspaceSlug/events/$eventId/products_/new'
+    | '/dashboard/$workspaceSlug/events/$eventId/staff_/$staffId'
     | '/dashboard/$workspaceSlug/events/$eventId/staff_/add'
     | '/internal/control/admin/organizers/$organizerId/attendees'
     | '/internal/control/admin/organizers/$organizerId/book'
@@ -4428,6 +4441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffAddRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/$workspaceSlug/events/$eventId/staff_/$staffId': {
+      id: '/dashboard/$workspaceSlug/events/$eventId/staff_/$staffId'
+      path: '/$workspaceSlug/events/$eventId/staff/$staffId'
+      fullPath: '/dashboard/$workspaceSlug/events/$eventId/staff/$staffId'
+      preLoaderRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffStaffIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/$workspaceSlug/events/$eventId/products_/new': {
       id: '/dashboard/$workspaceSlug/events/$eventId/products_/new'
       path: '/$workspaceSlug/events/$eventId/products/new'
@@ -4689,6 +4709,7 @@ interface DashboardRouteChildren {
   DashboardWorkspaceSlugEventsEventIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdIndexRoute
   DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute: typeof DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute
   DashboardWorkspaceSlugEventsEventIdProductsNewRoute: typeof DashboardWorkspaceSlugEventsEventIdProductsNewRoute
+  DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute
   DashboardWorkspaceSlugEventsEventIdStaffAddRoute: typeof DashboardWorkspaceSlugEventsEventIdStaffAddRoute
   DashboardWorkspaceSlugEventsEventIdProductsProductIdEditRoute: typeof DashboardWorkspaceSlugEventsEventIdProductsProductIdEditRoute
   DashboardWorkspaceSlugEventsEventIdProductsProductIdIndexRoute: typeof DashboardWorkspaceSlugEventsEventIdProductsProductIdIndexRoute
@@ -4852,6 +4873,8 @@ const DashboardRouteChildren: DashboardRouteChildren = {
     DashboardWorkspaceSlugExperiencesExperienceIdIndexRoute,
   DashboardWorkspaceSlugEventsEventIdProductsNewRoute:
     DashboardWorkspaceSlugEventsEventIdProductsNewRoute,
+  DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute:
+    DashboardWorkspaceSlugEventsEventIdStaffStaffIdRoute,
   DashboardWorkspaceSlugEventsEventIdStaffAddRoute:
     DashboardWorkspaceSlugEventsEventIdStaffAddRoute,
   DashboardWorkspaceSlugEventsEventIdProductsProductIdEditRoute:

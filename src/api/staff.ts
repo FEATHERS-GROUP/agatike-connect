@@ -211,3 +211,30 @@ export const getUserStaffAssignments = createServerFn({ method: "POST" }).handle
   const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, { user_id });
   return data.event_staff || [];
 });
+const GET_STAFF_BY_ID = `
+  query GetStaffById($id: uuid!) {
+    event_staff_by_pk(id: $id) {
+      id
+      user_id
+      first_name
+      last_name
+      email
+      phone
+      role
+      status
+      badge_qr_string
+      allowed_sections
+      profile_image
+      event_id
+      pin_code
+      app_permissions
+      vendor_id
+    }
+  }
+`;
+
+export const getStaffById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ event_staff_by_pk: any }>(GET_STAFF_BY_ID, { id });
+  return data.event_staff_by_pk || null;
+});
