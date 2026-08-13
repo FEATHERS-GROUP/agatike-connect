@@ -2953,3 +2953,42 @@ The Subscription Portal allows active subscribers to view their workspace perks,
 - The `BookingsTab` unifies all of a subscriber's upcoming and past reservations into a single view.
 - **Real-Time UI:** When a user successfully books a new session or resource, the underlying React Query (`space_resource_bookings`) is immediately invalidated. This causes the "My Bookings" tab to instantly re-render with the new reservation, requiring no page refresh.
 - **Design:** Bookings are rendered as high-end glassmorphism cards with dynamic color status bars (e.g., Orange for 'confirmed'), location badges, and exact time constraints.
+
+---
+
+## 33. Agatike App Studio (Custom Mobile Portal Builder)
+
+**Logic:**
+
+The **App Studio** allows organizers to design bespoke mobile web-apps for their staff, vendors, and workspace users. Rather than relying on a static dashboard for staff, the organizer can use a drag-and-drop mobile canvas to specify exactly what tools a specific role needs.
+
+- **Dynamic Navigation Registration:** The App Studio is injected into the sidebar via the `platform_modules` database table, respecting subscription tier limits (e.g., Pro/Enterprise).
+- **Custom Modules:** Organizers can drop modular blocks into a mobile view. Modules include:
+  - **Access Scanner:** Scanning tickets, badges, and vouchers (with granular config).
+  - **Attendees:** Viewing and managing event attendees.
+  - **Sales & Transactions:** Viewing financial data.
+  - **Venues & Bookings:** Managing space reservations.
+- **Granular Permissions:** Each custom app is mapped to a specific role (e.g. `vendor`, `staff`) or explicitly to a `workspace_user_id` via the `app_permissions` table.
+- **Database Tables:** 
+  - `workspace_apps` (Core app config, name, theme, logo)
+  - `app_modules` (The individual modules added to the app and their JSON config)
+  - `app_permissions` (Access control mapping)
+- **Migrations:** Relationships and schemas for the App Studio are tracked and automatically migrated via `migrate_track_relationships.js`.
+
+```mermaid
+flowchart TD
+    Org["Organizer"] -->|Uses Studio| Studio["App Builder"]
+    Studio -->|Saves UI/Config| DB["workspace_apps"]
+    Studio -->|Adds Tools| Mod["app_modules"]
+    Studio -->|Assigns Access| Perm["app_permissions"]
+    
+    Perm --> Role1["Staff"]
+    Perm --> Role2["Vendors"]
+    
+    Role1 -->|Logs in on Mobile| MobileApp["Custom Mobile Portal"]
+    MobileApp --> Scanner["Access Scanner (Tickets Only)"]
+    
+    Role2 -->|Logs in on Mobile| MobileApp2["Custom Mobile Portal"]
+    MobileApp2 --> Scanner2["Access Scanner (Vouchers Only)"]
+    MobileApp2 --> Sales["Sales Dashboard"]
+```

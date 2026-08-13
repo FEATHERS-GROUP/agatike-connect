@@ -176,6 +176,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
       "Page Builder": "page_builder",
       "Badge Designer": "badge_designer",
       "Ticket Designer": "ticket_designer",
+      "App Builder": "app-builder",
     };
 
     const allowedLegacyIds = allowedModules!.map((uuid) => {
