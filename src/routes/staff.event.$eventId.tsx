@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
 import { getEventById } from "@/api/events";
+import { getAppById } from "@/api/app-studio";
+import { LayoutGrid } from "lucide-react";
 
 export const Route = createFileRoute("/staff/event/$eventId")({
   component: StaffEventDashboard,
@@ -125,6 +127,16 @@ function Numpad({
   );
 }
 
+const AVAILABLE_MODULES = [
+  { type: "scanner", title: "Access Scanner", icon: ScanLine, desc: "Scan tickets and badges" },
+  { type: "attendees", title: "Event Attendees", icon: Users, desc: "Manage registered attendees" },
+  { type: "transactions", title: "Sales & Transactions", icon: CreditCard, desc: "View payments" },
+  { type: "venues", title: "Venues", icon: MapPin, desc: "Manage locations" },
+  { type: "bookings", title: "Calendar Bookings", icon: Calendar, desc: "View reservations" },
+  { type: "members", title: "Team Members", icon: Users, desc: "Workspace staff directory" },
+  { type: "stats", title: "Live Stats", icon: Activity, desc: "Checked-in & scans per hour" },
+];
+
 const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in ms
 
 function StaffEventDashboard() {
@@ -215,6 +227,12 @@ function StaffEventDashboard() {
     queryKey: ["badge-project", eventId],
     queryFn: () => getBadgeProjectByEventId({ data: { event_id: eventId } } as any),
     enabled: !!eventId && isAuthenticated,
+  });
+
+  const { data: appData } = useQuery({
+    queryKey: ["workspace-app", eventDetails?.app_id],
+    queryFn: () => getAppById({ data: { id: eventDetails?.app_id } } as any),
+    enabled: !!eventDetails?.app_id && isAuthenticated,
   });
 
   if (isLoading) {
@@ -340,7 +358,7 @@ function StaffEventDashboard() {
           </div>
         </div>
 
-        {canViewAnalytics && (
+        {(!appData || appData.app_modules?.length === 0) && canViewAnalytics && (
           <div className="space-y-4">
             <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/80 ml-1">
               Live Stats
@@ -447,7 +465,7 @@ function StaffEventDashboard() {
               </button>
             )}
 
-            {!canScan && !canViewGuestlist && !canSell && (
+            {!canScan && !canViewGuestlist && !canSell && (!appData || appData.app_modules?.length === 0) && (
               <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
                 <Shield className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                 <h4 className="font-bold text-lg mb-2">No Tools Assigned</h4>
@@ -455,6 +473,100 @@ function StaffEventDashboard() {
                   You haven't been assigned any app permissions. Contact the organizer if this is a
                   mistake.
                 </p>
+              </div>
+            )}
+            
+            {appData?.app_modules && appData.app_modules.length > 0 && (
+              <div className="grid grid-cols-1 gap-4">
+                {appData.app_modules
+                  .sort((a: any, b: any) => a.order - b.order)
+                  .map((m: any) => {
+                    const config = typeof m.config === "string" ? JSON.parse(m.config) : m.config || {};
+                    const visibilityRoles = config.visibility_roles
+                      ?.split(",")
+                      .map((r: string) => r.trim().toLowerCase())
+                      .filter(Boolean) || [];
+                    const userRole = assignment.role?.toLowerCase() || "";
+                    
+                    let isVisible = true;
+                    if (visibilityRoles.length > 0) {
+                      isVisible = visibilityRoles.includes(userRole);
+                    }
+                    if (!isVisible) return null;
+
+                    const ModIcon = AVAILABLE_MODULES.find(x => x.type === m.type)?.icon || LayoutGrid;
+
+                    if (m.type === "stats") {
+                      return (
+                        <div key={m.id} className="space-y-4 mb-6">
+                          <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/80 ml-1">
+                            Live Stats
+                          </h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            {config.show_checked_in !== false && (
+                              <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-[4/3] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                  <CheckCircle2 className="h-16 w-16 text-emerald-500" />
+                                </div>
+                                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2 border border-emerald-500/20">
+                                  <CheckCircle2 className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <p className="text-4xl font-black mb-0.5 tracking-tighter">{checkedIn}</p>
+                                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                                    Checked In
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {config.show_scans_per_hour !== false && (
+                              <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-[4/3] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                  <Activity className="h-16 w-16 text-blue-500" />
+                                </div>
+                                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-2 border border-blue-500/20">
+                                  <Activity className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <p className="text-4xl font-black mb-0.5 tracking-tighter">{scansPerHour}</p>
+                                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                                    Scans/Hour
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => {
+                           if (m.type === "scanner") setShowScanner(true);
+                           // Other modules can navigate to sub-routes if implemented
+                        }}
+                        className="w-full bg-background/60 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all group relative overflow-hidden"
+                      >
+                        <div className="absolute top-0 right-0 p-6 opacity-5 transform translate-x-4 -translate-y-4 group-active:scale-110 transition-transform">
+                          <ModIcon className="h-32 w-32 text-foreground" />
+                        </div>
+                        <div className="relative z-10 flex flex-col gap-4">
+                          <div className="h-14 w-14 rounded-full bg-secondary flex items-center justify-center border border-border/50 text-foreground">
+                            <ModIcon className="h-7 w-7" />
+                          </div>
+                          <div>
+                            <h4 className="font-black text-2xl tracking-tight mb-1">{m.title}</h4>
+                            <p className="text-muted-foreground text-sm font-medium">
+                              {m.desc || "Open module"}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             )}
           </div>

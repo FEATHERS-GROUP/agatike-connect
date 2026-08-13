@@ -252,6 +252,7 @@ const GET_WORKSPACE_EVENTS = `
       event_type
       allowed_public
       suspended
+      app_id
       created_at
       vip_privilege_ids
       event_tickets {
@@ -290,6 +291,7 @@ const GET_EVENT_BY_ID = `
     events_by_pk(id: $id) {
       allowed_public
       suspended
+      app_id
       category
       cover
       created_at
@@ -399,7 +401,8 @@ const UPDATE_EVENT = `
     $lineup: jsonb,
     $event_type: String,
     $allowed_public: Boolean,
-    $suspended: Boolean
+    $suspended: Boolean,
+    $app_id: uuid
   ) {
     update_events_by_pk(
       pk_columns: { id: $id },
@@ -415,7 +418,8 @@ const UPDATE_EVENT = `
         lineup: $lineup,
         event_type: $event_type,
         allowed_public: $allowed_public,
-        suspended: $suspended
+        suspended: $suspended,
+        app_id: $app_id
       }
     ) {
       id
@@ -477,6 +481,10 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
         : existingEvent.allowed_public,
     suspended:
       eventUpdateVars.suspended !== undefined ? eventUpdateVars.suspended : existingEvent.suspended,
+    app_id:
+      eventUpdateVars.app_id !== undefined
+        ? eventUpdateVars.app_id
+        : existingEvent.app_id,
   };
 
   // 1. Update the event table basic info

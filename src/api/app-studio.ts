@@ -12,6 +12,7 @@ const GET_WORKSPACE_APPS = `
       theme_color
       logo_url
       is_active
+      app_type
       created_at
       app_modules(order_by: { order: asc }) {
         id
@@ -46,6 +47,7 @@ const GET_APP_BY_ID = `
       theme_color
       logo_url
       is_active
+      app_type
       created_at
       app_modules(order_by: { order: asc }) {
         id

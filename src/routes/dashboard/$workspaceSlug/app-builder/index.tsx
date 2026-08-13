@@ -4,8 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Settings2, Trash2, Smartphone, LayoutGrid, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceApps, createWorkspaceApp, deleteWorkspaceApp, upsertAppModules } from "@/api/app-studio";
+import { getWorkspaceEvents, updateEvent } from "@/api/events";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -61,6 +64,10 @@ function AppBuilderIndex() {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [appName, setAppName] = useState("");
+  const [appType, setAppType] = useState<"workspace" | "event">("workspace");
+  const [selectedEventId, setSelectedEventId] = useState("");
 
   const { data: apps = [], isLoading } = useQuery({
     queryKey: ["workspace-apps", activeWorkspace?.id],
@@ -68,15 +75,22 @@ function AppBuilderIndex() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { data: events = [] } = useQuery({
+    queryKey: ["workspace-events", activeWorkspace?.id],
+    queryFn: () => getWorkspaceEvents({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
+  });
+
   const createMutation = useMutation({
-    mutationFn: async (template: any) => {
+    mutationFn: async ({ template, name, type, eventId }: any) => {
       const res = await createWorkspaceApp({
         data: {
           workspace_id: activeWorkspace?.id,
-          name: template.name,
+          name: name || template.name,
           description: template.description,
           is_active: true,
           theme_color: template.theme_color,
+          app_type: type,
         },
       } as any);
 
@@ -96,11 +110,16 @@ function AppBuilderIndex() {
         await upsertAppModules({ data: { objects: modulesToUpsert } } as any);
       }
 
+      if (type === "event" && eventId) {
+        await updateEvent({ data: { id: eventId, set: { app_id: newAppId } } } as any);
+      }
+
       return { id: newAppId };
     },
     onSuccess: (data: any) => {
       toast.success("App created successfully!");
       setIsTemplateModalOpen(false);
+      setSelectedTemplate(null);
       if (data?.id) {
         navigate({
           to: `/dashboard/${workspaceSlug}/app-builder/${data.id}`,
@@ -136,7 +155,10 @@ function AppBuilderIndex() {
           </p>
         </div>
         <Button
-          onClick={() => setIsTemplateModalOpen(true)}
+          onClick={() => {
+            setSelectedTemplate(null);
+            setIsTemplateModalOpen(true);
+          }}
           className="gap-2 rounded-full shadow-sm"
           style={{ background: "var(--gradient-primary)", color: "white" }}
         >
@@ -158,7 +180,10 @@ function AppBuilderIndex() {
             Build your first custom mobile portal to give specific roles tailored access to scanners, attendees, and more.
           </p>
           <Button
-            onClick={() => setIsTemplateModalOpen(true)}
+            onClick={() => {
+              setSelectedTemplate(null);
+              setIsTemplateModalOpen(true);
+            }}
             className="rounded-full shadow-sm"
           >
             Create Your First App
@@ -185,9 +210,16 @@ function AppBuilderIndex() {
                 </div>
 
                 <div className="mt-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-xl font-bold truncate pr-4">{app.name}</h3>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full ${app.is_active ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <h3 className="text-xl font-bold truncate">{app.name}</h3>
+                      {app.app_type === "event" ? (
+                        <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-blue-500/20 whitespace-nowrap">Event App</span>
+                      ) : (
+                        <span className="px-2 py-0.5 bg-purple-500/10 text-purple-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-purple-500/20 whitespace-nowrap">Workspace App</span>
+                      )}
+                    </div>
+                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 ${app.is_active ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
                       {app.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
@@ -234,45 +266,127 @@ function AppBuilderIndex() {
         </div>
       )}
 
-      <Dialog open={isTemplateModalOpen} onOpenChange={setIsTemplateModalOpen}>
+      <Dialog open={isTemplateModalOpen} onOpenChange={(open) => {
+        setIsTemplateModalOpen(open);
+        if (!open) setSelectedTemplate(null);
+      }}>
         <DialogContent className="sm:max-w-3xl rounded-3xl bg-card border-border/60">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Choose a Template</DialogTitle>
+            <DialogTitle className="text-2xl">{selectedTemplate ? "Configure App" : "Choose a Template"}</DialogTitle>
             <DialogDescription>
-              Start with a pre-configured template tailored for your use case, or build from scratch.
+              {selectedTemplate ? "Set up the details for your new app." : "Start with a pre-configured template tailored for your use case, or build from scratch."}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            {APP_TEMPLATES.map((tpl) => (
-              <div 
-                key={tpl.id}
-                onClick={() => createMutation.mutate(tpl)}
-                className={`relative p-5 rounded-2xl border-2 border-border/60 cursor-pointer transition-all hover:border-primary/50 hover:shadow-md bg-card text-left flex flex-col gap-3 ${createMutation.isPending ? "opacity-50 pointer-events-none" : ""}`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center text-white" style={{ backgroundColor: tpl.theme_color }}>
-                    <Smartphone className="w-5 h-5" />
+          {!selectedTemplate ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {APP_TEMPLATES.map((tpl) => (
+                <div 
+                  key={tpl.id}
+                  onClick={() => {
+                    setSelectedTemplate(tpl);
+                    setAppName(tpl.name);
+                    setAppType(tpl.id.includes("event") ? "event" : "workspace");
+                    setSelectedEventId("");
+                  }}
+                  className="relative p-5 rounded-2xl border-2 border-border/60 cursor-pointer transition-all hover:border-primary/50 hover:shadow-md bg-card text-left flex flex-col gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center text-white" style={{ backgroundColor: tpl.theme_color }}>
+                      <Smartphone className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg leading-none">{tpl.name}</h3>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-lg leading-none">{tpl.name}</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    {tpl.description}
+                  </p>
+                  {tpl.modules.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {tpl.modules.map((m: any, idx: number) => (
+                        <span key={idx} className="text-[10px] uppercase font-bold tracking-wider bg-secondary text-muted-foreground px-2 py-1 rounded-md">
+                          {m.title}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-6 mt-4">
+              <div className="space-y-2">
+                <Label>App Name</Label>
+                <Input 
+                  value={appName} 
+                  onChange={(e) => setAppName(e.target.value)} 
+                  placeholder="e.g. My Event Staff App"
+                  className="h-11 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>What is this app for?</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div 
+                    onClick={() => setAppType("workspace")}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${appType === "workspace" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/50"}`}
+                  >
+                    <h4 className="font-bold mb-1">Workspace Users</h4>
+                    <p className="text-xs text-muted-foreground">General tools for your team members and venue staff.</p>
+                  </div>
+                  <div 
+                    onClick={() => setAppType("event")}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${appType === "event" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/50"}`}
+                  >
+                    <h4 className="font-bold mb-1">Event Staff</h4>
+                    <p className="text-xs text-muted-foreground">Specific tools for managing an event like ticket scanning.</p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground flex-1">
-                  {tpl.description}
-                </p>
-                {tpl.modules.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {tpl.modules.map((m: any, idx: number) => (
-                      <span key={idx} className="text-[10px] uppercase font-bold tracking-wider bg-secondary text-muted-foreground px-2 py-1 rounded-md">
-                        {m.title}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
+
+              {appType === "event" && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                  <Label>Link to Event (Optional)</Label>
+                  <select
+                    className="flex h-11 w-full rounded-xl border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    value={selectedEventId}
+                    onChange={(e) => setSelectedEventId(e.target.value)}
+                  >
+                    <option value="">Select an event to link...</option>
+                    {events.map((evt: any) => (
+                      <option key={evt.id} value={evt.id}>{evt.title}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    You can link this app to an event immediately, or do it later in the app settings.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/50">
+                <Button variant="ghost" onClick={() => setSelectedTemplate(null)} className="rounded-xl">
+                  Back to Templates
+                </Button>
+                <Button 
+                  onClick={() => {
+                    createMutation.mutate({
+                      template: selectedTemplate,
+                      name: appName,
+                      type: appType,
+                      eventId: selectedEventId
+                    });
+                  }}
+                  disabled={createMutation.isPending || !appName.trim()}
+                  className="rounded-xl px-8"
+                  style={{ background: "var(--gradient-primary)", color: "white" }}
+                >
+                  {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create App"}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

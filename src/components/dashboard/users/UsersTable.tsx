@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Eye, User, Clock, Building2, Puzzle, FileText, Mail } from "lucide-react";
+import { Pencil, Trash2, Eye, User, Clock, Building2, Puzzle, FileText, Mail, Smartphone } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -28,12 +28,12 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { removeWorkspaceUser, resendWorkspaceUserInvite } from "@/api/workspace_users";
+import { removeWorkspaceUser, resendWorkspaceUserInvite, updateWorkspaceUser } from "@/api/workspace_users";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { Route as UsersRoute } from "@/routes/dashboard/$workspaceSlug/users/index";
 
-export function UsersTable({ users, workspaces = [] }: { users: any[]; workspaces?: any[] }) {
+export function UsersTable({ users, workspaces = [], apps = [] }: { users: any[]; workspaces?: any[]; apps?: any[] }) {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -73,6 +73,19 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to delete users");
+    },
+  });
+
+  const updateAppMutation = useMutation({
+    mutationFn: async ({ userId, appId }: { userId: string; appId: string | null }) => {
+      await updateWorkspaceUser({ data: { id: userId, set: { app_id: appId } } } as any);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspace_users"] });
+      toast.success("Assigned app updated");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update assigned app");
     },
   });
 
@@ -190,6 +203,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Workspaces</TableHead>
+              <TableHead>Assigned App</TableHead>
               <TableHead>Modules Access</TableHead>
               <TableHead>Expiry</TableHead>
             </TableRow>
@@ -229,6 +243,18 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                       </Badge>
                     </TableCell>
                     <TableCell>{getWorkspaceNames(user.workspaces)}</TableCell>
+                    <TableCell>
+                      <select
+                        className="text-sm bg-transparent border border-border/50 rounded px-2 py-1 focus:ring-1 focus:ring-primary w-full max-w-[140px]"
+                        value={user.app_id || ""}
+                        onChange={(e) => updateAppMutation.mutate({ userId: user.id, appId: e.target.value || null })}
+                      >
+                        <option value="">None</option>
+                        {apps.map((app: any) => (
+                          <option key={app.id} value={app.id}>{app.name}</option>
+                        ))}
+                      </select>
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {Array.isArray(user.modules) && user.modules.length > 0 ? (
@@ -288,7 +314,7 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   No users found.
                 </TableCell>
               </TableRow>
@@ -363,6 +389,15 @@ export function UsersTable({ users, workspaces = [] }: { users: any[]; workspace
                       <Building2 className="h-3 w-3" /> Workspaces
                     </h4>
                     <p className="text-sm text-foreground/80">{getWorkspaceNames(u.workspaces)}</p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Smartphone className="h-3 w-3" /> Assigned App
+                    </h4>
+                    <p className="text-sm text-foreground/80">
+                      {user.app_id ? apps.find(a => a.id === user.app_id)?.name || "Unknown App" : "None"}
+                    </p>
                   </div>
 
                   <div>
