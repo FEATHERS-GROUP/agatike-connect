@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { getWorkspaceApps, createWorkspaceApp, deleteWorkspaceApp, upsertAppModules } from "@/api/app-studio";
 import { getWorkspaceEvents, updateEvent } from "@/api/events";
@@ -190,79 +191,95 @@ function AppBuilderIndex() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {apps.map((app: any) => (
-            <div
-              key={app.id}
-              className="group relative rounded-3xl border border-border/60 bg-card overflow-hidden shadow-[var(--shadow-card)] transition-all hover:shadow-md hover:border-primary/50"
-            >
-              <div
-                className="h-24 w-full"
-                style={{ backgroundColor: app.theme_color || "#f97316" }}
-              />
-              <div className="p-6 relative">
-                <div className="absolute -top-12 left-6 h-16 w-16 bg-background rounded-2xl flex items-center justify-center shadow-sm border border-border">
-                  {app.logo_url ? (
-                    <img src={app.logo_url} alt="Logo" className="h-12 w-12 object-cover rounded-xl" />
-                  ) : (
-                    <LayoutGrid className="h-8 w-8 text-primary" />
-                  )}
-                </div>
-
-                <div className="mt-6">
-                  <div className="flex justify-between items-start mb-2 gap-2">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <h3 className="text-xl font-bold truncate">{app.name}</h3>
-                      {app.app_type === "event" ? (
-                        <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-blue-500/20 whitespace-nowrap">Event App</span>
-                      ) : (
-                        <span className="px-2 py-0.5 bg-purple-500/10 text-purple-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-purple-500/20 whitespace-nowrap">Workspace App</span>
-                      )}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[300px]">App</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Modules</TableHead>
+                <TableHead>Roles</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {apps.map((app: any) => (
+                <TableRow key={app.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="h-10 w-10 rounded-xl flex items-center justify-center shadow-sm shrink-0" 
+                        style={{ backgroundColor: app.theme_color || "var(--primary)" }}
+                      >
+                        {app.logo_url ? (
+                          <img src={app.logo_url} alt="Logo" className="h-8 w-8 object-cover rounded-lg" />
+                        ) : (
+                          <LayoutGrid className="h-5 w-5 text-white" />
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold">{app.name}</span>
+                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          {app.description || "No description provided."}
+                        </span>
+                      </div>
                     </div>
-                    <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 ${app.is_active ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
+                  </TableCell>
+                  <TableCell>
+                    {app.app_type === "event" ? (
+                      <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-blue-500/20 whitespace-nowrap">
+                        Event App
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-purple-500/10 text-purple-500 text-[10px] font-bold uppercase tracking-wider rounded-md border border-purple-500/20 whitespace-nowrap">
+                        Workspace App
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 ${app.is_active ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
                       {app.is_active ? "Active" : "Inactive"}
                     </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {app.description || "No description provided."}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <div className="text-xs bg-secondary px-2.5 py-1 rounded-md text-muted-foreground font-medium">
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-xs text-muted-foreground font-medium">
                       {app.app_modules?.length || 0} Modules
                     </div>
-                    <div className="text-xs bg-secondary px-2.5 py-1 rounded-md text-muted-foreground font-medium">
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-xs text-muted-foreground font-medium">
                       {app.app_permissions?.length || 0} Access Roles
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Link
-                      to="/dashboard/$workspaceSlug/app-builder/$appId"
-                      params={{ workspaceSlug, appId: app.id }}
-                      className="flex-1"
-                    >
-                      <Button className="w-full gap-2 rounded-xl" variant="secondary">
-                        <Settings2 className="w-4 h-4" /> Open Studio
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Link
+                        to="/dashboard/$workspaceSlug/app-builder/$appId"
+                        params={{ workspaceSlug, appId: app.id }}
+                      >
+                        <Button size="sm" variant="secondary" className="rounded-xl h-8 text-xs font-semibold gap-1.5 px-3">
+                          <Settings2 className="w-3.5 h-3.5" /> Studio
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-xl h-8 w-8 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                        onClick={() => {
+                          if (window.confirm("Are you sure you want to delete this custom app?")) {
+                            deleteMutation.mutate(app.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10"
-                      onClick={() => {
-                        if (window.confirm("Are you sure you want to delete this custom app?")) {
-                          deleteMutation.mutate(app.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 

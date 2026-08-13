@@ -38,10 +38,12 @@ function Numpad({
   onPinComplete,
   error,
   event,
+  appData,
 }: {
   onPinComplete: (pin: string) => void;
   error: string;
   event?: any;
+  appData?: any;
 }) {
   const [pin, setPin] = useState("");
 
@@ -61,7 +63,8 @@ function Numpad({
     setPin(pin.slice(0, -1));
   };
 
-  const themeColor = event?.theme_color || event?.tickets_page_styles?.primary_color || "#ff3b30";
+  const themeColor = appData?.theme_color || event?.theme_color || event?.tickets_page_styles?.primary_color || "#ff3b30";
+  const logoUrl = appData?.logo_url || event?.cover;
 
   return (
     <div
@@ -72,18 +75,18 @@ function Numpad({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="z-10 w-full max-w-sm flex flex-col items-center">
-        {event?.cover ? (
+        {logoUrl ? (
           <img
-            src={event.cover}
-            alt="Event Cover"
-            className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10"
+            src={logoUrl}
+            alt="Logo"
+            className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] border border-black/10"
           />
         ) : (
-          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
+          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] border border-primary/20">
             <Lock className="h-8 w-8 text-primary" />
           </div>
         )}
-        <h1 className="text-2xl font-bold mb-1 text-center">{event?.title || "Staff Portal"}</h1>
+        <h1 className="text-2xl font-bold mb-1 text-center">{appData?.name || event?.title || "Staff Portal"}</h1>
         <p className="text-muted-foreground text-sm mb-8 text-center">
           Enter your 9-digit security PIN
         </p>
@@ -304,6 +307,7 @@ function StaffEventDashboard() {
         }}
         error={pinError}
         event={assignment.event}
+        appData={appData}
       />
     );
   }
@@ -333,7 +337,7 @@ function StaffEventDashboard() {
     <div
       className="min-h-[100dvh] bg-background text-foreground overflow-y-auto pb-safe font-sans"
       style={
-        { "--color-primary": assignment.event?.theme_color || "#ff3b30" } as React.CSSProperties
+        { "--color-primary": appData?.theme_color || assignment.event?.theme_color || "#ff3b30" } as React.CSSProperties
       }
     >
       <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-background to-background pointer-events-none -z-10" />
@@ -346,7 +350,7 @@ function StaffEventDashboard() {
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_rgba(var(--color-primary),0.1)]">
+        <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
           <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)] animate-pulse" />
           <span className="text-primary text-xs font-black tracking-widest uppercase">Live</span>
         </div>
@@ -355,7 +359,7 @@ function StaffEventDashboard() {
       <main className="px-6 pt-6 pb-24 relative z-10 space-y-10">
         <div>
           <h1 className="text-4xl font-black mb-2 leading-tight tracking-tight">
-            {assignment.event?.title || "Event Dashboard"}
+            {appData?.name || assignment.event?.title || "Event Dashboard"}
           </h1>
           <div className="flex flex-wrap items-center gap-2 mt-3">
             <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider rounded-lg border border-border/50">
@@ -415,7 +419,7 @@ function StaffEventDashboard() {
             {canScan && (
               <button
                 onClick={() => setShowScanner(true)}
-                className="w-full bg-primary relative overflow-hidden border border-primary/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all shadow-[0_15px_40px_rgba(var(--color-primary),0.25)] group"
+                className="w-full bg-primary relative overflow-hidden border border-primary/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all shadow-[0_15px_40px_color-mix(in_srgb,var(--color-primary)_25%,transparent)] group"
               >
                 <div className="absolute top-0 right-0 p-6 opacity-20 transform translate-x-4 -translate-y-4 group-active:scale-110 transition-transform">
                   <ScanLine className="h-32 w-32 text-primary-foreground" />

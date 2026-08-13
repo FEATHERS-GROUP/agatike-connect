@@ -92,7 +92,7 @@ function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
         style={style}
         onClick={onClick}
         className={`relative w-full space-y-4 p-4 rounded-3xl border bg-card/60 backdrop-blur-xl transition-all group ${
-          isSelected ? "border-primary shadow-[0_0_20px_rgba(var(--color-primary),0.3)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
+          isSelected ? "border-primary shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
         }`}
       >
         <div {...attributes} {...listeners} className="absolute -left-3 top-1/2 -translate-y-1/2 p-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
@@ -135,7 +135,7 @@ function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
       style={style}
       onClick={onClick}
       className={`relative w-full bg-background/60 backdrop-blur-xl border rounded-[2rem] p-5 text-left transition-all group ${
-        isSelected ? "border-primary shadow-[0_0_20px_rgba(var(--color-primary),0.3)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
+        isSelected ? "border-primary shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
       }`}
     >
       <div 
@@ -477,10 +477,10 @@ function AppBuilderStudio() {
                       <img
                         src={appConfig.logo_url}
                         alt="Logo"
-                        className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10"
+                        className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] border border-black/10"
                       />
                     ) : (
-                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] border border-primary/20">
                         <Lock className="h-8 w-8 text-primary" />
                       </div>
                     )}
@@ -519,7 +519,7 @@ function AppBuilderStudio() {
                     <div className="p-2 -ml-2 text-foreground/60 bg-secondary/50 backdrop-blur-md rounded-full border border-border/50">
                       <ArrowLeft className="h-5 w-5" />
                     </div>
-                    <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_rgba(var(--color-primary),0.1)]">
+                    <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
                       <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
                       <span className="text-primary text-[10px] font-black tracking-widest uppercase">Live</span>
                     </div>
