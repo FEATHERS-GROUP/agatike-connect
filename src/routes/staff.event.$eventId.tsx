@@ -19,11 +19,16 @@ import {
   Shield,
   ArrowRight,
   BadgeCheck,
+  CreditCard,
+  UserCheck,
+  Wallet,
+  CalendarCheck,
+  UserPlus,
+  LayoutGrid
 } from "lucide-react";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
 import { getEventById } from "@/api/events";
 import { getAppById } from "@/api/app-studio";
-import { LayoutGrid } from "lucide-react";
 
 export const Route = createFileRoute("/staff/event/$eventId")({
   component: StaffEventDashboard,
@@ -133,8 +138,12 @@ const AVAILABLE_MODULES = [
   { type: "transactions", title: "Sales & Transactions", icon: CreditCard, desc: "View payments" },
   { type: "venues", title: "Venues", icon: MapPin, desc: "Manage locations" },
   { type: "bookings", title: "Calendar Bookings", icon: Calendar, desc: "View reservations" },
-  { type: "members", title: "Team Members", icon: Users, desc: "Workspace staff directory" },
+  { type: "members", title: "Team Members", icon: UserCheck, desc: "Workspace staff directory" },
   { type: "stats", title: "Live Stats", icon: Activity, desc: "Checked-in & scans per hour" },
+  { type: "wallet", title: "Wallet & Withdraw", icon: Wallet, desc: "Manage balances" },
+  { type: "events_list", title: "Event Ticketing", icon: Ticket, desc: "Browse events and select tickets" },
+  { type: "venue_bookings", title: "Venue Bookings", icon: CalendarCheck, desc: "Manage venue bookings" },
+  { type: "memberships", title: "Memberships", icon: UserPlus, desc: "Register membership users" },
 ];
 
 const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in ms
@@ -532,6 +541,23 @@ function StaffEventDashboard() {
                                   <p className="text-4xl font-black mb-0.5 tracking-tighter">{scansPerHour}</p>
                                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                                     Scans/Hour
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {config.show_tickets_scanned && (
+                              <div className="bg-background/60 backdrop-blur-xl border border-border/50 rounded-3xl p-5 shadow-sm flex flex-col justify-between aspect-[4/3] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                  <ScanLine className="h-16 w-16 text-orange-500" />
+                                </div>
+                                <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 mb-2 border border-orange-500/20">
+                                  <ScanLine className="h-5 w-5" />
+                                </div>
+                                <div>
+                                  <p className="text-4xl font-black mb-0.5 tracking-tighter">{scans.length}</p>
+                                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                                    Scanned
                                   </p>
                                 </div>
                               </div>

@@ -6,7 +6,6 @@ import {
   Settings2,
   Save,
   Loader2,
-  Smartphone,
   ScanLine,
   Users,
   CreditCard,
@@ -16,11 +15,13 @@ import {
   Plus,
   Trash2,
   GripVertical,
-  ChevronRight,
-  ShieldCheck,
   LayoutGrid,
   Lock,
   Activity,
+  Wallet,
+  CalendarCheck,
+  UserPlus,
+  Ticket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,22 @@ import {
   deleteAppModule,
 } from "@/api/app-studio";
 import { getWorkspaceEvents, updateEvent } from "@/api/events";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/app-builder/$appId")({
   component: AppBuilderStudio,
@@ -49,7 +66,124 @@ const AVAILABLE_MODULES = [
   { type: "bookings", title: "Bookings", icon: CalendarDays, desc: "View reservations" },
   { type: "members", title: "Team Members", icon: UserCheck, desc: "Workspace staff directory" },
   { type: "stats", title: "Live Stats", icon: Activity, desc: "Checked-in & scans per hour" },
+  { type: "wallet", title: "Wallet & Withdraw", icon: Wallet, desc: "Manage balances" },
+  { type: "events_list", title: "Event Ticketing", icon: Ticket, desc: "Browse events and select tickets" },
+  { type: "venue_bookings", title: "Venue Bookings", icon: CalendarCheck, desc: "Manage venue bookings" },
+  { type: "memberships", title: "Memberships", icon: UserPlus, desc: "Register membership users" },
 ];
+
+function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 1,
+  };
+
+  const Icon = AVAILABLE_MODULES.find((m) => m.type === module.type)?.icon || LayoutGrid;
+
+  if (module.type === "stats") {
+    const config = module.config || {};
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        onClick={onClick}
+        className={`relative w-full space-y-4 p-4 rounded-3xl border bg-card/60 backdrop-blur-xl transition-all group ${
+          isSelected ? "border-primary shadow-[0_0_20px_rgba(var(--color-primary),0.3)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
+        }`}
+      >
+        <div {...attributes} {...listeners} className="absolute -left-3 top-1/2 -translate-y-1/2 p-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+          <GripVertical className="h-5 w-5" />
+        </div>
+        <div className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-red-500 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-2">Live Stats</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {config.show_checked_in !== false && (
+            <div className="bg-background/60 border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col justify-between aspect-[4/3]">
+              <p className="text-3xl font-black mb-0.5 tracking-tighter">0</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Checked In</p>
+            </div>
+          )}
+          {config.show_scans_per_hour !== false && (
+            <div className="bg-background/60 border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col justify-between aspect-[4/3]">
+              <p className="text-3xl font-black mb-0.5 tracking-tighter">0</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Scans/Hour</p>
+            </div>
+          )}
+          {config.show_tickets_scanned && (
+            <div className="bg-background/60 border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col justify-between aspect-[4/3]">
+              <p className="text-3xl font-black mb-0.5 tracking-tighter">0</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Scanned</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onClick={onClick}
+      className={`relative w-full bg-background/60 backdrop-blur-xl border rounded-[2rem] p-5 text-left transition-all group ${
+        isSelected ? "border-primary shadow-[0_0_20px_rgba(var(--color-primary),0.3)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
+      }`}
+    >
+      <div 
+        {...attributes} 
+        {...listeners} 
+        className="absolute -left-3 top-1/2 -translate-y-1/2 p-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <GripVertical className="h-5 w-5" />
+      </div>
+
+      <div className="absolute top-4 right-4 p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-red-500 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="absolute top-0 right-0 p-5 opacity-5 transform translate-x-4 -translate-y-4 pointer-events-none">
+        <Icon className="h-20 w-20 text-foreground" />
+      </div>
+      <div className="relative z-10 flex flex-col gap-3 ml-2">
+        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center border border-border/50 text-foreground">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <h4 className="font-black text-lg tracking-tight mb-0.5">{module.title}</h4>
+          <p className="text-muted-foreground text-xs font-medium">
+             {module.type === "events_list" ? "Select tickets" : "Open Module"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function getDefaultConfig(type: string) {
+  switch (type) {
+    case "scanner":
+      return { scan_tickets: true, scan_vouchers: true, scan_badges: true, record_entry: true, visibility_roles: "" };
+    case "attendees":
+      return { view_contact: false, allow_edit: false, visibility_roles: "" };
+    case "transactions":
+      return { view_financials: false, allow_refunds: false, visibility_roles: "" };
+    case "stats":
+      return { show_checked_in: true, show_scans_per_hour: true, show_tickets_scanned: false, visibility_roles: "" };
+    default:
+      return { visibility_roles: "" };
+  }
+}
 
 function AppBuilderStudio() {
   const { workspaceSlug, appId } = Route.useParams();
@@ -62,7 +196,6 @@ function AppBuilderStudio() {
     enabled: !!appId,
   });
 
-  const [activeTab, setActiveTab] = useState<"modules" | "settings" | "permissions">("modules");
   const [previewScreen, setPreviewScreen] = useState<"login" | "home">("home");
   const [modules, setModules] = useState<any[]>([]);
   const [selectedModuleIdx, setSelectedModuleIdx] = useState<number | null>(null);
@@ -82,7 +215,6 @@ function AppBuilderStudio() {
     enabled: !!activeWorkspace?.id,
   });
 
-  // Load initial data
   useEffect(() => {
     if (appData) {
       setAppConfig({
@@ -95,14 +227,12 @@ function AppBuilderStudio() {
       setModules(
         (appData.app_modules || []).map((m: any) => ({
           ...m,
-          // ensure config is parsed if it came as string somehow
           config: typeof m.config === "string" ? JSON.parse(m.config) : m.config || {},
         }))
       );
     }
   }, [appData]);
 
-  // Load the assigned event if one exists
   useEffect(() => {
     if (events && events.length > 0 && appId) {
       const linkedEvent = events.find((e: any) => e.app_id === appId);
@@ -112,7 +242,6 @@ function AppBuilderStudio() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // 1. Save App Settings
       await updateWorkspaceApp({
         data: {
           id: appId,
@@ -126,7 +255,6 @@ function AppBuilderStudio() {
         },
       } as any);
 
-      // 2. Save Modules
       const modulesToUpsert = modules.map((m, idx) => ({
         id: m.id,
         app_id: appId,
@@ -141,7 +269,6 @@ function AppBuilderStudio() {
         await upsertAppModules({ data: { objects: modulesToUpsert } } as any);
       }
 
-      // 3. Link to Event (if changed)
       if (assignedEventId) {
         await updateEvent({ data: { id: assignedEventId, set: { app_id: appId } } } as any);
       }
@@ -149,6 +276,8 @@ function AppBuilderStudio() {
     onSuccess: () => {
       toast.success("App saved successfully!");
       queryClient.invalidateQueries({ queryKey: ["app-studio", appId] });
+      // Reset isNew flag
+      setModules(modules.map(m => ({ ...m, isNew: false })));
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to save app");
@@ -160,13 +289,12 @@ function AppBuilderStudio() {
       id: crypto.randomUUID(),
       type: modType.type,
       title: modType.title,
-      icon: modType.icon.name || "LayoutGrid", // Storing icon name as string
+      icon: modType.icon.name || "LayoutGrid",
       config: getDefaultConfig(modType.type),
       isNew: true,
     };
     setModules([...modules, newMod]);
     setSelectedModuleIdx(modules.length);
-    setActiveTab("settings");
   };
 
   const handleDeleteModule = async (idx: number, modId: string) => {
@@ -203,9 +331,35 @@ function AppBuilderStudio() {
     setModules(newMods);
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setModules((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        
+        // Ensure selectedModuleIdx stays in sync if the selected module was moved
+        if (selectedModuleIdx === oldIndex) {
+           setSelectedModuleIdx(newIndex);
+        } else if (selectedModuleIdx !== null) {
+           // Adjust if it was shifted
+           if (oldIndex < selectedModuleIdx && newIndex >= selectedModuleIdx) setSelectedModuleIdx(selectedModuleIdx - 1);
+           else if (oldIndex > selectedModuleIdx && newIndex <= selectedModuleIdx) setSelectedModuleIdx(selectedModuleIdx + 1);
+        }
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -214,446 +368,407 @@ function AppBuilderStudio() {
   const selectedModule = selectedModuleIdx !== null ? modules[selectedModuleIdx] : null;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-muted/20">
-      {/* Header */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/50 bg-card px-6 shadow-sm z-10">
-        <div className="flex items-center gap-4">
+    <div className="flex h-screen flex-col bg-muted/20 font-sans fixed inset-0 z-50">
+      {/* Top Navigation / Toolbar */}
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/50 bg-background px-4 shadow-sm z-10">
+        <div className="flex items-center gap-3">
           <Link to="/dashboard/$workspaceSlug/app-builder" params={{ workspaceSlug }}>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div>
-            <h1 className="font-semibold">{appConfig.name || "Untitled App"}</h1>
-            <p className="text-xs text-muted-foreground">App Studio Designer</p>
+          <div className="h-4 w-px bg-border/50 mx-1" />
+          <div className="flex items-center gap-2">
+            <LayoutGrid className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm">{appConfig.name || "Untitled App"}</span>
+            <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full ml-2">Studio</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 mr-4">
+        
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 mr-2">
+            <Label htmlFor="active-toggle" className="text-xs text-muted-foreground">App Status</Label>
             <Switch
+              id="active-toggle"
               checked={appConfig.is_active}
               onCheckedChange={(c) => setAppConfig({ ...appConfig, is_active: c })}
+              className="scale-90"
             />
-            <span className="text-sm font-medium">{appConfig.is_active ? "Active" : "Disabled"}</span>
           </div>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
-            className="gap-2 rounded-full shadow-[var(--shadow-glow)] px-6"
-            style={{ background: "var(--gradient-primary)", color: "white" }}
+            size="sm"
+            className="gap-2 rounded-lg shadow-sm px-4"
           >
             {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save App
+            Publish Changes
           </Button>
         </div>
       </header>
 
-      {/* Main Studio Workspace */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main Figma-like Workspace */}
+      <div className="flex flex-1 overflow-hidden bg-muted/30">
 
-        {/* Left Sidebar - Available Modules */}
-        <aside className="w-80 border-r border-border/50 bg-card overflow-y-auto">
-          <div className="p-5 border-b border-border/50">
-            <h2 className="font-semibold text-lg">Add Modules</h2>
-            <p className="text-xs text-muted-foreground mt-1">Drag or click to add to your app.</p>
+        {/* Left Panel - Layers & Tools */}
+        <aside className="w-[280px] shrink-0 border-r border-border/50 bg-background flex flex-col">
+          <div className="p-4 border-b border-border/50">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">UI Components</h2>
+            <p className="text-[11px] text-muted-foreground">Click to add modules to the canvas.</p>
           </div>
-          <div className="p-4 flex flex-col gap-3">
+          <div className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar">
             {AVAILABLE_MODULES.map((mod) => (
               <div
                 key={mod.type}
-                className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-secondary/20 hover:bg-secondary/60 hover:border-primary/40 cursor-pointer transition-all group"
+                className="flex items-center gap-3 p-2.5 rounded-lg border border-transparent hover:bg-secondary hover:border-border/50 cursor-pointer transition-colors group"
                 onClick={() => handleAddModule(mod)}
               >
-                <div className="h-10 w-10 rounded-lg bg-background flex items-center justify-center shadow-sm text-primary group-hover:scale-105 transition-transform">
-                  <mod.icon className="h-5 w-5" />
+                <div className="text-muted-foreground group-hover:text-foreground">
+                  <mod.icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">{mod.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{mod.desc}</p>
+                  <p className="text-xs font-medium">{mod.title}</p>
                 </div>
-                <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Plus className="h-3 w-3 text-muted-foreground group-hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
           </div>
         </aside>
 
-        {/* Center Canvas - Mobile Preview */}
-        <main className="flex-1 overflow-y-auto bg-muted/30 p-8 flex flex-col items-center">
-          <div className="flex bg-secondary p-1 rounded-xl mb-6 shadow-sm">
-            <button
-              className={`px-5 py-1.5 text-sm font-semibold rounded-lg transition-colors ${previewScreen === "login" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setPreviewScreen("login")}
+        {/* Center Panel - Canvas */}
+        <main className="flex-1 overflow-y-auto flex flex-col relative" onClick={() => setSelectedModuleIdx(null)}>
+          <div className="absolute top-6 inset-x-0 flex justify-center z-10 pointer-events-none">
+            <div className="bg-background/80 backdrop-blur-md shadow-sm border border-border/50 rounded-full p-1 flex pointer-events-auto">
+              <button
+                className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-colors ${previewScreen === "login" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                onClick={(e) => { e.stopPropagation(); setPreviewScreen("login"); }}
+              >
+                Login State
+              </button>
+              <button
+                className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-colors ${previewScreen === "home" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                onClick={(e) => { e.stopPropagation(); setPreviewScreen("home"); }}
+              >
+                Authenticated State
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 w-full flex items-center justify-center p-8 py-24 min-h-max">
+            <div 
+              className="w-[375px] h-[812px] bg-card rounded-[3rem] shadow-2xl border-[12px] border-[#1e1e1e] relative overflow-hidden flex flex-col shrink-0"
+              onClick={(e) => e.stopPropagation()}
             >
-              Login Page
+              {/* Phone Notch */}
+              <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50 pointer-events-none">
+                <div className="w-32 h-6 bg-[#1e1e1e] rounded-b-[18px]"></div>
+              </div>
+
+              {previewScreen === "login" ? (
+                <div 
+                  className="h-full w-full flex flex-col items-center justify-center text-foreground px-6 relative overflow-hidden bg-background"
+                  style={{ "--color-primary": appConfig.theme_color } as React.CSSProperties}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-background pointer-events-none" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+                  
+                  <div className="z-10 w-full flex flex-col items-center">
+                    {appConfig.logo_url ? (
+                      <img
+                        src={appConfig.logo_url}
+                        alt="Logo"
+                        className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
+                        <Lock className="h-8 w-8 text-primary" />
+                      </div>
+                    )}
+                    <h1 className="text-2xl font-bold mb-1 text-center">{appConfig.name || "App Name"}</h1>
+                    <p className="text-muted-foreground text-sm mb-8 text-center">
+                      Enter your 9-digit security PIN
+                    </p>
+
+                    <div className="flex gap-2 mb-10">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="w-3 h-3 rounded-full bg-black/10 dark:bg-white/20" />
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-x-6 gap-y-4 w-full">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                        <div key={num} className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto">
+                          {num}
+                        </div>
+                      ))}
+                      <div />
+                      <div className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto">0</div>
+                      <div className="w-14 h-14 rounded-full text-muted-foreground text-sm font-medium flex items-center justify-center mx-auto">DEL</div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div 
+                  className="flex flex-col h-full bg-background relative overflow-hidden" 
+                  style={{ "--color-primary": appConfig.theme_color } as React.CSSProperties}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-background pointer-events-none -z-10" />
+                  <div className="absolute top-0 left-0 right-0 h-64 bg-primary/10 blur-[80px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
+                  
+                  <header className="px-5 pt-12 pb-2 flex items-center justify-between relative z-10">
+                    <div className="p-2 -ml-2 text-foreground/60 bg-secondary/50 backdrop-blur-md rounded-full border border-border/50">
+                      <ArrowLeft className="h-5 w-5" />
+                    </div>
+                    <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_rgba(var(--color-primary),0.1)]">
+                      <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
+                      <span className="text-primary text-[10px] font-black tracking-widest uppercase">Live</span>
+                    </div>
+                  </header>
+
+                  <main className="flex-1 px-5 pt-4 pb-20 relative z-10 overflow-y-auto no-scrollbar space-y-6">
+                    <div>
+                      <h1 className="text-3xl font-black mb-1 leading-tight tracking-tight">
+                        {appConfig.name || "App Name"}
+                      </h1>
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className="px-2.5 py-0.5 bg-secondary text-secondary-foreground text-[9px] font-bold uppercase tracking-wider rounded-md border border-border/50">
+                          Staff Role
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pb-8">
+                      {modules.length === 0 ? (
+                        <div className="bg-secondary/30 border border-dashed border-border/50 rounded-3xl p-6 text-center mt-8">
+                          <LayoutGrid className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+                          <h4 className="font-semibold text-sm mb-1">Canvas is empty</h4>
+                          <p className="text-muted-foreground text-xs">
+                            Add modules from the left panel.
+                          </p>
+                        </div>
+                      ) : (
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={handleDragEnd}
+                        >
+                          <SortableContext
+                            items={modules.map(m => m.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            <div className="space-y-3">
+                              {modules.map((mod, idx) => (
+                                <SortableModuleItem 
+                                  key={mod.id} 
+                                  module={mod} 
+                                  isSelected={selectedModuleIdx === idx}
+                                  onClick={() => setSelectedModuleIdx(idx)}
+                                  onRemove={() => handleDeleteModule(idx, mod.id)}
+                                />
+                              ))}
+                            </div>
+                          </SortableContext>
+                        </DndContext>
+                      )}
+                    </div>
+                  </main>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+
+        {/* Right Panel - Properties Inspector */}
+        <aside className="w-[320px] shrink-0 border-l border-border/50 bg-background flex flex-col">
+          <div className="flex bg-muted p-1 m-3 rounded-lg">
+            <button
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${!selectedModule ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setSelectedModuleIdx(null)}
+            >
+              App
             </button>
             <button
-              className={`px-5 py-1.5 text-sm font-semibold rounded-lg transition-colors ${previewScreen === "home" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setPreviewScreen("home")}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${selectedModule ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              disabled={!selectedModule}
             >
-              App Home
+              Module
             </button>
           </div>
 
-          <div className="w-[375px] h-[812px] bg-card rounded-[3rem] shadow-2xl border-[12px] border-foreground/10 relative overflow-hidden flex flex-col shrink-0">
-            
-            {/* Phone Notch */}
-            <div className="absolute top-0 inset-x-0 h-6 flex justify-center z-50">
-              <div className="w-32 h-6 bg-foreground/10 rounded-b-xl"></div>
-            </div>
-
-            {previewScreen === "login" ? (
-              <div 
-                className="h-full w-full flex flex-col items-center justify-center text-foreground px-6 relative overflow-hidden bg-background"
-                style={{ "--color-primary": appConfig.theme_color } as React.CSSProperties}
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-background pointer-events-none" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-                
-                <div className="z-10 w-full flex flex-col items-center">
-                  {appConfig.logo_url ? (
-                    <img
-                      src={appConfig.logo_url}
-                      alt="Logo"
-                      className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-[0_0_30px_var(--color-primary)]/30 border border-black/10"
+          <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
+            {!selectedModule ? (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold">App Settings</h3>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">App Name</Label>
+                    <Input
+                      value={appConfig.name}
+                      onChange={(e) => setAppConfig({ ...appConfig, name: e.target.value })}
+                      placeholder="My Portal"
+                      className="h-8 text-sm bg-secondary/50 border-border/50"
                     />
-                  ) : (
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 shadow-[0_0_30px_var(--color-primary)]/30 border border-primary/20">
-                      <Lock className="h-8 w-8 text-primary" />
-                    </div>
-                  )}
-                  <h1 className="text-2xl font-bold mb-1 text-center">{appConfig.name || "App Name"}</h1>
-                  <p className="text-muted-foreground text-sm mb-8 text-center">
-                    Enter your 9-digit security PIN
-                  </p>
-
-                  <div className="flex gap-2 mb-10">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div
-                        key={i}
-                        className="w-3 h-3 rounded-full bg-black/10 dark:bg-white/20"
-                      />
-                    ))}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-x-6 gap-y-4 w-full">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                      <div
-                        key={num}
-                        className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto"
-                      >
-                        {num}
-                      </div>
-                    ))}
-                    <div />
-                    <div className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto">
-                      0
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Description</Label>
+                    <Textarea
+                      value={appConfig.description}
+                      onChange={(e) => setAppConfig({ ...appConfig, description: e.target.value })}
+                      placeholder="Brief description..."
+                      className="text-sm bg-secondary/50 border-border/50 resize-none h-20"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Theme Color</Label>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="color"
+                        value={appConfig.theme_color}
+                        onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
+                        className="h-8 w-12 p-0 border-0 bg-transparent rounded cursor-pointer"
+                      />
+                      <Input
+                        value={appConfig.theme_color}
+                        onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
+                        className="h-8 text-xs font-mono uppercase bg-secondary/50 border-border/50"
+                      />
                     </div>
-                    <div className="w-14 h-14 rounded-full text-muted-foreground text-sm font-medium flex items-center justify-center mx-auto">
-                      DEL
-                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Logo URL</Label>
+                    <Input
+                      value={appConfig.logo_url}
+                      onChange={(e) => setAppConfig({ ...appConfig, logo_url: e.target.value })}
+                      placeholder="https://..."
+                      className="h-8 text-sm bg-secondary/50 border-border/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <h3 className="text-sm font-bold">Event Link (Optional)</h3>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Assigned Event</Label>
+                    <select
+                      className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      value={assignedEventId}
+                      onChange={(e) => setAssignedEventId(e.target.value)}
+                    >
+                      <option value="">No event linked</option>
+                      {events.map((evt: any) => (
+                        <option key={evt.id} value={evt.id}>{evt.title}</option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
+                      Link this app to an event to use it as the Event Staff Portal.
+                    </p>
                   </div>
                 </div>
               </div>
             ) : (
-              <div 
-                className="flex flex-col h-full bg-background relative overflow-hidden" 
-                style={{ "--color-primary": appConfig.theme_color } as React.CSSProperties}
-              >
-                <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-background to-background pointer-events-none -z-10" />
-                <div className="absolute top-0 left-0 right-0 h-64 bg-primary/10 blur-[80px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
-                
-                <header className="px-6 pt-12 pb-2 flex items-center justify-between relative z-10">
-                  <div className="p-2.5 -ml-2.5 text-foreground/60 bg-secondary/50 backdrop-blur-md rounded-full border border-border/50">
-                    <ArrowLeft className="h-5 w-5" />
-                  </div>
-                  <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_rgba(var(--color-primary),0.1)]">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
-                    <span className="text-primary text-xs font-black tracking-widest uppercase">Live</span>
-                  </div>
-                </header>
-
-                <main className="flex-1 px-6 pt-4 pb-24 relative z-10 overflow-y-auto space-y-8 no-scrollbar">
-                  <div>
-                    <h1 className="text-3xl font-black mb-2 leading-tight tracking-tight">
-                      {appConfig.name || "App Name"}
-                    </h1>
-                    <div className="flex flex-wrap items-center gap-2 mt-3">
-                      <span className="px-3 py-1 bg-secondary text-secondary-foreground text-[10px] font-bold uppercase tracking-wider rounded-lg border border-border/50">
-                        Staff Role
-                      </span>
-                      <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded-lg border border-primary/20">
-                        All Access
-                      </span>
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="h-8 w-8 rounded bg-secondary flex items-center justify-center text-primary">
+                      {(() => {
+                         const ModIcon = AVAILABLE_MODULES.find(m => m.type === selectedModule.type)?.icon || LayoutGrid;
+                         return <ModIcon className="h-4 w-4" />
+                      })()}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold leading-none mb-1">Properties</h3>
+                      <p className="text-[10px] text-muted-foreground capitalize">{selectedModule.type}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground/80 ml-1">
-                      App Modules
-                    </h3>
-                    {modules.length === 0 ? (
-                      <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
-                        <LayoutGrid className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                        <h4 className="font-bold text-lg mb-2">No Modules Added</h4>
-                        <p className="text-muted-foreground text-sm">
-                          Add modules from the left panel to build your app.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-4">
-                        {modules.map((m, idx) => {
-                          const ModIcon = AVAILABLE_MODULES.find(am => am.type === m.type)?.icon || LayoutGrid;
-                          return (
-                            <button
-                              key={m.id || idx}
-                              onClick={() => {
-                                setSelectedModuleIdx(idx);
-                                setActiveTab("settings");
-                              }}
-                              className={`w-full relative overflow-hidden border rounded-[2rem] p-6 text-left transition-all group ${
-                                selectedModuleIdx === idx 
-                                  ? "border-primary ring-2 ring-primary/20 bg-primary shadow-[0_15px_40px_rgba(var(--color-primary),0.25)]" 
-                                  : "bg-background/60 backdrop-blur-xl border-border/50 hover:border-primary/50"
-                              }`}
-                            >
-                              <div className={`absolute top-0 right-0 p-6 opacity-10 transform translate-x-4 -translate-y-4 ${selectedModuleIdx === idx ? "opacity-20" : ""}`}>
-                                <ModIcon className={`h-24 w-24 ${selectedModuleIdx === idx ? "text-primary-foreground" : "text-foreground"}`} />
-                              </div>
-                              <div className="relative z-10 flex flex-col gap-4">
-                                <div className={`h-12 w-12 rounded-full flex items-center justify-center border ${
-                                  selectedModuleIdx === idx 
-                                    ? "bg-white/20 backdrop-blur-md border-white/30 text-white" 
-                                    : "bg-secondary border-border/50 text-foreground"
-                                }`}>
-                                  <ModIcon className="h-6 w-6" />
-                                </div>
-                                <div>
-                                  <h4 className={`font-black text-xl tracking-tight mb-1 ${selectedModuleIdx === idx ? "text-primary-foreground" : ""}`}>
-                                    {m.title}
-                                  </h4>
-                                  <p className={`text-sm font-medium ${selectedModuleIdx === idx ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                                    {m.desc || "Configure this module"}
-                                  </p>
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Display Title</Label>
+                    <Input
+                      value={selectedModule.title}
+                      onChange={(e) => updateSelectedModuleProp("title", e.target.value)}
+                      className="h-8 text-sm bg-secondary/50 border-border/50"
+                    />
                   </div>
-                </main>
-              </div>
-            )}
-          </div>
-        </main>
-
-        {/* Right Sidebar - Properties/Settings */}
-        <aside className="w-80 border-l border-border/50 bg-card flex flex-col">
-          <div className="flex p-2 border-b border-border/50 bg-secondary/20">
-            <button
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "modules" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setActiveTab("modules")}
-            >
-              App Setup
-            </button>
-            <button
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "settings" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setActiveTab("settings")}
-            >
-              Module Settings
-            </button>
-            <button
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === "permissions" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setActiveTab("permissions")}
-            >
-              Access
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-5">
-            {activeTab === "modules" && (
-              <div className="space-y-6 animate-in fade-in">
-                <div className="space-y-2">
-                  <Label>App Name</Label>
-                  <Input value={appConfig.name} onChange={e => setAppConfig({ ...appConfig, name: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea value={appConfig.description} onChange={e => setAppConfig({ ...appConfig, description: e.target.value })} rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Theme Color</Label>
-                  <div className="flex gap-2">
-                    <Input type="color" value={appConfig.theme_color} onChange={e => setAppConfig({ ...appConfig, theme_color: e.target.value })} className="w-12 h-10 p-1" />
-                    <Input value={appConfig.theme_color} onChange={e => setAppConfig({ ...appConfig, theme_color: e.target.value })} className="flex-1 uppercase font-mono text-sm" />
+                  
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Visibility Rules (Roles)</Label>
+                    <Input
+                      value={selectedModule.config?.visibility_roles || ""}
+                      onChange={(e) => updateSelectedModuleConfig("visibility_roles", e.target.value)}
+                      placeholder="e.g. admin, scanner"
+                      className="h-8 text-sm bg-secondary/50 border-border/50"
+                    />
+                    <p className="text-[10px] text-muted-foreground leading-tight">Comma separated list of roles. Leave empty to allow all.</p>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Custom Logo URL</Label>
-                  <Input value={appConfig.logo_url} onChange={e => setAppConfig({ ...appConfig, logo_url: e.target.value })} placeholder="https://..." />
-                </div>
-                <div className="space-y-2 pt-4 border-t border-border/50">
-                  <Label>Assign to Event</Label>
-                  <select 
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    value={assignedEventId}
-                    onChange={(e) => setAssignedEventId(e.target.value)}
-                  >
-                    <option value="">None (Workspace App)</option>
-                    {events.map((evt: any) => (
-                      <option key={evt.id} value={evt.id}>{evt.title}</option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Link this app design to an event so event staff can see it.
-                  </p>
-                </div>
-              </div>
-            )}
 
-            {activeTab === "settings" && (
-              <div className="space-y-6 animate-in fade-in">
-                {!selectedModule ? (
-                  <div className="text-center text-muted-foreground p-6 pt-12">
-                    <Settings2 className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p className="text-sm">Select a module on the mobile preview to edit its settings.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                          <Settings2 className="h-4 w-4" />
-                        </div>
-                        <h3 className="font-semibold">Module Details</h3>
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10 rounded-lg" onClick={() => handleDeleteModule(selectedModuleIdx!, selectedModule.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div className="space-y-4 pt-2 border-t border-border/50">
-                      <div className="space-y-2">
-                        <Label>Display Title</Label>
-                        <Input value={selectedModule.title} onChange={e => updateSelectedModuleProp("title", e.target.value)} />
-                      </div>
-
-                      {/* Dynamic config fields based on module type */}
-                      {selectedModule.type === "scanner" && (
-                        <div className="space-y-4 border rounded-xl p-4 bg-secondary/10">
-                          <Label className="text-xs uppercase text-muted-foreground font-bold">Scanning Capabilities</Label>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Scan Tickets</Label>
-                            <Switch checked={selectedModule.config.scan_tickets ?? true} onCheckedChange={c => updateSelectedModuleConfig("scan_tickets", c)} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Scan Vouchers</Label>
-                            <Switch checked={selectedModule.config.scan_vouchers ?? true} onCheckedChange={c => updateSelectedModuleConfig("scan_vouchers", c)} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Scan Staff Badges</Label>
-                            <Switch checked={selectedModule.config.scan_badges ?? false} onCheckedChange={c => updateSelectedModuleConfig("scan_badges", c)} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Record Entry</Label>
-                            <Switch checked={selectedModule.config.record_entry ?? true} onCheckedChange={c => updateSelectedModuleConfig("record_entry", c)} />
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedModule.type === "attendees" && (
-                        <div className="space-y-4 border rounded-xl p-4 bg-secondary/10">
-                          <Label className="text-xs uppercase text-muted-foreground font-bold">Data Access</Label>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">View Contact Info</Label>
-                            <Switch checked={selectedModule.config.view_contact ?? false} onCheckedChange={c => updateSelectedModuleConfig("view_contact", c)} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Allow Editing</Label>
-                            <Switch checked={selectedModule.config.allow_edit ?? false} onCheckedChange={c => updateSelectedModuleConfig("allow_edit", c)} />
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedModule.type === "transactions" && (
-                        <div className="space-y-4 border rounded-xl p-4 bg-secondary/10">
-                          <Label className="text-xs uppercase text-muted-foreground font-bold">Permissions</Label>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">View Financials</Label>
-                            <Switch checked={selectedModule.config.view_financials ?? false} onCheckedChange={c => updateSelectedModuleConfig("view_financials", c)} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Process Refunds</Label>
-                            <Switch checked={selectedModule.config.allow_refunds ?? false} onCheckedChange={c => updateSelectedModuleConfig("allow_refunds", c)} />
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedModule.type === "stats" && (
-                        <div className="space-y-4 border rounded-xl p-4 bg-secondary/10">
-                          <Label className="text-xs uppercase text-muted-foreground font-bold">Metrics</Label>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Show Checked-In</Label>
-                            <Switch checked={selectedModule.config.show_checked_in ?? true} onCheckedChange={c => updateSelectedModuleConfig("show_checked_in", c)} />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-sm">Show Scans/Hour</Label>
-                            <Switch checked={selectedModule.config.show_scans_per_hour ?? true} onCheckedChange={c => updateSelectedModuleConfig("show_scans_per_hour", c)} />
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="space-y-4 border rounded-xl p-4 bg-secondary/10 mt-4">
-                        <Label className="text-xs uppercase text-muted-foreground font-bold">Visibility Control</Label>
-                        <div className="space-y-2">
-                          <Label className="text-sm">Visible to Roles / Sections</Label>
-                          <Input 
-                            value={selectedModule.config.visibility_roles || ""} 
-                            onChange={e => updateSelectedModuleConfig("visibility_roles", e.target.value)} 
-                            placeholder="e.g. Scanner, Admin, VIP (comma separated)" 
+                  {/* Module Specific Settings */}
+                  {selectedModule.type === "scanner" && (
+                    <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Scanner Options</Label>
+                      {["scan_tickets", "scan_vouchers", "scan_badges", "record_entry"].map((opt) => (
+                        <div key={opt} className="flex items-center justify-between">
+                          <Label className="text-xs font-normal capitalize">{opt.replace("_", " ")}</Label>
+                          <Switch
+                            checked={selectedModule.config?.[opt] ?? true}
+                            onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
+                            className="scale-75 origin-right"
                           />
-                          <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                            Restrict this module to specific Workspace User roles OR Event Staff sections. Leave empty so everyone can see it.
-                          </p>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
 
-            {activeTab === "permissions" && (
-              <div className="space-y-6 animate-in fade-in">
-                <div className="text-center text-muted-foreground p-6 pt-12 border-b border-border/50">
-                  <ShieldCheck className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                  <p className="text-sm font-medium text-foreground mb-1">Access Control</p>
-                  <p className="text-xs">Define which user roles can access this specific app on their device.</p>
-                </div>
+                  {selectedModule.type === "attendees" && (
+                    <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Guest List Options</Label>
+                      {["view_contact", "allow_edit"].map((opt) => (
+                        <div key={opt} className="flex items-center justify-between">
+                          <Label className="text-xs font-normal capitalize">{opt.replace("_", " ")}</Label>
+                          <Switch
+                            checked={selectedModule.config?.[opt] ?? false}
+                            onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
+                            className="scale-75 origin-right"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                <div className="space-y-4 pt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm">Staff Role</Label>
-                      <p className="text-xs text-muted-foreground">General event staff</p>
+                  {selectedModule.type === "transactions" && (
+                    <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Transaction Options</Label>
+                      {["view_financials", "allow_refunds"].map((opt) => (
+                        <div key={opt} className="flex items-center justify-between">
+                          <Label className="text-xs font-normal capitalize">{opt.replace("_", " ")}</Label>
+                          <Switch
+                            checked={selectedModule.config?.[opt] ?? false}
+                            onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
+                            className="scale-75 origin-right"
+                          />
+                        </div>
+                      ))}
                     </div>
-                    <Switch defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm">Vendor Role</Label>
-                      <p className="text-xs text-muted-foreground">External contractors</p>
+                  )}
+
+                  {selectedModule.type === "stats" && (
+                    <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Stat Cards</Label>
+                      {["show_checked_in", "show_scans_per_hour", "show_tickets_scanned"].map((opt) => (
+                        <div key={opt} className="flex items-center justify-between">
+                          <Label className="text-xs font-normal capitalize">{opt.replace(/_/g, " ").replace("show ", "")}</Label>
+                          <Switch
+                            checked={selectedModule.config?.[opt] ?? (opt !== "show_tickets_scanned")}
+                            onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
+                            className="scale-75 origin-right"
+                          />
+                        </div>
+                      ))}
                     </div>
-                    <Switch />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm">Admin Role</Label>
-                      <p className="text-xs text-muted-foreground">Workspace admins</p>
-                    </div>
-                    <Switch defaultChecked disabled />
-                  </div>
+                  )}
+
                 </div>
               </div>
             )}
@@ -662,14 +777,4 @@ function AppBuilderStudio() {
       </div>
     </div>
   );
-}
-
-function getDefaultConfig(type: string) {
-  switch (type) {
-    case "scanner": return { scan_tickets: true, scan_vouchers: true, scan_badges: false, record_entry: true, visibility_roles: "" };
-    case "attendees": return { view_contact: false, allow_edit: false, visibility_roles: "" };
-    case "transactions": return { view_financials: false, allow_refunds: false, visibility_roles: "" };
-    case "stats": return { show_checked_in: true, show_scans_per_hour: true, visibility_roles: "" };
-    default: return { visibility_roles: "" };
-  }
 }
