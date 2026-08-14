@@ -52,7 +52,7 @@ import {
   getTicketProjectById,
   updateTicketProject,
 } from "@/api/events";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 import { toast } from "sonner";
 import { InviteContributorModal } from "@/components/dashboard/projects/InviteContributorModal";
 import { getContributorAccessLevel } from "@/api/project_contributors";
@@ -611,7 +611,7 @@ function TicketDesignerPage() {
           data: {
             base64,
             contentType: file.type,
-            folder: "tickets/covers",
+            folder: buildStoragePath(workspaceSlug, "tickets", dbProject?.name || projectId, "cover"),
             ext: file.type.split("/")[1] || "jpg",
           },
         } as any);
@@ -1188,7 +1188,7 @@ function TicketDesignerPage() {
                             data: {
                               base64,
                               contentType: file.type,
-                              folder: "tickets/logos",
+                              folder: buildStoragePath(workspaceSlug, "tickets", dbProject?.name || projectId, "logo"),
                               ext: "png",
                             },
                           } as any);

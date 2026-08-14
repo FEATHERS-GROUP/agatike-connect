@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { cn } from "@/lib/utils";
 import { getWorkspaceEvents } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
@@ -118,7 +119,8 @@ function CreateProductView() {
       };
 
       if (imageFile) {
-        payload.image_url = await uploadFileToStorage(imageFile, "events/products");
+        const folderPath = buildStoragePath(activeWorkspace?.slug, "products", formData.name, "image");
+        payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
       return await createProduct({ data: payload } as any);

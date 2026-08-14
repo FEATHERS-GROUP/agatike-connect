@@ -23,6 +23,7 @@ import {
 import { getEventAttendees } from "@/api/attendees";
 import { VenueSeatSelector } from "@/components/shared/VenueSeatSelector";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
@@ -133,9 +134,10 @@ function VenueView() {
           let updatedStop = { ...stop };
 
           if (updatedStop.venueImageFile) {
+            const folderPath = buildStoragePath(workspaceSlug, "events", event?.title, "venues");
             const url = await uploadFileToStorage(
               updatedStop.venueImageFile,
-              "events/venues/images",
+              folderPath,
             );
             updatedStop.venue_image_url = url;
             updatedStop.venueImageFile = undefined;

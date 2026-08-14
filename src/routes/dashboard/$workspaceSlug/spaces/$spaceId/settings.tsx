@@ -1,7 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSpaceById, updateSpace } from "@/api/spaces";
-import { uploadFormData, deleteFiles } from "@/api/storage";
+import { uploadFormData, deleteFiles, buildStoragePath } from "@/api/storage";
 import {
   Settings,
   Save,
@@ -32,7 +32,7 @@ const SPACE_TYPES = [
 ];
 
 function SpaceSettingsPage() {
-  const { spaceId } = useParams({ strict: false }) as any;
+  const { spaceId, workspaceSlug } = useParams({ strict: false }) as any;
   const queryClient = useQueryClient();
 
   const { data: space, isLoading } = useQuery({
@@ -99,7 +99,8 @@ function SpaceSettingsPage() {
       // 2. Upload the new image via FormData proxy
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("folder", "spaces");
+      const folderPath = buildStoragePath(workspaceSlug, "spaces", form.name, "cover");
+      formData.append("folder", folderPath);
 
       const res = await uploadFormData({ data: formData });
 

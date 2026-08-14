@@ -25,6 +25,7 @@ import { getEventById, updateEvent } from "@/api/events";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { TicketEditor, Ticket } from "@/components/desktop/TicketEditor";
@@ -246,7 +247,8 @@ function EditEventPage() {
     mutationFn: async () => {
       let coverUrl = form.coverPreview;
       if (coverFile) {
-        coverUrl = await uploadFileToStorage(coverFile, "events/covers");
+        const folderPath = buildStoragePath(workspaceSlug, "events", form.title, "cover");
+        coverUrl = await uploadFileToStorage(coverFile, folderPath);
       }
       return updateEvent({
         data: {

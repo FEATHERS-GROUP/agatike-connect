@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { updateWorkspaceUser, getWorkspaceUsers } from "@/api/workspace_users";
 import { getUserWorkspaces } from "@/api/workspaces";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -248,7 +248,7 @@ function EditUserPage() {
             data: {
               base64: match[2],
               contentType: match[1],
-              folder: "workspace-users/avatars",
+              folder: buildStoragePath(workspaceSlug, "users", payload.first_name || payload.email || "user", "avatar"),
               ext: match[1].split("/")[1] || "png",
             },
           } as any);

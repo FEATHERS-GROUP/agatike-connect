@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { saveBadgeProject, getBadgeProjectById } from "@/api/badges";
 import { getWorkspaceEvents } from "@/api/events";
@@ -162,7 +163,8 @@ function BadgeDesignerEditor() {
 
     setUploadingState((prev) => ({ ...prev, [key]: true }));
     try {
-      const url = await uploadFileToStorage(file, "badges/media");
+      const folderPath = buildStoragePath(workspaceSlug, "badges", existingProject?.name || projectId, "media");
+      const url = await uploadFileToStorage(file, folderPath);
       callback(url);
       toast.success("Image uploaded!");
     } catch (error) {

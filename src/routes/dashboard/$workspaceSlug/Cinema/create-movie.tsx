@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/create-movie")({
@@ -494,9 +495,10 @@ function CreateMovieWizard() {
                             if (!e.target.files?.[0]) return;
                             setIsUploadingCover(true);
                             try {
+                              const folderPath = buildStoragePath(activeWorkspace?.slug, "cinema", form.title, "cover");
                               const url = await uploadFileToStorage(
                                 e.target.files[0],
-                                "movies/covers",
+                                folderPath,
                               );
                               set("cover_url", url);
                               toast.success("Cover uploaded!");

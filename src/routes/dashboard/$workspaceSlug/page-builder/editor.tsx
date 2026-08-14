@@ -47,6 +47,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import {
   Select,
   SelectContent,
@@ -348,7 +349,8 @@ function PageBuilder() {
     }
     const loadingToast = toast.loading("Uploading image...");
     try {
-      const url = await uploadFileToStorage(file, `pages/${workspace_id}/${Date.now()}`);
+      const folderPath = buildStoragePath(workspaceSlug, "page-builder", pageTitle || "page", "media");
+      const url = await uploadFileToStorage(file, folderPath);
       setter(url);
       toast.success("Uploaded!", { id: loadingToast });
     } catch {

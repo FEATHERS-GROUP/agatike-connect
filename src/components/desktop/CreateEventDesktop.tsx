@@ -28,7 +28,7 @@ import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { uploadFile, deleteFiles } from "@/api/storage";
+import { uploadFile, deleteFiles, buildStoragePath } from "@/api/storage";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 // Standard event categories
@@ -389,8 +389,9 @@ export function CreateEventDesktop() {
         try {
           const base64 = await fileToBase64(coverFile);
           const ext = coverFile.name.split(".").pop() || "jpg";
+          const folderPath = buildStoragePath(activeWorkspace?.slug, "events", data.title, "cover");
           const res = await uploadFile({
-            data: { base64, contentType: coverFile.type, folder: "events/covers", ext },
+            data: { base64, contentType: coverFile.type, folder: folderPath, ext },
           } as any);
           coverUrl = res.url;
         } catch (err) {
@@ -409,8 +410,9 @@ export function CreateEventDesktop() {
               const blob = await resp.blob();
               const file = new File([blob], "merch.jpg", { type: blob.type });
               const base64 = await fileToBase64(file);
+              const folderPath = buildStoragePath(activeWorkspace?.slug, "events", data.title, "merch");
               const res = await uploadFile({
-                data: { base64, contentType: file.type, folder: "events/merch", ext: "jpg" },
+                data: { base64, contentType: file.type, folder: folderPath, ext: "jpg" },
               } as any);
               return { ...m, image: res.url };
             } catch {

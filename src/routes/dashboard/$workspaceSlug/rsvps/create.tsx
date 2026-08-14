@@ -30,7 +30,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { createCustomForm } from "@/api/rsvps";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -254,7 +254,7 @@ function CreateFormPage() {
           const base64 = await fileToBase64(coverFile);
           const ext = coverFile.name.split(".").pop() || "jpg";
           const res = await uploadFile({
-            data: { base64, contentType: coverFile.type, folder: "forms/covers", ext },
+            data: { base64, contentType: coverFile.type, folder: buildStoragePath(workspaceSlug, "rsvps", values.title || "form", "cover"), ext },
           } as any);
           finalCoverUrl = res.url;
         } catch (err) {

@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Star, CheckCircle2, Camera, Tag, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 
 export const Route = createFileRoute("/f/$eventId/review")({
   head: () => ({
@@ -142,7 +143,8 @@ function FeedbackForm() {
     }
     setIsUploading(true);
     try {
-      const url = await uploadFileToStorage(file, `feedback/${eventId}`);
+      const folderPath = buildStoragePath("public", "feedback", eventId, "media");
+      const url = await uploadFileToStorage(file, folderPath);
       setMediaUrls((prev) => [...prev, url]);
     } catch {
       toast.error("Failed to upload image");

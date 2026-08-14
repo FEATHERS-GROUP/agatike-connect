@@ -66,7 +66,7 @@ import { getOrganizerFollowersProfiles } from "@/api/users";
 import { getCommunityChannels, createCommunityChannel } from "@/api/community";
 import { getWorkspaceEvents, getEventAttendeesCount } from "@/api/events";
 import { getOrganizersByIds } from "@/api/organizers";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 import { formatMessageDate } from "@/lib/utils";
 
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -303,7 +303,7 @@ function CommunityPage() {
           data: {
             base64,
             contentType: selectedFile.type,
-            folder: "channels",
+            folder: buildStoragePath(workspaceSlug, "community", newChannelName || "channel", "cover"),
             ext,
           } as any,
         });

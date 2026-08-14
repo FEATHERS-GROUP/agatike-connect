@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router"
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getWorkspaceForms } from "@/api/rsvps";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 import { createEvent, updateEvent } from "@/api/events";
 import { ArrowLeft, ArrowRight, Check, Upload, MapPin, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -209,8 +209,9 @@ export function CreateExperienceDesktop({
         reader.onerror = rej;
         reader.readAsDataURL(f);
       });
+      const folderPath = buildStoragePath(activeWorkspace?.slug, "experiences", data.title, "cover");
       const { url } = await uploadFile({
-        data: { base64, contentType: f.type, folder: "experiences", ext },
+        data: { base64, contentType: f.type, folder: folderPath, ext },
       } as any);
       updateField("coverPreview", url);
       updateField("coverUrl", url);
