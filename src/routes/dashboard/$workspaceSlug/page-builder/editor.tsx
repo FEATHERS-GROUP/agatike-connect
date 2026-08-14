@@ -132,6 +132,7 @@ function makeBlankPage() {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 function PageBuilder() {
+  const { workspaceSlug } = Route.useParams();
   const { pageId, templateId, parentId, slug } = Route.useSearch();
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
@@ -349,7 +350,7 @@ function PageBuilder() {
     }
     const loadingToast = toast.loading("Uploading image...");
     try {
-      const folderPath = buildStoragePath(workspaceSlug, "page-builder", pageTitle || "page", "media");
+      const folderPath = buildStoragePath(workspaceSlug, "page-builder", editorState.title || "page", "media");
       const url = await uploadFileToStorage(file, folderPath);
       setter(url);
       toast.success("Uploaded!", { id: loadingToast });

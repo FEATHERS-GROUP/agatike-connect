@@ -66,6 +66,7 @@ function ProductModal({
   trigger?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const { workspaceSlug, experienceId } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
   const { canCreateCampaign, canCreateGiftCard, canCreatePunchCard, canCreateProduct } =
