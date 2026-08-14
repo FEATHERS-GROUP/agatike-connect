@@ -124,6 +124,7 @@ export const getFormDetails = createServerFn({ method: "POST" }).handler(async (
           created_at
           amount
           next_billing_date
+          trial_extensions_count
           pricing_plan {
             usage_limits
           }
@@ -149,7 +150,8 @@ export const getFormDetails = createServerFn({ method: "POST" }).handler(async (
           const subDate = new Date(activeSub.created_at);
           const now = new Date();
           const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-          if (diffDays > 14) {
+          const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 14);
+          if (diffDays > totalAllowedDays) {
             isTrialExpired = true;
           }
         } else if (activeSub.next_billing_date) {

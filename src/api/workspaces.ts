@@ -65,6 +65,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
           created_at
           amount
           next_billing_date
+          trial_extensions_count
           pricing_plan {
             name
           }
@@ -83,10 +84,11 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
         const subDate = new Date(activeSub.created_at);
         const now = new Date();
         const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
+        const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 14);
 
-        if (diffDays <= 14) {
+        if (diffDays <= totalAllowedDays) {
           currentUser.isTrialActive = true;
-          currentUser.trialDaysLeft = Math.max(1, Math.ceil(14 - diffDays));
+          currentUser.trialDaysLeft = Math.max(1, Math.ceil(totalAllowedDays - diffDays));
         } else {
           currentUser.isTrialExpired = true;
         }
