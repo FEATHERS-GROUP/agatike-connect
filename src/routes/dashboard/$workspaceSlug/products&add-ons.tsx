@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check } from "lucide-react";
+import { Plus, ShoppingBag, Ticket, QrCode, Loader2, Check, Download } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { getWorkspaceProducts, getWorkspaceRecentOrders } from "@/api/products";
 import { format } from "date-fns";
@@ -398,13 +398,21 @@ function WorkspaceProductsView() {
       sold: p.sold_count || 0,
     }));
 
+  const digitalProducts = products
+    .filter((p: any) => p.type === "digital")
+    .map((p: any) => ({
+      ...p,
+      stock: p.stock_limit || "Unlimited",
+      sold: p.sold_count || 0,
+    }));
+
   // Real stats from actual order data
   const totalRevenue = (orders as any[]).reduce(
     (sum: number, o: any) => sum + Number(o.amount_paid || 0),
     0,
   );
   const totalOrderCount = (orders as any[]).length;
-  const allProductItems = [...merchandise, ...allVouchers, ...punchCards];
+  const allProductItems = [...merchandise, ...allVouchers, ...punchCards, ...digitalProducts];
   const activeCampaigns = allProductItems.filter((item) => item.is_active !== false).length;
   const lowStockAlerts = allProductItems.filter((item) => {
     const stock = item.stock_limit;
@@ -428,6 +436,10 @@ function WorkspaceProductsView() {
       !searchProduct || (p.name || "").toLowerCase().includes(searchProduct.toLowerCase()),
   );
   const filteredPunchCards = punchCards.filter(
+    (p: any) =>
+      !searchProduct || (p.name || "").toLowerCase().includes(searchProduct.toLowerCase()),
+  );
+  const filteredDigitalProducts = digitalProducts.filter(
     (p: any) =>
       !searchProduct || (p.name || "").toLowerCase().includes(searchProduct.toLowerCase()),
   );
@@ -664,6 +676,9 @@ function WorkspaceProductsView() {
             <TabsTrigger value="punchcards" className="rounded-full px-4 py-2">
               Punch Cards
             </TabsTrigger>
+            <TabsTrigger value="digital" className="rounded-full px-4 py-2">
+              Digital Files
+            </TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="orders">
@@ -672,6 +687,7 @@ function WorkspaceProductsView() {
         <TabsContent value="merch">{renderTable(filteredMerch, ShoppingBag)}</TabsContent>
         <TabsContent value="vouchers">{renderTable(filteredVouchers, Ticket)}</TabsContent>
         <TabsContent value="punchcards">{renderTable(filteredPunchCards, QrCode)}</TabsContent>
+        <TabsContent value="digital">{renderTable(filteredDigitalProducts, Download)}</TabsContent>
       </Tabs>
 
       <Sheet open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>

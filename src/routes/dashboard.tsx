@@ -105,6 +105,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/page-builder\/editor/);
 
   const hideSidebar =
+    location.pathname === "/dashboard/workspaces" ||
     location.pathname === "/dashboard/login" ||
     location.pathname === "/dashboard/forgot-password" ||
     location.pathname === "/dashboard/create-organizer" ||

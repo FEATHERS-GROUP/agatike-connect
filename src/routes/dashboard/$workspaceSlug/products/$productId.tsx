@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, useNavigate, Link } from "@tanstack/react-router";
-import { getProduct, getWorkspaceRecentOrders } from "@/api/products";
+import { getProduct, getWorkspaceRecentOrders, getDigitalProductOrders, resendDigitalProductEmail } from "@/api/products";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -11,6 +11,9 @@ import {
   Search,
   Wallet,
   Edit,
+  Download,
+  Copy,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
@@ -146,6 +149,53 @@ function GiftCardRow({
   );
 }
 
+function DigitalProductRow({ order }: { order: any }) {
+  const mutation = useMutation({
+    mutationFn: () => resendDigitalProductEmail({ data: { order_id: order.id } } as any),
+    onSuccess: () => {
+      toast.success("Delivery email resent successfully!");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to resend email.");
+    },
+  });
+
+  return (
+    <tr className="border-b border-border/50 hover:bg-secondary/10 transition-colors">
+      <td className="px-6 py-4">
+        <span className="font-semibold text-foreground">
+          {order.user?.username || order.guest_name || "Guest"}
+        </span>
+      </td>
+      <td className="px-6 py-4 text-muted-foreground">{order.user?.email || "N/A"}</td>
+      <td className="px-6 py-4 text-muted-foreground">
+        {format(new Date(order.created_at), "MMM d, yyyy h:mm a")}
+      </td>
+      <td className="px-6 py-4">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-500/10 text-green-500">
+          <CheckCircle className="h-3 w-3" /> Sent
+        </span>
+      </td>
+      <td className="px-6 py-4 text-right">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4 text-primary" />
+          )}
+          Resend
+        </Button>
+      </td>
+    </tr>
+  );
+}
+
 function ProductDetailsView() {
   const { productId, workspaceSlug } = Route.useParams();
   const { activeWorkspace } = useWorkspace();
@@ -166,7 +216,13 @@ function ProductDetailsView() {
     enabled: !!activeWorkspace?.id,
   });
 
-  if (isLoadingProduct || isLoadingOrders) {
+  const { data: digitalOrders = [], isLoading: isLoadingDigitalOrders } = useQuery({
+    queryKey: ["digital-product-orders", productId],
+    queryFn: () => getDigitalProductOrders({ data: { product_id: productId } } as any),
+    enabled: !!product && product.type === "digital",
+  });
+
+  if (isLoadingProduct || isLoadingOrders || isLoadingDigitalOrders) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -229,8 +285,17 @@ function ProductDetailsView() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
             <p className="text-sm text-muted-foreground flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
-              Gift Card (Product)
+              {product.type === "digital" ? (
+                <>
+                  <Download className="h-4 w-4" />
+                  Digital Product
+                </>
+              ) : (
+                <>
+                  <Wallet className="h-4 w-4" />
+                  Gift Card (Product)
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -244,53 +309,96 @@ function ProductDetailsView() {
               className="gap-2 bg-card border-border/60 shadow-[var(--shadow-card)]"
             >
               <Edit className="h-4 w-4" />
-              Edit Gift Card
+              Edit {product.type === "digital" ? "Product" : "Gift Card"}
             </Button>
           </Link>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
-            Total Value
-          </p>
-          <p className="text-3xl font-bold tracking-tight">
-            {formatCurrency(totalValue, activeWorkspace?.currency || "RWF")}
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">{productOrders.length} Sold</p>
+      {product.type === "digital" ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)]">
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" /> Digital File
+            </h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-secondary/30 p-4 rounded-xl border border-border/40">
+              <div className="flex-1 truncate">
+                <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">File URL</p>
+                <p className="font-mono text-sm truncate text-primary">
+                  {product.specs?.digital_file_url || "No file uploaded"}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="flex-shrink-0"
+                onClick={() => {
+                  if (product.specs?.digital_file_url) {
+                    navigator.clipboard.writeText(product.specs.digital_file_url);
+                    toast.success("Link copied to clipboard");
+                  }
+                }}
+                disabled={!product.specs?.digital_file_url}
+              >
+                <Copy className="h-4 w-4 mr-2" /> Copy Link
+              </Button>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+              Total Downloads
+            </p>
+            <p className="text-3xl font-bold tracking-tight">
+              {digitalOrders.length}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">Successful deliveries</p>
+          </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+              Total Value
+            </p>
+            <p className="text-3xl font-bold tracking-tight">
+              {formatCurrency(totalValue, activeWorkspace?.currency || "RWF")}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">{productOrders.length} Sold</p>
+          </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
-            Total Used
-          </p>
-          <p className="text-3xl font-bold tracking-tight text-green-500">
-            {formatCurrency(totalUsed > 0 ? totalUsed : 0, activeWorkspace?.currency || "RWF")}
-          </p>
-          <p className="text-sm text-green-500/70 mt-2">Spent across vendors</p>
-        </div>
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none" />
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+              Total Used
+            </p>
+            <p className="text-3xl font-bold tracking-tight text-green-500">
+              {formatCurrency(totalUsed > 0 ? totalUsed : 0, activeWorkspace?.currency || "RWF")}
+            </p>
+            <p className="text-sm text-green-500/70 mt-2">Spent across vendors</p>
+          </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
-            Remaining Balance
-          </p>
-          <p className="text-3xl font-bold tracking-tight text-blue-500">
-            {formatCurrency(remainingBalance, activeWorkspace?.currency || "RWF")}
-          </p>
-          <p className="text-sm text-blue-500/70 mt-2">Available to spend</p>
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] flex flex-col justify-between relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none" />
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
+              Remaining Balance
+            </p>
+            <p className="text-3xl font-bold tracking-tight text-blue-500">
+              {formatCurrency(remainingBalance, activeWorkspace?.currency || "RWF")}
+            </p>
+            <p className="text-sm text-blue-500/70 mt-2">Available to spend</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-4 gap-4">
           <div>
-            <h3 className="font-semibold text-lg">Sold Gift Cards</h3>
+            <h3 className="font-semibold text-lg">{product.type === "digital" ? "Downloads" : "Sold Gift Cards"}</h3>
             <p className="text-sm text-muted-foreground">
-              Manage and track all sold instances of this gift card.
+              {product.type === "digital" 
+                ? "Track users who have purchased and downloaded this file." 
+                : "Manage and track all sold instances of this gift card."}
             </p>
           </div>
           <div className="relative">
@@ -310,31 +418,48 @@ function ProductDetailsView() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left min-w-[800px]">
             <thead className="text-xs text-muted-foreground uppercase bg-secondary/30">
-              <tr>
-                <th className="px-6 py-4 font-medium tracking-wider">QR Code</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Owner</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Initial Value</th>
-                <th className="px-6 py-4 font-medium tracking-wider text-green-500">Used</th>
-                <th className="px-6 py-4 font-medium tracking-wider text-blue-500">Balance</th>
-                <th className="px-6 py-4 font-medium tracking-wider">Status</th>
-                <th className="px-6 py-4 text-right font-medium tracking-wider">Actions</th>
-              </tr>
+              {product.type === "digital" ? (
+                <tr>
+                  <th className="px-6 py-4 font-medium tracking-wider">Buyer Name</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Email</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Date</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-right font-medium tracking-wider">Actions</th>
+                </tr>
+              ) : (
+                <tr>
+                  <th className="px-6 py-4 font-medium tracking-wider">QR Code</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Owner</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Initial Value</th>
+                  <th className="px-6 py-4 font-medium tracking-wider text-green-500">Used</th>
+                  <th className="px-6 py-4 font-medium tracking-wider text-blue-500">Balance</th>
+                  <th className="px-6 py-4 font-medium tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-right font-medium tracking-wider">Actions</th>
+                </tr>
+              )}
             </thead>
             <tbody className="divide-y divide-border/60">
-              {paginatedOrders.map((order: any) => (
-                <GiftCardRow
-                  key={order.id}
-                  order={order}
-                  currency={activeWorkspace?.currency || "RWF"}
-                  initialValue={initialValue}
-                />
-              ))}
-              {productOrders.length === 0 && (
+              {product.type === "digital" ? (
+                digitalOrders.map((order: any) => (
+                  <DigitalProductRow key={order.id} order={order} />
+                ))
+              ) : (
+                paginatedOrders.map((order: any) => (
+                  <GiftCardRow
+                    key={order.id}
+                    order={order}
+                    currency={activeWorkspace?.currency || "RWF"}
+                    initialValue={initialValue}
+                  />
+                ))
+              )}
+              {((product.type === "digital" && digitalOrders.length === 0) || 
+                (product.type !== "digital" && productOrders.length === 0)) && (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <Wallet className="h-8 w-8 opacity-20" />
-                      <p>No gift cards have been sold yet.</p>
+                      {product.type === "digital" ? <Download className="h-8 w-8 opacity-20" /> : <Wallet className="h-8 w-8 opacity-20" />}
+                      <p>{product.type === "digital" ? "No downloads yet." : "No gift cards have been sold yet."}</p>
                     </div>
                   </td>
                 </tr>
@@ -343,7 +468,7 @@ function ProductDetailsView() {
           </table>
         </div>
 
-        {totalPages > 1 && (
+        {product.type !== "digital" && totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-secondary/10">
             <span className="text-sm text-muted-foreground">
               Showing {(page - 1) * itemsPerPage + (filteredOrders.length > 0 ? 1 : 0)} to{" "}

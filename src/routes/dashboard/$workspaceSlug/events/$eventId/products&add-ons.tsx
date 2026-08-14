@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
-import { Plus, ShoppingBag, Ticket, QrCode, Check, Image as ImageIcon } from "lucide-react";
+import { Plus, ShoppingBag, Ticket, QrCode, Check, Image as ImageIcon, Download } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -82,6 +82,7 @@ function ProductsAndAddonsView() {
   const punchCards = products.filter(
     (p: any) => p.type === "punch_card" || p.type === "loyalty_card",
   );
+  const digitalProducts = products.filter((p: any) => p.type === "digital");
 
   const renderTable = (items: any[], icon: any) => (
     <div className="bg-card border border-border/60 rounded-2xl shadow-[var(--shadow-card)] overflow-hidden">
@@ -281,10 +282,12 @@ function ProductsAndAddonsView() {
           <TabsTrigger value="merch">Physical Merch</TabsTrigger>
           <TabsTrigger value="vouchers">Vouchers</TabsTrigger>
           <TabsTrigger value="punchcards">Punch Cards</TabsTrigger>
+          <TabsTrigger value="digital">Digital Files</TabsTrigger>
         </TabsList>
         <TabsContent value="merch">{renderTable(merchandise, ShoppingBag)}</TabsContent>
         <TabsContent value="vouchers">{renderTable(vouchers, Ticket)}</TabsContent>
         <TabsContent value="punchcards">{renderTable(punchCards, QrCode)}</TabsContent>
+        <TabsContent value="digital">{renderTable(digitalProducts, Download)}</TabsContent>
       </Tabs>
     </div>
   );
