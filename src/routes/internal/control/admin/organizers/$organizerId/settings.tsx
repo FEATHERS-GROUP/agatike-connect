@@ -492,7 +492,7 @@ function OrganizerSettings() {
                     }`}
                   >
                     <CalendarPlus className="h-3.5 w-3.5" />
-                    Extend by 14 Days
+                    Extend by 7 Days
                   </button>
                   {extensionsUsed >= maxExtensions && (
                     <p className="text-xs text-gray-500">Maximum extensions reached.</p>

@@ -84,7 +84,7 @@ export const getUserWorkspaces = createServerFn({ method: "GET" }).handler(async
         const subDate = new Date(activeSub.created_at);
         const now = new Date();
         const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-        const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 14);
+        const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 7);
 
         if (diffDays <= totalAllowedDays) {
           currentUser.isTrialActive = true;
