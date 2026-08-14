@@ -1,4 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+const fs = require('fs');
+const path = require('path');
+
+const targetPath = path.join(__dirname, 'src/routes/staff.event.$eventId.tsx');
+
+const content = `import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById } from "@/api/events";
@@ -9,7 +14,6 @@ import {
   Lock, ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, XCircle, CheckCircle2, Ticket, Shield, ArrowRight, BadgeCheck, CreditCard, UserCheck, Wallet, CalendarCheck, UserPlus, LayoutGrid, ChevronRight
 } from "lucide-react";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
-import { ModuleModalWrapper } from "@/components/staff-portal/ModuleModalWrapper";
 
 export const Route = createFileRoute("/staff/event/$eventId")({
   component: StaffEventDashboard,
@@ -45,11 +49,11 @@ function Numpad({
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <div
             key={i}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={\`w-3 h-3 rounded-full transition-all duration-300 \${
               pin.length > i
                 ? "bg-primary shadow-[0_0_10px_var(--color-primary)] scale-125"
                 : "bg-black/10 dark:bg-white/20"
-            }`}
+            }\`}
           />
         ))}
       </div>
@@ -131,9 +135,9 @@ function StaffEventDashboard() {
     allowed_sections?: string[];
   } | null>(() => {
     try {
-      const stored = localStorage.getItem(`staff_auth_${eventId}`);
+      const stored = localStorage.getItem(\`staff_auth_\${eventId}\`);
       if (stored) {
-        const lastActive = localStorage.getItem(`staff_session_${eventId}`);
+        const lastActive = localStorage.getItem(\`staff_session_\${eventId}\`);
         if (lastActive && Date.now() - parseInt(lastActive) < SESSION_TIMEOUT) {
           return JSON.parse(stored);
         }
@@ -160,7 +164,7 @@ function StaffEventDashboard() {
 
   const [scans, setScans] = useState<number[]>(() => {
     try {
-      const stored = localStorage.getItem(`scan_stats_${eventId}`);
+      const stored = localStorage.getItem(\`scan_stats_\${eventId}\`);
       return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
@@ -174,7 +178,7 @@ function StaffEventDashboard() {
   const recordScan = useCallback(() => {
     setScans((prev) => {
       const newScans = [...prev, Date.now()];
-      localStorage.setItem(`scan_stats_${eventId}`, JSON.stringify(newScans));
+      localStorage.setItem(\`scan_stats_\${eventId}\`, JSON.stringify(newScans));
       return newScans;
     });
   }, [eventId]);
@@ -183,22 +187,22 @@ function StaffEventDashboard() {
     if (!authState) return;
 
     let lastActivity = Date.now();
-    localStorage.setItem(`staff_auth_${eventId}`, JSON.stringify(authState));
-    localStorage.setItem(`staff_session_${eventId}`, lastActivity.toString());
+    localStorage.setItem(\`staff_auth_\${eventId}\`, JSON.stringify(authState));
+    localStorage.setItem(\`staff_session_\${eventId}\`, lastActivity.toString());
 
     const handleActivity = () => { lastActivity = Date.now(); };
     const events = ["mousedown", "keypress", "scroll", "touchstart"];
     events.forEach((e) => document.addEventListener(e, handleActivity, { passive: true }));
 
     const interval = setInterval(() => {
-      const storedActivity = parseInt(localStorage.getItem(`staff_session_${eventId}`) || "0");
+      const storedActivity = parseInt(localStorage.getItem(\`staff_session_\${eventId}\`) || "0");
       const maxActivity = Math.max(lastActivity, storedActivity);
 
       if (Date.now() - maxActivity >= SESSION_TIMEOUT) {
         setAuthState(null);
-        localStorage.removeItem(`staff_session_${eventId}`);
+        localStorage.removeItem(\`staff_session_\${eventId}\`);
       } else if (lastActivity > storedActivity) {
-        localStorage.setItem(`staff_session_${eventId}`, lastActivity.toString());
+        localStorage.setItem(\`staff_session_\${eventId}\`, lastActivity.toString());
       }
     }, 10000);
 
@@ -284,7 +288,7 @@ function StaffEventDashboard() {
 
   const renderLoginScreen = () => (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center text-foreground px-6 w-full overflow-hidden ${fontClass}`}
+      className={\`fixed inset-0 z-[100] flex flex-col items-center justify-center text-foreground px-6 w-full overflow-hidden \${fontClass}\`}
       style={{ 
         "--color-primary": themeColor,
         backgroundColor: brandingConfig.background_color && brandingConfig.background_color !== "#ffffff" ? brandingConfig.background_color : "hsl(var(--background))",
@@ -487,7 +491,7 @@ function StaffEventDashboard() {
 
   return (
     <div
-      className={`min-h-[100dvh] text-foreground overflow-y-auto pb-safe ${fontClass}`}
+      className={\`min-h-[100dvh] text-foreground overflow-y-auto pb-safe \${fontClass}\`}
       style={{ 
         "--color-primary": themeColor,
         backgroundColor: brandingConfig.background_color && brandingConfig.background_color !== "#ffffff" ? brandingConfig.background_color : "hsl(var(--background))",
@@ -539,12 +543,12 @@ function StaffEventDashboard() {
              </p>
            </div>
         ) : (
-          <div className={`grid gap-4 ${
+          <div className={\`grid gap-4 \${
             brandingConfig.mobile_layout === "list" ? "grid-cols-1" : 
             brandingConfig.dashboard_columns === "3" ? "grid-cols-2 md:grid-cols-3" :
             brandingConfig.dashboard_columns === "4" ? "grid-cols-2 md:grid-cols-4" :
             "grid-cols-2"
-          }`}>
+          }\`}>
             {appData.app_modules
               .filter((m: any) => m.type !== "branding_config")
               .sort((a: any, b: any) => a.order - b.order)
@@ -660,13 +664,13 @@ function StaffEventDashboard() {
           <button 
             onClick={() => {
               setAuthState(null);
-              localStorage.removeItem(`staff_session_${eventId}`);
+              localStorage.removeItem(\`staff_session_\${eventId}\`);
             }}
-            className={`px-10 py-4 rounded-full font-bold shadow-sm transition-all active:scale-95 ${
+            className={\`px-10 py-4 rounded-full font-bold shadow-sm transition-all active:scale-95 \${
               brandingConfig.logout_style === "prominent" 
                 ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-[0_0_20px_color-mix(in_srgb,var(--color-destructive)_30%,transparent)]" 
                 : "bg-secondary/80 backdrop-blur-md text-secondary-foreground border border-border/50 hover:bg-secondary"
-            }`}
+            }\`}
           >
             Sign Out
           </button>
@@ -675,53 +679,54 @@ function StaffEventDashboard() {
 
       {/* Modals will be rendered here based on activeModal */}
       {activeModal === "wallet" && (
-         <ModuleModalWrapper title="Wallet & Withdraw" onClose={() => setActiveModal(null)}>
-           <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6 flex flex-col items-center justify-center mb-6">
-             <Wallet className="h-12 w-12 text-primary mb-3" />
-             <p className="text-sm font-bold text-primary uppercase tracking-widest">Available Balance</p>
-             <h2 className="text-4xl font-black mt-1">RWF ---</h2>
-           </div>
-           <button className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl active:scale-95 transition-all">
-             Request Withdrawal
-           </button>
-         </ModuleModalWrapper>
+         <div className="fixed inset-0 z-[200] bg-background">
+            <div className="p-6 pt-safe-top">
+               <button onClick={() => setActiveModal(null)} className="mb-4 text-primary">Close Wallet</button>
+               <h1 className="text-2xl font-bold">Wallet Module</h1>
+               <p>Implementation coming soon.</p>
+            </div>
+         </div>
       )}
       {activeModal === "venues" && (
-         <ModuleModalWrapper title="Venues" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <MapPin className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Venues Directory</h3>
-             <p className="text-muted-foreground text-sm">Venue loading coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+         <div className="fixed inset-0 z-[200] bg-background">
+            <div className="p-6 pt-safe-top">
+               <button onClick={() => setActiveModal(null)} className="mb-4 text-primary">Close Venues</button>
+               <h1 className="text-2xl font-bold">Venues Module</h1>
+               <p>Implementation coming soon.</p>
+            </div>
+         </div>
       )}
       {activeModal === "transactions" && (
-         <ModuleModalWrapper title="Sales & Transactions" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <CreditCard className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Recent Transactions</h3>
-             <p className="text-muted-foreground text-sm">Transaction history coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+         <div className="fixed inset-0 z-[200] bg-background">
+            <div className="p-6 pt-safe-top">
+               <button onClick={() => setActiveModal(null)} className="mb-4 text-primary">Close Transactions</button>
+               <h1 className="text-2xl font-bold">Transactions Module</h1>
+               <p>Implementation coming soon.</p>
+            </div>
+         </div>
       )}
       {activeModal === "venue_bookings" && (
-         <ModuleModalWrapper title="Venue Bookings" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <CalendarCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Venue Bookings</h3>
-             <p className="text-muted-foreground text-sm">Bookings loading coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+         <div className="fixed inset-0 z-[200] bg-background">
+            <div className="p-6 pt-safe-top">
+               <button onClick={() => setActiveModal(null)} className="mb-4 text-primary">Close Bookings</button>
+               <h1 className="text-2xl font-bold">Venue Bookings Module</h1>
+               <p>Implementation coming soon.</p>
+            </div>
+         </div>
       )}
       {activeModal === "members" && (
-         <ModuleModalWrapper title="Team Members" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <UserCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Staff Directory</h3>
-             <p className="text-muted-foreground text-sm">Directory loading coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+         <div className="fixed inset-0 z-[200] bg-background">
+            <div className="p-6 pt-safe-top">
+               <button onClick={() => setActiveModal(null)} className="mb-4 text-primary">Close Directory</button>
+               <h1 className="text-2xl font-bold">Staff Directory Module</h1>
+               <p>Implementation coming soon.</p>
+            </div>
+         </div>
       )}
     </div>
   );
 }
+`;
+
+fs.writeFileSync(targetPath, content);
+console.log('Successfully updated file.');
