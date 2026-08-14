@@ -3063,6 +3063,13 @@ The platform enforces a robust subscription limit architecture that gracefully d
   - If the trial is expired, the server queries all items of that type for the workspace, ranks them chronologically, and checks if the requested item falls within the allowed index (e.g., is it item #1 out of an allowed limit of 1?).
   - If it falls outside the allowed index, the server sets an `is_expired` flag, causing the frontend to render a graceful "Unavailable" block instead of exposing the restricted resource.
 
+### 35.3 Admin Trial Extensions (Mathematical Approach)
+
+- **Incremental Extension:** System Admins have the ability to extend an organizer's trial via the Internal Admin dashboard. 
+- **Math-based Limit:** Rather than overriding a date, extensions increment a `trial_extensions_count` integer on the free subscription (up to a max of 2 extensions).
+- **Dynamic Calculation:** The trial's expiration logic is determined dynamically across all API routes (`workspaces.ts`, `workspace-pages.ts`, `rsvps.ts`) using the formula: `Total Allowed Days = 14 + (trial_extensions_count * 7)`.
+- **Email Notifications:** When an admin triggers an extension, the system automatically sends a professionally branded email to the organizer, notifying them of the new 7-day grace period and inviting them back into the platform.
+
 ```mermaid
 flowchart TD
     Org["Organizer Creates Item"] --> Check{Is 14-Day Trial Active?}
