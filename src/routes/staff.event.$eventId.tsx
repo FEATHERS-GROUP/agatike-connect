@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById } from "@/api/events";
-import { getAppById } from "@/api/app-studio";
+import { getAppById, getWorkspaceApps } from "@/api/app-studio";
 import { getBadgeProjectByEventId } from "@/api/badges";
 import {
   ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, CheckCircle2, Ticket, Shield, ArrowRight, BadgeCheck, CreditCard, UserCheck, Wallet, CalendarCheck, UserPlus, LayoutGrid
@@ -33,38 +33,44 @@ function StaffEventDashboard() {
     id: string; // User ID or Assignment ID
     app_permissions?: string[];
     allowed_sections?: string[];
-  } | null>(() => {
+  } | null>(null);
+
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(`staff_auth_${eventId}`);
       if (stored) {
         const lastActive = localStorage.getItem(`staff_session_${eventId}`);
         if (lastActive && Date.now() - parseInt(lastActive) < SESSION_TIMEOUT) {
-          return JSON.parse(stored);
+          setAuthState(JSON.parse(stored));
         }
       }
-      return null;
-    } catch {
-      return null;
-    }
-  });
+    } catch {}
+    setIsMounted(true);
+  }, [eventId]);
 
   useEffect(() => {
-    if (!authState) {
+    if (isMounted && !authState) {
       navigate({ to: "/staff/login" });
     }
-  }, [authState, navigate]);
+  }, [isMounted, authState, navigate]);
 
-  const { data: eventDetails } = useQuery({
+  const { data: eventDetails, isPending: isEventPending } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEventById({ data: { id: eventId } } as any),
     enabled: !!eventId && !!authState,
   });
 
-  const { data: appData } = useQuery({
-    queryKey: ["workspace-app", eventDetails?.app_id],
-    queryFn: () => getAppById({ data: { id: eventDetails?.app_id } } as any),
-    enabled: !!eventDetails?.app_id && !!authState,
+  const { data: apps = [], isPending: isAppsPending } = useQuery({
+    queryKey: ["workspace-apps", eventDetails?.workspace_id],
+    queryFn: () => getWorkspaceApps({ data: { workspace_id: eventDetails?.workspace_id } } as any),
+    enabled: !!eventDetails?.workspace_id && !!authState,
   });
+
+  const appData = eventDetails?.app_id 
+    ? apps.find((a: any) => a.id === eventDetails.app_id) || apps[0] 
+    : apps[0];
 
   const { data: badgeProject } = useQuery({
     queryKey: ["badge-project", eventId],
@@ -124,8 +130,41 @@ function StaffEventDashboard() {
     };
   }, [authState, eventId]);
 
-  if (!authState) {
+  if (!isMounted || !authState) {
     return null; // Will redirect in useEffect
+  }
+
+  const isDataLoading = isEventPending || isAppsPending;
+
+  if (isDataLoading) {
+    return (
+      <div className="min-h-[100dvh] bg-background text-foreground overflow-hidden font-sans">
+        <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none -z-10" />
+        <header className="px-6 pt-safe-top pb-2 flex items-center justify-between relative z-10 mt-6 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-full bg-secondary" />
+            <div className="h-8 w-8 rounded-md bg-secondary" />
+          </div>
+          <div className="w-20 h-8 rounded-full bg-secondary" />
+        </header>
+
+        <main className="px-6 pt-6 pb-24 relative z-10 space-y-10">
+          <div className="animate-pulse">
+            <div className="h-10 w-3/4 bg-secondary rounded-lg mb-3" />
+            <div className="flex gap-2">
+              <div className="h-6 w-24 bg-secondary rounded-lg" />
+              <div className="h-6 w-32 bg-secondary rounded-lg" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="aspect-square bg-secondary/50 rounded-3xl animate-pulse" />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
   }
 
   // Scanner UI
