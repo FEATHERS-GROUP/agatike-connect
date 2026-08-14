@@ -23,25 +23,7 @@ const CHECK_COMPANY_USER = `
 `;
 
 export const loginCompanyUser = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { email, password, eventId } = ctx.data as any;
-
-  // First fetch the event to know its workspace/organizer
-  const eventQuery = `
-    query GetEvent($id: uuid!) {
-      events_by_pk(id: $id) {
-        workspace_id
-        workspaces {
-          orgnizer_id
-        }
-      }
-    }
-  `;
-  const eventRes = await hasuraRequest<any>(eventQuery, { id: eventId });
-  const event = eventRes?.events_by_pk;
-  
-  if (!event) throw new Error("Event not found");
-  const targetWorkspaceId = event.workspace_id;
-  const targetOrganizerId = event.workspaces?.orgnizer_id;
+  const { email, password } = ctx.data as any;
 
   const res = await hasuraRequest<any>(CHECK_COMPANY_USER, { email });
   
@@ -50,9 +32,6 @@ export const loginCompanyUser = createServerFn({ method: "POST" }).handler(async
   if (organizer) {
     const isMatch = await bcrypt.compare(password, organizer.password);
     if (isMatch) {
-      if (organizer.id !== targetOrganizerId) {
-        throw new Error("You do not have access to this event's workspace.");
-      }
       return { 
         success: true, 
         role: "organizer", 
@@ -68,17 +47,6 @@ export const loginCompanyUser = createServerFn({ method: "POST" }).handler(async
   if (wsUser) {
     const isMatch = await bcrypt.compare(password, wsUser.password);
     if (isMatch) {
-      if (wsUser.organizer_id !== targetOrganizerId) {
-        throw new Error("You do not have access to this event's workspace.");
-      }
-      
-      // Check if they are restricted to specific workspaces
-      if (wsUser.workspaces && !wsUser.workspaces.includes("ALL")) {
-        if (!wsUser.workspaces.includes(targetWorkspaceId)) {
-          throw new Error("You are not assigned to this specific workspace.");
-        }
-      }
-      
       return { 
         success: true, 
         role: "workspace_user", 

@@ -40,6 +40,7 @@ import { Route as BusesIndexRouteImport } from './routes/buses/index'
 import { Route as VenuesVenueIdRouteImport } from './routes/venues/$venueId'
 import { Route as VTicketOtpRouteImport } from './routes/v/$ticketOtp'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket/$ticketId'
+import { Route as StaffLoginRouteImport } from './routes/staff.login'
 import { Route as SpacesSpaceIdRouteImport } from './routes/spaces/$spaceId'
 import { Route as PSplatRouteImport } from './routes/p/$'
 import { Route as OrganizersOrganizerIdRouteImport } from './routes/organizers/$organizerId'
@@ -66,6 +67,7 @@ import { Route as DashboardBillingIndexRouteImport } from './routes/dashboard/bi
 import { Route as DashboardWorkspaceSlugIndexRouteImport } from './routes/dashboard/$workspaceSlug/index'
 import { Route as AdminWithdrawalsIndexRouteImport } from './routes/admin/withdrawals/index'
 import { Route as VenuesCheckoutVenueIdRouteImport } from './routes/venues/checkout/$venueId'
+import { Route as StaffWorkspaceWorkspaceUserIdRouteImport } from './routes/staff.workspace.$workspaceUserId'
 import { Route as StaffEventEventIdRouteImport } from './routes/staff.event.$eventId'
 import { Route as SpacesSuccessSpaceIdRouteImport } from './routes/spaces/success/$spaceId'
 import { Route as SpacesCheckoutSpaceIdRouteImport } from './routes/spaces/checkout/$spaceId'
@@ -390,6 +392,11 @@ const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   path: '/ticket/$ticketId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffLoginRoute = StaffLoginRouteImport.update({
+  id: '/staff/login',
+  path: '/staff/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpacesSpaceIdRoute = SpacesSpaceIdRouteImport.update({
   id: '/spaces/$spaceId',
   path: '/spaces/$spaceId',
@@ -522,6 +529,12 @@ const VenuesCheckoutVenueIdRoute = VenuesCheckoutVenueIdRouteImport.update({
   path: '/venues/checkout/$venueId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffWorkspaceWorkspaceUserIdRoute =
+  StaffWorkspaceWorkspaceUserIdRouteImport.update({
+    id: '/staff/workspace/$workspaceUserId',
+    path: '/staff/workspace/$workspaceUserId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const StaffEventEventIdRoute = StaffEventEventIdRouteImport.update({
   id: '/staff/event/$eventId',
   path: '/staff/event/$eventId',
@@ -1574,6 +1587,7 @@ export interface FileRoutesByFullPath {
   '/organizers/$organizerId': typeof OrganizersOrganizerIdRoute
   '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
+  '/staff/login': typeof StaffLoginRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/v/$ticketOtp': typeof VTicketOtpRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
@@ -1597,6 +1611,7 @@ export interface FileRoutesByFullPath {
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/staff/event/$eventId': typeof StaffEventEventIdRoute
+  '/staff/workspace/$workspaceUserId': typeof StaffWorkspaceWorkspaceUserIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/admin/withdrawals/': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
@@ -1801,6 +1816,7 @@ export interface FileRoutesByTo {
   '/organizers/$organizerId': typeof OrganizersOrganizerIdRoute
   '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
+  '/staff/login': typeof StaffLoginRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/v/$ticketOtp': typeof VTicketOtpRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
@@ -1823,6 +1839,7 @@ export interface FileRoutesByTo {
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/staff/event/$eventId': typeof StaffEventEventIdRoute
+  '/staff/workspace/$workspaceUserId': typeof StaffWorkspaceWorkspaceUserIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/admin/withdrawals': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug': typeof DashboardWorkspaceSlugIndexRoute
@@ -2025,6 +2042,7 @@ export interface FileRoutesById {
   '/organizers/$organizerId': typeof OrganizersOrganizerIdRoute
   '/p/$': typeof PSplatRoute
   '/spaces/$spaceId': typeof SpacesSpaceIdRoute
+  '/staff/login': typeof StaffLoginRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
   '/v/$ticketOtp': typeof VTicketOtpRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
@@ -2048,6 +2066,7 @@ export interface FileRoutesById {
   '/spaces/checkout/$spaceId': typeof SpacesCheckoutSpaceIdRoute
   '/spaces/success/$spaceId': typeof SpacesSuccessSpaceIdRoute
   '/staff/event/$eventId': typeof StaffEventEventIdRoute
+  '/staff/workspace/$workspaceUserId': typeof StaffWorkspaceWorkspaceUserIdRoute
   '/venues/checkout/$venueId': typeof VenuesCheckoutVenueIdRoute
   '/admin/withdrawals/': typeof AdminWithdrawalsIndexRoute
   '/dashboard/$workspaceSlug/': typeof DashboardWorkspaceSlugIndexRoute
@@ -2254,6 +2273,7 @@ export interface FileRouteTypes {
     | '/organizers/$organizerId'
     | '/p/$'
     | '/spaces/$spaceId'
+    | '/staff/login'
     | '/ticket/$ticketId'
     | '/v/$ticketOtp'
     | '/venues/$venueId'
@@ -2277,6 +2297,7 @@ export interface FileRouteTypes {
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
     | '/staff/event/$eventId'
+    | '/staff/workspace/$workspaceUserId'
     | '/venues/checkout/$venueId'
     | '/admin/withdrawals/'
     | '/dashboard/$workspaceSlug/'
@@ -2481,6 +2502,7 @@ export interface FileRouteTypes {
     | '/organizers/$organizerId'
     | '/p/$'
     | '/spaces/$spaceId'
+    | '/staff/login'
     | '/ticket/$ticketId'
     | '/v/$ticketOtp'
     | '/venues/$venueId'
@@ -2503,6 +2525,7 @@ export interface FileRouteTypes {
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
     | '/staff/event/$eventId'
+    | '/staff/workspace/$workspaceUserId'
     | '/venues/checkout/$venueId'
     | '/admin/withdrawals'
     | '/dashboard/$workspaceSlug'
@@ -2704,6 +2727,7 @@ export interface FileRouteTypes {
     | '/organizers/$organizerId'
     | '/p/$'
     | '/spaces/$spaceId'
+    | '/staff/login'
     | '/ticket/$ticketId'
     | '/v/$ticketOtp'
     | '/venues/$venueId'
@@ -2727,6 +2751,7 @@ export interface FileRouteTypes {
     | '/spaces/checkout/$spaceId'
     | '/spaces/success/$spaceId'
     | '/staff/event/$eventId'
+    | '/staff/workspace/$workspaceUserId'
     | '/venues/checkout/$venueId'
     | '/admin/withdrawals/'
     | '/dashboard/$workspaceSlug/'
@@ -2924,6 +2949,7 @@ export interface RootRouteChildren {
   OrganizersOrganizerIdRoute: typeof OrganizersOrganizerIdRoute
   PSplatRoute: typeof PSplatRoute
   SpacesSpaceIdRoute: typeof SpacesSpaceIdRoute
+  StaffLoginRoute: typeof StaffLoginRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
   VTicketOtpRoute: typeof VTicketOtpRoute
   VenuesVenueIdRoute: typeof VenuesVenueIdRoute
@@ -2939,6 +2965,7 @@ export interface RootRouteChildren {
   SpacesCheckoutSpaceIdRoute: typeof SpacesCheckoutSpaceIdRoute
   SpacesSuccessSpaceIdRoute: typeof SpacesSuccessSpaceIdRoute
   StaffEventEventIdRoute: typeof StaffEventEventIdRoute
+  StaffWorkspaceWorkspaceUserIdRoute: typeof StaffWorkspaceWorkspaceUserIdRoute
   VenuesCheckoutVenueIdRoute: typeof VenuesCheckoutVenueIdRoute
   AdminWithdrawalsIndexRoute: typeof AdminWithdrawalsIndexRoute
   PSlugCheckoutCartRoute: typeof PSlugCheckoutCartRoute
@@ -3165,6 +3192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketTicketIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/staff/login': {
+      id: '/staff/login'
+      path: '/staff/login'
+      fullPath: '/staff/login'
+      preLoaderRoute: typeof StaffLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spaces/$spaceId': {
       id: '/spaces/$spaceId'
       path: '/spaces/$spaceId'
@@ -3345,6 +3379,13 @@ declare module '@tanstack/react-router' {
       path: '/venues/checkout/$venueId'
       fullPath: '/venues/checkout/$venueId'
       preLoaderRoute: typeof VenuesCheckoutVenueIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/staff/workspace/$workspaceUserId': {
+      id: '/staff/workspace/$workspaceUserId'
+      path: '/staff/workspace/$workspaceUserId'
+      fullPath: '/staff/workspace/$workspaceUserId'
+      preLoaderRoute: typeof StaffWorkspaceWorkspaceUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/staff/event/$eventId': {
@@ -5096,6 +5137,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrganizersOrganizerIdRoute: OrganizersOrganizerIdRoute,
   PSplatRoute: PSplatRoute,
   SpacesSpaceIdRoute: SpacesSpaceIdRoute,
+  StaffLoginRoute: StaffLoginRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
   VTicketOtpRoute: VTicketOtpRoute,
   VenuesVenueIdRoute: VenuesVenueIdRoute,
@@ -5112,6 +5154,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpacesCheckoutSpaceIdRoute: SpacesCheckoutSpaceIdRoute,
   SpacesSuccessSpaceIdRoute: SpacesSuccessSpaceIdRoute,
   StaffEventEventIdRoute: StaffEventEventIdRoute,
+  StaffWorkspaceWorkspaceUserIdRoute: StaffWorkspaceWorkspaceUserIdRoute,
   VenuesCheckoutVenueIdRoute: VenuesCheckoutVenueIdRoute,
   AdminWithdrawalsIndexRoute: AdminWithdrawalsIndexRoute,
   PSlugCheckoutCartRoute: PSlugCheckoutCartRoute,
