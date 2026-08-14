@@ -259,7 +259,7 @@ function StaffEventDashboard() {
   const { data: eventDetails } = useQuery({
     queryKey: ["event", eventId],
     queryFn: () => getEventById({ data: { id: eventId } } as any),
-    enabled: !!eventId && isAuthenticated,
+    enabled: !!eventId,
   });
 
   const { data: badgeProject } = useQuery({
@@ -271,7 +271,7 @@ function StaffEventDashboard() {
   const { data: appData } = useQuery({
     queryKey: ["workspace-app", eventDetails?.app_id],
     queryFn: () => getAppById({ data: { id: eventDetails?.app_id } } as any),
-    enabled: !!eventDetails?.app_id && isAuthenticated,
+    enabled: !!eventDetails?.app_id,
   });
 
   if (isLoading) {

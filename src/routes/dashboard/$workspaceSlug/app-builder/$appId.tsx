@@ -216,8 +216,10 @@ function AppBuilderStudio() {
     mobile_layout: "grid",
     logout_style: "subtle"
   });
+  const [inspectorMode, setInspectorMode] = useState<"app" | "module">("app");
   const [isUploading, setIsUploading] = useState(false);
   const [assignedEventId, setAssignedEventId] = useState<string>("");
+  const [initialAssignedEventId, setInitialAssignedEventId] = useState<string | null>(null);
 
   const { data: events = [] } = useQuery({
     queryKey: ["workspace-events", activeWorkspace?.id],
@@ -256,11 +258,16 @@ function AppBuilderStudio() {
   }, [appData]);
 
   useEffect(() => {
-    if (events && events.length > 0 && appId) {
+    if (events && events.length > 0 && appId && initialAssignedEventId === null) {
       const linkedEvent = events.find((e: any) => e.app_id === appId);
-      if (linkedEvent) setAssignedEventId(linkedEvent.id);
+      if (linkedEvent) {
+        setAssignedEventId(linkedEvent.id);
+        setInitialAssignedEventId(linkedEvent.id);
+      } else {
+        setInitialAssignedEventId("");
+      }
     }
-  }, [events, appId]);
+  }, [events, appId, initialAssignedEventId]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -303,13 +310,19 @@ function AppBuilderStudio() {
         await upsertAppModules({ data: { objects: modulesToUpsert } } as any);
       }
 
-      if (assignedEventId) {
-        await updateEvent({ data: { id: assignedEventId, set: { app_id: appId } } } as any);
+      if (initialAssignedEventId && initialAssignedEventId !== assignedEventId) {
+        await updateEvent({ data: { id: initialAssignedEventId, app_id: null } } as any);
+      }
+      
+      if (assignedEventId && assignedEventId !== initialAssignedEventId) {
+        await updateEvent({ data: { id: assignedEventId, app_id: appId } } as any);
       }
     },
     onSuccess: () => {
       toast.success("App saved successfully!");
+      setInitialAssignedEventId(assignedEventId);
       queryClient.invalidateQueries({ queryKey: ["app-studio", appId] });
+      queryClient.invalidateQueries({ queryKey: ["workspace-events", activeWorkspace?.id] });
       // Reset isNew flag
       setModules(modules.map(m => ({ ...m, isNew: false })));
     },
@@ -354,6 +367,7 @@ function AppBuilderStudio() {
     };
     setModules([...modules, newMod]);
     setSelectedModuleIdx(modules.length);
+    setInspectorMode("module");
   };
 
   const handleDeleteModule = async (idx: number, modId: string) => {
@@ -369,7 +383,10 @@ function AppBuilderStudio() {
     const newMods = [...modules];
     newMods.splice(idx, 1);
     setModules(newMods);
-    if (selectedModuleIdx === idx) setSelectedModuleIdx(null);
+    if (selectedModuleIdx === idx) {
+      setSelectedModuleIdx(null);
+      setInspectorMode("app");
+    }
     else if (selectedModuleIdx && selectedModuleIdx > idx) setSelectedModuleIdx(selectedModuleIdx - 1);
   };
 
@@ -495,7 +512,7 @@ function AppBuilderStudio() {
         </aside>
 
         {/* Center Panel - Canvas */}
-        <main className="flex-1 overflow-y-auto flex flex-col relative" onClick={() => setSelectedModuleIdx(null)}>
+        <main className="flex-1 overflow-y-auto flex flex-col relative" onClick={() => { setSelectedModuleIdx(null); setInspectorMode("app"); }}>
           <div className="absolute top-6 inset-x-0 flex justify-center z-10 pointer-events-none">
             <div className="bg-background/80 backdrop-blur-md shadow-sm border border-border/50 rounded-full p-1 flex pointer-events-auto">
               <button
@@ -634,7 +651,11 @@ function AppBuilderStudio() {
                                   key={mod.id} 
                                   module={mod} 
                                   isSelected={selectedModuleIdx === idx}
-                                  onClick={() => setSelectedModuleIdx(idx)}
+                                  onClick={(e: React.MouseEvent) => {
+                                    e.stopPropagation();
+                                    setSelectedModuleIdx(idx);
+                                    setInspectorMode("module");
+                                  }}
                                   onRemove={() => handleDeleteModule(idx, mod.id)}
                                 />
                               ))}
@@ -663,21 +684,27 @@ function AppBuilderStudio() {
         <aside className="w-[320px] shrink-0 border-l border-border/50 bg-background flex flex-col">
           <div className="flex bg-muted p-1 m-3 rounded-lg">
             <button
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${!selectedModule ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => setSelectedModuleIdx(null)}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${inspectorMode === "app" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setInspectorMode("app")}
             >
               App
             </button>
             <button
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${selectedModule ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              disabled={!selectedModule}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${inspectorMode === "module" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              disabled={modules.length === 0 && !selectedModule}
+              onClick={() => {
+                if (selectedModuleIdx === null && modules.length > 0) {
+                  setSelectedModuleIdx(0);
+                }
+                setInspectorMode("module");
+              }}
             >
               Module
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
-            {!selectedModule ? (
+            {inspectorMode === "app" || !selectedModule ? (
               <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary/50">
                   <TabsTrigger value="general" className="text-xs">General</TabsTrigger>
