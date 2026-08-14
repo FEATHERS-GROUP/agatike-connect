@@ -16,6 +16,7 @@ import { useUserAuth } from "@/contexts/UserAuthContext";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserStaffAssignments } from "@/api/staff";
+import { getWorkspaceUserByLinkedId } from "@/api/workspace_users";
 
 export function MobileNav() {
   const location = useLocation();
@@ -51,8 +52,14 @@ export function MobileNav() {
       ];
 
   const { data: staffAssignments = [] } = useQuery({
-    queryKey: ["user-staff-assignments", user?.id],
-    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id } } as any),
+    queryKey: ["user-staff-assignments", user?.id, user?.email],
+    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id, email: user?.email } } as any),
+    enabled: !!user,
+  });
+
+  const { data: workspaceUser } = useQuery({
+    queryKey: ["user-workspace-account", user?.id],
+    queryFn: () => getWorkspaceUserByLinkedId({ data: { user_id: user?.id } } as any),
     enabled: !!user,
   });
 
@@ -62,11 +69,19 @@ export function MobileNav() {
     return !isExpired;
   });
 
-  if (activeAssignments.length > 0) {
+  if (workspaceUser || activeAssignments.length > 0) {
+    let dashboardHref = "/staff/login";
+    
+    if (workspaceUser && activeAssignments.length === 0) {
+      dashboardHref = `/staff/workspace/${workspaceUser.id}`;
+    } else if (!workspaceUser && activeAssignments.length > 0) {
+      dashboardHref = `/staff/event/${activeAssignments[0].event_id}`;
+    }
+
     moreMenuLinks.unshift({
-      name: "Staff Dashboard",
-      href: `/staff/event/${activeAssignments[0].event_id}`,
-      icon: User, // We can just use the User icon or similar
+      name: "Dashboard",
+      href: dashboardHref,
+      icon: Building2,
       requiresAuth: true,
     });
   }

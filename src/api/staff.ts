@@ -181,8 +181,8 @@ export const deleteEventStaff = createServerFn({ method: "POST" }).handler(async
 });
 
 const GET_USER_STAFF_ASSIGNMENTS = `
-  query GetUserStaffAssignments($user_id: uuid!) {
-    event_staff(where: { user_id: { _eq: $user_id }, status: { _eq: "active" } }, order_by: { created_at: desc }) {
+  query GetUserStaffAssignments($user_id: uuid, $email: String) {
+    event_staff(where: { _or: [{ user_id: { _eq: $user_id } }, { email: { _eq: $email } }], status: { _eq: "active" } }, order_by: { created_at: desc }) {
       id
       role
       status
@@ -206,9 +206,9 @@ const GET_USER_STAFF_ASSIGNMENTS = `
 `;
 
 export const getUserStaffAssignments = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { user_id } = ctx.data as unknown as { user_id: string };
-  if (!user_id) return [];
-  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, { user_id });
+  const { user_id, email } = ctx.data as unknown as { user_id?: string; email?: string };
+  if (!user_id && !email) return [];
+  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, { user_id, email });
   return data.event_staff || [];
 });
 const GET_STAFF_BY_ID = `

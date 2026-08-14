@@ -3,6 +3,10 @@ import React, { useState } from "react";
 import { loginCompanyUser, getStaffAssignmentsByEmail } from "@/api/staff_portal_auth";
 import { Lock, ArrowRight, ChevronRight, User } from "lucide-react";
 import { MobileNav } from "@/components/mobile/MobileNav";
+import { useUserAuth } from "@/contexts/UserAuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { getUserStaffAssignments } from "@/api/staff";
+import { getWorkspaceUserByLinkedId } from "@/api/workspace_users";
 
 export const Route = createFileRoute("/staff/login")({
   component: StaffLoginRoute,
@@ -36,11 +40,10 @@ function Numpad({
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <div
             key={i}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              pin.length > i
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${pin.length > i
                 ? "bg-primary shadow-[0_0_10px_var(--color-primary)] scale-125"
                 : "bg-black/10 dark:bg-white/20"
-            }`}
+              }`}
           />
         ))}
       </div>
@@ -78,16 +81,36 @@ function Numpad({
 function StaffLoginRoute() {
   const navigate = useNavigate();
   const [loginStep, setLoginStep] = useState<"gateway" | "company" | "staff_email" | "staff_event_select" | "staff_pin">("gateway");
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const [staffEmail, setStaffEmail] = useState("");
   const [staffAssignments, setStaffAssignments] = useState<any[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<any>(null);
-  
+
   const [loginError, setLoginError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const { isLoggedIn, user } = useUserAuth();
+
+  const { data: staffAssignmentsLinked = [] } = useQuery({
+    queryKey: ["user-staff-assignments", user?.id, user?.email],
+    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id, email: user?.email } } as any),
+    enabled: !!user && isLoggedIn,
+  });
+
+  const { data: workspaceUser } = useQuery({
+    queryKey: ["user-workspace-account", user?.id],
+    queryFn: () => getWorkspaceUserByLinkedId({ data: { user_id: user?.id } } as any),
+    enabled: !!user && isLoggedIn,
+  });
+
+  const activeAssignments = staffAssignmentsLinked.filter((a: any) => {
+    const isExpired =
+      a.event?.schedules?.[0]?.end_date && new Date(a.event.schedules[0].end_date) < new Date();
+    return !isExpired;
+  });
 
   const handleCompanyLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +168,7 @@ function StaffLoginRoute() {
       <div className="z-10 w-full max-w-md flex flex-col items-center my-auto pt-10">
         {/* Glassmorphism Card */}
         <div className="w-full bg-background/40 backdrop-blur-2xl border border-white/10 dark:border-white/5 rounded-[2rem] p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] flex flex-col items-center relative overflow-hidden">
-          
+
           {/* Subtle top glare */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
@@ -165,37 +188,81 @@ function StaffLoginRoute() {
           <div className="w-full relative min-h-[200px] flex flex-col items-center justify-center">
             {loginStep === "gateway" && (
               <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <button 
-                  onClick={() => setLoginStep("staff_email")}
-                  className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-[0_10px_30px_color-mix(in_srgb,var(--color-primary)_40%,transparent)] hover:shadow-[0_15px_40px_color-mix(in_srgb,var(--color-primary)_50%,transparent)] hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all duration-300 flex items-center justify-between group"
-                >
-                  <span className="flex items-center gap-3">
-                    <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
-                      <User className="h-5 w-5" />
-                    </div>
-                    Event Staff
-                  </span>
-                  <ArrowRight className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
-                </button>
                 
-                <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-border/50"></div>
-                  <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs uppercase tracking-widest font-semibold">Or</span>
-                  <div className="flex-grow border-t border-border/50"></div>
-                </div>
+                {/* Event Staff Button */}
+                {(!isLoggedIn || activeAssignments.length > 0) && (
+                  <button
+                    onClick={() => {
+                      if (isLoggedIn && activeAssignments.length > 0) {
+                        // Quick login for event staff
+                        const a = activeAssignments[0];
+                        const authState = {
+                          role: "event_staff",
+                          email: a.email || user?.email,
+                          id: a.id,
+                          app_permissions: a.app_permissions || [],
+                          allowed_sections: a.allowed_sections || [],
+                          name: a.role
+                        };
+                        localStorage.setItem(`staff_auth_${a.event_id}`, JSON.stringify(authState));
+                        localStorage.setItem(`staff_session_${a.event_id}`, Date.now().toString());
+                        navigate({ to: `/staff/event/${a.event_id}` });
+                      } else {
+                        setLoginStep("staff_email");
+                      }
+                    }}
+                    className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-2xl font-bold text-lg shadow-[0_10px_30px_color-mix(in_srgb,var(--color-primary)_40%,transparent)] hover:shadow-[0_15px_40px_color-mix(in_srgb,var(--color-primary)_50%,transparent)] hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all duration-300 flex items-center justify-between group"
+                  >
+                    <span className="flex items-center gap-3">
+                      <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                        <User className="h-5 w-5" />
+                      </div>
+                      Event Staff
+                    </span>
+                    <ArrowRight className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
+                  </button>
+                )}
 
-                <button 
-                  onClick={() => setLoginStep("company")}
-                  className="w-full py-4 px-6 bg-secondary/60 hover:bg-secondary/80 backdrop-blur-md border border-border/50 rounded-2xl font-bold text-lg active:scale-95 transition-all duration-300 flex items-center justify-between group"
-                >
-                  <span className="flex items-center gap-3">
-                    <div className="bg-background p-2 rounded-xl shadow-sm">
-                      <Lock className="h-5 w-5 text-foreground/70" />
-                    </div>
-                    Company User
-                  </span>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground transform group-hover:translate-x-1 transition-transform" />
-                </button>
+                {/* Company User Button */}
+                {(!isLoggedIn || workspaceUser) && (
+                  <>
+                    {(!isLoggedIn || activeAssignments.length > 0) && (
+                      <div className="relative flex items-center py-2">
+                        <div className="flex-grow border-t border-border/50"></div>
+                        <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs uppercase tracking-widest font-semibold">Or</span>
+                        <div className="flex-grow border-t border-border/50"></div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        if (isLoggedIn && workspaceUser) {
+                          // Quick login for company admin
+                          const authState = {
+                            role: workspaceUser.role,
+                            email: workspaceUser.email,
+                            name: workspaceUser.name,
+                            id: workspaceUser.id,
+                          };
+                          localStorage.setItem(`staff_auth_ws_${workspaceUser.id}`, JSON.stringify(authState));
+                          localStorage.setItem(`staff_session_ws_${workspaceUser.id}`, Date.now().toString());
+                          navigate({ to: `/staff/workspace/${workspaceUser.id}` });
+                        } else {
+                          setLoginStep("company");
+                        }
+                      }}
+                      className="w-full py-4 px-6 bg-secondary/60 hover:bg-secondary/80 backdrop-blur-md border border-border/50 rounded-2xl font-bold text-lg active:scale-95 transition-all duration-300 flex items-center justify-between group"
+                    >
+                      <span className="flex items-center gap-3">
+                        <div className="bg-background p-2 rounded-xl shadow-sm">
+                          <Lock className="h-5 w-5 text-foreground/70" />
+                        </div>
+                        Company User
+                      </span>
+                      <ArrowRight className="h-5 w-5 text-muted-foreground transform group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -220,8 +287,8 @@ function StaffLoginRoute() {
                   />
                 </div>
                 {loginError && <p className="text-destructive text-sm text-center font-medium bg-destructive/10 py-2 rounded-lg">{loginError}</p>}
-                
-                <button 
+
+                <button
                   disabled={isLoggingIn}
                   className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold mt-2 shadow-[0_5px_20px_color-mix(in_srgb,var(--color-primary)_40%,transparent)] hover:shadow-[0_10px_25px_color-mix(in_srgb,var(--color-primary)_50%,transparent)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2"
                 >
@@ -229,7 +296,7 @@ function StaffLoginRoute() {
                     <div className="h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                   ) : "Sign In"}
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setLoginStep("gateway")}
                   className="w-full py-3 text-muted-foreground font-medium text-sm mt-2 hover:text-foreground transition-colors"
@@ -250,8 +317,8 @@ function StaffLoginRoute() {
                   required
                 />
                 {loginError && <p className="text-destructive text-sm text-center font-medium bg-destructive/10 py-2 rounded-lg">{loginError}</p>}
-                
-                <button 
+
+                <button
                   disabled={isLoggingIn}
                   className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold mt-2 shadow-[0_5px_20px_color-mix(in_srgb,var(--color-primary)_40%,transparent)] hover:shadow-[0_10px_25px_color-mix(in_srgb,var(--color-primary)_50%,transparent)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 transition-all duration-300 flex items-center justify-center gap-2"
                 >
@@ -259,7 +326,7 @@ function StaffLoginRoute() {
                     <div className="h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                   ) : "Continue"}
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setLoginStep("gateway")}
                   className="w-full py-3 text-muted-foreground font-medium text-sm mt-2 hover:text-foreground transition-colors"
@@ -295,7 +362,7 @@ function StaffLoginRoute() {
                     </button>
                   ))}
                 </div>
-                <button 
+                <button
                   onClick={() => setLoginStep("staff_email")}
                   className="w-full py-3 text-muted-foreground font-medium text-sm mt-4 hover:text-foreground transition-colors"
                 >
@@ -310,7 +377,7 @@ function StaffLoginRoute() {
                   <span className="text-xs text-muted-foreground font-semibold uppercase tracking-widest mr-2">Event</span>
                   <span className="font-bold text-sm">{selectedAssignment.event?.title}</span>
                 </div>
-                
+
                 <Numpad
                   error={loginError}
                   onPinComplete={(pin) => {
@@ -331,7 +398,7 @@ function StaffLoginRoute() {
                     }
                   }}
                 />
-                <button 
+                <button
                   onClick={() => setLoginStep("staff_event_select")}
                   className="mt-6 text-muted-foreground font-medium text-sm hover:text-foreground transition-colors"
                 >
@@ -342,7 +409,7 @@ function StaffLoginRoute() {
           </div>
         </div>
       </div>
-      
+
       <MobileNav />
     </div>
   );
