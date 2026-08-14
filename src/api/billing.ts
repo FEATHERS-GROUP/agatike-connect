@@ -598,6 +598,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         invoices_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
         event_tickets_aggregate(where: { event: { workspace_id: { _eq: $workspace_id_uuid } } }) { aggregate { count } }
         cinema_ticket_tiers_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
+        workspace_apps_aggregate(where: { workspace_id: { _eq: $workspace_id_uuid } }) { aggregate { count } }
       }
     `;
 
@@ -635,6 +636,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         comments: 0,
         membership_plans: 0,
         locations: 0,
+        custom_apps: res.workspace_apps_aggregate?.aggregate?.count || 0,
       };
     } catch (e) {
       console.error("Failed to fetch workspace usage stats", e);
@@ -664,6 +666,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         comments: 0,
         membership_plans: 0,
         locations: 0,
+        custom_apps: 0,
       };
     }
   });

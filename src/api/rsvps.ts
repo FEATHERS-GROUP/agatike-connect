@@ -107,7 +107,85 @@ const GET_FORM_DETAILS = `
 export const getFormDetails = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id } = ctx.data as unknown as { id: string };
   const data = await hasuraRequest<{ custom_forms_by_pk: any }>(GET_FORM_DETAILS, { id });
-  return data.custom_forms_by_pk || null;
+  const form = data.custom_forms_by_pk || null;
+
+  if (form && form.workspace?.orgnizer_id) {
+    const orgId = form.workspace.orgnizer_id;
+    const subQuery = `
+      query GetSub {
+        organizers_by_pk(id: "${orgId}") {
+          active
+        }
+        subscriptions(
+          where: { organizer_id: { _eq: "${orgId}" }, status: { _eq: "active" } }
+          order_by: { created_at: desc }
+          limit: 1
+        ) {
+          created_at
+          amount
+          next_billing_date
+          trial_extensions_count
+          pricing_plan {
+            usage_limits
+          }
+        }
+        custom_forms(
+          where: { workspace_id: { _eq: "${form.workspace_id}" } }
+        ) {
+          id
+          created_at
+        }
+      }
+    `;
+
+    try {
+      const subRes = await hasuraRequest<any>(subQuery);
+      form.organizer_active = subRes.organizers_by_pk?.active ?? true;
+      form.is_expired = false;
+
+      const activeSub = subRes.subscriptions?.[0];
+      let isTrialExpired = false;
+      if (activeSub) {
+        if (activeSub.amount === 0) {
+          const subDate = new Date(activeSub.created_at);
+          const now = new Date();
+          const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
+          const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 7);
+          if (diffDays > totalAllowedDays) {
+            isTrialExpired = true;
+          }
+        } else if (activeSub.next_billing_date) {
+          const billingDate = new Date(activeSub.next_billing_date);
+          const now = new Date();
+          if (now.getTime() > billingDate.getTime()) {
+            isTrialExpired = true;
+          }
+        }
+
+        if (isTrialExpired) {
+          const rawLimits = activeSub.pricing_plan?.usage_limits;
+          const dbLimits = typeof rawLimits === "string" ? JSON.parse(rawLimits) : (rawLimits || {});
+          const limit = dbLimits.max_custom_forms === undefined || dbLimits.max_custom_forms === -1 ? Infinity : dbLimits.max_custom_forms;
+          
+          if (limit === 0) {
+            form.is_expired = true;
+          } else if (limit !== Infinity) {
+            const allForms = subRes.custom_forms || [];
+            const sortedForms = allForms.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+            const visibleForms = sortedForms.slice(0, limit);
+            const isVisible = visibleForms.some((f: any) => f.id === form.id);
+            if (!isVisible) {
+              form.is_expired = true;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch form subscription info", err);
+    }
+  }
+
+  return form;
 });
 
 const CREATE_CUSTOM_FORM = `

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceUsers } from "@/api/workspace_users";
 import { getUserWorkspaces } from "@/api/workspaces";
+import { getWorkspaceApps } from "@/api/app-studio";
 import { UsersTable } from "@/components/dashboard/users/UsersTable";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
@@ -30,6 +31,12 @@ function UsersPage() {
   } = useQuery({
     queryKey: ["workspace_users"],
     queryFn: () => getWorkspaceUsers(),
+  });
+
+  const { data: apps = [] } = useQuery({
+    queryKey: ["workspace_apps", activeWorkspace?.id],
+    queryFn: () => getWorkspaceApps({ data: { workspace_id: activeWorkspace?.id } } as any),
+    enabled: !!activeWorkspace?.id,
   });
 
   const isOrganizer = workspaces && workspaces.length > 0;
@@ -76,7 +83,7 @@ function UsersPage() {
           Error loading users: {(usersErr as Error)?.message}
         </div>
       ) : (
-        <UsersTable users={users} workspaces={workspaces} />
+        <UsersTable users={users} workspaces={workspaces} apps={apps} />
       )}
     </div>
   );

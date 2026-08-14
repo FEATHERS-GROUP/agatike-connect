@@ -170,7 +170,8 @@ const INITIAL_SERVICES: Service[] = [
     uptime: "99.8%",
     lastChecked: null,
     description: "GIF search & delivery (zzthMiUSwYmw…)",
-    probeUrl: "https://api.giphy.com/v1/gifs/trending?api_key=zzthMiUSwYmw6HRuTwPScm5RAXLY9NIS&limit=1",
+    probeUrl:
+      "https://api.giphy.com/v1/gifs/trending?api_key=zzthMiUSwYmw6HRuTwPScm5RAXLY9NIS&limit=1",
   },
   {
     id: "media-omdb",
@@ -265,7 +266,9 @@ function ServiceCard({
     <div className="flex flex-col p-4 rounded-xl border border-gray-200 dark:border-[#333333] bg-gray-50 dark:bg-[#1b1b1c] hover:border-gray-300 dark:hover:border-[#444444] transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] ${meta.colorClass}`}>
+          <div
+            className={`p-2 rounded-lg bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] ${meta.colorClass}`}
+          >
             <Icon className="w-5 h-5" />
           </div>
           <div>
@@ -287,14 +290,20 @@ function ServiceCard({
             <span>{service.uptime} uptime</span>
           </div>
           {service.latency !== undefined && (
-            <div className={`flex items-center gap-1.5 ${service.latency < 200 ? "text-emerald-500" : service.latency < 500 ? "text-amber-500" : "text-red-500"}`}>
+            <div
+              className={`flex items-center gap-1.5 ${service.latency < 200 ? "text-emerald-500" : service.latency < 500 ? "text-amber-500" : "text-red-500"}`}
+            >
               <LucideIcons.Zap className="w-3.5 h-3.5" />
               <span>{service.latency}ms</span>
             </div>
           )}
           {service.lastChecked && (
             <div className="text-gray-400 dark:text-[#666666]">
-              {service.lastChecked.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+              {service.lastChecked.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
             </div>
           )}
         </div>
@@ -339,7 +348,9 @@ function ServiceSection({
           <h2 className="text-base font-semibold text-gray-900 dark:text-white">{meta.label}</h2>
           <span className="text-xs text-gray-500 dark:text-[#666666]">({services.length})</span>
         </div>
-        <span className={`text-xs font-medium ${hasDown ? "text-red-500" : allOk ? "text-emerald-500" : "text-amber-500"}`}>
+        <span
+          className={`text-xs font-medium ${hasDown ? "text-red-500" : allOk ? "text-emerald-500" : "text-amber-500"}`}
+        >
           {hasDown ? "Issues detected" : allOk ? "All operational" : "Checking..."}
         </span>
       </div>
@@ -545,7 +556,9 @@ function HealthDashboard() {
           <LucideIcons.XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
         )}
         <div>
-          <h4 className={`text-sm font-medium ${globalStatus === "operational" ? "text-emerald-500" : globalStatus === "degraded" ? "text-amber-500" : "text-red-500"}`}>
+          <h4
+            className={`text-sm font-medium ${globalStatus === "operational" ? "text-emerald-500" : globalStatus === "degraded" ? "text-amber-500" : "text-red-500"}`}
+          >
             Incident History
           </h4>
           <p className="text-xs text-gray-500 dark:text-[#888888] mt-1">

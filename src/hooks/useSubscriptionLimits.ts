@@ -49,8 +49,21 @@ export function useSubscriptionLimits(
         {},
         {
           get: (target, prop) => {
-            if (typeof prop === "string" && (prop.startsWith("has_") || prop.startsWith("can_"))) {
-              return true;
+            if (typeof prop === "string") {
+              if (prop === "max_workspaces") {
+                return dbLimits[prop];
+              }
+              if (prop.startsWith("has_") || prop.startsWith("can_")) {
+                return true;
+              }
+              const dbLimit = dbLimits[prop];
+              if (dbLimit === -1 || dbLimit === undefined || dbLimit === null) {
+                return dbLimit === -1 ? -1 : 10;
+              }
+              if (typeof dbLimit === "number" && dbLimit < 10) {
+                return 10;
+              }
+              return dbLimit;
             }
             return -1;
           },
@@ -120,6 +133,13 @@ export function useSubscriptionLimits(
     const limit = limits.max_venues;
     if (limit === -1 || limit === undefined || limit === null) return true;
     return (workspaceStats?.venues || 0) < limit;
+  };
+
+  const canCreateCustomApp = () => {
+    if (isLoading) return true;
+    const limit = limits.max_custom_apps;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return (workspaceStats?.custom_apps || 0) < limit;
   };
 
   const canCreatePageBuilder = () => {
@@ -365,6 +385,7 @@ export function useSubscriptionLimits(
     canCreateTicketDesign,
     canCreateProduct,
     canCreateCampaign,
+    canCreateCustomApp,
     canCreateGiftCard,
     canCreatePunchCard,
     canCreateMovie,

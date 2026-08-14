@@ -181,8 +181,8 @@ export const deleteEventStaff = createServerFn({ method: "POST" }).handler(async
 });
 
 const GET_USER_STAFF_ASSIGNMENTS = `
-  query GetUserStaffAssignments($user_id: uuid!) {
-    event_staff(where: { user_id: { _eq: $user_id }, status: { _eq: "active" } }, order_by: { created_at: desc }) {
+  query GetUserStaffAssignments($user_id: uuid, $email: String) {
+    event_staff(where: { _or: [{ user_id: { _eq: $user_id } }, { email: { _eq: $email } }], status: { _eq: "active" } }, order_by: { created_at: desc }) {
       id
       role
       status
@@ -206,8 +206,38 @@ const GET_USER_STAFF_ASSIGNMENTS = `
 `;
 
 export const getUserStaffAssignments = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { user_id } = ctx.data as unknown as { user_id: string };
-  if (!user_id) return [];
-  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, { user_id });
+  const { user_id, email } = ctx.data as unknown as { user_id?: string; email?: string };
+  if (!user_id && !email) return [];
+  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, {
+    user_id,
+    email,
+  });
   return data.event_staff || [];
+});
+const GET_STAFF_BY_ID = `
+  query GetStaffById($id: uuid!) {
+    event_staff_by_pk(id: $id) {
+      id
+      user_id
+      first_name
+      last_name
+      email
+      phone
+      role
+      status
+      badge_qr_string
+      allowed_sections
+      profile_image
+      event_id
+      pin_code
+      app_permissions
+      vendor_id
+    }
+  }
+`;
+
+export const getStaffById = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const { id } = ctx.data as unknown as { id: string };
+  const data = await hasuraRequest<{ event_staff_by_pk: any }>(GET_STAFF_BY_ID, { id });
+  return data.event_staff_by_pk || null;
 });

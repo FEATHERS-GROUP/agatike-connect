@@ -222,7 +222,7 @@ function PublicFormPage() {
     );
   }
 
-  if (!form || !form.is_active) {
+  if (!form || !form.is_active || form.is_expired) {
     const coverImage = form?.cover_image_url || "/default-form-cover.png";
     return (
       <div className="min-h-screen w-full relative flex items-center justify-center p-4">
@@ -234,10 +234,10 @@ function PublicFormPage() {
         <div className="relative z-10 bg-card p-10 rounded-3xl shadow-2xl border border-border/50 max-w-md w-full text-center animate-in zoom-in-95 duration-500">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none rounded-3xl" />
           <h1 className="text-3xl font-bold text-foreground relative z-10">
-            {form ? form.title : "Form Unavailable"}
+            {form ? (form.is_expired ? "Subscription Expired" : form.title) : "Form Unavailable"}
           </h1>
           <p className="text-muted-foreground mt-3 relative z-10 text-base">
-            This form is no longer accepting responses.
+            {form?.is_expired ? "This form is temporarily unavailable due to workspace limits." : "This form is no longer accepting responses."}
           </p>
         </div>
       </div>

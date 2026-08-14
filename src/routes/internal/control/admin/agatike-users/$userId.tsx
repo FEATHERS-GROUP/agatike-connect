@@ -273,12 +273,29 @@ function UserDetailsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                       {attendees.map((att: any) => (
-                        <tr key={att.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
-                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{att.events?.title || "Unknown Event"}</td>
+                        <tr
+                          key={att.id}
+                          className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                        >
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                            {att.events?.title || "Unknown Event"}
+                          </td>
                           <td className="px-4 py-3">{att.names || "N/A"}</td>
-                          <td className="px-4 py-3"><span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">{att.ticket_type || "Standard"}</span></td>
-                          <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${att.status === "confirmed" || !att.status ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{att.status || "Confirmed"}</span></td>
-                          <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">{new Date(att.created_at).toLocaleDateString()}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">
+                              {att.ticket_type || "Standard"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs ${att.status === "confirmed" || !att.status ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}
+                            >
+                              {att.status || "Confirmed"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">
+                            {new Date(att.created_at).toLocaleDateString()}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -288,12 +305,24 @@ function UserDetailsPage() {
                 <div className="sm:hidden divide-y divide-gray-200 dark:divide-[#333333]">
                   {attendees.map((att: any) => (
                     <div key={att.id} className="p-4 space-y-1">
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">{att.events?.title || "Unknown Event"}</p>
-                      <p className="text-xs text-gray-500 dark:text-[#888888]">{att.names || "N/A"}</p>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {att.events?.title || "Unknown Event"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-[#888888]">
+                        {att.names || "N/A"}
+                      </p>
                       <div className="flex items-center gap-2 flex-wrap pt-1">
-                        <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">{att.ticket_type || "Standard"}</span>
-                        <span className={`px-2 py-0.5 rounded text-xs ${att.status === "confirmed" || !att.status ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{att.status || "Confirmed"}</span>
-                        <span className="text-xs text-gray-500 dark:text-[#888888]">{new Date(att.created_at).toLocaleDateString()}</span>
+                        <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-[#333333] text-xs">
+                          {att.ticket_type || "Standard"}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs ${att.status === "confirmed" || !att.status ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}
+                        >
+                          {att.status || "Confirmed"}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-[#888888]">
+                          {new Date(att.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -329,12 +358,25 @@ function UserDetailsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                       {venues.map((venue: any) => (
-                        <tr key={venue.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
-                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{venue.rentable_venue?.name || "Unknown Venue"}</td>
+                        <tr
+                          key={venue.id}
+                          className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                        >
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                            {venue.rentable_venue?.name || "Unknown Venue"}
+                          </td>
                           <td className="px-4 py-3">{venue.customer_name || "N/A"}</td>
                           <td className="px-4 py-3">{venue.amount || "0"}</td>
-                          <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${venue.status === "confirmed" || venue.status === "approved" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{venue.status || "Pending"}</span></td>
-                          <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">{new Date(venue.start_time).toLocaleDateString()}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs ${venue.status === "confirmed" || venue.status === "approved" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}
+                            >
+                              {venue.status || "Pending"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">
+                            {new Date(venue.start_time).toLocaleDateString()}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -344,12 +386,24 @@ function UserDetailsPage() {
                 <div className="sm:hidden divide-y divide-gray-200 dark:divide-[#333333]">
                   {venues.map((venue: any) => (
                     <div key={venue.id} className="p-4 space-y-1">
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">{venue.rentable_venue?.name || "Unknown Venue"}</p>
-                      <p className="text-xs text-gray-500 dark:text-[#888888]">{venue.customer_name || "N/A"}</p>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm">
+                        {venue.rentable_venue?.name || "Unknown Venue"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-[#888888]">
+                        {venue.customer_name || "N/A"}
+                      </p>
                       <div className="flex items-center gap-2 flex-wrap pt-1">
-                        <span className="text-xs font-mono text-gray-700 dark:text-[#cccccc]">{venue.amount || "0"}</span>
-                        <span className={`px-2 py-0.5 rounded text-xs ${venue.status === "confirmed" || venue.status === "approved" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}>{venue.status || "Pending"}</span>
-                        <span className="text-xs text-gray-500 dark:text-[#888888]">{new Date(venue.start_time).toLocaleDateString()}</span>
+                        <span className="text-xs font-mono text-gray-700 dark:text-[#cccccc]">
+                          {venue.amount || "0"}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs ${venue.status === "confirmed" || venue.status === "approved" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}
+                        >
+                          {venue.status || "Pending"}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-[#888888]">
+                          {new Date(venue.start_time).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -388,15 +442,32 @@ function UserDetailsPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                     {subscriptions.map((sub: any) => (
-                      <tr key={sub.id} className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors">
+                      <tr
+                        key={sub.id}
+                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                      >
                         <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900 dark:text-white">{sub.space?.name || "Unknown Space"}</div>
-                          <div className="text-xs text-gray-500 dark:text-[#888888] mt-0.5">{sub.plan_name}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {sub.space?.name || "Unknown Space"}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-[#888888] mt-0.5">
+                            {sub.plan_name}
+                          </div>
                         </td>
                         <td className="px-4 py-3 font-mono">{sub.price || "0"}</td>
                         <td className="px-4 py-3 capitalize">{sub.billing_cycle || "Monthly"}</td>
-                        <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs ${sub.status === "active" ? "bg-green-500/10 text-green-500" : sub.status === "cancelled" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}`}>{sub.status || "Unknown"}</span></td>
-                        <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">{sub.next_billing_date ? new Date(sub.next_billing_date).toLocaleDateString() : "N/A"}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs ${sub.status === "active" ? "bg-green-500/10 text-green-500" : sub.status === "cancelled" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}`}
+                          >
+                            {sub.status || "Unknown"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 dark:text-[#888888] text-xs">
+                          {sub.next_billing_date
+                            ? new Date(sub.next_billing_date).toLocaleDateString()
+                            : "N/A"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -406,13 +477,27 @@ function UserDetailsPage() {
               <div className="sm:hidden divide-y divide-gray-200 dark:divide-[#333333]">
                 {subscriptions.map((sub: any) => (
                   <div key={sub.id} className="p-4 space-y-1">
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{sub.space?.name || "Unknown Space"}</p>
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      {sub.space?.name || "Unknown Space"}
+                    </p>
                     <p className="text-xs text-gray-500 dark:text-[#888888]">{sub.plan_name}</p>
                     <div className="flex items-center gap-2 flex-wrap pt-1">
-                      <span className="text-xs font-mono text-gray-700 dark:text-[#cccccc]">{sub.price || "0"}</span>
-                      <span className="text-xs capitalize text-gray-500 dark:text-[#888888]">{sub.billing_cycle || "Monthly"}</span>
-                      <span className={`px-2 py-0.5 rounded text-xs ${sub.status === "active" ? "bg-green-500/10 text-green-500" : sub.status === "cancelled" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}`}>{sub.status || "Unknown"}</span>
-                      {sub.next_billing_date && <span className="text-xs text-gray-500 dark:text-[#888888]">Next: {new Date(sub.next_billing_date).toLocaleDateString()}</span>}
+                      <span className="text-xs font-mono text-gray-700 dark:text-[#cccccc]">
+                        {sub.price || "0"}
+                      </span>
+                      <span className="text-xs capitalize text-gray-500 dark:text-[#888888]">
+                        {sub.billing_cycle || "Monthly"}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs ${sub.status === "active" ? "bg-green-500/10 text-green-500" : sub.status === "cancelled" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"}`}
+                      >
+                        {sub.status || "Unknown"}
+                      </span>
+                      {sub.next_billing_date && (
+                        <span className="text-xs text-gray-500 dark:text-[#888888]">
+                          Next: {new Date(sub.next_billing_date).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}

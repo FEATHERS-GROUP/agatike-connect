@@ -2953,3 +2953,138 @@ The Subscription Portal allows active subscribers to view their workspace perks,
 - The `BookingsTab` unifies all of a subscriber's upcoming and past reservations into a single view.
 - **Real-Time UI:** When a user successfully books a new session or resource, the underlying React Query (`space_resource_bookings`) is immediately invalidated. This causes the "My Bookings" tab to instantly re-render with the new reservation, requiring no page refresh.
 - **Design:** Bookings are rendered as high-end glassmorphism cards with dynamic color status bars (e.g., Orange for 'confirmed'), location badges, and exact time constraints.
+
+---
+
+## 33. Agatike App Studio (Custom Mobile Portal Builder)
+
+**Logic:**
+
+The **App Studio** allows organizers to design bespoke mobile web-apps for their staff, vendors, and workspace users. Rather than relying on a static dashboard for staff, the organizer can use a drag-and-drop mobile canvas to specify exactly what tools a specific role needs.
+
+- **Dynamic Navigation Registration:** The App Studio is injected into the sidebar via the `platform_modules` database table, respecting subscription tier limits (e.g., Pro/Enterprise).
+- **Custom Modules:** Organizers can drop modular blocks into a mobile view. Modules include:
+  - **Access Scanner:** Scanning tickets, badges, and vouchers (with granular config).
+  - **Attendees:** Viewing and managing event attendees.
+  - **Sales & Transactions:** Viewing financial data.
+  - **Venues & Bookings:** Managing space reservations.
+- **Granular Permissions:** Each custom app is mapped to a specific role (e.g. `vendor`, `staff`) or explicitly to a `workspace_user_id` via the `app_permissions` table.
+- **Database Tables:**
+  - `workspace_apps` (Core app config, name, theme, logo)
+  - `app_modules` (The individual modules added to the app and their JSON config)
+  - `app_permissions` (Access control mapping)
+- **Migrations:** Relationships and schemas for the App Studio are tracked and automatically migrated via `migrate_track_relationships.js`.
+
+```mermaid
+flowchart TD
+    Org["Organizer"] -->|Uses Studio| Studio["App Builder"]
+    Studio -->|Saves UI/Config| DB["workspace_apps"]
+    Studio -->|Adds Tools| Mod["app_modules"]
+    Studio -->|Assigns Access| Perm["app_permissions"]
+
+    Perm --> Role1["Staff"]
+    Perm --> Role2["Vendors"]
+
+    Role1 -->|Logs in on Mobile| MobileApp["Custom Mobile Portal"]
+    MobileApp --> Scanner["Access Scanner (Tickets Only)"]
+
+    Role2 -->|Logs in on Mobile| MobileApp2["Custom Mobile Portal"]
+    MobileApp2 --> Scanner2["Access Scanner (Vouchers Only)"]
+    MobileApp2 --> Sales["Sales Dashboard"]
+```
+
+---
+
+## 34. Staff Portal & Custom App Engine
+
+**Logic:**
+
+The **Staff Portal Engine** is responsible for delivering the Custom Mobile Apps created in the App Studio directly to the end-users (Event Staff and Workspace Company Users). It manages authentication, routing, application configuration hydration, and module rendering in a seamless, premium mobile experience.
+
+### 34.1 Smart Adaptive Gateway (`/staff/login`)
+
+- **Context-Aware Login:** The Gateway automatically detects if a user is already authenticated to the main Agatike platform.
+- **Adaptive Options:** Instead of a generic login form, the Gateway fetches the user's specific assignments (`event_staff` or `workspace_users`). It dynamically hides irrelevant options and only presents a **"Continue as [Role]"** button tailored to the user's actual permissions.
+- **Instant Teleportation:** Clicking the tailored adaptive button completely bypasses standard email/password or PIN entry, instantly resolving their session and teleporting them to their respective dashboard (`/staff/event/$eventId` or `/staff/workspace/$workspaceUserId`).
+
+### 34.2 App Data Hydration & Fallback Engine
+
+- **Config Hydration:** When a staff member accesses their dashboard, the engine fetches the raw event metadata and then queries the `workspace_apps` configuration to inject the organizer's custom UI (colors, logos, layouts).
+- **Graceful Fallback:** If an event does not have an explicitly mapped Custom App (`app_id` is null), the engine will automatically fallback to querying the primary Custom App associated with the Event's overarching **Workspace**. This ensures the staff dashboard never breaks and always retains the parent workspace's custom branding.
+- **Hydration Syncing:** Because staff sessions rely on `localStorage` for fast re-entry (which is unavailable during Server-Side Rendering), the dashboard uses an `isMounted` execution pattern. It initially renders a unified React Server/Client state to prevent hydration mismatch crashes, before injecting the localized auth context.
+
+### 34.3 Premium Skeleton Loading
+
+- To maintain a high-end aesthetic while executing complex relational queries (fetching the Event details, Workspace Apps, and Badge configurations concurrently), the dashboard utilizes a glassmorphism skeleton loader (`animate-pulse`). This ensures the UI frame and layout grid load instantly, progressively hydrating with the Custom App colors and specific tool modules once the network payloads resolve.
+
+```mermaid
+flowchart TD
+    User["Staff/User"] -->|Visits| Gateway["/staff/login Gateway"]
+
+    Gateway --> CheckAuth{Is logged into<br/>main Agatike app?}
+    CheckAuth -->|No| EmailLogin["Show standard Email/PIN login form"]
+    CheckAuth -->|Yes| FetchRoles["Query user_id in Staff & Workspace tables"]
+
+    FetchRoles --> AdaptiveUI["Render Smart 'Continue as...' Buttons"]
+    AdaptiveUI -->|Clicks Event Staff| TeleportEvent["Teleport to /staff/event/$eventId"]
+    AdaptiveUI -->|Clicks Company User| TeleportWorkspace["Teleport to /staff/workspace/$userId"]
+
+    TeleportEvent --> FetchApp{Does Event have<br/>an explicitly mapped app_id?}
+    FetchApp -->|Yes| LoadSpecific["Load specific Custom App Config"]
+    FetchApp -->|No| FallbackWorkspace["Fallback: Load Workspace's Primary Custom App"]
+
+    LoadSpecific & FallbackWorkspace --> LoadingUI["Display Premium Skeleton Loader"]
+    LoadingUI --> ResolveQueries["Queries Resolve"]
+    ResolveQueries --> RenderDash["Render Dashboard with Custom Branding & Modules"]
+```
+
+---
+
+## 35. Subscription Limits & 14-Day Trial Restrictions
+
+**Logic:**
+
+The platform enforces a robust subscription limit architecture that gracefully downgrades access rather than abruptly locking organizers out of their data. When an organizer first creates a workspace, they enter a 14-day trial period where their usage limits are temporarily lifted (capped at a generic safety limit, usually 10, for low-limit resources). 
+
+### 35.1 Graceful Downgrade vs Hard Blocking
+
+- **Post-Trial Fallback:** Once the 14-day trial expires, or if a paid subscription lapses, the system does **not** permanently lock the organizer out of their account or throw a generic "Page Not Found" error for their public pages.
+- **Limit Slicing:** Instead, the system parses the `max_*` limits associated with their current (or fallback Free) plan. If the organizer has created 4 Custom Apps but their plan only allows 1, the dashboard and API routes will mathematically sort the resources by `created_at` (descending) and **slice** the array to match the limit (`array.slice(0, limit)`). 
+- **Visibility:** 
+  - The single most recently created app/page remains fully visible and operable to both the organizer and the public.
+  - The remaining out-of-bounds items (e.g., items #2 through #4) are hidden from the dashboard lists, and any direct public access to them displays a gentle "Subscription Expired" or "Temporarily Unavailable" message.
+
+### 35.2 Client-Side vs Server-Side Enforcement
+
+- **Dashboard (Client-Side):** Routes like `ticket-designer`, `app-builder`, and `rsvps` utilize the `useSubscriptionLimits` hook. This hook fetches the organizer's active subscription, compares it against the workspace usage stats, and calculates the allowed `limit`. The dashboard lists then slice the data array and display a global `QuotaExceededBanner` if the total items exceed the allowed limit, nudging the user to upgrade.
+- **Staff Portal (Client-Side):** The custom app gateway (`staff.workspace.$workspaceUserId.tsx`) implicitly enforces limits by applying the exact same slicing logic. Staff members will only see and be able to access the apps that fit within the workspace's current limit.
+- **Public Rendering (Server-Side):** For public-facing endpoints where the visitor is not authenticated (like `RenderedPage.tsx` for `/p/$slug` and `/f/$formId`), the limit logic is strictly enforced on the server.
+  - Endpoints like `getWorkspacePageBySlug` and `getFormDetails` independently query the workspace's subscription status.
+  - If the trial is expired, the server queries all items of that type for the workspace, ranks them chronologically, and checks if the requested item falls within the allowed index (e.g., is it item #1 out of an allowed limit of 1?).
+  - If it falls outside the allowed index, the server sets an `is_expired` flag, causing the frontend to render a graceful "Unavailable" block instead of exposing the restricted resource.
+
+### 35.3 Admin Trial Extensions (Mathematical Approach)
+
+- **Incremental Extension:** System Admins have the ability to extend an organizer's trial via the Internal Admin dashboard. 
+- **Math-based Limit:** Rather than overriding a date, extensions increment a `trial_extensions_count` integer on the free subscription (up to a max of 2 extensions).
+- **Dynamic Calculation:** The trial's expiration logic is determined dynamically across all API routes (`workspaces.ts`, `workspace-pages.ts`, `rsvps.ts`) using the formula: `Total Allowed Days = 14 + (trial_extensions_count * 7)`.
+- **Email Notifications:** When an admin triggers an extension, the system automatically sends a professionally branded email to the organizer, notifying them of the new 7-day grace period and inviting them back into the platform.
+
+```mermaid
+flowchart TD
+    Org["Organizer Creates Item"] --> Check{Is 14-Day Trial Active?}
+    Check -->|Yes| TrialLimit["Use Generous Trial Limit (e.g. 10)"]
+    Check -->|No| PlanLimit["Use strict plan limit (e.g. max_pages: 1)"]
+    
+    TrialLimit & PlanLimit --> Sort["Sort all items by created_at DESC"]
+    Sort --> Slice["Slice array to match allowed limit"]
+    
+    Slice --> InBounds["Item within limit (Index 0)"]
+    Slice --> OutBounds["Item exceeds limit (Index 1+)"]
+    
+    InBounds -->|Dashboard| DashVisible["Visible in Dashboard lists"]
+    InBounds -->|Public API| PubVisible["Fully accessible via public URLs"]
+    
+    OutBounds -->|Dashboard| DashHidden["Hidden from Dashboard lists\nShows Upgrade Banner"]
+    OutBounds -->|Public API| PubHidden["Returns 'is_expired: true'\nShows 'Subscription Expired' UI"]
+```

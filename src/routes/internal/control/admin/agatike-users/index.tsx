@@ -246,12 +246,42 @@ function UsersPage() {
             const totalVenueBookings = user.totalVenueBookings || 0;
             const followingCount = user.totalFollowing || 0;
             const badges: { title: string; Icon: any; color: string }[] = [];
-            if (totalEvents >= 10) badges.push({ title: "Event Explorer", Icon: ExplorerIcon, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" });
-            if (totalEvents >= 50) badges.push({ title: "Enthusiast", Icon: EnthusiastIcon, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" });
-            if (totalEvents >= 100) badges.push({ title: "VIP Attendee", Icon: VipIcon, color: "text-orange-500 bg-orange-500/20 border-orange-500/30" });
-            if (followingCount >= 25) badges.push({ title: "Social Butterfly", Icon: SocialIcon, color: "text-orange-400 bg-orange-400/10 border-orange-400/20" });
-            if (totalSubscriptions >= 5) badges.push({ title: "Loyal Subscriber", Icon: SubscriberIcon, color: "text-red-500 bg-red-500/10 border-red-500/20" });
-            if (totalVenueBookings >= 50) badges.push({ title: "Space Booker", Icon: VenueIcon, color: "text-orange-400 bg-orange-300/10 border-orange-400/20" });
+            if (totalEvents >= 10)
+              badges.push({
+                title: "Event Explorer",
+                Icon: ExplorerIcon,
+                color: "text-orange-500 bg-orange-500/10 border-orange-500/20",
+              });
+            if (totalEvents >= 50)
+              badges.push({
+                title: "Enthusiast",
+                Icon: EnthusiastIcon,
+                color: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+              });
+            if (totalEvents >= 100)
+              badges.push({
+                title: "VIP Attendee",
+                Icon: VipIcon,
+                color: "text-orange-500 bg-orange-500/20 border-orange-500/30",
+              });
+            if (followingCount >= 25)
+              badges.push({
+                title: "Social Butterfly",
+                Icon: SocialIcon,
+                color: "text-orange-400 bg-orange-400/10 border-orange-400/20",
+              });
+            if (totalSubscriptions >= 5)
+              badges.push({
+                title: "Loyal Subscriber",
+                Icon: SubscriberIcon,
+                color: "text-red-500 bg-red-500/10 border-red-500/20",
+              });
+            if (totalVenueBookings >= 50)
+              badges.push({
+                title: "Space Booker",
+                Icon: VenueIcon,
+                color: "text-orange-400 bg-orange-300/10 border-orange-400/20",
+              });
 
             return (
               <div
@@ -261,7 +291,11 @@ function UsersPage() {
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] overflow-hidden shrink-0 border border-gray-300 dark:border-[#444444] flex items-center justify-center">
                   {user.profile?.avatar_url ? (
-                    <img src={user.profile.avatar_url} alt={user.username || "User"} className="w-full h-full object-cover" />
+                    <img
+                      src={user.profile.avatar_url}
+                      alt={user.username || "User"}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <LucideIcons.User className="w-5 h-5 text-gray-500 dark:text-[#888888]" />
                   )}
@@ -271,8 +305,12 @@ function UsersPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-sm truncate">{user.username || "Anonymous"}</p>
-                      <p className="text-xs text-[#f97316]">@{user.handle || user.id.slice(0, 8)}</p>
+                      <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                        {user.username || "Anonymous"}
+                      </p>
+                      <p className="text-xs text-[#f97316]">
+                        @{user.handle || user.id.slice(0, 8)}
+                      </p>
                     </div>
                     <Link
                       to={`/internal/control/admin/agatike-users/${user.id}`}
@@ -283,7 +321,9 @@ function UsersPage() {
                   </div>
 
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs text-gray-600 dark:text-[#aaaaaa] truncate">{user.email || "No email"}</p>
+                    <p className="text-xs text-gray-600 dark:text-[#aaaaaa] truncate">
+                      {user.email || "No email"}
+                    </p>
                     <div className="flex items-center gap-3 flex-wrap">
                       {user.country && (
                         <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-[#888888]">
@@ -294,14 +334,22 @@ function UsersPage() {
                       {user.created_at && (
                         <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-[#888888]">
                           <LucideIcons.CalendarDays className="w-3 h-3" />
-                          {new Date(user.created_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                          {new Date(user.created_at).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       )}
                     </div>
                     {badges.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 pt-1">
                         {badges.map((b, i) => (
-                          <div key={i} title={b.title} className={`p-1 rounded-md border ${b.color} flex items-center justify-center cursor-help`}>
+                          <div
+                            key={i}
+                            title={b.title}
+                            className={`p-1 rounded-md border ${b.color} flex items-center justify-center cursor-help`}
+                          >
                             <b.Icon className="w-3.5 h-3.5" />
                           </div>
                         ))}

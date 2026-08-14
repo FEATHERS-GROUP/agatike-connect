@@ -26,6 +26,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSpaces } from "@/api/spaces";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { toast } from "sonner";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/")({
   head: () => ({
@@ -59,11 +60,17 @@ function SpacesListingsPage() {
     });
   };
 
-  const { data: spaces = [], isLoading } = useQuery({
+  const { data: rawSpaces = [], isLoading } = useQuery({
     queryKey: ["spaces", activeWorkspace?.id],
     queryFn: () => getSpaces({ data: { workspace_id: activeWorkspace?.id } }),
     enabled: !!activeWorkspace?.id,
   });
+
+  const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const limit = limits.max_spaces === undefined || limits.max_spaces === -1 ? Infinity : limits.max_spaces;
+  
+  const sortedRawSpaces = [...rawSpaces].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const spaces = limit === Infinity ? sortedRawSpaces : sortedRawSpaces.slice(0, limit);
 
   const totalSpaces = spaces.length;
   // Calculate total plans across all spaces
@@ -138,7 +145,11 @@ function SpacesListingsPage() {
       </div>
 
       <main className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Your Spaces</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Your Spaces</h2>
+        </div>
+        {limit === 0 && <QuotaExceededBanner limit={limit} total={rawSpaces.length} centered />}
+        {limit > 0 && <QuotaExceededBanner limit={limit} total={rawSpaces.length} />}
 
         {isLoading ? (
           <div className="flex justify-center items-center h-40 text-muted-foreground">

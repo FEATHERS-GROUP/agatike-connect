@@ -812,6 +812,7 @@ export const getAdminOrganizerBillingSettings = createServerFn({ method: "POST" 
           start_date
           next_billing_date
           plan_id
+          trial_extensions_count
           pricing_plan {
             id
             name
@@ -941,14 +942,14 @@ export const updateAdminOrganizerSubscriptionPlan = createServerFn({ method: "PO
 // EXTEND TRIAL (admin only — max 30 days from start_date)
 // ----------------------------------------------------
 export const extendAdminOrganizerTrial = createServerFn({ method: "POST" })
-  .validator((d: { organizerId: string; newEndDate: string }) => d)
+  .validator((d: { organizerId: string }) => d)
   .handler(async (ctx) => {
     const session = await getAdminSession();
     if (!session) throw new Error("unauthenticated");
 
-    const { organizerId, newEndDate } = ctx.data;
+    const { organizerId } = ctx.data;
 
-    // 1. Load the active free subscription
+    // 1. Load the active free subscription and organizer details
     const query = `
       query GetFreeSub($id: uuid!) {
         subscriptions(
@@ -957,43 +958,55 @@ export const extendAdminOrganizerTrial = createServerFn({ method: "POST" })
           limit: 1
         ) {
           id
-          start_date
-          next_billing_date
+          trial_extensions_count
+        }
+        organizers_by_pk(id: $id) {
+          name
+          email
         }
       }
     `;
     const res = await hasuraRequest<any>(query, { id: organizerId });
     const sub = (res.subscriptions || [])[0];
+    const organizer = res.organizers_by_pk;
+    
     if (!sub) throw new Error("No active free trial found for this organizer.");
+    if (!organizer?.email) throw new Error("Organizer has no email address.");
 
-    // 2. Enforce 30-day cap from original start_date
-    const startDate = new Date(sub.start_date);
-    const cap = new Date(startDate);
-    cap.setDate(cap.getDate() + 30);
-
-    const requested = new Date(newEndDate);
-    if (requested > cap) {
-      throw new Error(
-        `Trial cannot exceed 30 days from start date (cap: ${cap.toLocaleDateString("en-US")}).`,
-      );
-    }
-    if (requested <= new Date()) {
-      throw new Error("New end date must be in the future.");
+    // 2. Enforce 2-time cap
+    const currentCount = sub.trial_extensions_count || 0;
+    if (currentCount >= 2) {
+      throw new Error("This trial has already been extended the maximum of 2 times.");
     }
 
-    // 3. Update next_billing_date
+    // 3. Update count
+    const newCount = currentCount + 1;
     const mutation = `
-      mutation ExtendTrial($id: uuid!, $newDate: timestamptz!) {
-        update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { next_billing_date: $newDate }) {
+      mutation ExtendTrial($id: uuid!, $newCount: Int!) {
+        update_subscriptions_by_pk(pk_columns: { id: $id }, _set: { trial_extensions_count: $newCount }) {
           id
-          next_billing_date
+          trial_extensions_count
         }
       }
     `;
     const data = await hasuraRequest<any>(mutation, {
       id: sub.id,
-      newDate: requested.toISOString(),
+      newCount,
     });
+    
+    // 4. Send Email Notification
+    const totalAllowedDays = 14 + (newCount * 7);
+    import("@/api/email").then((module) => {
+      module.sendTrialExtensionEmail({
+        data: {
+          to: organizer.email,
+          organizerName: organizer.name,
+          daysExtended: 7,
+          totalAllowedDays,
+        }
+      } as any).catch(console.error);
+    });
+
     return data.update_subscriptions_by_pk;
   });
 

@@ -93,6 +93,17 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
               created_at
               amount
               next_billing_date
+              trial_extensions_count
+              pricing_plan {
+                usage_limits
+              }
+            }
+            workspace_pages(
+              where: { workspace_id: { _eq: "${page.workspace_id}" } }
+            ) {
+              id
+              created_at
+              updated_at
             }
           }
         `;
@@ -101,19 +112,40 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         page.is_expired = false;
 
         const activeSub = subRes.subscriptions?.[0];
+        let isTrialExpired = false;
         if (activeSub) {
           if (activeSub.amount === 0) {
             const subDate = new Date(activeSub.created_at);
             const now = new Date();
             const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-            if (diffDays > 14) {
-              page.is_expired = true;
+            const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 7);
+            if (diffDays > totalAllowedDays) {
+              isTrialExpired = true;
             }
           } else if (activeSub.next_billing_date) {
             const billingDate = new Date(activeSub.next_billing_date);
             const now = new Date();
             if (now.getTime() > billingDate.getTime()) {
+              isTrialExpired = true;
+            }
+          }
+
+          if (isTrialExpired) {
+            // Check limits
+            const rawLimits = activeSub.pricing_plan?.usage_limits;
+            const dbLimits = typeof rawLimits === "string" ? JSON.parse(rawLimits) : (rawLimits || {});
+            const limit = dbLimits.max_pages === undefined || dbLimits.max_pages === -1 ? Infinity : dbLimits.max_pages;
+            
+            if (limit === 0) {
               page.is_expired = true;
+            } else if (limit !== Infinity) {
+              const allPages = subRes.workspace_pages || [];
+              const sortedPages = allPages.sort((a: any, b: any) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime());
+              const visiblePages = sortedPages.slice(0, limit);
+              const isVisible = visiblePages.some((p: any) => p.id === page.id);
+              if (!isVisible) {
+                page.is_expired = true;
+              }
             }
           }
         }

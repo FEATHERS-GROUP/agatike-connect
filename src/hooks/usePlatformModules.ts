@@ -33,6 +33,7 @@ const CANONICAL_ORDER: string[] = [
   "Memberships",
   "Badge Designer",
   "Page Builder",
+  "App Builder",
   "Analytics",
   "Community",
   "Agatike Book",
@@ -80,6 +81,19 @@ export function usePlatformModules() {
           icon: LucideIcons.Users,
           category: "SHARED",
           mandatory: true,
+        });
+      }
+
+      // Inject App Builder module if it doesn't exist
+      if (!mapped.find((m) => m.label === "App Builder")) {
+        mapped.push({
+          id: "app-builder",
+          label: "App Builder",
+          desc: "Build custom mobile apps for your event",
+          href: "app-builder",
+          icon: LucideIcons.Smartphone,
+          category: "SHARED",
+          mandatory: false,
         });
       }
 

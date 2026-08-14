@@ -81,7 +81,13 @@ export function DesktopSidebar() {
       return true;
     });
 
-  const studioLabels = ["Badge Designer", "Venue Designer", "Tickets", "Page Builder"];
+  const studioLabels = [
+    "Badge Designer",
+    "Venue Designer",
+    "Tickets",
+    "Page Builder",
+    "App Builder",
+  ];
   const mainNav = nav.filter((m) => !studioLabels.includes(m.label) && m.label !== "Agatike Book");
   const studioNav = nav.filter((m) => studioLabels.includes(m.label));
   const hasBook = nav.some((m) => m.label === "Agatike Book");

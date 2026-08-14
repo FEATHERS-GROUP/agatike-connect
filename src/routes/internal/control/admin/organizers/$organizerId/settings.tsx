@@ -230,32 +230,26 @@ function OrganizerSettings() {
   // ── Trial extension ────────────────────────────────────────────────────────
   const trialSub = activeSubscription?.amount === 0 ? activeSubscription : null;
   const trialStart = trialSub ? new Date(trialSub.start_date) : null;
-  const trialCap = trialStart
-    ? new Date(new Date(trialStart).setDate(trialStart.getDate() + 30))
-    : null;
-  const trialCapStr = trialCap ? trialCap.toISOString().split("T")[0] : "";
-  const todayStr = new Date().toISOString().split("T")[0];
+  const extensionsUsed = trialSub?.trial_extensions_count || 0;
+  const maxExtensions = 2;
+  const totalAllowedDays = 14 + (extensionsUsed * 7);
   const daysUsed = trialStart
-    ? Math.min(30, Math.max(0, Math.round((Date.now() - trialStart.getTime()) / 86400000)))
+    ? Math.min(totalAllowedDays, Math.max(0, Math.round((Date.now() - trialStart.getTime()) / 86400000)))
     : 0;
 
   const promptExtendTrial = () => {
-    if (!trialEndDate || !overview) return;
-    const chosen = new Date(trialEndDate);
+    if (!overview || extensionsUsed >= maxExtensions) return;
     setConfirmModal({
       title: "Extend Free Trial",
-      message: `This will extend "${overview?.name}"'s free trial to ${chosen.toLocaleDateString("en-US", { dateStyle: "long" })}. They will still need to pay once it expires.`,
-      confirmLabel: "Extend Trial",
+      message: `This will extend "${overview?.name}"'s free trial by another 7 days. They will still need to pay once it expires.`,
+      confirmLabel: "Extend 7 Days",
       icon: "info",
       confirmClass: "bg-[#569cd6]/10 text-[#569cd6] border-[#569cd6]/30 hover:bg-[#569cd6]/20",
       onConfirm: async () => {
         await extendAdminOrganizerTrial({
-          data: { organizerId: overview.id, newEndDate: chosen.toISOString() },
+          data: { organizerId: overview.id },
         } as any);
-        toast.success(
-          `Trial extended to ${chosen.toLocaleDateString("en-US", { dateStyle: "long" })}`,
-        );
-        setTrialEndDate("");
+        toast.success(`Trial extended by 7 days!`);
         router.invalidate();
       },
     });
@@ -444,7 +438,7 @@ function OrganizerSettings() {
               </div>
             </div>
 
-            {trialSub && trialStart && trialCap ? (
+            {trialSub && trialStart ? (
               <div className="border border-gray-200 dark:border-[#333333] bg-gray-100 dark:bg-[#1a1a1a]">
                 {/* Progress bar */}
                 <div className="px-5 pt-4 pb-3 border-b border-gray-200 dark:border-[#333333]">
@@ -454,68 +448,55 @@ function OrganizerSettings() {
                       Started {trialStart.toLocaleDateString("en-US", { dateStyle: "medium" })}
                     </span>
                     <span className="text-xs font-mono font-semibold text-[#569cd6]">
-                      Day {daysUsed} / 30
+                      Day {daysUsed} / {totalAllowedDays}
                     </span>
                   </div>
                   <div className="h-1.5 w-full bg-gray-200 dark:bg-[#333333] rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${
-                        daysUsed >= 28
+                        daysUsed >= totalAllowedDays - 2
                           ? "bg-[#f43f5e]"
-                          : daysUsed >= 20
+                          : daysUsed >= totalAllowedDays - 10
                             ? "bg-[#dcdcaa]"
                             : "bg-[#569cd6]"
                       }`}
-                      style={{ width: `${Math.min(100, (daysUsed / 30) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (daysUsed / totalAllowedDays) * 100)}%` }}
                     />
                   </div>
                   <div className="flex items-center justify-between mt-1.5">
                     <span className="text-[10px] text-gray-600 dark:text-[#797775]">
-                      Current expiry:{" "}
+                      Extensions Used:{" "}
                       <span className="text-gray-900 dark:text-[#cccccc] font-medium">
-                        {new Date(trialSub.next_billing_date).toLocaleDateString("en-US", {
-                          dateStyle: "medium",
-                        })}
+                        {extensionsUsed} / {maxExtensions}
                       </span>
                     </span>
                     <span className="text-[10px] text-gray-600 dark:text-[#797775]">
-                      Cap:{" "}
+                      Limit:{" "}
                       <span className="text-gray-900 dark:text-[#cccccc] font-medium">
-                        {trialCap.toLocaleDateString("en-US", { dateStyle: "medium" })}
+                        {totalAllowedDays} Days Total
                       </span>
                     </span>
                   </div>
                 </div>
 
-                {/* Date picker + action */}
-                <div className="px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-600 dark:text-[#797775] block mb-1">
-                      New trial end date
-                    </label>
-                    <input
-                      id="trial-extend-date"
-                      type="date"
-                      value={trialEndDate}
-                      min={todayStr}
-                      max={trialCapStr}
-                      onChange={(e) => setTrialEndDate(e.target.value)}
-                      className="appearance-none bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] text-gray-900 dark:text-white text-sm px-3 py-2 focus:outline-none focus:border-[#569cd6] transition-colors w-full sm:w-auto"
-                    />
-                  </div>
+                {/* Action */}
+                <div className="px-5 py-4 flex items-center gap-3">
                   <button
                     id="trial-extend-confirm"
                     onClick={promptExtendTrial}
-                    disabled={!trialEndDate}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm border rounded-sm transition-colors font-medium shrink-0 mt-auto ${
-                      trialEndDate
+                    disabled={extensionsUsed >= maxExtensions}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm border rounded-sm transition-colors font-medium shrink-0 ${
+                      extensionsUsed < maxExtensions
                         ? "bg-[#569cd6]/10 text-[#569cd6] border-[#569cd6]/30 hover:bg-[#569cd6]/20 cursor-pointer"
                         : "text-gray-600 dark:text-[#797775] border-gray-200 dark:border-[#333333] opacity-40 cursor-not-allowed"
                     }`}
                   >
                     <CalendarPlus className="h-3.5 w-3.5" />
-                    Extend Trial
+                    Extend by 7 Days
                   </button>
+                  {extensionsUsed >= maxExtensions && (
+                    <p className="text-xs text-gray-500">Maximum extensions reached.</p>
+                  )}
                 </div>
               </div>
             ) : (

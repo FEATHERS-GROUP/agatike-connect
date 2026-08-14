@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/")({
   component: CinemaDashboardList,
@@ -33,11 +34,17 @@ function CinemaDashboardList() {
     activeWorkspace?.id,
   );
 
-  const { data: cinemas = [], isLoading } = useQuery({
+  const { data: rawCinemas = [], isLoading } = useQuery({
     queryKey: ["cinemas", activeWorkspace?.id],
     queryFn: () => getCinemas({ data: { workspace_id: activeWorkspace?.id } }),
     enabled: !!activeWorkspace?.id,
   });
+
+  const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const limit = limits.max_cinemas === undefined || limits.max_cinemas === -1 ? Infinity : limits.max_cinemas;
+  
+  const sortedRawCinemas = [...rawCinemas].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const cinemas = limit === Infinity ? sortedRawCinemas : sortedRawCinemas.slice(0, limit);
 
   const handleDelete = async (id: string, name: string) => {
     try {
@@ -82,6 +89,9 @@ function CinemaDashboardList() {
             Add New Cinema
           </Button>
         </div>
+
+        {limit === 0 && <QuotaExceededBanner limit={limit} total={rawCinemas.length} centered />}
+        {limit > 0 && <QuotaExceededBanner limit={limit} total={rawCinemas.length} />}
 
         {/* Loading */}
         {isLoading && (

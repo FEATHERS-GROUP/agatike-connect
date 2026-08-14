@@ -36,9 +36,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { toast } from "sonner";
-import { PitchType, TemplateId } from "@/components/venue-designer/types";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
+import { PitchType, TemplateId } from "@/components/venue-designer/types";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venue-designer/")({
   component: VenueDesignerIndex,
@@ -101,7 +102,13 @@ function VenueDesignerIndex() {
     hasStudioAccess,
     canCreateVenueDesign,
     isLoading: limitsLoading,
+    limits,
   } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+
+  const limit = limits.max_ticket_designs === undefined || limits.max_ticket_designs === -1 ? Infinity : limits.max_ticket_designs;
+  const sortedProjects = [...dbProjects].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const projects = limit === Infinity ? sortedProjects : sortedProjects.slice(0, limit);
+
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,7 +119,7 @@ function VenueDesignerIndex() {
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const searchedProjects = dbProjects.filter((p: any) => {
+  const searchedProjects = projects.filter((p: any) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     const eventObj = events.find((e: any) => e.id === p.event_id);
@@ -243,7 +250,7 @@ function VenueDesignerIndex() {
   };
 
   if (limitsLoading) return null;
-  if (!hasStudioAccess()) {
+  if (!hasStudioAccess() && limit === 0) {
     return (
       <div className="p-6 h-full flex flex-col justify-center">
         <UpgradePrompt
@@ -522,116 +529,120 @@ function VenueDesignerIndex() {
             onDeleteItems={handleBulkDelete}
           >
             {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                {isLoadingProjects ? (
-                  <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-sm font-medium text-muted-foreground mt-4">
-                      Loading venue projects...
-                    </p>
-                  </div>
-                ) : filteredItems.length === 0 ? (
-                  <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">
-                    <MapPin className="mx-auto h-16 w-16 bg-secondary/50 rounded-full flex items-center justify-center p-4 text-muted-foreground mb-4" />
-                    <h3 className="text-xl font-semibold tracking-tight">No Venue Projects</h3>
-                    <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
-                      Create your first venue seating map by selecting a template above.
-                    </p>
-                  </div>
-                ) : (
-                  filteredItems.map((proj: any) => {
-                    const eventObj = events.find((e: any) => e.id === proj.event_id);
-                    const displayTitle = proj.name || "Untitled Venue";
-                    const stopIdx = proj.tour_stop_idx ?? 0;
-                    let venueImage = eventObj?.cover || null;
-                    let locationName = "";
+              <div className="mt-6 space-y-6">
+                {limit === 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} centered />}
+                {limit > 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} />}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {isLoadingProjects ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
+                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                      <p className="text-sm font-medium text-muted-foreground mt-4">
+                        Loading venue projects...
+                      </p>
+                    </div>
+                  ) : filteredItems.length === 0 ? (
+                    <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">
+                      <MapPin className="mx-auto h-16 w-16 bg-secondary/50 rounded-full flex items-center justify-center p-4 text-muted-foreground mb-4" />
+                      <h3 className="text-xl font-semibold tracking-tight">No Venue Projects</h3>
+                      <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
+                        Create your first venue seating map by selecting a template above.
+                      </p>
+                    </div>
+                  ) : (
+                    filteredItems.map((proj: any) => {
+                      const eventObj = events.find((e: any) => e.id === proj.event_id);
+                      const displayTitle = proj.name || "Untitled Venue";
+                      const stopIdx = proj.tour_stop_idx ?? 0;
+                      let venueImage = eventObj?.cover || null;
+                      let locationName = "";
 
-                    if (stopIdx === -1) {
-                      if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
-                        locationName = " - All Locations";
+                      if (stopIdx === -1) {
+                        if (Array.isArray(eventObj?.tour_stops) && eventObj.tour_stops.length > 1) {
+                          locationName = " - All Locations";
+                        }
+                      } else if (
+                        Array.isArray(eventObj?.tour_stops) &&
+                        eventObj.tour_stops.length > stopIdx
+                      ) {
+                        const stopImage = eventObj.tour_stops[stopIdx]?.venue_image_url;
+                        if (stopImage) {
+                          venueImage = stopImage;
+                        }
+                        if (eventObj.tour_stops.length > 1) {
+                          locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
+                        }
                       }
-                    } else if (
-                      Array.isArray(eventObj?.tour_stops) &&
-                      eventObj.tour_stops.length > stopIdx
-                    ) {
-                      const stopImage = eventObj.tour_stops[stopIdx]?.venue_image_url;
-                      if (stopImage) {
-                        venueImage = stopImage;
-                      }
-                      if (eventObj.tour_stops.length > 1) {
-                        locationName = ` - ${eventObj.tour_stops[stopIdx].venue || eventObj.tour_stops[stopIdx].city || `Location ${stopIdx + 1}`}`;
-                      }
-                    }
 
-                    const isSelected = selectedIds.has(proj.id);
+                      const isSelected = selectedIds.has(proj.id);
 
-                    return (
-                      <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
-                        <div
-                          className="relative group rounded-[1.5rem] border bg-card overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                          style={{
-                            borderColor: isSelected
-                              ? "hsl(var(--primary))"
-                              : "hsl(var(--border) / 0.5)",
-                          }}
-                        >
+                      return (
+                        <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
                           <div
-                            className="absolute top-3 left-3 z-20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
-                            onClick={(e) => e.stopPropagation()}
-                            data-state={isSelected ? "checked" : "unchecked"}
+                            className="relative group rounded-[1.5rem] border bg-card overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                            style={{
+                              borderColor: isSelected
+                                ? "hsl(var(--primary))"
+                                : "hsl(var(--border) / 0.5)",
+                            }}
                           >
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
-                              className="bg-background/90 backdrop-blur-md border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-sm"
-                            />
+                            <div
+                              className="absolute top-3 left-3 z-20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
+                              onClick={(e) => e.stopPropagation()}
+                              data-state={isSelected ? "checked" : "unchecked"}
+                            >
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                                className="bg-background/90 backdrop-blur-md border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-sm"
+                              />
+                            </div>
+                            <Link
+                              to="/dashboard/$workspaceSlug/venue-designer/$projectId"
+                              params={{ workspaceSlug, projectId: proj.id }}
+                              className="flex flex-col h-full"
+                            >
+                              <div className="h-40 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50 shrink-0">
+                                {venueImage && (
+                                  <img
+                                    src={venueImage}
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700"
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 pointer-events-none" />
+                                <div className="relative z-10 text-white drop-shadow-md mt-auto">
+                                  <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest line-clamp-1 mb-1.5 text-primary-foreground">
+                                    {eventObj?.title || "No event linked"}
+                                    {locationName}
+                                  </p>
+                                  <h3 className="text-xl font-bold leading-tight drop-shadow-lg line-clamp-1">
+                                    {displayTitle}
+                                  </h3>
+                                </div>
+                              </div>
+                              <div className="px-5 py-4 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors bg-card">
+                                <span className="font-medium text-[13px]">Edit Map</span>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    className="p-2 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors z-20"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setProjectToDelete(proj.id);
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                  <ChevronRight className="h-4 w-4" />
+                                </div>
+                              </div>
+                            </Link>
                           </div>
-                          <Link
-                            to="/dashboard/$workspaceSlug/venue-designer/$projectId"
-                            params={{ workspaceSlug, projectId: proj.id }}
-                            className="flex flex-col h-full"
-                          >
-                            <div className="h-40 p-5 flex flex-col justify-between relative overflow-hidden bg-secondary/50 shrink-0">
-                              {venueImage && (
-                                <img
-                                  src={venueImage}
-                                  alt=""
-                                  className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700"
-                                />
-                              )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 pointer-events-none" />
-                              <div className="relative z-10 text-white drop-shadow-md mt-auto">
-                                <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest line-clamp-1 mb-1.5 text-primary-foreground">
-                                  {eventObj?.title || "No event linked"}
-                                  {locationName}
-                                </p>
-                                <h3 className="text-xl font-bold leading-tight drop-shadow-lg line-clamp-1">
-                                  {displayTitle}
-                                </h3>
-                              </div>
-                            </div>
-                            <div className="px-5 py-4 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors bg-card">
-                              <span className="font-medium text-[13px]">Edit Map</span>
-                              <div className="flex items-center gap-1.5">
-                                <button
-                                  className="p-2 rounded-lg hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors z-20"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setProjectToDelete(proj.id);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                                <ChevronRight className="h-4 w-4" />
-                              </div>
-                            </div>
-                          </Link>
-                        </div>
-                      </ItemMenu>
-                    );
-                  })
-                )}
+                        </ItemMenu>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
           </FolderManager>

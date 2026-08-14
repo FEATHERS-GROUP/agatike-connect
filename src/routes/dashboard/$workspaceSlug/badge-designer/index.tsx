@@ -37,6 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/badge-designer/")({
   component: BadgeDesignerIndex,
@@ -105,7 +106,7 @@ function BadgeDesignerIndex() {
   } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const {
-    data: dbProjects = [],
+    data: rawDbProjects = [],
     isLoading: isLoadingProjects,
     refetch,
   } = useQuery({
@@ -113,6 +114,12 @@ function BadgeDesignerIndex() {
     queryFn: () => getAllBadgeProjects({ data: { workspace_id: activeWorkspace?.id } } as any),
     enabled: !!activeWorkspace?.id,
   });
+
+  const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const limit = limits.max_badge_designs === undefined || limits.max_badge_designs === -1 ? Infinity : limits.max_badge_designs;
+  const sortedProjects = [...rawDbProjects].sort((a: any, b: any) => new Date(b.created_at || b.updated_on || 0).getTime() - new Date(a.created_at || a.updated_on || 0).getTime());
+  const dbProjects = limit === Infinity ? sortedProjects : sortedProjects.slice(0, limit);
+
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -223,7 +230,7 @@ function BadgeDesignerIndex() {
   };
 
   if (limitsLoading) return null;
-  if (!hasStudioAccess()) {
+  if (!hasStudioAccess() && limit === 0) {
     return (
       <div className="p-6 h-full flex flex-col justify-center">
         <UpgradePrompt
@@ -356,7 +363,10 @@ function BadgeDesignerIndex() {
             onDeleteItems={handleBulkDelete}
           >
             {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+              <div className="mt-4 space-y-6">
+                {limit === 0 && <QuotaExceededBanner limit={limit} total={rawDbProjects.length} centered />}
+                {limit > 0 && <QuotaExceededBanner limit={limit} total={rawDbProjects.length} />}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoadingProjects ? (
                   <div className="col-span-full flex flex-col items-center justify-center py-12">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -447,6 +457,7 @@ function BadgeDesignerIndex() {
                     );
                   })
                 )}
+                </div>
               </div>
             )}
           </FolderManager>

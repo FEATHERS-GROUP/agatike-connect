@@ -115,6 +115,7 @@ export function GlobalCommandMenu() {
     "Tickets",
     "Page Builder",
     "Ticket Designer",
+    "App Builder",
   ];
   const mainNav = nav.filter(
     (m: any) => !studioLabels.includes(m.label) && m.label !== "Agatike Book",

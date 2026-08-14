@@ -82,22 +82,35 @@ function DashboardLayout() {
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const isSpaceWorkspace =
-    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/) &&
-    !location.pathname.includes("create-space");
-  const isTransportWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/trips\/[^/]+/);
-  // Cinema inside a specific cinema (has $cinemaId)
-  const isCinemaWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\//);
-  // Top-level Cinema section (list page + ticket-tiers) — no $cinemaId sub-route
-  const isCinemaSection =
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema/) && !isCinemaWorkspace;
-  const search = location.search as any;
+  const isSpaceWorkspace = activeWorkspace?.type === "space";
+  const isTransportWorkspace = activeWorkspace?.type === "transport";
+  const isCinemaWorkspace = activeWorkspace?.type === "cinema";
+  const isGenericDesigner = !!location.pathname.match(/^\/dashboard\/[^/]+\/designer$/);
+  const isCinemaSection = !!location.pathname.match(/^\/dashboard\/[^/]+\/theatres\/[^/]+/);
   const isDesigningVenue = !!location.pathname.match(/^\/dashboard\/[^/]+\/venue-designer\/[^/]+/);
+  const isAppBuilderStudio = !!location.pathname.match(/^\/dashboard\/[^/]+\/app-builder\/[^/]+$/);
+
+  const isDesigner =
+    isGenericDesigner ||
+    isDesigningVenue ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/community/i) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
 
   const hideSidebar =
     location.pathname === "/dashboard/login" ||
     location.pathname === "/dashboard/forgot-password" ||
-    location.pathname === "/dashboard/workspaces" ||
+    location.pathname === "/dashboard/create-organizer" ||
+    isDesigner ||
+    isDesigningVenue ||
+    isAppBuilderStudio ||
     location.pathname === "/dashboard/analytics" ||
     location.pathname === "/dashboard/create-organizer" ||
     location.pathname === "/dashboard/settings" ||
@@ -114,19 +127,6 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/page-builder\/editor/);
-
-  const isDesigner =
-    isDesigningVenue ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/community/i) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/[^/]+\/create-schedule/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
 
   // Determine dynamic "Add" action for context menu based on route
   const getDynamicAddAction = () => {

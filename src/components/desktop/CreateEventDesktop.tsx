@@ -16,6 +16,7 @@ import {
   Sparkles,
   Loader2,
   Save,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ import { getWorkspaceVipPrivileges } from "@/api/vip";
 import { getPlacesAutocomplete, getPlaceDetails } from "@/api/geocoding";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, deleteFiles } from "@/api/storage";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 // Standard event categories
@@ -362,6 +363,21 @@ export function CreateEventDesktop() {
     updateField("coverPreview", url);
   };
 
+  const handleRemoveCover = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (data.coverPreview && data.coverPreview.startsWith("http")) {
+      try {
+        await deleteFiles({ data: { urls: [data.coverPreview] } } as any);
+        toast.success("Image removed from storage");
+      } catch (err) {
+        console.error("Failed to delete cover:", err);
+      }
+    }
+    setCoverFile(null);
+    updateField("coverPreview", "");
+  };
+
   const next = () => setStep(Math.min(steps.length - 1, step + 1));
   const prev = () => setStep(Math.max(0, step - 1));
 
@@ -523,8 +539,8 @@ export function CreateEventDesktop() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl w-full">
-      <div className="rounded-[2rem] border border-border/60 bg-card p-6 sm:p-10 shadow-[var(--shadow-card)]">
+    <div className="w-full">
+      <div className="rounded-[2rem] border border-border/60 bg-card p-4 sm:p-6 md:p-8 lg:p-10 shadow-[var(--shadow-card)]">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold">{steps[step]}</h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -874,21 +890,40 @@ export function CreateEventDesktop() {
         {steps[step] === "Media" && (
           <div className="space-y-5">
             <Label>Cover image</Label>
-            <label className="block aspect-[16/9] cursor-pointer overflow-hidden rounded-2xl border border-dashed border-border bg-secondary/40 transition hover:border-primary">
+            <label className="relative block h-[250px] sm:h-[300px] md:h-[400px] w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary hover:bg-secondary/60">
               {data.coverPreview ? (
-                <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
+                <>
+                  <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity hover:opacity-100 flex items-center justify-center backdrop-blur-[2px]">
+                    <span className="text-white font-medium bg-black/50 px-5 py-2.5 rounded-full shadow-lg">Change Image</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-4 right-4 h-8 w-8 rounded-full shadow-md z-10"
+                    onClick={handleRemoveCover}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </>
               ) : (
-                <div className="grid h-full place-items-center text-sm text-muted-foreground">
-                  <div className="text-center">
-                    <Upload className="mx-auto h-6 w-6" />
-                    <p className="mt-2">Click to upload (any image)</p>
+                <div className="grid h-full w-full place-items-center text-sm text-muted-foreground">
+                  <div className="text-center flex flex-col items-center gap-3">
+                    <div className="rounded-full bg-background p-4 shadow-sm border border-border/60">
+                      <Upload className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-base">Click to upload cover image</p>
+                      <p className="mt-1 text-xs text-muted-foreground">PNG, JPG or WEBP up to 5MB</p>
+                    </div>
                   </div>
                 </div>
               )}
               <input type="file" accept="image/*" hidden onChange={onCoverUpload} />
             </label>
             <p className="text-xs text-muted-foreground">
-              Recommended 1920×1080. We auto-generate social cards.
+              Recommended 1920×1080. We auto-generate social cards for sharing.
             </p>
           </div>
         )}
