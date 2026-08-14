@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CheckCircle2, Loader2, UploadCloud, FileIcon, ArrowLeft } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import {
   Select,
   SelectContent,
@@ -206,7 +207,8 @@ function PublicFormPage() {
     }
     const loadingToast = toast.loading("Uploading file...");
     try {
-      const url = await uploadFileToStorage(file, `form_uploads/${formId}`);
+      const folderPath = buildStoragePath("public", "forms", formId, "uploads");
+      const url = await uploadFileToStorage(file, folderPath);
       updateField(fieldId, url);
       toast.success("File uploaded successfully", { id: loadingToast });
     } catch (error) {

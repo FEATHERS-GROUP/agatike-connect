@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useMutation } from "@tanstack/react-query";
 import { createRentableVenue } from "@/api/rentable_venues";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
@@ -356,7 +357,8 @@ function NewVenueWizard() {
         continue;
       }
       try {
-        const url = await uploadFileToStorage(file, "venues");
+        const folderPath = buildStoragePath(activeWorkspace?.slug, "venues", formData.name, "images");
+        const url = await uploadFileToStorage(file, folderPath);
         newUrls.push(url);
       } catch (err) {
         toast.error(`Failed to upload ${file.name}`);
@@ -376,7 +378,8 @@ function NewVenueWizard() {
     }
     setIsUploading(true);
     try {
-      const url = await uploadFileToStorage(file, "venues");
+      const folderPath = buildStoragePath(activeWorkspace?.slug, "venues", formData.name, "sections");
+      const url = await uploadFileToStorage(file, folderPath);
       updateSection(idx, "image_url", url);
     } catch (err) {
       toast.error("Failed to upload image");
@@ -457,7 +460,8 @@ function NewVenueWizard() {
     if (file.size > 5 * 1024 * 1024) return toast.error("File exceeds 5MB limit");
     setIsUploading(true);
     try {
-      const url = await uploadFileToStorage(file, "venues");
+      const folderPath = buildStoragePath(activeWorkspace?.slug, "venues", formData.name, "facilities");
+      const url = await uploadFileToStorage(file, folderPath);
       updateFacility(idx, "image_url", url);
     } catch (err) {
       toast.error("Failed to upload image");

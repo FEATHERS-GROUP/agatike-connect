@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, useParams, Link, useSearch } from "@tanstack/react-router";
 import { useState, useEffect, Key } from "react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { LocationSearchInput } from "@/components/desktop/LocationSearchInput";
 import {
   ArrowLeft,
@@ -339,7 +340,8 @@ function NewSpaceWizard() {
 
     setIsUploading(true);
     try {
-      const url = await uploadFileToStorage(file, "spaces/covers");
+      const folderPath = buildStoragePath(activeWorkspace?.slug, "spaces", formData.name, "cover");
+      const url = await uploadFileToStorage(file, folderPath);
       setFormData((prev: any) => ({ ...prev, cover_url: url }));
       toast.success("Image uploaded successfully!");
     } catch (err) {

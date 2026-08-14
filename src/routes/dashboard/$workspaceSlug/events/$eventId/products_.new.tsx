@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -191,7 +192,8 @@ function NewProductPage() {
       }
 
       if (imageFile) {
-        payload.image_url = await uploadFileToStorage(imageFile, "events/products");
+        const folderPath = buildStoragePath(workspaceSlug, "events", eventId, "products");
+        payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
       return await createProduct({ data: payload } as any);

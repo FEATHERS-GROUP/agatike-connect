@@ -94,7 +94,7 @@ function DashboardLayout() {
     isGenericDesigner ||
     isDesigningVenue ||
     location.pathname.match(/^\/dashboard\/[^/]+\/ticket-designer\/[^/]+/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/community/i) ||
+    location.pathname.match(/^\/dashboard\/[^/]+\/community\/[^/]+/i) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/create-space/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-movie/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create-ticket-tier/) ||
@@ -102,7 +102,7 @@ function DashboardLayout() {
     location.pathname.match(/^\/dashboard\/[^/]+\/Cinema\/create$/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/users\/add-user/) ||
     location.pathname.match(/^\/dashboard\/[^/]+\/trips\/create-trip/) ||
-    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder/);
+    location.pathname.match(/^\/dashboard\/[^/]+\/page-builder\/editor/);
 
   const hideSidebar =
     location.pathname === "/dashboard/login" ||

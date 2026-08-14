@@ -7,7 +7,7 @@ import {
   convertOrganizerAccount,
   verifyConversionCredentials,
 } from "@/api/organizers";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -201,8 +201,9 @@ export function SettingsAccountTypeTab({ profile }: SettingsAccountTypeTabProps)
       try {
         const base64 = await fileToBase64(certFile);
         const ext = certFile.name.split(".").pop() || "pdf";
+        const folderPath = buildStoragePath(profile?.name, "profile", "images", "cert");
         const res = await uploadFile({
-          data: { base64, contentType: certFile.type, folder: "organizers/certs", ext },
+          data: { base64: base64.split(",")[1], contentType: certFile.type, folder: folderPath, ext },
         } as any);
         certUrl = res.url;
       } catch (err) {

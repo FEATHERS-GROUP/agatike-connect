@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventSections, addMultipleEventStaff } from "@/api/staff";
 import { getUserByHandle } from "@/api/users";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { toast } from "sonner";
@@ -144,7 +145,8 @@ function AddStaffPage() {
 
     try {
       const toastId = toast.loading("Uploading image...");
-      const url = await uploadFileToStorage(file, "staff-avatars");
+      const folderPath = buildStoragePath(workspaceSlug, "events", eventId, "staff-avatars");
+      const url = await uploadFileToStorage(file, folderPath);
 
       if (isAccount) {
         const newInputs = [...accountInputs];

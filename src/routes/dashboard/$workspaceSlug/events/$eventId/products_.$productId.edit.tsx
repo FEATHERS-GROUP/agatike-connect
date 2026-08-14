@@ -17,6 +17,7 @@ import { getProduct, updateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -217,7 +218,8 @@ function EditProductPage() {
       }
 
       if (imageFile) {
-        payload.image_url = await uploadFileToStorage(imageFile, "events/products");
+        const folderPath = buildStoragePath(workspaceSlug, "events", eventId, "products");
+        payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
       return await updateProduct({ data: payload } as any);

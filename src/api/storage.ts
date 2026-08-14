@@ -8,6 +8,33 @@ if (!SUPABASE_URL) {
 }
 
 /**
+ * Builds a structured path for Supabase Storage.
+ * Output format: {workspaceSlug}/{entityType}/{entityName}/{assetType}
+ */
+export function buildStoragePath(
+  workspaceNameOrSlug: string | undefined | null,
+  entityType: string,
+  entityName: string | undefined | null,
+  assetType?: string
+) {
+  const slugify = (str: string) =>
+    str
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+  const wSlug = workspaceNameOrSlug ? slugify(workspaceNameOrSlug) : "new-organizer";
+  const eSlug = entityName ? slugify(entityName) : "drafts";
+  
+  if (assetType) {
+    const aSlug = slugify(assetType);
+    return `${wSlug}/${entityType}/${eSlug}/${aSlug}`;
+  }
+  
+  return `${wSlug}/${entityType}/${eSlug}`;
+}
+
+/**
  * Server-side file upload to Supabase Storage using the REST API directly.
  * This bypasses the Supabase JS client and posts directly to the storage endpoint
  * using the anon key, which works as long as the bucket has public RLS policies.

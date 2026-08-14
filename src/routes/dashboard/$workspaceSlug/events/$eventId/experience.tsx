@@ -41,6 +41,7 @@ import {
   X,
 } from "lucide-react";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { formatDistanceToNow, format } from "date-fns";
 import {
   RadarChart,
@@ -177,7 +178,8 @@ function ExperienceDashboard() {
     }
     setIsUploadingStory(true);
     try {
-      const url = await uploadFileToStorage(file, `stories/${eventId}`);
+      const folderPath = buildStoragePath(activeWorkspace?.slug, "events", eventId, "stories");
+      const url = await uploadFileToStorage(file, folderPath);
       await createEventStory({
         data: {
           event_id: eventId,

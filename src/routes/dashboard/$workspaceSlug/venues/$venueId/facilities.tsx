@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/venues/$venueId/facilities")({
   component: VenueFacilitiesPage,
@@ -112,7 +113,8 @@ function VenueFacilitiesPage() {
 
     setIsUploading(true);
     try {
-      const url = await uploadFileToStorage(file, "venues");
+      const folderPath = buildStoragePath(workspaceSlug, "venues", venueId, "facilities");
+      const url = await uploadFileToStorage(file, folderPath);
       updateActiveFacility("image_url", url);
     } catch (err) {
       toast.error("Failed to upload image");

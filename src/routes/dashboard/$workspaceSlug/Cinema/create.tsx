@@ -25,6 +25,7 @@ import { COUNTRIES } from "@/lib/countries";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/create")({
   component: CreateCinemaPage,
@@ -349,9 +350,10 @@ function CreateCinemaPage() {
                         if (!e.target.files?.[0]) return;
                         setIsUploadingCover(true);
                         try {
+                          const folderPath = buildStoragePath(activeWorkspace?.slug, "cinema", form.name, "cover");
                           const url = await uploadFileToStorage(
                             e.target.files[0],
-                            "cinemas/covers",
+                            folderPath,
                           );
                           set("cover_url", url);
                           toast.success("Cover uploaded!");
@@ -405,7 +407,8 @@ function CreateCinemaPage() {
                         if (!e.target.files?.[0]) return;
                         setIsUploadingLogo(true);
                         try {
-                          const url = await uploadFileToStorage(e.target.files[0], "cinemas/logos");
+                          const folderPath = buildStoragePath(activeWorkspace?.slug, "cinema", form.name, "logo");
+                          const url = await uploadFileToStorage(e.target.files[0], folderPath);
                           set("logo_url", url);
                           toast.success("Logo uploaded!");
                         } catch (err) {

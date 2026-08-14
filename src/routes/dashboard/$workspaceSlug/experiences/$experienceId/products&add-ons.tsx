@@ -43,6 +43,7 @@ import { createProduct, getEventProducts, updateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
@@ -65,6 +66,7 @@ function ProductModal({
   trigger?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const { workspaceSlug, experienceId } = useParams({ strict: false });
   const { activeWorkspace } = useWorkspace();
   const queryClient = useQueryClient();
   const { canCreateCampaign, canCreateGiftCard, canCreatePunchCard, canCreateProduct } =
@@ -136,7 +138,8 @@ function ProductModal({
       };
 
       if (imageFile) {
-        payload.image_url = await uploadFileToStorage(imageFile, "events/products");
+        const folderPath = buildStoragePath(workspaceSlug, "experiences", experienceId, "products");
+        payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
       if (editingProduct) {

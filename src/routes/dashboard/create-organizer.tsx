@@ -27,7 +27,7 @@ import {
 import { createOrganizerAccount, checkOrganizerHandle } from "@/api/organizers";
 import { sendSignupOtp } from "@/api/auth";
 import { getUserByHandle } from "@/api/users";
-import { uploadFile } from "@/api/storage";
+import { uploadFile, buildStoragePath } from "@/api/storage";
 import { getPricingPlans } from "@/api/billing";
 import { getAllPaymentProviderFees } from "@/api/pawapay";
 import {
@@ -317,7 +317,7 @@ function CreateOrganizerPage() {
               data: {
                 base64: match[2],
                 contentType: match[1],
-                folder: "organizers/certs",
+                folder: buildStoragePath(values.name, "profile", "images", "cert"),
                 ext: match[1].split("/")[1] || "bin",
               },
             } as any);
@@ -337,7 +337,7 @@ function CreateOrganizerPage() {
               data: {
                 base64: match[2],
                 contentType: match[1],
-                folder: "organizers/ids",
+                folder: buildStoragePath(values.name, "profile", "images", "id"),
                 ext: match[1].split("/")[1] || "bin",
               },
             } as any);
@@ -357,7 +357,7 @@ function CreateOrganizerPage() {
               data: {
                 base64: match[2],
                 contentType: match[1],
-                folder: "organizers/profiles",
+                folder: buildStoragePath(values.name, "profile", "images", "logo"),
                 ext: match[1].split("/")[1] || "bin",
               },
             } as any);

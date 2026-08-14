@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getEventById, updateEvent } from "@/api/events";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
+import { buildStoragePath } from "@/api/storage";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
@@ -59,7 +60,8 @@ function LineupPage() {
       const processedLineup = await Promise.all(
         lineup.map(async (member) => {
           if (member.avatarFile) {
-            const url = await uploadFileToStorage(member.avatarFile, "events/lineup");
+            const folderPath = buildStoragePath(activeWorkspace?.slug, "events", event?.title, "lineup");
+            const url = await uploadFileToStorage(member.avatarFile, folderPath);
             return { ...member, avatarUrl: url, avatarFile: undefined };
           }
           return member;
