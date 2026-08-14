@@ -3037,3 +3037,47 @@ flowchart TD
     LoadingUI --> ResolveQueries["Queries Resolve"]
     ResolveQueries --> RenderDash["Render Dashboard with Custom Branding & Modules"]
 ```
+
+---
+
+## 35. Subscription Limits & 14-Day Trial Restrictions
+
+**Logic:**
+
+The platform enforces a robust subscription limit architecture that gracefully downgrades access rather than abruptly locking organizers out of their data. When an organizer first creates a workspace, they enter a 14-day trial period where their usage limits are temporarily lifted (capped at a generic safety limit, usually 10, for low-limit resources). 
+
+### 35.1 Graceful Downgrade vs Hard Blocking
+
+- **Post-Trial Fallback:** Once the 14-day trial expires, or if a paid subscription lapses, the system does **not** permanently lock the organizer out of their account or throw a generic "Page Not Found" error for their public pages.
+- **Limit Slicing:** Instead, the system parses the `max_*` limits associated with their current (or fallback Free) plan. If the organizer has created 4 Custom Apps but their plan only allows 1, the dashboard and API routes will mathematically sort the resources by `created_at` (descending) and **slice** the array to match the limit (`array.slice(0, limit)`). 
+- **Visibility:** 
+  - The single most recently created app/page remains fully visible and operable to both the organizer and the public.
+  - The remaining out-of-bounds items (e.g., items #2 through #4) are hidden from the dashboard lists, and any direct public access to them displays a gentle "Subscription Expired" or "Temporarily Unavailable" message.
+
+### 35.2 Client-Side vs Server-Side Enforcement
+
+- **Dashboard (Client-Side):** Routes like `ticket-designer`, `app-builder`, and `rsvps` utilize the `useSubscriptionLimits` hook. This hook fetches the organizer's active subscription, compares it against the workspace usage stats, and calculates the allowed `limit`. The dashboard lists then slice the data array and display a global `QuotaExceededBanner` if the total items exceed the allowed limit, nudging the user to upgrade.
+- **Staff Portal (Client-Side):** The custom app gateway (`staff.workspace.$workspaceUserId.tsx`) implicitly enforces limits by applying the exact same slicing logic. Staff members will only see and be able to access the apps that fit within the workspace's current limit.
+- **Public Rendering (Server-Side):** For public-facing endpoints where the visitor is not authenticated (like `RenderedPage.tsx` for `/p/$slug` and `/f/$formId`), the limit logic is strictly enforced on the server.
+  - Endpoints like `getWorkspacePageBySlug` and `getFormDetails` independently query the workspace's subscription status.
+  - If the trial is expired, the server queries all items of that type for the workspace, ranks them chronologically, and checks if the requested item falls within the allowed index (e.g., is it item #1 out of an allowed limit of 1?).
+  - If it falls outside the allowed index, the server sets an `is_expired` flag, causing the frontend to render a graceful "Unavailable" block instead of exposing the restricted resource.
+
+```mermaid
+flowchart TD
+    Org["Organizer Creates Item"] --> Check{Is 14-Day Trial Active?}
+    Check -->|Yes| TrialLimit["Use Generous Trial Limit (e.g. 10)"]
+    Check -->|No| PlanLimit["Use strict plan limit (e.g. max_pages: 1)"]
+    
+    TrialLimit & PlanLimit --> Sort["Sort all items by created_at DESC"]
+    Sort --> Slice["Slice array to match allowed limit"]
+    
+    Slice --> InBounds["Item within limit (Index 0)"]
+    Slice --> OutBounds["Item exceeds limit (Index 1+)"]
+    
+    InBounds -->|Dashboard| DashVisible["Visible in Dashboard lists"]
+    InBounds -->|Public API| PubVisible["Fully accessible via public URLs"]
+    
+    OutBounds -->|Dashboard| DashHidden["Hidden from Dashboard lists\nShows Upgrade Banner"]
+    OutBounds -->|Public API| PubHidden["Returns 'is_expired: true'\nShows 'Subscription Expired' UI"]
+```
