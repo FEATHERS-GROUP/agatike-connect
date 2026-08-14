@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   Trash2,
   PlusCircle,
+  Download,
 } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
-import { buildStoragePath } from "@/api/storage";
+import { buildStoragePath, uploadFormData } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ function NewProductPage() {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [digitalFile, setDigitalFile] = useState<File | null>(null);
 
   type ColorVariant = { name: string; stock: number };
   type SizeVariant = { name: string; stock: number; colors: ColorVariant[] };
@@ -191,6 +193,20 @@ function NewProductPage() {
         payload.specs = validSpecs.length > 0 ? validSpecs : null;
       }
 
+      if (formData.type === "digital" && digitalFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", digitalFile);
+        const folderPath = buildStoragePath(activeWorkspace?.slug, "digital_products", formData.name);
+        formDataUpload.append("folder", folderPath);
+        
+        try {
+          const res = await uploadFormData({ data: formDataUpload } as any);
+          payload.specs = { digital_file_url: res.url };
+        } catch (err) {
+           throw new Error("Failed to upload digital file.");
+        }
+      }
+
       if (imageFile) {
         const folderPath = buildStoragePath(workspaceSlug, "events", eventId, "products");
         payload.image_url = await uploadFileToStorage(imageFile, folderPath);
@@ -215,6 +231,11 @@ function NewProductPage() {
     e.preventDefault();
     if (!formData.name || (formData.type !== "loyalty_card" && !formData.price)) {
       toast.error("Please fill in the required fields");
+      return;
+    }
+
+    if (formData.type === "digital" && !digitalFile) {
+      toast.error("Please upload a file for your digital product");
       return;
     }
 
@@ -316,6 +337,12 @@ function NewProductPage() {
               icon: Check,
               desc: "Free card to earn rewards",
             },
+            {
+              id: "digital",
+              label: "Digital Product",
+              icon: Download,
+              desc: "Sell downloadable files",
+            },
           ].map((typeOption) => {
             const Icon = typeOption.icon;
             return (
@@ -345,6 +372,7 @@ function NewProductPage() {
                 {formData.type === "voucher" && <Ticket className="h-6 w-6 text-primary" />}
                 {formData.type === "punch_card" && <QrCode className="h-6 w-6 text-primary" />}
                 {formData.type === "loyalty_card" && <Check className="h-6 w-6 text-primary" />}
+                {formData.type === "digital" && <Download className="h-6 w-6 text-primary" />}
               </div>
               <div>
                 <span className="text-xs text-muted-foreground uppercase tracking-widest font-semibold block mb-0.5">
@@ -402,6 +430,30 @@ function NewProductPage() {
                         }}
                       />
                     </label>
+                  </div>
+                )}
+
+                {formData.type === "digital" && (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <Label className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
+                      Upload Digital File (Max 20MB) <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex flex-col gap-2">
+                      <Input
+                        type="file"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          if (f.size > 20 * 1024 * 1024) {
+                            toast.error("File must be smaller than 20MB");
+                            return;
+                          }
+                          setDigitalFile(f);
+                        }}
+                        className="h-14 rounded-2xl bg-secondary/20 border-border/40 focus:bg-background pt-3"
+                      />
+                      {digitalFile && <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>}
+                    </div>
                   </div>
                 )}
 

@@ -299,6 +299,21 @@ const CREATE_PRODUCT_ORDER = `
       returning {
         id
         picked
+        buyer_id
+        phone
+        qty
+        product_id
+        product {
+          name
+          type
+          description
+          specs
+          workspace_id
+        }
+        user {
+          email
+          username
+        }
       }
     }
   }
@@ -343,7 +358,45 @@ export const createProductOrders = createServerFn({ method: "POST" }).handler(as
     }
   }
 
-  return hasuraRequest(CREATE_PRODUCT_ORDER, { objects });
+  const result = await hasuraRequest<{
+    insert_product_orders: { affected_rows: number; returning: any[] };
+  }>(CREATE_PRODUCT_ORDER, { objects });
+
+  // Auto-send digital product delivery emails
+  try {
+    const returning = result?.insert_product_orders?.returning || [];
+    const digitalOrders = returning.filter((o: any) => o.product?.type === "digital");
+
+    if (digitalOrders.length > 0) {
+      const { sendDigitalProductDeliveryEmail } = await import("./email");
+
+      for (const order of digitalOrders) {
+        const buyerEmail = order.user?.email || payload.buyer_email || null;
+        const fileUrl = order.product?.specs?.digital_file_url || null;
+
+        if (buyerEmail && fileUrl) {
+          try {
+            await sendDigitalProductDeliveryEmail({
+              data: {
+                to: buyerEmail,
+                customerName: order.user?.username || "Customer",
+                productName: order.product?.name || "Digital Product",
+                productDescription: order.product?.description || "",
+                fileUrl,
+                workspaceId: order.product?.workspace_id || null,
+              },
+            } as any);
+          } catch (emailErr) {
+            console.error("Failed to send digital product email for order", order.id, emailErr);
+          }
+        }
+      }
+    }
+  } catch (emailProcessErr) {
+    console.error("Digital email post-processing error:", emailProcessErr);
+  }
+
+  return result?.insert_product_orders;
 });
 
 const GET_BOOKING_PRODUCT_ORDERS = `
@@ -404,3 +457,87 @@ export const checkProductOrderStatus = createServerFn({ method: "POST" })
     const data = await hasuraRequest<{ product_orders: any[] }>(query, { ref: bookingRef });
     return data.product_orders?.[0]?.status || null;
   });
+
+const GET_DIGITAL_PRODUCT_ORDERS = `
+  query GetDigitalProductOrders($product_id: uuid!) {
+    product_orders(
+      where: { product_id: { _eq: $product_id } },
+      order_by: { created_at: desc }
+    ) {
+      id
+      created_at
+      amount_paid
+      status
+      buyer_id
+      user {
+        username
+        email
+      }
+      product {
+        name
+        description
+        specs
+        workspace_id
+      }
+    }
+  }
+`;
+
+export const getDigitalProductOrders = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const payload = (ctx.data as any).data || ctx.data;
+  const { product_id } = payload as { product_id: string };
+  const data = await hasuraRequest<{ product_orders: any[] }>(GET_DIGITAL_PRODUCT_ORDERS, {
+    product_id,
+  });
+  return data.product_orders || [];
+});
+
+export const resendDigitalProductEmail = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const payload = (ctx.data as any).data || ctx.data;
+    const { order_id } = payload as { order_id: string };
+
+    const query = `
+      query GetOrderForResend($id: uuid!) {
+        product_orders_by_pk(id: $id) {
+          id
+          buyer_id
+          user {
+            email
+            username
+          }
+          product {
+            name
+            description
+            specs
+            workspace_id
+          }
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ product_orders_by_pk: any }>(query, { id: order_id });
+    const order = data.product_orders_by_pk;
+
+    if (!order) throw new Error("Order not found");
+
+    const buyerEmail = order.user?.email;
+    const fileUrl = order.product?.specs?.digital_file_url;
+
+    if (!buyerEmail) throw new Error("No buyer email found for this order");
+    if (!fileUrl) throw new Error("No file URL found for this product");
+
+    const { sendDigitalProductDeliveryEmail } = await import("./email");
+    return await sendDigitalProductDeliveryEmail({
+      data: {
+        to: buyerEmail,
+        customerName: order.user?.username || "Customer",
+        productName: order.product?.name || "Digital Product",
+        productDescription: order.product?.description || "",
+        fileUrl,
+        workspaceId: order.product?.workspace_id || null,
+      },
+    } as any);
+  },
+);
+

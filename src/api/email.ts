@@ -1252,3 +1252,140 @@ export const sendEmail = async ({
   }
   return data;
 };
+
+export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { to, customerName, productName, productDescription, fileUrl, workspaceId } =
+      ctx.data as any;
+
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+
+    let organizerName = "Agatike Connect";
+    let organizerLogo = "";
+    let themeColor = "#F2571D";
+
+    if (workspaceId) {
+      try {
+        const { hasuraRequest } = await import("./graphql.server");
+        const wsData = await hasuraRequest<{
+          workspaces_by_pk: { name: string; orgnizer_id: string };
+          workspace_pages: { theme_color: string; components: any }[];
+        }>(
+          `
+          query GetWSForDigital($id: uuid!) {
+            workspaces_by_pk(id: $id) { name orgnizer_id }
+            workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { theme_color components logo_url }
+          }
+        `,
+          { id: workspaceId },
+        );
+
+        if (wsData?.workspaces_by_pk) {
+          organizerName = wsData.workspaces_by_pk.name;
+        }
+        if (wsData?.workspace_pages?.length) {
+          const page = wsData.workspace_pages[0] as any;
+          let dbTheme = page.theme_color;
+          const components = page.components;
+          if (components && Array.isArray(components)) {
+            const settingsBlock = components.find((b: any) => b.type === "settings");
+            if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
+          }
+          if (dbTheme) themeColor = dbTheme;
+          if (page.logo_url) organizerLogo = page.logo_url;
+        }
+      } catch (e) {
+        console.error("Failed to fetch workspace for digital product email", e);
+      }
+    }
+
+    const sanitizedName = organizerName
+      ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "")
+      : "hello";
+    const senderEmail = `${sanitizedName}@agatike.rw`;
+
+    const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+      <!-- Header -->
+      <div style="background-color: ${themeColor}; padding: 40px 24px; text-align: center;">
+        ${
+          organizerLogo && !organizerLogo.includes("localhost") && organizerLogo.startsWith("http")
+            ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto 16px auto; background: white; padding: 6px 12px;" />`
+            : `<div style="background: white; width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${agatikeFooterIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`
+        }
+        <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">Your Download is Ready!</h2>
+        <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0 0; font-size: 14px;">from ${organizerName}</p>
+      </div>
+
+      <!-- Body -->
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p style="margin: 0 0 16px 0;">Hi ${customerName || "there"},</p>
+        <p style="margin: 0 0 24px 0;">
+          Thank you for your purchase! Your digital product <strong>${productName}</strong> is ready for download.
+        </p>
+
+        ${
+          productDescription
+            ? `<p style="margin: 0 0 24px 0; color: #555; font-size: 15px;">${productDescription}</p>`
+            : ""
+        }
+
+        <!-- Download Card -->
+        <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 24px; text-align: center; margin: 24px 0;">
+          <div style="width: 56px; height: 56px; background-color: ${themeColor}; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 24px;">⬇</span>
+          </div>
+          <h3 style="margin: 0 0 8px 0; color: #0f172a; font-size: 18px; font-weight: 700;">${productName}</h3>
+          <p style="margin: 0 0 24px 0; color: #64748b; font-size: 14px;">Click the button below to download your file.</p>
+          <a href="${fileUrl}" target="_blank" style="display: inline-block; background-color: ${themeColor}; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 16px; letter-spacing: 0.3px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            ⬇ &nbsp;Download Your File
+          </a>
+        </div>
+
+        <!-- Plain text fallback link -->
+        <div style="background-color: #f8fafc; border-radius: 8px; padding: 12px 16px; margin-top: 16px; word-break: break-all;">
+          <p style="margin: 0 0 4px 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Direct Link</p>
+          <a href="${fileUrl}" style="font-size: 13px; color: ${themeColor}; word-break: break-all;">${fileUrl}</a>
+        </div>
+
+        <p style="margin: 32px 0 0 0; font-size: 14px; color: #94a3b8;">
+          If you have any issues downloading your file, please reply to this email or contact us directly.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background-color: #fafafa; padding: 28px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0; line-height: 1.5;">
+          This purchase was processed securely by <strong>Agatike Connect</strong><br/>
+          on behalf of ${organizerName}.
+        </p>
+        <img src="${agatikeFooterIconUrl}" alt="Agatike" style="width: 120px; height: auto; margin: 0 auto; display: block;" />
+        <div style="color: #F2571D; font-weight: 900; font-size: 14px; letter-spacing: 1px; margin-top: 8px;">AGATIKE</div>
+      </div>
+    </div>
+  `;
+
+    const emailPayload: any = {
+      from: `${organizerName} <${senderEmail}>`,
+      to: [to],
+      subject: `Your download is ready: ${productName}`,
+      html,
+    };
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn("Failed to send digital product delivery email:", data);
+      throw new Error(data.message || "Failed to send digital product delivery email");
+    }
+    return data;
+  });
