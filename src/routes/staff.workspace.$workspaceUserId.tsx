@@ -3,7 +3,16 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspacesForStaffUser } from "@/api/staff_portal_workspaces";
 import { getWorkspaceApps } from "@/api/app-studio";
-import { ArrowLeft, Wallet, MapPin, CreditCard, CalendarCheck, UserCheck, Shield, ChevronDown } from "lucide-react";
+import {
+  ArrowLeft,
+  Wallet,
+  MapPin,
+  CreditCard,
+  CalendarCheck,
+  UserCheck,
+  Shield,
+  ChevronDown,
+} from "lucide-react";
 import { ModuleModalWrapper } from "@/components/staff-portal/ModuleModalWrapper";
 
 export const Route = createFileRoute("/staff/workspace/$workspaceUserId")({
@@ -72,14 +81,14 @@ function StaffWorkspaceDashboard() {
 
   const themeColor = appData?.theme_color || "#ff3b30";
   const logoUrl = appData?.logo_url;
-  
+
   const brandingConfig = (() => {
     let config = {
       font_family: "inter",
       background_color: "#ffffff",
       dashboard_columns: "2",
       mobile_layout: "grid",
-      logout_style: "subtle"
+      logout_style: "subtle",
     };
     if (appData?.app_modules) {
       const bMod = appData.app_modules.find((m: any) => m.type === "branding_config");
@@ -130,11 +139,18 @@ function StaffWorkspaceDashboard() {
   return (
     <div
       className={`min-h-[100dvh] text-foreground overflow-y-auto pb-safe ${fontClass}`}
-      style={{ 
-        "--color-primary": themeColor,
-        backgroundColor: brandingConfig.background_color && brandingConfig.background_color !== "#ffffff" ? brandingConfig.background_color : "hsl(var(--background))",
-        fontFamily: !fontClassMap[brandingConfig.font_family] ? brandingConfig.font_family : undefined
-      } as React.CSSProperties}
+      style={
+        {
+          "--color-primary": themeColor,
+          backgroundColor:
+            brandingConfig.background_color && brandingConfig.background_color !== "#ffffff"
+              ? brandingConfig.background_color
+              : "hsl(var(--background))",
+          fontFamily: !fontClassMap[brandingConfig.font_family]
+            ? brandingConfig.font_family
+            : undefined,
+        } as React.CSSProperties
+      }
     >
       <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none -z-10" />
       <div className="absolute top-0 left-0 right-0 h-96 bg-primary/10 blur-[100px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
@@ -152,7 +168,11 @@ function StaffWorkspaceDashboard() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           {logoUrl && (
-            <img src={logoUrl} alt="Logo" className="h-8 w-8 rounded-md object-cover border border-border/50" />
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="h-8 w-8 rounded-md object-cover border border-border/50"
+            />
           )}
         </div>
         <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
@@ -163,14 +183,16 @@ function StaffWorkspaceDashboard() {
 
       <main className="px-6 pt-6 pb-24 relative z-10 space-y-10">
         <div>
-          <button 
+          <button
             onClick={() => setShowWorkspaceSelector(!showWorkspaceSelector)}
             className="text-4xl font-black mb-2 leading-tight tracking-tight flex items-center gap-2 text-left"
           >
             {selectedWorkspace?.name || "Workspace"}
-            {workspaces.length > 1 && <ChevronDown className="h-6 w-6 text-muted-foreground mt-2" />}
+            {workspaces.length > 1 && (
+              <ChevronDown className="h-6 w-6 text-muted-foreground mt-2" />
+            )}
           </button>
-          
+
           {showWorkspaceSelector && workspaces.length > 1 && (
             <div className="absolute z-20 mt-2 bg-background border border-border/50 rounded-2xl shadow-xl p-2 w-[calc(100%-3rem)] animate-in slide-in-from-top-2">
               {workspaces.map((w: any) => (
@@ -195,77 +217,94 @@ function StaffWorkspaceDashboard() {
           </div>
         </div>
 
-        {(!appData || !appData.app_modules || appData.app_modules.length === 0) ? (
-           <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
-             <Shield className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h4 className="font-bold text-lg mb-2">No Modules Assigned</h4>
-             <p className="text-muted-foreground text-sm">
-               This app has no configured modules. Customize it in the App Builder.
-             </p>
-           </div>
+        {!appData || !appData.app_modules || appData.app_modules.length === 0 ? (
+          <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
+            <Shield className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h4 className="font-bold text-lg mb-2">No Modules Assigned</h4>
+            <p className="text-muted-foreground text-sm">
+              This app has no configured modules. Customize it in the App Builder.
+            </p>
+          </div>
         ) : (
-          <div className={`grid gap-4 ${
-            brandingConfig.mobile_layout === "list" ? "grid-cols-1" : 
-            brandingConfig.dashboard_columns === "3" ? "grid-cols-2 md:grid-cols-3" :
-            brandingConfig.dashboard_columns === "4" ? "grid-cols-2 md:grid-cols-4" :
-            "grid-cols-2"
-          }`}>
+          <div
+            className={`grid gap-4 ${
+              brandingConfig.mobile_layout === "list"
+                ? "grid-cols-1"
+                : brandingConfig.dashboard_columns === "3"
+                  ? "grid-cols-2 md:grid-cols-3"
+                  : brandingConfig.dashboard_columns === "4"
+                    ? "grid-cols-2 md:grid-cols-4"
+                    : "grid-cols-2"
+            }`}
+          >
             {renderModuleButton("wallet", "Wallet & Withdraw", "Manage balances", Wallet)}
             {renderModuleButton("venues", "Venues", "Manage locations", MapPin)}
-            {renderModuleButton("transactions", "Sales & Transactions", "View payments", CreditCard)}
-            {renderModuleButton("venue_bookings", "Venue Bookings", "Manage venue bookings", CalendarCheck)}
+            {renderModuleButton(
+              "transactions",
+              "Sales & Transactions",
+              "View payments",
+              CreditCard,
+            )}
+            {renderModuleButton(
+              "venue_bookings",
+              "Venue Bookings",
+              "Manage venue bookings",
+              CalendarCheck,
+            )}
             {renderModuleButton("members", "Team Members", "Workspace staff directory", UserCheck)}
           </div>
         )}
       </main>
 
       {activeModal === "wallet" && (
-         <ModuleModalWrapper title="Wallet & Withdraw" onClose={() => setActiveModal(null)}>
-           <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6 flex flex-col items-center justify-center mb-6">
-             <Wallet className="h-12 w-12 text-primary mb-3" />
-             <p className="text-sm font-bold text-primary uppercase tracking-widest">Available Balance</p>
-             <h2 className="text-4xl font-black mt-1">RWF ---</h2>
-           </div>
-           <button className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl active:scale-95 transition-all">
-             Request Withdrawal
-           </button>
-         </ModuleModalWrapper>
+        <ModuleModalWrapper title="Wallet & Withdraw" onClose={() => setActiveModal(null)}>
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6 flex flex-col items-center justify-center mb-6">
+            <Wallet className="h-12 w-12 text-primary mb-3" />
+            <p className="text-sm font-bold text-primary uppercase tracking-widest">
+              Available Balance
+            </p>
+            <h2 className="text-4xl font-black mt-1">RWF ---</h2>
+          </div>
+          <button className="w-full py-4 bg-primary text-primary-foreground font-bold rounded-xl active:scale-95 transition-all">
+            Request Withdrawal
+          </button>
+        </ModuleModalWrapper>
       )}
       {activeModal === "venues" && (
-         <ModuleModalWrapper title="Venues" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <MapPin className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Venues Directory</h3>
-             <p className="text-muted-foreground text-sm">Venue loading coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+        <ModuleModalWrapper title="Venues" onClose={() => setActiveModal(null)}>
+          <div className="text-center py-10">
+            <MapPin className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-lg font-bold">Venues Directory</h3>
+            <p className="text-muted-foreground text-sm">Venue loading coming soon...</p>
+          </div>
+        </ModuleModalWrapper>
       )}
       {activeModal === "transactions" && (
-         <ModuleModalWrapper title="Sales & Transactions" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <CreditCard className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Recent Transactions</h3>
-             <p className="text-muted-foreground text-sm">Transaction history coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+        <ModuleModalWrapper title="Sales & Transactions" onClose={() => setActiveModal(null)}>
+          <div className="text-center py-10">
+            <CreditCard className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-lg font-bold">Recent Transactions</h3>
+            <p className="text-muted-foreground text-sm">Transaction history coming soon...</p>
+          </div>
+        </ModuleModalWrapper>
       )}
       {activeModal === "venue_bookings" && (
-         <ModuleModalWrapper title="Venue Bookings" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <CalendarCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Venue Bookings</h3>
-             <p className="text-muted-foreground text-sm">Bookings loading coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+        <ModuleModalWrapper title="Venue Bookings" onClose={() => setActiveModal(null)}>
+          <div className="text-center py-10">
+            <CalendarCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-lg font-bold">Venue Bookings</h3>
+            <p className="text-muted-foreground text-sm">Bookings loading coming soon...</p>
+          </div>
+        </ModuleModalWrapper>
       )}
       {activeModal === "members" && (
-         <ModuleModalWrapper title="Team Members" onClose={() => setActiveModal(null)}>
-           <div className="text-center py-10">
-             <UserCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h3 className="text-lg font-bold">Staff Directory</h3>
-             <p className="text-muted-foreground text-sm">Directory loading coming soon...</p>
-           </div>
-         </ModuleModalWrapper>
+        <ModuleModalWrapper title="Team Members" onClose={() => setActiveModal(null)}>
+          <div className="text-center py-10">
+            <UserCheck className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h3 className="text-lg font-bold">Staff Directory</h3>
+            <p className="text-muted-foreground text-sm">Directory loading coming soon...</p>
+          </div>
+        </ModuleModalWrapper>
       )}
     </div>
   );

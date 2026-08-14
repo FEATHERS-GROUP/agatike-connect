@@ -21,7 +21,7 @@ import {
   Wallet,
   CalendarCheck,
   UserPlus,
-  Ticket
+  Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,13 +69,25 @@ const AVAILABLE_MODULES = [
   { type: "members", title: "Team Members", icon: UserCheck, desc: "Workspace staff directory" },
   { type: "stats", title: "Live Stats", icon: Activity, desc: "Checked-in & scans per hour" },
   { type: "wallet", title: "Wallet & Withdraw", icon: Wallet, desc: "Manage balances" },
-  { type: "events_list", title: "Event Ticketing", icon: Ticket, desc: "Browse events and select tickets" },
-  { type: "venue_bookings", title: "Venue Bookings", icon: CalendarCheck, desc: "Manage venue bookings" },
+  {
+    type: "events_list",
+    title: "Event Ticketing",
+    icon: Ticket,
+    desc: "Browse events and select tickets",
+  },
+  {
+    type: "venue_bookings",
+    title: "Venue Bookings",
+    icon: CalendarCheck,
+    desc: "Manage venue bookings",
+  },
   { type: "memberships", title: "Memberships", icon: UserPlus, desc: "Register membership users" },
 ];
 
 function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: module.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -94,36 +106,58 @@ function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
         style={style}
         onClick={onClick}
         className={`relative w-full space-y-4 p-4 rounded-3xl border bg-card/60 backdrop-blur-xl transition-all group ${
-          isSelected ? "border-primary shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
+          isSelected
+            ? "border-primary shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] ring-2 ring-primary/20"
+            : "border-border/50 hover:border-primary/50"
         }`}
       >
-        <div {...attributes} {...listeners} className="absolute -left-3 top-1/2 -translate-y-1/2 p-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute -left-3 top-1/2 -translate-y-1/2 p-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+        >
           <GripVertical className="h-5 w-5" />
         </div>
         <div className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-red-500 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full text-red-500 hover:bg-red-500/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        
-        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-2">Live Stats</h3>
+
+        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80 ml-2">
+          Live Stats
+        </h3>
         <div className="grid grid-cols-2 gap-3">
           {config.show_checked_in !== false && (
             <div className="bg-background/60 border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col justify-between aspect-[4/3]">
               <p className="text-3xl font-black mb-0.5 tracking-tighter">0</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Checked In</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                Checked In
+              </p>
             </div>
           )}
           {config.show_scans_per_hour !== false && (
             <div className="bg-background/60 border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col justify-between aspect-[4/3]">
               <p className="text-3xl font-black mb-0.5 tracking-tighter">0</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Scans/Hour</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                Scans/Hour
+              </p>
             </div>
           )}
           {config.show_tickets_scanned && (
             <div className="bg-background/60 border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col justify-between aspect-[4/3]">
               <p className="text-3xl font-black mb-0.5 tracking-tighter">0</p>
-              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Scanned</p>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                Scanned
+              </p>
             </div>
           )}
         </div>
@@ -137,19 +171,29 @@ function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
       style={style}
       onClick={onClick}
       className={`relative w-full bg-background/60 backdrop-blur-xl border rounded-[2rem] p-5 text-left transition-all group ${
-        isSelected ? "border-primary shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
+        isSelected
+          ? "border-primary shadow-[0_0_20px_color-mix(in_srgb,var(--color-primary)_30%,transparent)] ring-2 ring-primary/20"
+          : "border-border/50 hover:border-primary/50"
       }`}
     >
-      <div 
-        {...attributes} 
-        {...listeners} 
+      <div
+        {...attributes}
+        {...listeners}
         className="absolute -left-3 top-1/2 -translate-y-1/2 p-2 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <GripVertical className="h-5 w-5" />
       </div>
 
       <div className="absolute top-4 right-4 p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-red-500 hover:bg-red-500/10" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full text-red-500 hover:bg-red-500/10"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
@@ -164,7 +208,7 @@ function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
         <div>
           <h4 className="font-black text-lg tracking-tight mb-0.5">{module.title}</h4>
           <p className="text-muted-foreground text-xs font-medium">
-             {module.type === "events_list" ? "Select tickets" : "Open Module"}
+            {module.type === "events_list" ? "Select tickets" : "Open Module"}
           </p>
         </div>
       </div>
@@ -175,13 +219,24 @@ function SortableModuleItem({ module, isSelected, onClick, onRemove }: any) {
 function getDefaultConfig(type: string) {
   switch (type) {
     case "scanner":
-      return { scan_tickets: true, scan_vouchers: true, scan_badges: true, record_entry: true, visibility_roles: "" };
+      return {
+        scan_tickets: true,
+        scan_vouchers: true,
+        scan_badges: true,
+        record_entry: true,
+        visibility_roles: "",
+      };
     case "attendees":
       return { view_contact: false, allow_edit: false, visibility_roles: "" };
     case "transactions":
       return { view_financials: false, allow_refunds: false, visibility_roles: "" };
     case "stats":
-      return { show_checked_in: true, show_scans_per_hour: true, show_tickets_scanned: false, visibility_roles: "" };
+      return {
+        show_checked_in: true,
+        show_scans_per_hour: true,
+        show_tickets_scanned: false,
+        visibility_roles: "",
+      };
     default:
       return { visibility_roles: "" };
   }
@@ -214,7 +269,7 @@ function AppBuilderStudio() {
     background_color: "#ffffff",
     dashboard_columns: "2",
     mobile_layout: "grid",
-    logout_style: "subtle"
+    logout_style: "subtle",
   });
   const [inspectorMode, setInspectorMode] = useState<"app" | "module">("app");
   const [isUploading, setIsUploading] = useState(false);
@@ -236,10 +291,10 @@ function AppBuilderStudio() {
         logo_url: appData.logo_url || "",
         is_active: appData.is_active ?? true,
       });
-      
+
       const parsedModules = (appData.app_modules || []).map((m: any) => ({
-          ...m,
-          config: typeof m.config === "string" ? JSON.parse(m.config) : m.config || {},
+        ...m,
+        config: typeof m.config === "string" ? JSON.parse(m.config) : m.config || {},
       }));
 
       const bConfigModule = parsedModules.find((m: any) => m.type === "branding_config");
@@ -249,7 +304,7 @@ function AppBuilderStudio() {
           background_color: bConfigModule.config.background_color || "#ffffff",
           dashboard_columns: bConfigModule.config.dashboard_columns || "2",
           mobile_layout: bConfigModule.config.mobile_layout || "grid",
-          logout_style: bConfigModule.config.logout_style || "subtle"
+          logout_style: bConfigModule.config.logout_style || "subtle",
         });
       }
 
@@ -294,8 +349,10 @@ function AppBuilderStudio() {
         order: idx + 1,
       }));
 
-      const brandingModId = appData?.app_modules?.find((m: any) => m.type === "branding_config")?.id || crypto.randomUUID();
-      
+      const brandingModId =
+        appData?.app_modules?.find((m: any) => m.type === "branding_config")?.id ||
+        crypto.randomUUID();
+
       modulesToUpsert.unshift({
         id: brandingModId,
         app_id: appId,
@@ -303,7 +360,7 @@ function AppBuilderStudio() {
         title: "Branding Config",
         icon: "Settings",
         config: brandingConfig,
-        order: 0
+        order: 0,
       });
 
       if (modulesToUpsert.length > 0) {
@@ -313,7 +370,7 @@ function AppBuilderStudio() {
       if (initialAssignedEventId && initialAssignedEventId !== assignedEventId) {
         await updateEvent({ data: { id: initialAssignedEventId, app_id: null } } as any);
       }
-      
+
       if (assignedEventId && assignedEventId !== initialAssignedEventId) {
         await updateEvent({ data: { id: assignedEventId, app_id: appId } } as any);
       }
@@ -324,7 +381,7 @@ function AppBuilderStudio() {
       queryClient.invalidateQueries({ queryKey: ["app-studio", appId] });
       queryClient.invalidateQueries({ queryKey: ["workspace-events", activeWorkspace?.id] });
       // Reset isNew flag
-      setModules(modules.map(m => ({ ...m, isNew: false })));
+      setModules(modules.map((m) => ({ ...m, isNew: false })));
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to save app");
@@ -345,7 +402,7 @@ function AppBuilderStudio() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folder", "app_logos");
-      
+
       const res = await uploadFormData({ data: formData } as any);
       setAppConfig({ ...appConfig, logo_url: res.url });
       toast.success("Logo uploaded successfully");
@@ -386,8 +443,8 @@ function AppBuilderStudio() {
     if (selectedModuleIdx === idx) {
       setSelectedModuleIdx(null);
       setInspectorMode("app");
-    }
-    else if (selectedModuleIdx && selectedModuleIdx > idx) setSelectedModuleIdx(selectedModuleIdx - 1);
+    } else if (selectedModuleIdx && selectedModuleIdx > idx)
+      setSelectedModuleIdx(selectedModuleIdx - 1);
   };
 
   const updateSelectedModuleConfig = (key: string, value: any) => {
@@ -409,7 +466,7 @@ function AppBuilderStudio() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
   const handleDragEnd = (event: any) => {
@@ -418,16 +475,18 @@ function AppBuilderStudio() {
       setModules((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
-        
+
         // Ensure selectedModuleIdx stays in sync if the selected module was moved
         if (selectedModuleIdx === oldIndex) {
-           setSelectedModuleIdx(newIndex);
+          setSelectedModuleIdx(newIndex);
         } else if (selectedModuleIdx !== null) {
-           // Adjust if it was shifted
-           if (oldIndex < selectedModuleIdx && newIndex >= selectedModuleIdx) setSelectedModuleIdx(selectedModuleIdx - 1);
-           else if (oldIndex > selectedModuleIdx && newIndex <= selectedModuleIdx) setSelectedModuleIdx(selectedModuleIdx + 1);
+          // Adjust if it was shifted
+          if (oldIndex < selectedModuleIdx && newIndex >= selectedModuleIdx)
+            setSelectedModuleIdx(selectedModuleIdx - 1);
+          else if (oldIndex > selectedModuleIdx && newIndex <= selectedModuleIdx)
+            setSelectedModuleIdx(selectedModuleIdx + 1);
         }
-        
+
         return arrayMove(items, oldIndex, newIndex);
       });
     }
@@ -449,7 +508,11 @@ function AppBuilderStudio() {
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/50 bg-background px-4 shadow-sm z-10">
         <div className="flex items-center gap-3">
           <Link to="/dashboard/$workspaceSlug/app-builder" params={{ workspaceSlug }}>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -457,13 +520,17 @@ function AppBuilderStudio() {
           <div className="flex items-center gap-2">
             <LayoutGrid className="h-4 w-4 text-primary" />
             <span className="font-semibold text-sm">{appConfig.name || "Untitled App"}</span>
-            <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full ml-2">Studio</span>
+            <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full ml-2">
+              Studio
+            </span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 mr-2">
-            <Label htmlFor="active-toggle" className="text-xs text-muted-foreground">App Status</Label>
+            <Label htmlFor="active-toggle" className="text-xs text-muted-foreground">
+              App Status
+            </Label>
             <Switch
               id="active-toggle"
               checked={appConfig.is_active}
@@ -477,7 +544,11 @@ function AppBuilderStudio() {
             size="sm"
             className="gap-2 rounded-lg shadow-sm px-4"
           >
-            {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saveMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
             Publish Changes
           </Button>
         </div>
@@ -485,11 +556,12 @@ function AppBuilderStudio() {
 
       {/* Main Figma-like Workspace */}
       <div className="flex flex-1 overflow-hidden bg-muted/30">
-
         {/* Left Panel - Layers & Tools */}
         <aside className="w-[280px] shrink-0 border-r border-border/50 bg-background flex flex-col">
           <div className="p-4 border-b border-border/50">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">UI Components</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+              UI Components
+            </h2>
             <p className="text-[11px] text-muted-foreground">Click to add modules to the canvas.</p>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar">
@@ -512,18 +584,30 @@ function AppBuilderStudio() {
         </aside>
 
         {/* Center Panel - Canvas */}
-        <main className="flex-1 overflow-y-auto flex flex-col relative" onClick={() => { setSelectedModuleIdx(null); setInspectorMode("app"); }}>
+        <main
+          className="flex-1 overflow-y-auto flex flex-col relative"
+          onClick={() => {
+            setSelectedModuleIdx(null);
+            setInspectorMode("app");
+          }}
+        >
           <div className="absolute top-6 inset-x-0 flex justify-center z-10 pointer-events-none">
             <div className="bg-background/80 backdrop-blur-md shadow-sm border border-border/50 rounded-full p-1 flex pointer-events-auto">
               <button
                 className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-colors ${previewScreen === "login" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                onClick={(e) => { e.stopPropagation(); setPreviewScreen("login"); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPreviewScreen("login");
+                }}
               >
                 Login State
               </button>
               <button
                 className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-colors ${previewScreen === "home" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-                onClick={(e) => { e.stopPropagation(); setPreviewScreen("home"); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPreviewScreen("home");
+                }}
               >
                 Authenticated State
               </button>
@@ -531,7 +615,7 @@ function AppBuilderStudio() {
           </div>
 
           <div className="flex-1 w-full flex items-center justify-center p-8 py-24 min-h-max">
-            <div 
+            <div
               className="w-[375px] h-[812px] bg-card rounded-[3rem] shadow-2xl border-[12px] border-[#1e1e1e] relative overflow-hidden flex flex-col shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
@@ -541,17 +625,22 @@ function AppBuilderStudio() {
               </div>
 
               {previewScreen === "login" ? (
-                <div 
+                <div
                   className="h-full w-full flex flex-col items-center justify-center text-foreground px-6 relative overflow-hidden"
-                  style={{ 
-                    "--color-primary": appConfig.theme_color,
-                    backgroundColor: brandingConfig.background_color,
-                    fontFamily: brandingConfig.font_family === "sans" ? "sans-serif" : brandingConfig.font_family 
-                  } as React.CSSProperties}
+                  style={
+                    {
+                      "--color-primary": appConfig.theme_color,
+                      backgroundColor: brandingConfig.background_color,
+                      fontFamily:
+                        brandingConfig.font_family === "sans"
+                          ? "sans-serif"
+                          : brandingConfig.font_family,
+                    } as React.CSSProperties
+                  }
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-                  
+
                   <div className="z-10 w-full flex flex-col items-center">
                     {appConfig.logo_url ? (
                       <img
@@ -564,48 +653,67 @@ function AppBuilderStudio() {
                         <Lock className="h-8 w-8 text-primary" />
                       </div>
                     )}
-                    <h1 className="text-2xl font-bold mb-1 text-center">{appConfig.name || "App Name"}</h1>
+                    <h1 className="text-2xl font-bold mb-1 text-center">
+                      {appConfig.name || "App Name"}
+                    </h1>
                     <p className="text-muted-foreground text-sm mb-8 text-center">
                       Enter your 9-digit security PIN
                     </p>
 
                     <div className="flex gap-2 mb-10">
                       {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className="w-3 h-3 rounded-full bg-black/10 dark:bg-white/20" />
+                        <div
+                          key={i}
+                          className="w-3 h-3 rounded-full bg-black/10 dark:bg-white/20"
+                        />
                       ))}
                     </div>
 
                     <div className="grid grid-cols-3 gap-x-6 gap-y-4 w-full">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                        <div key={num} className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto">
+                        <div
+                          key={num}
+                          className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto"
+                        >
                           {num}
                         </div>
                       ))}
                       <div />
-                      <div className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto">0</div>
-                      <div className="w-14 h-14 rounded-full text-muted-foreground text-sm font-medium flex items-center justify-center mx-auto">DEL</div>
+                      <div className="w-14 h-14 rounded-full bg-black/5 border border-black/10 text-xl font-medium flex items-center justify-center mx-auto">
+                        0
+                      </div>
+                      <div className="w-14 h-14 rounded-full text-muted-foreground text-sm font-medium flex items-center justify-center mx-auto">
+                        DEL
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div 
-                  className="flex flex-col h-full relative overflow-hidden" 
-                  style={{ 
-                    "--color-primary": appConfig.theme_color,
-                    backgroundColor: brandingConfig.background_color,
-                    fontFamily: brandingConfig.font_family === "sans" ? "sans-serif" : brandingConfig.font_family 
-                  } as React.CSSProperties}
+                <div
+                  className="flex flex-col h-full relative overflow-hidden"
+                  style={
+                    {
+                      "--color-primary": appConfig.theme_color,
+                      backgroundColor: brandingConfig.background_color,
+                      fontFamily:
+                        brandingConfig.font_family === "sans"
+                          ? "sans-serif"
+                          : brandingConfig.font_family,
+                    } as React.CSSProperties
+                  }
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none -z-10" />
                   <div className="absolute top-0 left-0 right-0 h-64 bg-primary/10 blur-[80px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
-                  
+
                   <header className="px-5 pt-12 pb-2 flex items-center justify-between relative z-10">
                     <div className="p-2 -ml-2 text-foreground/60 bg-secondary/50 backdrop-blur-md rounded-full border border-border/50">
                       <ArrowLeft className="h-5 w-5" />
                     </div>
                     <div className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
                       <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
-                      <span className="text-primary text-[10px] font-black tracking-widest uppercase">Live</span>
+                      <span className="text-primary text-[10px] font-black tracking-widest uppercase">
+                        Live
+                      </span>
                     </div>
                   </header>
 
@@ -637,19 +745,24 @@ function AppBuilderStudio() {
                           onDragEnd={handleDragEnd}
                         >
                           <SortableContext
-                            items={modules.map(m => m.id)}
+                            items={modules.map((m) => m.id)}
                             strategy={verticalListSortingStrategy}
                           >
-                            <div className={`grid gap-3 ${
-                              brandingConfig.dashboard_columns === "1" ? "grid-cols-1" :
-                              brandingConfig.dashboard_columns === "2" ? "grid-cols-2" :
-                              brandingConfig.dashboard_columns === "3" ? "grid-cols-3" :
-                              "grid-cols-2" // fallback in small container
-                            }`}>
+                            <div
+                              className={`grid gap-3 ${
+                                brandingConfig.dashboard_columns === "1"
+                                  ? "grid-cols-1"
+                                  : brandingConfig.dashboard_columns === "2"
+                                    ? "grid-cols-2"
+                                    : brandingConfig.dashboard_columns === "3"
+                                      ? "grid-cols-3"
+                                      : "grid-cols-2" // fallback in small container
+                              }`}
+                            >
                               {modules.map((mod, idx) => (
-                                <SortableModuleItem 
-                                  key={mod.id} 
-                                  module={mod} 
+                                <SortableModuleItem
+                                  key={mod.id}
+                                  module={mod}
                                   isSelected={selectedModuleIdx === idx}
                                   onClick={(e: React.MouseEvent) => {
                                     e.stopPropagation();
@@ -663,10 +776,12 @@ function AppBuilderStudio() {
                           </SortableContext>
                         </DndContext>
                       )}
-                      
+
                       <div className="pt-6 flex justify-center">
-                        <Button 
-                          variant={brandingConfig.logout_style === "prominent" ? "default" : "outline"} 
+                        <Button
+                          variant={
+                            brandingConfig.logout_style === "prominent" ? "default" : "outline"
+                          }
                           className="rounded-full shadow-sm"
                         >
                           Sign Out
@@ -707,12 +822,21 @@ function AppBuilderStudio() {
             {inspectorMode === "app" || !selectedModule ? (
               <Tabs defaultValue="general" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary/50">
-                  <TabsTrigger value="general" className="text-xs">General</TabsTrigger>
-                  <TabsTrigger value="branding" className="text-xs">Branding</TabsTrigger>
-                  <TabsTrigger value="layout" className="text-xs">Layout</TabsTrigger>
+                  <TabsTrigger value="general" className="text-xs">
+                    General
+                  </TabsTrigger>
+                  <TabsTrigger value="branding" className="text-xs">
+                    Branding
+                  </TabsTrigger>
+                  <TabsTrigger value="layout" className="text-xs">
+                    Layout
+                  </TabsTrigger>
                 </TabsList>
-                
-                <TabsContent value="general" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+
+                <TabsContent
+                  value="general"
+                  className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300"
+                >
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs">App Name</Label>
@@ -728,7 +852,9 @@ function AppBuilderStudio() {
                       <Label className="text-xs">Description</Label>
                       <Textarea
                         value={appConfig.description}
-                        onChange={(e) => setAppConfig({ ...appConfig, description: e.target.value })}
+                        onChange={(e) =>
+                          setAppConfig({ ...appConfig, description: e.target.value })
+                        }
                         placeholder="Brief description..."
                         className="text-sm bg-secondary/50 border-border/50 resize-none h-20"
                       />
@@ -746,7 +872,9 @@ function AppBuilderStudio() {
                       >
                         <option value="">No event linked</option>
                         {events.map((evt: any) => (
-                          <option key={evt.id} value={evt.id}>{evt.title}</option>
+                          <option key={evt.id} value={evt.id}>
+                            {evt.title}
+                          </option>
                         ))}
                       </select>
                       <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
@@ -756,13 +884,20 @@ function AppBuilderStudio() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="branding" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <TabsContent
+                  value="branding"
+                  className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300"
+                >
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs">App Logo (Max 5MB)</Label>
                       <div className="flex items-center gap-3">
                         {appConfig.logo_url && (
-                          <img src={appConfig.logo_url} alt="Logo" className="w-10 h-10 rounded-md object-cover border border-border/50" />
+                          <img
+                            src={appConfig.logo_url}
+                            alt="Logo"
+                            className="w-10 h-10 rounded-md object-cover border border-border/50"
+                          />
                         )}
                         <div className="flex-1">
                           <Input
@@ -774,7 +909,9 @@ function AppBuilderStudio() {
                           />
                         </div>
                       </div>
-                      {isUploading && <p className="text-[10px] text-primary animate-pulse">Uploading...</p>}
+                      {isUploading && (
+                        <p className="text-[10px] text-primary animate-pulse">Uploading...</p>
+                      )}
                     </div>
 
                     <div className="space-y-1.5 pt-4">
@@ -783,12 +920,16 @@ function AppBuilderStudio() {
                         <Input
                           type="color"
                           value={appConfig.theme_color}
-                          onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
+                          onChange={(e) =>
+                            setAppConfig({ ...appConfig, theme_color: e.target.value })
+                          }
                           className="h-8 w-12 p-0 border-0 bg-transparent rounded cursor-pointer"
                         />
                         <Input
                           value={appConfig.theme_color}
-                          onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
+                          onChange={(e) =>
+                            setAppConfig({ ...appConfig, theme_color: e.target.value })
+                          }
                           className="h-8 text-xs font-mono uppercase bg-secondary/50 border-border/50"
                         />
                       </div>
@@ -800,12 +941,22 @@ function AppBuilderStudio() {
                         <Input
                           type="color"
                           value={brandingConfig.background_color}
-                          onChange={(e) => setBrandingConfig({ ...brandingConfig, background_color: e.target.value })}
+                          onChange={(e) =>
+                            setBrandingConfig({
+                              ...brandingConfig,
+                              background_color: e.target.value,
+                            })
+                          }
                           className="h-8 w-12 p-0 border-0 bg-transparent rounded cursor-pointer"
                         />
                         <Input
                           value={brandingConfig.background_color}
-                          onChange={(e) => setBrandingConfig({ ...brandingConfig, background_color: e.target.value })}
+                          onChange={(e) =>
+                            setBrandingConfig({
+                              ...brandingConfig,
+                              background_color: e.target.value,
+                            })
+                          }
                           className="h-8 text-xs font-mono uppercase bg-secondary/50 border-border/50"
                         />
                       </div>
@@ -816,7 +967,9 @@ function AppBuilderStudio() {
                       <select
                         className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={brandingConfig.font_family}
-                        onChange={(e) => setBrandingConfig({ ...brandingConfig, font_family: e.target.value })}
+                        onChange={(e) =>
+                          setBrandingConfig({ ...brandingConfig, font_family: e.target.value })
+                        }
                       >
                         <option value="inter">Inter (Default)</option>
                         <option value="roboto">Roboto</option>
@@ -828,21 +981,31 @@ function AppBuilderStudio() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="layout" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                <TabsContent
+                  value="layout"
+                  className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300"
+                >
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs">Dashboard Columns (Grid)</Label>
                       <select
                         className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={brandingConfig.dashboard_columns}
-                        onChange={(e) => setBrandingConfig({ ...brandingConfig, dashboard_columns: e.target.value })}
+                        onChange={(e) =>
+                          setBrandingConfig({
+                            ...brandingConfig,
+                            dashboard_columns: e.target.value,
+                          })
+                        }
                       >
                         <option value="1">1 Column (List)</option>
                         <option value="2">2 Columns</option>
                         <option value="3">3 Columns</option>
                         <option value="4">4 Columns</option>
                       </select>
-                      <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Controls how modules are arranged on tablets and desktops.</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
+                        Controls how modules are arranged on tablets and desktops.
+                      </p>
                     </div>
 
                     <div className="space-y-1.5 pt-4">
@@ -850,7 +1013,9 @@ function AppBuilderStudio() {
                       <select
                         className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={brandingConfig.mobile_layout}
-                        onChange={(e) => setBrandingConfig({ ...brandingConfig, mobile_layout: e.target.value })}
+                        onChange={(e) =>
+                          setBrandingConfig({ ...brandingConfig, mobile_layout: e.target.value })
+                        }
                       >
                         <option value="grid">Grid Layout</option>
                         <option value="list">List Layout</option>
@@ -862,7 +1027,9 @@ function AppBuilderStudio() {
                       <select
                         className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                         value={brandingConfig.logout_style}
-                        onChange={(e) => setBrandingConfig({ ...brandingConfig, logout_style: e.target.value })}
+                        onChange={(e) =>
+                          setBrandingConfig({ ...brandingConfig, logout_style: e.target.value })
+                        }
                       >
                         <option value="subtle">Subtle (Outline)</option>
                         <option value="prominent">Prominent (Solid Color)</option>
@@ -877,13 +1044,17 @@ function AppBuilderStudio() {
                   <div className="flex items-center gap-3 mb-2">
                     <div className="h-8 w-8 rounded bg-secondary flex items-center justify-center text-primary">
                       {(() => {
-                         const ModIcon = AVAILABLE_MODULES.find(m => m.type === selectedModule.type)?.icon || LayoutGrid;
-                         return <ModIcon className="h-4 w-4" />
+                        const ModIcon =
+                          AVAILABLE_MODULES.find((m) => m.type === selectedModule.type)?.icon ||
+                          LayoutGrid;
+                        return <ModIcon className="h-4 w-4" />;
                       })()}
                     </div>
                     <div>
                       <h3 className="text-sm font-bold leading-none mb-1">Properties</h3>
-                      <p className="text-[10px] text-muted-foreground capitalize">{selectedModule.type}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">
+                        {selectedModule.type}
+                      </p>
                     </div>
                   </div>
 
@@ -895,41 +1066,55 @@ function AppBuilderStudio() {
                       className="h-8 text-sm bg-secondary/50 border-border/50"
                     />
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <Label className="text-xs">Visibility Rules (Roles)</Label>
                     <Input
                       value={selectedModule.config?.visibility_roles || ""}
-                      onChange={(e) => updateSelectedModuleConfig("visibility_roles", e.target.value)}
+                      onChange={(e) =>
+                        updateSelectedModuleConfig("visibility_roles", e.target.value)
+                      }
                       placeholder="e.g. admin, scanner"
                       className="h-8 text-sm bg-secondary/50 border-border/50"
                     />
-                    <p className="text-[10px] text-muted-foreground leading-tight">Comma separated list of roles. Leave empty to allow all.</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      Comma separated list of roles. Leave empty to allow all.
+                    </p>
                   </div>
 
                   {/* Module Specific Settings */}
                   {selectedModule.type === "scanner" && (
                     <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
-                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Scanner Options</Label>
-                      {["scan_tickets", "scan_vouchers", "scan_badges", "record_entry"].map((opt) => (
-                        <div key={opt} className="flex items-center justify-between">
-                          <Label className="text-xs font-normal capitalize">{opt.replace("_", " ")}</Label>
-                          <Switch
-                            checked={selectedModule.config?.[opt] ?? true}
-                            onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
-                            className="scale-75 origin-right"
-                          />
-                        </div>
-                      ))}
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                        Scanner Options
+                      </Label>
+                      {["scan_tickets", "scan_vouchers", "scan_badges", "record_entry"].map(
+                        (opt) => (
+                          <div key={opt} className="flex items-center justify-between">
+                            <Label className="text-xs font-normal capitalize">
+                              {opt.replace("_", " ")}
+                            </Label>
+                            <Switch
+                              checked={selectedModule.config?.[opt] ?? true}
+                              onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
+                              className="scale-75 origin-right"
+                            />
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
 
                   {selectedModule.type === "attendees" && (
                     <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
-                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Guest List Options</Label>
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                        Guest List Options
+                      </Label>
                       {["view_contact", "allow_edit"].map((opt) => (
                         <div key={opt} className="flex items-center justify-between">
-                          <Label className="text-xs font-normal capitalize">{opt.replace("_", " ")}</Label>
+                          <Label className="text-xs font-normal capitalize">
+                            {opt.replace("_", " ")}
+                          </Label>
                           <Switch
                             checked={selectedModule.config?.[opt] ?? false}
                             onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
@@ -942,10 +1127,14 @@ function AppBuilderStudio() {
 
                   {selectedModule.type === "transactions" && (
                     <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
-                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Transaction Options</Label>
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                        Transaction Options
+                      </Label>
                       {["view_financials", "allow_refunds"].map((opt) => (
                         <div key={opt} className="flex items-center justify-between">
-                          <Label className="text-xs font-normal capitalize">{opt.replace("_", " ")}</Label>
+                          <Label className="text-xs font-normal capitalize">
+                            {opt.replace("_", " ")}
+                          </Label>
                           <Switch
                             checked={selectedModule.config?.[opt] ?? false}
                             onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
@@ -958,20 +1147,27 @@ function AppBuilderStudio() {
 
                   {selectedModule.type === "stats" && (
                     <div className="space-y-3 pt-3 border-t border-border/50 mt-4">
-                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">Stat Cards</Label>
-                      {["show_checked_in", "show_scans_per_hour", "show_tickets_scanned"].map((opt) => (
-                        <div key={opt} className="flex items-center justify-between">
-                          <Label className="text-xs font-normal capitalize">{opt.replace(/_/g, " ").replace("show ", "")}</Label>
-                          <Switch
-                            checked={selectedModule.config?.[opt] ?? (opt !== "show_tickets_scanned")}
-                            onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
-                            className="scale-75 origin-right"
-                          />
-                        </div>
-                      ))}
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                        Stat Cards
+                      </Label>
+                      {["show_checked_in", "show_scans_per_hour", "show_tickets_scanned"].map(
+                        (opt) => (
+                          <div key={opt} className="flex items-center justify-between">
+                            <Label className="text-xs font-normal capitalize">
+                              {opt.replace(/_/g, " ").replace("show ", "")}
+                            </Label>
+                            <Switch
+                              checked={
+                                selectedModule.config?.[opt] ?? opt !== "show_tickets_scanned"
+                              }
+                              onCheckedChange={(c) => updateSelectedModuleConfig(opt, c)}
+                              className="scale-75 origin-right"
+                            />
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
-
                 </div>
               </div>
             )}

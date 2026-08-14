@@ -2969,7 +2969,7 @@ The **App Studio** allows organizers to design bespoke mobile web-apps for their
   - **Sales & Transactions:** Viewing financial data.
   - **Venues & Bookings:** Managing space reservations.
 - **Granular Permissions:** Each custom app is mapped to a specific role (e.g. `vendor`, `staff`) or explicitly to a `workspace_user_id` via the `app_permissions` table.
-- **Database Tables:** 
+- **Database Tables:**
   - `workspace_apps` (Core app config, name, theme, logo)
   - `app_modules` (The individual modules added to the app and their JSON config)
   - `app_permissions` (Access control mapping)
@@ -2981,13 +2981,13 @@ flowchart TD
     Studio -->|Saves UI/Config| DB["workspace_apps"]
     Studio -->|Adds Tools| Mod["app_modules"]
     Studio -->|Assigns Access| Perm["app_permissions"]
-    
+
     Perm --> Role1["Staff"]
     Perm --> Role2["Vendors"]
-    
+
     Role1 -->|Logs in on Mobile| MobileApp["Custom Mobile Portal"]
     MobileApp --> Scanner["Access Scanner (Tickets Only)"]
-    
+
     Role2 -->|Logs in on Mobile| MobileApp2["Custom Mobile Portal"]
     MobileApp2 --> Scanner2["Access Scanner (Vouchers Only)"]
     MobileApp2 --> Sales["Sales Dashboard"]
@@ -3003,7 +3003,7 @@ The **Staff Portal Engine** is responsible for delivering the Custom Mobile Apps
 
 ### 34.1 Smart Adaptive Gateway (`/staff/login`)
 
-- **Context-Aware Login:** The Gateway automatically detects if a user is already authenticated to the main Agatike platform. 
+- **Context-Aware Login:** The Gateway automatically detects if a user is already authenticated to the main Agatike platform.
 - **Adaptive Options:** Instead of a generic login form, the Gateway fetches the user's specific assignments (`event_staff` or `workspace_users`). It dynamically hides irrelevant options and only presents a **"Continue as [Role]"** button tailored to the user's actual permissions.
 - **Instant Teleportation:** Clicking the tailored adaptive button completely bypasses standard email/password or PIN entry, instantly resolving their session and teleporting them to their respective dashboard (`/staff/event/$eventId` or `/staff/workspace/$workspaceUserId`).
 
@@ -3020,19 +3020,19 @@ The **Staff Portal Engine** is responsible for delivering the Custom Mobile Apps
 ```mermaid
 flowchart TD
     User["Staff/User"] -->|Visits| Gateway["/staff/login Gateway"]
-    
+
     Gateway --> CheckAuth{Is logged into<br/>main Agatike app?}
     CheckAuth -->|No| EmailLogin["Show standard Email/PIN login form"]
     CheckAuth -->|Yes| FetchRoles["Query user_id in Staff & Workspace tables"]
-    
+
     FetchRoles --> AdaptiveUI["Render Smart 'Continue as...' Buttons"]
     AdaptiveUI -->|Clicks Event Staff| TeleportEvent["Teleport to /staff/event/$eventId"]
     AdaptiveUI -->|Clicks Company User| TeleportWorkspace["Teleport to /staff/workspace/$userId"]
-    
+
     TeleportEvent --> FetchApp{Does Event have<br/>an explicitly mapped app_id?}
     FetchApp -->|Yes| LoadSpecific["Load specific Custom App Config"]
     FetchApp -->|No| FallbackWorkspace["Fallback: Load Workspace's Primary Custom App"]
-    
+
     LoadSpecific & FallbackWorkspace --> LoadingUI["Display Premium Skeleton Loader"]
     LoadingUI --> ResolveQueries["Queries Resolve"]
     ResolveQueries --> RenderDash["Render Dashboard with Custom Branding & Modules"]

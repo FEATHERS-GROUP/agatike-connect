@@ -5,7 +5,24 @@ import { getEventById } from "@/api/events";
 import { getAppById, getWorkspaceApps } from "@/api/app-studio";
 import { getBadgeProjectByEventId } from "@/api/badges";
 import {
-  ArrowLeft, ScanLine, Users, Activity, ExternalLink, Calendar, MapPin, CheckCircle2, Ticket, Shield, ArrowRight, BadgeCheck, CreditCard, UserCheck, Wallet, CalendarCheck, UserPlus, LayoutGrid
+  ArrowLeft,
+  ScanLine,
+  Users,
+  Activity,
+  ExternalLink,
+  Calendar,
+  MapPin,
+  CheckCircle2,
+  Ticket,
+  Shield,
+  ArrowRight,
+  BadgeCheck,
+  CreditCard,
+  UserCheck,
+  Wallet,
+  CalendarCheck,
+  UserPlus,
+  LayoutGrid,
 } from "lucide-react";
 import { ScannerMobile } from "@/components/mobile/ScannerMobile";
 
@@ -17,7 +34,12 @@ const AVAILABLE_MODULES = [
   { type: "scanner", title: "Access Scanner", icon: ScanLine, desc: "Scan tickets and badges" },
   { type: "attendees", title: "Event Attendees", icon: Users, desc: "Manage registered attendees" },
   { type: "stats", title: "Live Stats", icon: Activity, desc: "Checked-in & scans per hour" },
-  { type: "events_list", title: "Event Ticketing", icon: Ticket, desc: "Browse events and select tickets" },
+  {
+    type: "events_list",
+    title: "Event Ticketing",
+    icon: Ticket,
+    desc: "Browse events and select tickets",
+  },
 ];
 
 const SESSION_TIMEOUT = 60 * 60 * 1000;
@@ -68,8 +90,8 @@ function StaffEventDashboard() {
     enabled: !!eventDetails?.workspace_id && !!authState,
   });
 
-  const appData = eventDetails?.app_id 
-    ? apps.find((a: any) => a.id === eventDetails.app_id) || apps[0] 
+  const appData = eventDetails?.app_id
+    ? apps.find((a: any) => a.id === eventDetails.app_id) || apps[0]
     : apps[0];
 
   const { data: badgeProject } = useQuery({
@@ -108,7 +130,9 @@ function StaffEventDashboard() {
     localStorage.setItem(`staff_auth_${eventId}`, JSON.stringify(authState));
     localStorage.setItem(`staff_session_${eventId}`, lastActivity.toString());
 
-    const handleActivity = () => { lastActivity = Date.now(); };
+    const handleActivity = () => {
+      lastActivity = Date.now();
+    };
     const events = ["mousedown", "keypress", "scroll", "touchstart"];
     events.forEach((e) => document.addEventListener(e, handleActivity, { passive: true }));
 
@@ -181,7 +205,7 @@ function StaffEventDashboard() {
   }
 
   const perms = authState.app_permissions || [];
-  
+
   const themeColor = appData?.theme_color || eventDetails?.theme_color || "#ff3b30";
   const logoUrl = appData?.logo_url || eventDetails?.cover;
 
@@ -191,7 +215,7 @@ function StaffEventDashboard() {
       background_color: "#ffffff",
       dashboard_columns: "2",
       mobile_layout: "grid",
-      logout_style: "subtle"
+      logout_style: "subtle",
     };
     if (appData?.app_modules) {
       const bMod = appData.app_modules.find((m: any) => m.type === "branding_config");
@@ -214,11 +238,18 @@ function StaffEventDashboard() {
   return (
     <div
       className={`min-h-[100dvh] text-foreground overflow-y-auto pb-safe ${fontClass}`}
-      style={{ 
-        "--color-primary": themeColor,
-        backgroundColor: brandingConfig.background_color && brandingConfig.background_color !== "#ffffff" ? brandingConfig.background_color : "hsl(var(--background))",
-        fontFamily: !fontClassMap[brandingConfig.font_family] ? brandingConfig.font_family : undefined
-      } as React.CSSProperties}
+      style={
+        {
+          "--color-primary": themeColor,
+          backgroundColor:
+            brandingConfig.background_color && brandingConfig.background_color !== "#ffffff"
+              ? brandingConfig.background_color
+              : "hsl(var(--background))",
+          fontFamily: !fontClassMap[brandingConfig.font_family]
+            ? brandingConfig.font_family
+            : undefined,
+        } as React.CSSProperties
+      }
     >
       <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none -z-10" />
       <div className="absolute top-0 left-0 right-0 h-96 bg-primary/10 blur-[100px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
@@ -236,7 +267,11 @@ function StaffEventDashboard() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           {logoUrl && (
-            <img src={logoUrl} alt="Logo" className="h-8 w-8 rounded-md object-cover border border-border/50" />
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="h-8 w-8 rounded-md object-cover border border-border/50"
+            />
           )}
         </div>
         <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
@@ -260,27 +295,35 @@ function StaffEventDashboard() {
           </div>
         </div>
 
-        {(!appData || !appData.app_modules || appData.app_modules.length === 0) ? (
-           <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
-             <Shield className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-             <h4 className="font-bold text-lg mb-2">No Modules Assigned</h4>
-             <p className="text-muted-foreground text-sm">
-               This app has no configured modules. Customize it in the App Builder.
-             </p>
-           </div>
+        {!appData || !appData.app_modules || appData.app_modules.length === 0 ? (
+          <div className="bg-secondary/30 border border-dashed border-border/50 rounded-[2rem] p-8 text-center">
+            <Shield className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+            <h4 className="font-bold text-lg mb-2">No Modules Assigned</h4>
+            <p className="text-muted-foreground text-sm">
+              This app has no configured modules. Customize it in the App Builder.
+            </p>
+          </div>
         ) : (
-          <div className={`grid gap-4 ${
-            brandingConfig.mobile_layout === "list" ? "grid-cols-1" : 
-            brandingConfig.dashboard_columns === "3" ? "grid-cols-2 md:grid-cols-3" :
-            brandingConfig.dashboard_columns === "4" ? "grid-cols-2 md:grid-cols-4" :
-            "grid-cols-2"
-          }`}>
+          <div
+            className={`grid gap-4 ${
+              brandingConfig.mobile_layout === "list"
+                ? "grid-cols-1"
+                : brandingConfig.dashboard_columns === "3"
+                  ? "grid-cols-2 md:grid-cols-3"
+                  : brandingConfig.dashboard_columns === "4"
+                    ? "grid-cols-2 md:grid-cols-4"
+                    : "grid-cols-2"
+            }`}
+          >
             {appData.app_modules
-              .filter((m: any) => m.type !== "branding_config" && AVAILABLE_MODULES.some((a) => a.type === m.type))
+              .filter(
+                (m: any) =>
+                  m.type !== "branding_config" && AVAILABLE_MODULES.some((a) => a.type === m.type),
+              )
               .sort((a: any, b: any) => a.order - b.order)
               .map((m: any) => {
                 const config = typeof m.config === "string" ? JSON.parse(m.config) : m.config || {};
-                
+
                 // For Event Staff, check visibility_roles
                 if (config.visibility_roles) {
                   const visibilityRoles = config.visibility_roles
@@ -293,7 +336,8 @@ function StaffEventDashboard() {
                   }
                 }
 
-                const ModIcon = AVAILABLE_MODULES.find(x => x.type === m.type)?.icon || LayoutGrid;
+                const ModIcon =
+                  AVAILABLE_MODULES.find((x) => x.type === m.type)?.icon || LayoutGrid;
 
                 if (m.type === "stats") {
                   return (
@@ -311,7 +355,9 @@ function StaffEventDashboard() {
                               <CheckCircle2 className="h-5 w-5" />
                             </div>
                             <div>
-                              <p className="text-4xl font-black mb-0.5 tracking-tighter">{checkedIn}</p>
+                              <p className="text-4xl font-black mb-0.5 tracking-tighter">
+                                {checkedIn}
+                              </p>
                               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                                 Checked In
                               </p>
@@ -327,7 +373,9 @@ function StaffEventDashboard() {
                               <Activity className="h-5 w-5" />
                             </div>
                             <div>
-                              <p className="text-4xl font-black mb-0.5 tracking-tighter">{scansPerHour}</p>
+                              <p className="text-4xl font-black mb-0.5 tracking-tighter">
+                                {scansPerHour}
+                              </p>
                               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                                 Scans/Hour
                               </p>
@@ -343,10 +391,11 @@ function StaffEventDashboard() {
                   <button
                     key={m.id}
                     onClick={() => {
-                       if (m.type === "scanner") {
-                          if (perms.includes("SCAN_TICKETS") || perms.includes("*")) setShowScanner(true);
-                          else alert("You do not have permission to scan tickets.");
-                       }
+                      if (m.type === "scanner") {
+                        if (perms.includes("SCAN_TICKETS") || perms.includes("*"))
+                          setShowScanner(true);
+                        else alert("You do not have permission to scan tickets.");
+                      }
                     }}
                     className="w-full bg-background/60 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 text-left active:scale-[0.98] transition-all group relative overflow-hidden"
                   >

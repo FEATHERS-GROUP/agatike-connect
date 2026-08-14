@@ -19,7 +19,18 @@ import { Badge } from "@/components/ui/badge";
 import { usePlatformModules } from "@/hooks/usePlatformModules";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Eye, User, Clock, Building2, Puzzle, FileText, Mail, Smartphone } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Eye,
+  User,
+  Clock,
+  Building2,
+  Puzzle,
+  FileText,
+  Mail,
+  Smartphone,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -28,12 +39,24 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { removeWorkspaceUser, resendWorkspaceUserInvite, updateWorkspaceUser } from "@/api/workspace_users";
+import {
+  removeWorkspaceUser,
+  resendWorkspaceUserInvite,
+  updateWorkspaceUser,
+} from "@/api/workspace_users";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { Route as UsersRoute } from "@/routes/dashboard/$workspaceSlug/users/index";
 
-export function UsersTable({ users, workspaces = [], apps = [] }: { users: any[]; workspaces?: any[]; apps?: any[] }) {
+export function UsersTable({
+  users,
+  workspaces = [],
+  apps = [],
+}: {
+  users: any[];
+  workspaces?: any[];
+  apps?: any[];
+}) {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -247,11 +270,18 @@ export function UsersTable({ users, workspaces = [], apps = [] }: { users: any[]
                       <select
                         className="text-sm bg-transparent border border-border/50 rounded px-2 py-1 focus:ring-1 focus:ring-primary w-full max-w-[140px]"
                         value={user.app_id || ""}
-                        onChange={(e) => updateAppMutation.mutate({ userId: user.id, appId: e.target.value || null })}
+                        onChange={(e) =>
+                          updateAppMutation.mutate({
+                            userId: user.id,
+                            appId: e.target.value || null,
+                          })
+                        }
                       >
                         <option value="">None</option>
                         {apps.map((app: any) => (
-                          <option key={app.id} value={app.id}>{app.name}</option>
+                          <option key={app.id} value={app.id}>
+                            {app.name}
+                          </option>
                         ))}
                       </select>
                     </TableCell>
@@ -396,7 +426,9 @@ export function UsersTable({ users, workspaces = [], apps = [] }: { users: any[]
                       <Smartphone className="h-3 w-3" /> Assigned App
                     </h4>
                     <p className="text-sm text-foreground/80">
-                      {u.app_id ? apps.find(a => a.id === u.app_id)?.name || "Unknown App" : "None"}
+                      {u.app_id
+                        ? apps.find((a) => a.id === u.app_id)?.name || "Unknown App"
+                        : "None"}
                     </p>
                   </div>
 

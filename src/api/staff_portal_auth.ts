@@ -26,18 +26,18 @@ export const loginCompanyUser = createServerFn({ method: "POST" }).handler(async
   const { email, password } = ctx.data as any;
 
   const res = await hasuraRequest<any>(CHECK_COMPANY_USER, { email });
-  
+
   // Check Organizer First
   const organizer = res.organizers?.[0];
   if (organizer) {
     const isMatch = await bcrypt.compare(password, organizer.password);
     if (isMatch) {
-      return { 
-        success: true, 
-        role: "organizer", 
-        id: organizer.id, 
-        name: organizer.name, 
-        email: organizer.email 
+      return {
+        success: true,
+        role: "organizer",
+        id: organizer.id,
+        name: organizer.name,
+        email: organizer.email,
       };
     }
   }
@@ -47,12 +47,12 @@ export const loginCompanyUser = createServerFn({ method: "POST" }).handler(async
   if (wsUser) {
     const isMatch = await bcrypt.compare(password, wsUser.password);
     if (isMatch) {
-      return { 
-        success: true, 
-        role: "workspace_user", 
-        id: wsUser.id, 
-        name: wsUser.name, 
-        email: wsUser.email 
+      return {
+        success: true,
+        role: "workspace_user",
+        id: wsUser.id,
+        name: wsUser.name,
+        email: wsUser.email,
       };
     }
   }
@@ -85,9 +85,11 @@ const GET_STAFF_ASSIGNMENTS_BY_EMAIL = `
   }
 `;
 
-export const getStaffAssignmentsByEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { email } = ctx.data as any;
-  if (!email) return [];
-  const data = await hasuraRequest<any>(GET_STAFF_ASSIGNMENTS_BY_EMAIL, { email });
-  return data.event_staff || [];
-});
+export const getStaffAssignmentsByEmail = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { email } = ctx.data as any;
+    if (!email) return [];
+    const data = await hasuraRequest<any>(GET_STAFF_ASSIGNMENTS_BY_EMAIL, { email });
+    return data.event_staff || [];
+  },
+);

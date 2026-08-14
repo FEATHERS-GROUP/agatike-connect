@@ -462,9 +462,13 @@ const GET_WORKSPACE_USER_BY_LINKED_ID = `
   }
 `;
 
-export const getWorkspaceUserByLinkedId = createServerFn({ method: "POST" }).handler(async (ctx) => {
-  const { user_id } = ctx.data as unknown as { user_id: string };
-  if (!user_id) return null;
-  const data = await hasuraRequest<{ workspace_users: any[] }>(GET_WORKSPACE_USER_BY_LINKED_ID, { user_id });
-  return data.workspace_users[0] || null;
-});
+export const getWorkspaceUserByLinkedId = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { user_id } = ctx.data as unknown as { user_id: string };
+    if (!user_id) return null;
+    const data = await hasuraRequest<{ workspace_users: any[] }>(GET_WORKSPACE_USER_BY_LINKED_ID, {
+      user_id,
+    });
+    return data.workspace_users[0] || null;
+  },
+);

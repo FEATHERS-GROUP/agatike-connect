@@ -12,13 +12,7 @@ export const Route = createFileRoute("/staff/login")({
   component: StaffLoginRoute,
 });
 
-function Numpad({
-  onPinComplete,
-  error,
-}: {
-  onPinComplete: (pin: string) => void;
-  error: string;
-}) {
+function Numpad({ onPinComplete, error }: { onPinComplete: (pin: string) => void; error: string }) {
   const [pin, setPin] = useState("");
 
   const handlePress = (num: string) => {
@@ -40,10 +34,11 @@ function Numpad({
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <div
             key={i}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${pin.length > i
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              pin.length > i
                 ? "bg-primary shadow-[0_0_10px_var(--color-primary)] scale-125"
                 : "bg-black/10 dark:bg-white/20"
-              }`}
+            }`}
           />
         ))}
       </div>
@@ -80,7 +75,9 @@ function Numpad({
 
 function StaffLoginRoute() {
   const navigate = useNavigate();
-  const [loginStep, setLoginStep] = useState<"gateway" | "company" | "staff_email" | "staff_event_select" | "staff_pin">("gateway");
+  const [loginStep, setLoginStep] = useState<
+    "gateway" | "company" | "staff_email" | "staff_event_select" | "staff_pin"
+  >("gateway");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -96,7 +93,8 @@ function StaffLoginRoute() {
 
   const { data: staffAssignmentsLinked = [] } = useQuery({
     queryKey: ["user-staff-assignments", user?.id, user?.email],
-    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id, email: user?.email } } as any),
+    queryFn: () =>
+      getUserStaffAssignments({ data: { user_id: user?.id, email: user?.email } } as any),
     enabled: !!user && isLoggedIn,
   });
 
@@ -168,13 +166,16 @@ function StaffLoginRoute() {
       <div className="z-10 w-full max-w-md flex flex-col items-center my-auto pt-10">
         {/* Glassmorphism Card */}
         <div className="w-full bg-background/40 backdrop-blur-2xl border border-white/10 dark:border-white/5 rounded-[2rem] p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] flex flex-col items-center relative overflow-hidden">
-
           {/* Subtle top glare */}
           <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
           <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 shadow-[0_0_40px_color-mix(in_srgb,var(--color-primary)_40%,transparent)] border border-primary/20 relative group">
             <div className="absolute inset-0 bg-primary/20 rounded-2xl animate-ping opacity-20" />
-            <img src="/agatike-icon-new.png" alt="Agatike Logo" className="h-12 w-12 object-contain relative z-10 group-hover:scale-110 transition-transform duration-300" />
+            <img
+              src="/agatike-icon-new.png"
+              alt="Agatike Logo"
+              className="h-12 w-12 object-contain relative z-10 group-hover:scale-110 transition-transform duration-300"
+            />
           </div>
           <h1 className="text-3xl font-black mb-2 text-center tracking-tight">Agatike Connect</h1>
           <p className="text-muted-foreground text-sm mb-8 text-center font-medium">
@@ -188,7 +189,6 @@ function StaffLoginRoute() {
           <div className="w-full relative min-h-[200px] flex flex-col items-center justify-center">
             {loginStep === "gateway" && (
               <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                
                 {/* Event Staff Button */}
                 {(!isLoggedIn || activeAssignments.length > 0) && (
                   <button
@@ -202,7 +202,7 @@ function StaffLoginRoute() {
                           id: a.id,
                           app_permissions: a.app_permissions || [],
                           allowed_sections: a.allowed_sections || [],
-                          name: a.role
+                          name: a.role,
                         };
                         localStorage.setItem(`staff_auth_${a.event_id}`, JSON.stringify(authState));
                         localStorage.setItem(`staff_session_${a.event_id}`, Date.now().toString());
@@ -229,7 +229,9 @@ function StaffLoginRoute() {
                     {(!isLoggedIn || activeAssignments.length > 0) && (
                       <div className="relative flex items-center py-2">
                         <div className="flex-grow border-t border-border/50"></div>
-                        <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs uppercase tracking-widest font-semibold">Or</span>
+                        <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs uppercase tracking-widest font-semibold">
+                          Or
+                        </span>
                         <div className="flex-grow border-t border-border/50"></div>
                       </div>
                     )}
@@ -244,8 +246,14 @@ function StaffLoginRoute() {
                             name: workspaceUser.name,
                             id: workspaceUser.id,
                           };
-                          localStorage.setItem(`staff_auth_ws_${workspaceUser.id}`, JSON.stringify(authState));
-                          localStorage.setItem(`staff_session_ws_${workspaceUser.id}`, Date.now().toString());
+                          localStorage.setItem(
+                            `staff_auth_ws_${workspaceUser.id}`,
+                            JSON.stringify(authState),
+                          );
+                          localStorage.setItem(
+                            `staff_session_ws_${workspaceUser.id}`,
+                            Date.now().toString(),
+                          );
                           navigate({ to: `/staff/workspace/${workspaceUser.id}` });
                         } else {
                           setLoginStep("company");
@@ -267,7 +275,10 @@ function StaffLoginRoute() {
             )}
 
             {loginStep === "company" && (
-              <form onSubmit={handleCompanyLogin} className="w-full space-y-4 animate-in fade-in slide-in-from-right-8 duration-300">
+              <form
+                onSubmit={handleCompanyLogin}
+                className="w-full space-y-4 animate-in fade-in slide-in-from-right-8 duration-300"
+              >
                 <div className="space-y-3">
                   <input
                     type="email"
@@ -286,7 +297,11 @@ function StaffLoginRoute() {
                     required
                   />
                 </div>
-                {loginError && <p className="text-destructive text-sm text-center font-medium bg-destructive/10 py-2 rounded-lg">{loginError}</p>}
+                {loginError && (
+                  <p className="text-destructive text-sm text-center font-medium bg-destructive/10 py-2 rounded-lg">
+                    {loginError}
+                  </p>
+                )}
 
                 <button
                   disabled={isLoggingIn}
@@ -294,7 +309,9 @@ function StaffLoginRoute() {
                 >
                   {isLoggingIn ? (
                     <div className="h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  ) : "Sign In"}
+                  ) : (
+                    "Sign In"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -307,7 +324,10 @@ function StaffLoginRoute() {
             )}
 
             {loginStep === "staff_email" && (
-              <form onSubmit={handleStaffEmailSubmit} className="w-full space-y-4 animate-in fade-in slide-in-from-right-8 duration-300">
+              <form
+                onSubmit={handleStaffEmailSubmit}
+                className="w-full space-y-4 animate-in fade-in slide-in-from-right-8 duration-300"
+              >
                 <input
                   type="email"
                   placeholder="Staff Email"
@@ -316,7 +336,11 @@ function StaffLoginRoute() {
                   onChange={(e) => setStaffEmail(e.target.value)}
                   required
                 />
-                {loginError && <p className="text-destructive text-sm text-center font-medium bg-destructive/10 py-2 rounded-lg">{loginError}</p>}
+                {loginError && (
+                  <p className="text-destructive text-sm text-center font-medium bg-destructive/10 py-2 rounded-lg">
+                    {loginError}
+                  </p>
+                )}
 
                 <button
                   disabled={isLoggingIn}
@@ -324,7 +348,9 @@ function StaffLoginRoute() {
                 >
                   {isLoggingIn ? (
                     <div className="h-5 w-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  ) : "Continue"}
+                  ) : (
+                    "Continue"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -349,7 +375,9 @@ function StaffLoginRoute() {
                       className="w-full p-5 bg-background/60 hover:bg-secondary/80 backdrop-blur-xl border border-white/5 hover:border-primary/30 rounded-xl flex items-center justify-between active:scale-[0.98] transition-all duration-200 text-left group"
                     >
                       <div>
-                        <h4 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">{a.event?.title || "Event"}</h4>
+                        <h4 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">
+                          {a.event?.title || "Event"}
+                        </h4>
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 bg-secondary text-secondary-foreground text-[10px] font-bold uppercase tracking-wider rounded-md border border-border/50">
                             {a.role}
@@ -374,7 +402,9 @@ function StaffLoginRoute() {
             {loginStep === "staff_pin" && selectedAssignment && (
               <div className="w-full flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
                 <div className="px-4 py-2 bg-secondary/50 rounded-full border border-white/5 mb-6 text-center">
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-widest mr-2">Event</span>
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-widest mr-2">
+                    Event
+                  </span>
                   <span className="font-bold text-sm">{selectedAssignment.event?.title}</span>
                 </div>
 
@@ -388,10 +418,16 @@ function StaffLoginRoute() {
                         id: selectedAssignment.id,
                         app_permissions: selectedAssignment.app_permissions || [],
                         allowed_sections: selectedAssignment.allowed_sections || [],
-                        name: selectedAssignment.role
+                        name: selectedAssignment.role,
                       };
-                      localStorage.setItem(`staff_auth_${selectedAssignment.event_id}`, JSON.stringify(authState));
-                      localStorage.setItem(`staff_session_${selectedAssignment.event_id}`, Date.now().toString());
+                      localStorage.setItem(
+                        `staff_auth_${selectedAssignment.event_id}`,
+                        JSON.stringify(authState),
+                      );
+                      localStorage.setItem(
+                        `staff_session_${selectedAssignment.event_id}`,
+                        Date.now().toString(),
+                      );
                       navigate({ to: `/staff/event/${selectedAssignment.event_id}` });
                     } else {
                       setLoginError("Incorrect PIN");

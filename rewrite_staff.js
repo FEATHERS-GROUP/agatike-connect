@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const targetPath = path.join(__dirname, 'src/routes/staff.event.$eventId.tsx');
+const targetPath = path.join(__dirname, "src/routes/staff.event.$eventId.tsx");
 
 const content = `import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState, useEffect, useCallback } from "react";
@@ -729,4 +729,4 @@ function StaffEventDashboard() {
 `;
 
 fs.writeFileSync(targetPath, content);
-console.log('Successfully updated file.');
+console.log("Successfully updated file.");

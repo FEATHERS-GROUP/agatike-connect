@@ -522,9 +522,11 @@ function StaffView() {
                     <tr
                       key={s.id}
                       className="hover:bg-secondary/40 transition-colors cursor-pointer group"
-                      onClick={() => navigate({
-                        to: `/dashboard/${workspaceSlug}/events/${eventId}/staff/${s.id}`
-                      })}
+                      onClick={() =>
+                        navigate({
+                          to: `/dashboard/${workspaceSlug}/events/${eventId}/staff/${s.id}`,
+                        })
+                      }
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -678,7 +680,6 @@ function StaffView() {
           </div>
         </TabsContent>
       </Tabs>
-
     </div>
   );
 }

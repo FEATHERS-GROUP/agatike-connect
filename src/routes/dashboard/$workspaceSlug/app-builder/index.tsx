@@ -3,12 +3,30 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Settings2, Trash2, Smartphone, LayoutGrid, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { getWorkspaceApps, createWorkspaceApp, deleteWorkspaceApp, upsertAppModules } from "@/api/app-studio";
+import {
+  getWorkspaceApps,
+  createWorkspaceApp,
+  deleteWorkspaceApp,
+  upsertAppModules,
+} from "@/api/app-studio";
 import { getWorkspaceEvents, updateEvent } from "@/api/events";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -21,9 +39,19 @@ const APP_TEMPLATES = [
     description: "For event staff to scan tickets and manage attendees.",
     theme_color: "#f97316",
     modules: [
-      { type: "scanner", title: "Access Scanner", icon: "ScanLine", config: { scan_tickets: true, scan_vouchers: true, scan_badges: true, record_entry: true } },
-      { type: "attendees", title: "Guest List", icon: "Users", config: { view_contact: false, allow_edit: false } },
-    ]
+      {
+        type: "scanner",
+        title: "Access Scanner",
+        icon: "ScanLine",
+        config: { scan_tickets: true, scan_vouchers: true, scan_badges: true, record_entry: true },
+      },
+      {
+        type: "attendees",
+        title: "Guest List",
+        icon: "Users",
+        config: { view_contact: false, allow_edit: false },
+      },
+    ],
   },
   {
     id: "venue-manager",
@@ -32,9 +60,14 @@ const APP_TEMPLATES = [
     theme_color: "#3b82f6",
     modules: [
       { type: "venues", title: "Venues", icon: "MapPin", config: {} },
-      { type: "scanner", title: "Access Scanner", icon: "ScanLine", config: { scan_tickets: true, scan_badges: true, record_entry: true } },
+      {
+        type: "scanner",
+        title: "Access Scanner",
+        icon: "ScanLine",
+        config: { scan_tickets: true, scan_badges: true, record_entry: true },
+      },
       { type: "members", title: "Staff Directory", icon: "UserCheck", config: {} },
-    ]
+    ],
   },
   {
     id: "space-booking",
@@ -44,16 +77,21 @@ const APP_TEMPLATES = [
     modules: [
       { type: "bookings", title: "Bookings", icon: "CalendarDays", config: {} },
       { type: "venues", title: "Spaces", icon: "MapPin", config: {} },
-      { type: "transactions", title: "Transactions", icon: "CreditCard", config: { view_financials: true } },
-    ]
+      {
+        type: "transactions",
+        title: "Transactions",
+        icon: "CreditCard",
+        config: { view_financials: true },
+      },
+    ],
   },
   {
     id: "blank",
     name: "Blank App",
     description: "Start from scratch and build your own custom app.",
     theme_color: "#64748b",
-    modules: []
-  }
+    modules: [],
+  },
 ];
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/app-builder/")({
@@ -67,9 +105,9 @@ function AppBuilderIndex() {
   const { activeWorkspace } = useWorkspace();
   const { canCreateCustomApp } = useSubscriptionLimits(
     activeWorkspace?.orgnizer_id,
-    activeWorkspace?.id
+    activeWorkspace?.id,
   );
-  
+
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [appName, setAppName] = useState("");
@@ -155,7 +193,8 @@ function AppBuilderIndex() {
   const handleCreateNewApp = () => {
     if (!canCreateCustomApp()) {
       toast.error("Custom App limit reached", {
-        description: "Your current subscription plan does not allow creating more custom apps. Please upgrade your plan.",
+        description:
+          "Your current subscription plan does not allow creating more custom apps. Please upgrade your plan.",
       });
       return;
     }
@@ -192,12 +231,10 @@ function AppBuilderIndex() {
           </div>
           <h2 className="text-xl font-semibold mb-2">No Custom Apps Yet</h2>
           <p className="text-muted-foreground max-w-md text-center mb-6">
-            Build your first custom mobile portal to give specific roles tailored access to scanners, attendees, and more.
+            Build your first custom mobile portal to give specific roles tailored access to
+            scanners, attendees, and more.
           </p>
-          <Button
-            onClick={handleCreateNewApp}
-            className="rounded-full shadow-sm"
-          >
+          <Button onClick={handleCreateNewApp} className="rounded-full shadow-sm">
             Create Your First App
           </Button>
         </div>
@@ -219,12 +256,16 @@ function AppBuilderIndex() {
                 <TableRow key={app.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div 
-                        className="h-10 w-10 rounded-xl flex items-center justify-center shadow-sm shrink-0" 
+                      <div
+                        className="h-10 w-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
                         style={{ backgroundColor: app.theme_color || "var(--primary)" }}
                       >
                         {app.logo_url ? (
-                          <img src={app.logo_url} alt="Logo" className="h-8 w-8 object-cover rounded-lg" />
+                          <img
+                            src={app.logo_url}
+                            alt="Logo"
+                            className="h-8 w-8 object-cover rounded-lg"
+                          />
                         ) : (
                           <LayoutGrid className="h-5 w-5 text-white" />
                         )}
@@ -249,7 +290,9 @@ function AppBuilderIndex() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 ${app.is_active ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 ${app.is_active ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}
+                    >
                       {app.is_active ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
@@ -269,7 +312,11 @@ function AppBuilderIndex() {
                         to="/dashboard/$workspaceSlug/app-builder/$appId"
                         params={{ workspaceSlug, appId: app.id }}
                       >
-                        <Button size="sm" variant="secondary" className="rounded-xl h-8 text-xs font-semibold gap-1.5 px-3">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="rounded-xl h-8 text-xs font-semibold gap-1.5 px-3"
+                        >
                           <Settings2 className="w-3.5 h-3.5" /> Studio
                         </Button>
                       </Link>
@@ -294,22 +341,29 @@ function AppBuilderIndex() {
         </div>
       )}
 
-      <Dialog open={isTemplateModalOpen} onOpenChange={(open) => {
-        setIsTemplateModalOpen(open);
-        if (!open) setSelectedTemplate(null);
-      }}>
+      <Dialog
+        open={isTemplateModalOpen}
+        onOpenChange={(open) => {
+          setIsTemplateModalOpen(open);
+          if (!open) setSelectedTemplate(null);
+        }}
+      >
         <DialogContent className="sm:max-w-3xl rounded-3xl bg-card border-border/60">
           <DialogHeader>
-            <DialogTitle className="text-2xl">{selectedTemplate ? "Configure App" : "Choose a Template"}</DialogTitle>
+            <DialogTitle className="text-2xl">
+              {selectedTemplate ? "Configure App" : "Choose a Template"}
+            </DialogTitle>
             <DialogDescription>
-              {selectedTemplate ? "Set up the details for your new app." : "Start with a pre-configured template tailored for your use case, or build from scratch."}
+              {selectedTemplate
+                ? "Set up the details for your new app."
+                : "Start with a pre-configured template tailored for your use case, or build from scratch."}
             </DialogDescription>
           </DialogHeader>
-          
+
           {!selectedTemplate ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {APP_TEMPLATES.map((tpl) => (
-                <div 
+                <div
                   key={tpl.id}
                   onClick={() => {
                     setSelectedTemplate(tpl);
@@ -320,20 +374,24 @@ function AppBuilderIndex() {
                   className="relative p-5 rounded-2xl border-2 border-border/60 cursor-pointer transition-all hover:border-primary/50 hover:shadow-md bg-card text-left flex flex-col gap-3"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center text-white" style={{ backgroundColor: tpl.theme_color }}>
+                    <div
+                      className="w-10 h-10 rounded-xl shadow-sm flex items-center justify-center text-white"
+                      style={{ backgroundColor: tpl.theme_color }}
+                    >
                       <Smartphone className="w-5 h-5" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg leading-none">{tpl.name}</h3>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    {tpl.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground flex-1">{tpl.description}</p>
                   {tpl.modules.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
                       {tpl.modules.map((m: any, idx: number) => (
-                        <span key={idx} className="text-[10px] uppercase font-bold tracking-wider bg-secondary text-muted-foreground px-2 py-1 rounded-md">
+                        <span
+                          key={idx}
+                          className="text-[10px] uppercase font-bold tracking-wider bg-secondary text-muted-foreground px-2 py-1 rounded-md"
+                        >
                           {m.title}
                         </span>
                       ))}
@@ -346,9 +404,9 @@ function AppBuilderIndex() {
             <div className="space-y-6 mt-4">
               <div className="space-y-2">
                 <Label>App Name</Label>
-                <Input 
-                  value={appName} 
-                  onChange={(e) => setAppName(e.target.value)} 
+                <Input
+                  value={appName}
+                  onChange={(e) => setAppName(e.target.value)}
                   placeholder="e.g. My Event Staff App"
                   className="h-11 rounded-xl"
                 />
@@ -357,19 +415,23 @@ function AppBuilderIndex() {
               <div className="space-y-3">
                 <Label>What is this app for?</Label>
                 <div className="grid grid-cols-2 gap-4">
-                  <div 
+                  <div
                     onClick={() => setAppType("workspace")}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${appType === "workspace" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/50"}`}
                   >
                     <h4 className="font-bold mb-1">Workspace Users</h4>
-                    <p className="text-xs text-muted-foreground">General tools for your team members and venue staff.</p>
+                    <p className="text-xs text-muted-foreground">
+                      General tools for your team members and venue staff.
+                    </p>
                   </div>
-                  <div 
+                  <div
                     onClick={() => setAppType("event")}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${appType === "event" ? "border-primary bg-primary/5" : "border-border/60 hover:border-primary/50"}`}
                   >
                     <h4 className="font-bold mb-1">Event Staff</h4>
-                    <p className="text-xs text-muted-foreground">Specific tools for managing an event like ticket scanning.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Specific tools for managing an event like ticket scanning.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -384,33 +446,44 @@ function AppBuilderIndex() {
                   >
                     <option value="">Select an event to link...</option>
                     {events.map((evt: any) => (
-                      <option key={evt.id} value={evt.id}>{evt.title}</option>
+                      <option key={evt.id} value={evt.id}>
+                        {evt.title}
+                      </option>
                     ))}
                   </select>
                   <p className="text-xs text-muted-foreground">
-                    You can link this app to an event immediately, or do it later in the app settings.
+                    You can link this app to an event immediately, or do it later in the app
+                    settings.
                   </p>
                 </div>
               )}
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/50">
-                <Button variant="ghost" onClick={() => setSelectedTemplate(null)} className="rounded-xl">
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedTemplate(null)}
+                  className="rounded-xl"
+                >
                   Back to Templates
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     createMutation.mutate({
                       template: selectedTemplate,
                       name: appName,
                       type: appType,
-                      eventId: selectedEventId
+                      eventId: selectedEventId,
                     });
                   }}
                   disabled={createMutation.isPending || !appName.trim()}
                   className="rounded-xl px-8"
                   style={{ background: "var(--gradient-primary)", color: "white" }}
                 >
-                  {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create App"}
+                  {createMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Create App"
+                  )}
                 </Button>
               </div>
             </div>

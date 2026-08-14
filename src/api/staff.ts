@@ -208,7 +208,10 @@ const GET_USER_STAFF_ASSIGNMENTS = `
 export const getUserStaffAssignments = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { user_id, email } = ctx.data as unknown as { user_id?: string; email?: string };
   if (!user_id && !email) return [];
-  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, { user_id, email });
+  const data = await hasuraRequest<{ event_staff: any[] }>(GET_USER_STAFF_ASSIGNMENTS, {
+    user_id,
+    email,
+  });
   return data.event_staff || [];
 });
 const GET_STAFF_BY_ID = `

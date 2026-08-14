@@ -53,7 +53,8 @@ export function MobileNav() {
 
   const { data: staffAssignments = [] } = useQuery({
     queryKey: ["user-staff-assignments", user?.id, user?.email],
-    queryFn: () => getUserStaffAssignments({ data: { user_id: user?.id, email: user?.email } } as any),
+    queryFn: () =>
+      getUserStaffAssignments({ data: { user_id: user?.id, email: user?.email } } as any),
     enabled: !!user,
   });
 
@@ -71,7 +72,7 @@ export function MobileNav() {
 
   if (workspaceUser || activeAssignments.length > 0) {
     let dashboardHref = "/staff/login";
-    
+
     if (workspaceUser && activeAssignments.length === 0) {
       dashboardHref = `/staff/workspace/${workspaceUser.id}`;
     } else if (!workspaceUser && activeAssignments.length > 0) {

@@ -83,14 +83,13 @@ function StaffMemberDetailsPage() {
     );
   }
 
-  const assignedSections =
-    staff.allowed_sections?.includes("*")
-      ? sections
-      : staff.allowed_sections && staff.allowed_sections.length > 0
-        ? staff.allowed_sections
-            .map((id: string) => sections.find((sec: any) => sec.id === id))
-            .filter(Boolean)
-        : [];
+  const assignedSections = staff.allowed_sections?.includes("*")
+    ? sections
+    : staff.allowed_sections && staff.allowed_sections.length > 0
+      ? staff.allowed_sections
+          .map((id: string) => sections.find((sec: any) => sec.id === id))
+          .filter(Boolean)
+      : [];
 
   const isUnregistered = !staff.user_id && (staff.first_name || staff.last_name);
   const displayName = isUnregistered
@@ -118,12 +117,14 @@ function StaffMemberDetailsPage() {
           return `Staff ${staff.status === "active" ? "disabled" : "enabled"}!`;
         },
         error: "Failed to change status",
-      }
+      },
     );
   };
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this staff member? This cannot be undone.")) {
+    if (
+      window.confirm("Are you sure you want to delete this staff member? This cannot be undone.")
+    ) {
       toast.promise(deleteEventStaff({ data: { id: staff.id } } as any), {
         loading: "Deleting...",
         success: () => {
@@ -165,9 +166,13 @@ function StaffMemberDetailsPage() {
             onClick={handleToggleStatus}
           >
             {staff.status === "active" ? (
-              <><XCircle className="w-4 h-4" /> Disable Access</>
+              <>
+                <XCircle className="w-4 h-4" /> Disable Access
+              </>
             ) : (
-              <><CheckCircle2 className="w-4 h-4" /> Enable Access</>
+              <>
+                <CheckCircle2 className="w-4 h-4" /> Enable Access
+              </>
             )}
           </Button>
           <Button
@@ -186,7 +191,7 @@ function StaffMemberDetailsPage() {
           {/* Profile Card */}
           <div className="rounded-3xl border border-border/60 bg-card p-8 shadow-[var(--shadow-card)] relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-primary/20 to-primary/5"></div>
-            
+
             <div className="relative flex flex-col md:flex-row gap-8 items-start md:items-center mt-12">
               {staff.profile_image ? (
                 <img
@@ -199,7 +204,7 @@ function StaffMemberDetailsPage() {
                   {initials}
                 </div>
               )}
-              
+
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-3">
                   <h2 className="text-3xl font-bold">{displayName}</h2>
@@ -213,9 +218,9 @@ function StaffMemberDetailsPage() {
                     {staff.status}
                   </span>
                 </div>
-                
+
                 <p className="text-lg text-primary font-medium">{staff.role || "Team Member"}</p>
-                
+
                 <div className="flex flex-wrap gap-4 pt-2">
                   {staff.email && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-lg border border-border/50">
@@ -228,7 +233,10 @@ function StaffMemberDetailsPage() {
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-lg border border-border/50">
-                    <QrCode className="h-4 w-4" /> ID: <span className="font-mono font-bold text-foreground">{staff.badge_qr_string}</span>
+                    <QrCode className="h-4 w-4" /> ID:{" "}
+                    <span className="font-mono font-bold text-foreground">
+                      {staff.badge_qr_string}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -242,21 +250,30 @@ function StaffMemberDetailsPage() {
                 <h3 className="text-xl font-semibold flex items-center gap-2">
                   <ShieldAlert className="h-5 w-5 text-primary" /> Access & Security
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1">Areas and sections this member is permitted to enter.</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Areas and sections this member is permitted to enter.
+                </p>
               </div>
-              <Button variant="outline" className="gap-2 text-sm" onClick={() => {
-                // Navigate back to the list and open edit modal - or just handle here if needed.
-                // For simplicity, we just prompt to go to list or implement a local edit modal.
-                navigate({ to: `/dashboard/${workspaceSlug}/events/${eventId}/staff` });
-              }}>
+              <Button
+                variant="outline"
+                className="gap-2 text-sm"
+                onClick={() => {
+                  // Navigate back to the list and open edit modal - or just handle here if needed.
+                  // For simplicity, we just prompt to go to list or implement a local edit modal.
+                  navigate({ to: `/dashboard/${workspaceSlug}/events/${eventId}/staff` });
+                }}
+              >
                 <Edit className="h-4 w-4" /> Edit Access
               </Button>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {assignedSections.length > 0 ? (
                 assignedSections.map((sec: any) => (
-                  <div key={sec.id} className="flex items-center gap-3 bg-secondary/40 border border-border/50 p-4 rounded-2xl hover:border-primary/50 transition-colors">
+                  <div
+                    key={sec.id}
+                    className="flex items-center gap-3 bg-secondary/40 border border-border/50 p-4 rounded-2xl hover:border-primary/50 transition-colors"
+                  >
                     <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                       <MapPin className="h-5 w-5 text-blue-500" />
                     </div>
@@ -273,7 +290,9 @@ function StaffMemberDetailsPage() {
                   </div>
                   <div>
                     <p className="font-bold text-red-500">No Access Assigned</p>
-                    <p className="text-xs text-red-500/70">This staff member currently has no permissions</p>
+                    <p className="text-xs text-red-500/70">
+                      This staff member currently has no permissions
+                    </p>
                   </div>
                 </div>
               )}
@@ -287,7 +306,9 @@ function StaffMemberDetailsPage() {
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <QrCode className="h-5 w-5 text-primary" /> Digital Badge
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">Live preview of their digital credential.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Live preview of their digital credential.
+            </p>
           </div>
 
           <div className="flex bg-secondary p-1.5 rounded-full mb-8 shadow-sm border border-border/50">
@@ -347,13 +368,18 @@ function StaffMemberDetailsPage() {
                   <Palette className="h-8 w-8 text-muted-foreground/60" />
                 </div>
                 <h4 className="font-semibold text-foreground mb-2">No Design Found</h4>
-                <p className="text-sm mb-6">A badge design hasn't been created for this event yet.</p>
+                <p className="text-sm mb-6">
+                  A badge design hasn't been created for this event yet.
+                </p>
                 <Link
                   to="/dashboard/$workspaceSlug/badge-designer/$projectId"
                   params={{ workspaceSlug, projectId: "new" }}
                   search={{ eventId }}
                 >
-                  <Button className="rounded-full shadow-[var(--shadow-glow)]" style={{ background: "var(--gradient-primary)" }}>
+                  <Button
+                    className="rounded-full shadow-[var(--shadow-glow)]"
+                    style={{ background: "var(--gradient-primary)" }}
+                  >
                     Design Badge
                   </Button>
                 </Link>
@@ -376,7 +402,9 @@ function StaffMemberDetailsPage() {
                 variant="outline"
                 className="w-full h-12 rounded-2xl text-base border-border/80 hover:bg-secondary/50"
                 onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/a/${staff.badge_qr_string}`);
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/a/${staff.badge_qr_string}`,
+                  );
                   toast.success("Secure link copied to clipboard!");
                 }}
               >
