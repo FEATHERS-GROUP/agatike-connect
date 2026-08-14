@@ -66,12 +66,39 @@ function Numpad({
   const themeColor = appData?.theme_color || event?.theme_color || event?.tickets_page_styles?.primary_color || "#ff3b30";
   const logoUrl = appData?.logo_url || event?.cover;
 
+  const brandingConfig = (() => {
+    let config = {
+      font_family: "inter",
+      background_color: "#ffffff"
+    };
+    if (appData?.app_modules) {
+      const bMod = appData.app_modules.find((m: any) => m.type === "branding_config");
+      if (bMod) {
+        config = typeof bMod.config === "string" ? JSON.parse(bMod.config) : bMod.config || config;
+      }
+    }
+    return config;
+  })();
+
+  const fontClassMap: Record<string, string> = {
+    inter: "font-sans",
+    roboto: "font-sans",
+    sans: "font-sans",
+    serif: "font-serif",
+    mono: "font-mono",
+  };
+  const fontClass = fontClassMap[brandingConfig.font_family] || "font-sans";
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background text-foreground px-6 w-full overflow-hidden"
-      style={{ "--color-primary": themeColor } as React.CSSProperties}
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center text-foreground px-6 w-full overflow-hidden ${fontClass}`}
+      style={{ 
+        "--color-primary": themeColor,
+        backgroundColor: brandingConfig.background_color && brandingConfig.background_color !== "#ffffff" ? brandingConfig.background_color : "hsl(var(--background))",
+        fontFamily: !fontClassMap[brandingConfig.font_family] ? brandingConfig.font_family : undefined
+      } as React.CSSProperties}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-background pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="z-10 w-full max-w-sm flex flex-col items-center">
@@ -333,23 +360,58 @@ function StaffEventDashboard() {
   const canSell = perms.includes("SELL_TICKETS");
   const canViewAnalytics = perms.includes("VIEW_ANALYTICS");
 
+  const brandingConfig = (() => {
+    let config = {
+      font_family: "inter",
+      background_color: "#ffffff",
+      dashboard_columns: "2",
+      mobile_layout: "grid",
+      logout_style: "subtle"
+    };
+    if (appData?.app_modules) {
+      const bMod = appData.app_modules.find((m: any) => m.type === "branding_config");
+      if (bMod) {
+        config = typeof bMod.config === "string" ? JSON.parse(bMod.config) : bMod.config || config;
+      }
+    }
+    return config;
+  })();
+
+  const fontClassMap: Record<string, string> = {
+    inter: "font-sans",
+    roboto: "font-sans",
+    sans: "font-sans",
+    serif: "font-serif",
+    mono: "font-mono",
+  };
+  const fontClass = fontClassMap[brandingConfig.font_family] || "font-sans";
+
   return (
     <div
-      className="min-h-[100dvh] bg-background text-foreground overflow-y-auto pb-safe font-sans"
+      className={`min-h-[100dvh] text-foreground overflow-y-auto pb-safe ${fontClass}`}
       style={
-        { "--color-primary": appData?.theme_color || assignment.event?.theme_color || "#ff3b30" } as React.CSSProperties
+        { 
+          "--color-primary": appData?.theme_color || assignment.event?.theme_color || "#ff3b30",
+          backgroundColor: brandingConfig.background_color && brandingConfig.background_color !== "#ffffff" ? brandingConfig.background_color : "hsl(var(--background))",
+          fontFamily: !fontClassMap[brandingConfig.font_family] ? brandingConfig.font_family : undefined
+        } as React.CSSProperties
       }
     >
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-background to-background pointer-events-none -z-10" />
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none -z-10" />
       <div className="absolute top-0 left-0 right-0 h-96 bg-primary/10 blur-[100px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
 
       <header className="px-6 pt-safe-top pb-2 flex items-center justify-between relative z-10 mt-6">
-        <Link
-          to="/profile"
-          className="p-3 -ml-3 text-foreground/60 hover:text-foreground active:scale-95 transition-all bg-secondary/50 backdrop-blur-md rounded-full border border-border/50"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/profile"
+            className="p-3 -ml-3 text-foreground/60 hover:text-foreground active:scale-95 transition-all bg-secondary/50 backdrop-blur-md rounded-full border border-border/50"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          {appData?.logo_url && (
+            <img src={appData.logo_url} alt="Logo" className="h-8 w-8 rounded-md object-cover border border-border/50" />
+          )}
+        </div>
         <div className="bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full flex items-center gap-2.5 backdrop-blur-md shadow-[0_0_15px_color-mix(in_srgb,var(--color-primary)_10%,transparent)]">
           <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)] animate-pulse" />
           <span className="text-primary text-xs font-black tracking-widest uppercase">Live</span>
@@ -490,8 +552,14 @@ function StaffEventDashboard() {
             )}
             
             {appData?.app_modules && appData.app_modules.length > 0 && (
-              <div className="grid grid-cols-1 gap-4">
+              <div className={`grid gap-4 ${
+                brandingConfig.mobile_layout === "list" ? "grid-cols-1" : 
+                brandingConfig.dashboard_columns === "3" ? "grid-cols-2 md:grid-cols-3" :
+                brandingConfig.dashboard_columns === "4" ? "grid-cols-2 md:grid-cols-4" :
+                "grid-cols-2"
+              }`}>
                 {appData.app_modules
+                  .filter((m: any) => m.type !== "branding_config")
                   .sort((a: any, b: any) => a.order - b.order)
                   .map((m: any) => {
                     const config = typeof m.config === "string" ? JSON.parse(m.config) : m.config || {};
@@ -632,6 +700,22 @@ function StaffEventDashboard() {
               </Link>
             )}
           </div>
+        </div>
+        <div className="mt-12 flex justify-center pb-12">
+          <button 
+            onClick={() => {
+              setIsAuthenticated(false);
+              localStorage.removeItem(`staff_session_${eventId}`);
+              navigate({ to: "/profile" });
+            }}
+            className={`px-10 py-4 rounded-full font-bold shadow-sm transition-all active:scale-95 ${
+              brandingConfig.logout_style === "prominent" 
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-[0_0_20px_color-mix(in_srgb,var(--color-destructive)_30%,transparent)]" 
+                : "bg-secondary/80 backdrop-blur-md text-secondary-foreground border border-border/50 hover:bg-secondary"
+            }`}
+          >
+            Sign Out
+          </button>
         </div>
       </main>
     </div>

@@ -112,6 +112,7 @@ function AdminPricingDetailsPage() {
         max_products: 0,
         max_spaces: 0,
         max_venues: 0,
+        max_custom_apps: 0,
         max_ticket_designs: 1,
         max_badge_designs: 0,
         max_page_builders: 0,
@@ -748,8 +749,13 @@ function AdminPricingDetailsPage() {
                 },
                 {
                   key: "max_venues",
-                  label: "Max Venue Listings",
-                  desc: "Total venue listings the organizer can publish per workspace.",
+                  label: "Max Venues",
+                  desc: "Maximum number of distinct physical locations or venues.",
+                },
+                {
+                  key: "max_custom_apps",
+                  label: "Max Custom Apps",
+                  desc: "How many custom mobile apps (Event/Workspace) this organizer can build.",
                 },
                 {
                   key: "max_ticket_designs",
@@ -1269,6 +1275,7 @@ function AdminPricingDetailsPage() {
               { key: "max_products", label: "Products" },
               { key: "max_spaces", label: "Spaces" },
               { key: "max_venues", label: "Venues" },
+              { key: "max_custom_apps", label: "Custom Apps" },
               { key: "max_ticket_designs", label: "Ticket Designs" },
               { key: "max_badge_designs", label: "Badge Designs" },
               { key: "max_page_builders", label: "Page Builders" },

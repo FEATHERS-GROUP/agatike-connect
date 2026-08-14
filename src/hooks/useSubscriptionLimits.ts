@@ -122,6 +122,13 @@ export function useSubscriptionLimits(
     return (workspaceStats?.venues || 0) < limit;
   };
 
+  const canCreateCustomApp = () => {
+    if (isLoading) return true;
+    const limit = limits.max_custom_apps;
+    if (limit === -1 || limit === undefined || limit === null) return true;
+    return (workspaceStats?.custom_apps || 0) < limit;
+  };
+
   const canCreatePageBuilder = () => {
     if (isLoading) return true;
     const limit = limits.max_page_builders;
@@ -365,6 +372,7 @@ export function useSubscriptionLimits(
     canCreateTicketDesign,
     canCreateProduct,
     canCreateCampaign,
+    canCreateCustomApp,
     canCreateGiftCard,
     canCreatePunchCard,
     canCreateMovie,

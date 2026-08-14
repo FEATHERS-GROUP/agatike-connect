@@ -12,6 +12,7 @@ import { getWorkspaceApps, createWorkspaceApp, deleteWorkspaceApp, upsertAppModu
 import { getWorkspaceEvents, updateEvent } from "@/api/events";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 const APP_TEMPLATES = [
   {
@@ -64,6 +65,11 @@ function AppBuilderIndex() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
+  const { canCreateCustomApp } = useSubscriptionLimits(
+    activeWorkspace?.orgnizer_id,
+    activeWorkspace?.id
+  );
+  
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [appName, setAppName] = useState("");
@@ -146,6 +152,17 @@ function AppBuilderIndex() {
     },
   });
 
+  const handleCreateNewApp = () => {
+    if (!canCreateCustomApp()) {
+      toast.error("Custom App limit reached", {
+        description: "Your current subscription plan does not allow creating more custom apps. Please upgrade your plan.",
+      });
+      return;
+    }
+    setSelectedTemplate(null);
+    setIsTemplateModalOpen(true);
+  };
+
   return (
     <div className="w-full p-6 lg:p-10 space-y-10 animate-in fade-in duration-500">
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -156,10 +173,7 @@ function AppBuilderIndex() {
           </p>
         </div>
         <Button
-          onClick={() => {
-            setSelectedTemplate(null);
-            setIsTemplateModalOpen(true);
-          }}
+          onClick={handleCreateNewApp}
           className="gap-2 rounded-full shadow-sm"
           style={{ background: "var(--gradient-primary)", color: "white" }}
         >
@@ -181,10 +195,7 @@ function AppBuilderIndex() {
             Build your first custom mobile portal to give specific roles tailored access to scanners, attendees, and more.
           </p>
           <Button
-            onClick={() => {
-              setSelectedTemplate(null);
-              setIsTemplateModalOpen(true);
-            }}
+            onClick={handleCreateNewApp}
             className="rounded-full shadow-sm"
           >
             Create Your First App

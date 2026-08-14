@@ -396,7 +396,7 @@ export function UsersTable({ users, workspaces = [], apps = [] }: { users: any[]
                       <Smartphone className="h-3 w-3" /> Assigned App
                     </h4>
                     <p className="text-sm text-foreground/80">
-                      {user.app_id ? apps.find(a => a.id === user.app_id)?.name || "Unknown App" : "None"}
+                      {u.app_id ? apps.find(a => a.id === u.app_id)?.name || "Unknown App" : "None"}
                     </p>
                   </div>
 

@@ -37,6 +37,8 @@ import {
   deleteAppModule,
 } from "@/api/app-studio";
 import { getWorkspaceEvents, updateEvent } from "@/api/events";
+import { uploadFormData } from "@/api/storage";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   DndContext,
   closestCenter,
@@ -207,6 +209,14 @@ function AppBuilderStudio() {
     logo_url: "",
     is_active: true,
   });
+  const [brandingConfig, setBrandingConfig] = useState({
+    font_family: "inter",
+    background_color: "#ffffff",
+    dashboard_columns: "2",
+    mobile_layout: "grid",
+    logout_style: "subtle"
+  });
+  const [isUploading, setIsUploading] = useState(false);
   const [assignedEventId, setAssignedEventId] = useState<string>("");
 
   const { data: events = [] } = useQuery({
@@ -224,12 +234,24 @@ function AppBuilderStudio() {
         logo_url: appData.logo_url || "",
         is_active: appData.is_active ?? true,
       });
-      setModules(
-        (appData.app_modules || []).map((m: any) => ({
+      
+      const parsedModules = (appData.app_modules || []).map((m: any) => ({
           ...m,
           config: typeof m.config === "string" ? JSON.parse(m.config) : m.config || {},
-        }))
-      );
+      }));
+
+      const bConfigModule = parsedModules.find((m: any) => m.type === "branding_config");
+      if (bConfigModule) {
+        setBrandingConfig({
+          font_family: bConfigModule.config.font_family || "inter",
+          background_color: bConfigModule.config.background_color || "#ffffff",
+          dashboard_columns: bConfigModule.config.dashboard_columns || "2",
+          mobile_layout: bConfigModule.config.mobile_layout || "grid",
+          logout_style: bConfigModule.config.logout_style || "subtle"
+        });
+      }
+
+      setModules(parsedModules.filter((m: any) => m.type !== "branding_config"));
     }
   }, [appData]);
 
@@ -262,8 +284,20 @@ function AppBuilderStudio() {
         title: m.title,
         icon: m.icon,
         config: m.config,
-        order: idx,
+        order: idx + 1,
       }));
+
+      const brandingModId = appData?.app_modules?.find((m: any) => m.type === "branding_config")?.id || crypto.randomUUID();
+      
+      modulesToUpsert.unshift({
+        id: brandingModId,
+        app_id: appId,
+        type: "branding_config",
+        title: "Branding Config",
+        icon: "Settings",
+        config: brandingConfig,
+        order: 0
+      });
 
       if (modulesToUpsert.length > 0) {
         await upsertAppModules({ data: { objects: modulesToUpsert } } as any);
@@ -283,6 +317,31 @@ function AppBuilderStudio() {
       toast.error(err.message || "Failed to save app");
     },
   });
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "app_logos");
+      
+      const res = await uploadFormData({ data: formData } as any);
+      setAppConfig({ ...appConfig, logo_url: res.url });
+      toast.success("Logo uploaded successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to upload logo");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleAddModule = (modType: any) => {
     const newMod = {
@@ -466,10 +525,14 @@ function AppBuilderStudio() {
 
               {previewScreen === "login" ? (
                 <div 
-                  className="h-full w-full flex flex-col items-center justify-center text-foreground px-6 relative overflow-hidden bg-background"
-                  style={{ "--color-primary": appConfig.theme_color } as React.CSSProperties}
+                  className="h-full w-full flex flex-col items-center justify-center text-foreground px-6 relative overflow-hidden"
+                  style={{ 
+                    "--color-primary": appConfig.theme_color,
+                    backgroundColor: brandingConfig.background_color,
+                    fontFamily: brandingConfig.font_family === "sans" ? "sans-serif" : brandingConfig.font_family 
+                  } as React.CSSProperties}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-background pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
                   
                   <div className="z-10 w-full flex flex-col items-center">
@@ -509,10 +572,14 @@ function AppBuilderStudio() {
                 </div>
               ) : (
                 <div 
-                  className="flex flex-col h-full bg-background relative overflow-hidden" 
-                  style={{ "--color-primary": appConfig.theme_color } as React.CSSProperties}
+                  className="flex flex-col h-full relative overflow-hidden" 
+                  style={{ 
+                    "--color-primary": appConfig.theme_color,
+                    backgroundColor: brandingConfig.background_color,
+                    fontFamily: brandingConfig.font_family === "sans" ? "sans-serif" : brandingConfig.font_family 
+                  } as React.CSSProperties}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-background pointer-events-none -z-10" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none -z-10" />
                   <div className="absolute top-0 left-0 right-0 h-64 bg-primary/10 blur-[80px] pointer-events-none -z-10 rounded-full mix-blend-screen" />
                   
                   <header className="px-5 pt-12 pb-2 flex items-center justify-between relative z-10">
@@ -556,7 +623,12 @@ function AppBuilderStudio() {
                             items={modules.map(m => m.id)}
                             strategy={verticalListSortingStrategy}
                           >
-                            <div className="space-y-3">
+                            <div className={`grid gap-3 ${
+                              brandingConfig.dashboard_columns === "1" ? "grid-cols-1" :
+                              brandingConfig.dashboard_columns === "2" ? "grid-cols-2" :
+                              brandingConfig.dashboard_columns === "3" ? "grid-cols-3" :
+                              "grid-cols-2" // fallback in small container
+                            }`}>
                               {modules.map((mod, idx) => (
                                 <SortableModuleItem 
                                   key={mod.id} 
@@ -570,6 +642,15 @@ function AppBuilderStudio() {
                           </SortableContext>
                         </DndContext>
                       )}
+                      
+                      <div className="pt-6 flex justify-center">
+                        <Button 
+                          variant={brandingConfig.logout_style === "prominent" ? "default" : "outline"} 
+                          className="rounded-full shadow-sm"
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
                     </div>
                   </main>
                 </div>
@@ -597,77 +678,172 @@ function AppBuilderStudio() {
 
           <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
             {!selectedModule ? (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold">App Settings</h3>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">App Name</Label>
-                    <Input
-                      value={appConfig.name}
-                      onChange={(e) => setAppConfig({ ...appConfig, name: e.target.value })}
-                      placeholder="My Portal"
-                      className="h-8 text-sm bg-secondary/50 border-border/50"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Description</Label>
-                    <Textarea
-                      value={appConfig.description}
-                      onChange={(e) => setAppConfig({ ...appConfig, description: e.target.value })}
-                      placeholder="Brief description..."
-                      className="text-sm bg-secondary/50 border-border/50 resize-none h-20"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Theme Color</Label>
-                    <div className="flex items-center gap-3">
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary/50">
+                  <TabsTrigger value="general" className="text-xs">General</TabsTrigger>
+                  <TabsTrigger value="branding" className="text-xs">Branding</TabsTrigger>
+                  <TabsTrigger value="layout" className="text-xs">Layout</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="general" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">App Name</Label>
                       <Input
-                        type="color"
-                        value={appConfig.theme_color}
-                        onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
-                        className="h-8 w-12 p-0 border-0 bg-transparent rounded cursor-pointer"
+                        value={appConfig.name}
+                        onChange={(e) => setAppConfig({ ...appConfig, name: e.target.value })}
+                        placeholder="My Portal"
+                        className="h-8 text-sm bg-secondary/50 border-border/50"
                       />
-                      <Input
-                        value={appConfig.theme_color}
-                        onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
-                        className="h-8 text-xs font-mono uppercase bg-secondary/50 border-border/50"
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Description</Label>
+                      <Textarea
+                        value={appConfig.description}
+                        onChange={(e) => setAppConfig({ ...appConfig, description: e.target.value })}
+                        placeholder="Brief description..."
+                        className="text-sm bg-secondary/50 border-border/50 resize-none h-20"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Logo URL</Label>
-                    <Input
-                      value={appConfig.logo_url}
-                      onChange={(e) => setAppConfig({ ...appConfig, logo_url: e.target.value })}
-                      placeholder="https://..."
-                      className="h-8 text-sm bg-secondary/50 border-border/50"
-                    />
+                  <div className="space-y-4 pt-4 border-t border-border/50">
+                    <h3 className="text-sm font-bold">Event Link (Optional)</h3>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Assigned Event</Label>
+                      <select
+                        className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={assignedEventId}
+                        onChange={(e) => setAssignedEventId(e.target.value)}
+                      >
+                        <option value="">No event linked</option>
+                        {events.map((evt: any) => (
+                          <option key={evt.id} value={evt.id}>{evt.title}</option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
+                        Link this app to an event to use it as the Event Staff Portal.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </TabsContent>
 
-                <div className="space-y-4 pt-4 border-t border-border/50">
-                  <h3 className="text-sm font-bold">Event Link (Optional)</h3>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Assigned Event</Label>
-                    <select
-                      className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                      value={assignedEventId}
-                      onChange={(e) => setAssignedEventId(e.target.value)}
-                    >
-                      <option value="">No event linked</option>
-                      {events.map((evt: any) => (
-                        <option key={evt.id} value={evt.id}>{evt.title}</option>
-                      ))}
-                    </select>
-                    <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
-                      Link this app to an event to use it as the Event Staff Portal.
-                    </p>
+                <TabsContent value="branding" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">App Logo (Max 5MB)</Label>
+                      <div className="flex items-center gap-3">
+                        {appConfig.logo_url && (
+                          <img src={appConfig.logo_url} alt="Logo" className="w-10 h-10 rounded-md object-cover border border-border/50" />
+                        )}
+                        <div className="flex-1">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            disabled={isUploading}
+                            className="h-8 text-xs file:h-8 file:-my-1.5 file:px-3 file:-ml-3 file:bg-secondary file:text-secondary-foreground file:border-0 file:mr-3 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                      {isUploading && <p className="text-[10px] text-primary animate-pulse">Uploading...</p>}
+                    </div>
+
+                    <div className="space-y-1.5 pt-4">
+                      <Label className="text-xs">Primary Theme Color</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="color"
+                          value={appConfig.theme_color}
+                          onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
+                          className="h-8 w-12 p-0 border-0 bg-transparent rounded cursor-pointer"
+                        />
+                        <Input
+                          value={appConfig.theme_color}
+                          onChange={(e) => setAppConfig({ ...appConfig, theme_color: e.target.value })}
+                          className="h-8 text-xs font-mono uppercase bg-secondary/50 border-border/50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-4">
+                      <Label className="text-xs">Page Background Color</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          type="color"
+                          value={brandingConfig.background_color}
+                          onChange={(e) => setBrandingConfig({ ...brandingConfig, background_color: e.target.value })}
+                          className="h-8 w-12 p-0 border-0 bg-transparent rounded cursor-pointer"
+                        />
+                        <Input
+                          value={brandingConfig.background_color}
+                          onChange={(e) => setBrandingConfig({ ...brandingConfig, background_color: e.target.value })}
+                          className="h-8 text-xs font-mono uppercase bg-secondary/50 border-border/50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-4">
+                      <Label className="text-xs">Global Font Family</Label>
+                      <select
+                        className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={brandingConfig.font_family}
+                        onChange={(e) => setBrandingConfig({ ...brandingConfig, font_family: e.target.value })}
+                      >
+                        <option value="inter">Inter (Default)</option>
+                        <option value="roboto">Roboto</option>
+                        <option value="sans">System Sans</option>
+                        <option value="serif">System Serif</option>
+                        <option value="mono">System Mono</option>
+                      </select>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </TabsContent>
+
+                <TabsContent value="layout" className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Dashboard Columns (Grid)</Label>
+                      <select
+                        className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={brandingConfig.dashboard_columns}
+                        onChange={(e) => setBrandingConfig({ ...brandingConfig, dashboard_columns: e.target.value })}
+                      >
+                        <option value="1">1 Column (List)</option>
+                        <option value="2">2 Columns</option>
+                        <option value="3">3 Columns</option>
+                        <option value="4">4 Columns</option>
+                      </select>
+                      <p className="text-[10px] text-muted-foreground mt-1 leading-tight">Controls how modules are arranged on tablets and desktops.</p>
+                    </div>
+
+                    <div className="space-y-1.5 pt-4">
+                      <Label className="text-xs">Mobile Layout</Label>
+                      <select
+                        className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={brandingConfig.mobile_layout}
+                        onChange={(e) => setBrandingConfig({ ...brandingConfig, mobile_layout: e.target.value })}
+                      >
+                        <option value="grid">Grid Layout</option>
+                        <option value="list">List Layout</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5 pt-4">
+                      <Label className="text-xs">Logout Button Style</Label>
+                      <select
+                        className="flex h-8 w-full items-center justify-between rounded-md border border-border/50 bg-secondary/50 px-3 py-1 text-xs shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={brandingConfig.logout_style}
+                        onChange={(e) => setBrandingConfig({ ...brandingConfig, logout_style: e.target.value })}
+                      >
+                        <option value="subtle">Subtle (Outline)</option>
+                        <option value="prominent">Prominent (Solid Color)</option>
+                      </select>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             ) : (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="space-y-4">
