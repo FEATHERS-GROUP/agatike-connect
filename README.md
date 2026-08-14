@@ -2992,3 +2992,48 @@ flowchart TD
     MobileApp2 --> Scanner2["Access Scanner (Vouchers Only)"]
     MobileApp2 --> Sales["Sales Dashboard"]
 ```
+
+---
+
+## 34. Staff Portal & Custom App Engine
+
+**Logic:**
+
+The **Staff Portal Engine** is responsible for delivering the Custom Mobile Apps created in the App Studio directly to the end-users (Event Staff and Workspace Company Users). It manages authentication, routing, application configuration hydration, and module rendering in a seamless, premium mobile experience.
+
+### 34.1 Smart Adaptive Gateway (`/staff/login`)
+
+- **Context-Aware Login:** The Gateway automatically detects if a user is already authenticated to the main Agatike platform. 
+- **Adaptive Options:** Instead of a generic login form, the Gateway fetches the user's specific assignments (`event_staff` or `workspace_users`). It dynamically hides irrelevant options and only presents a **"Continue as [Role]"** button tailored to the user's actual permissions.
+- **Instant Teleportation:** Clicking the tailored adaptive button completely bypasses standard email/password or PIN entry, instantly resolving their session and teleporting them to their respective dashboard (`/staff/event/$eventId` or `/staff/workspace/$workspaceUserId`).
+
+### 34.2 App Data Hydration & Fallback Engine
+
+- **Config Hydration:** When a staff member accesses their dashboard, the engine fetches the raw event metadata and then queries the `workspace_apps` configuration to inject the organizer's custom UI (colors, logos, layouts).
+- **Graceful Fallback:** If an event does not have an explicitly mapped Custom App (`app_id` is null), the engine will automatically fallback to querying the primary Custom App associated with the Event's overarching **Workspace**. This ensures the staff dashboard never breaks and always retains the parent workspace's custom branding.
+- **Hydration Syncing:** Because staff sessions rely on `localStorage` for fast re-entry (which is unavailable during Server-Side Rendering), the dashboard uses an `isMounted` execution pattern. It initially renders a unified React Server/Client state to prevent hydration mismatch crashes, before injecting the localized auth context.
+
+### 34.3 Premium Skeleton Loading
+
+- To maintain a high-end aesthetic while executing complex relational queries (fetching the Event details, Workspace Apps, and Badge configurations concurrently), the dashboard utilizes a glassmorphism skeleton loader (`animate-pulse`). This ensures the UI frame and layout grid load instantly, progressively hydrating with the Custom App colors and specific tool modules once the network payloads resolve.
+
+```mermaid
+flowchart TD
+    User["Staff/User"] -->|Visits| Gateway["/staff/login Gateway"]
+    
+    Gateway --> CheckAuth{Is logged into<br/>main Agatike app?}
+    CheckAuth -->|No| EmailLogin["Show standard Email/PIN login form"]
+    CheckAuth -->|Yes| FetchRoles["Query user_id in Staff & Workspace tables"]
+    
+    FetchRoles --> AdaptiveUI["Render Smart 'Continue as...' Buttons"]
+    AdaptiveUI -->|Clicks Event Staff| TeleportEvent["Teleport to /staff/event/$eventId"]
+    AdaptiveUI -->|Clicks Company User| TeleportWorkspace["Teleport to /staff/workspace/$userId"]
+    
+    TeleportEvent --> FetchApp{Does Event have<br/>an explicitly mapped app_id?}
+    FetchApp -->|Yes| LoadSpecific["Load specific Custom App Config"]
+    FetchApp -->|No| FallbackWorkspace["Fallback: Load Workspace's Primary Custom App"]
+    
+    LoadSpecific & FallbackWorkspace --> LoadingUI["Display Premium Skeleton Loader"]
+    LoadingUI --> ResolveQueries["Queries Resolve"]
+    ResolveQueries --> RenderDash["Render Dashboard with Custom Branding & Modules"]
+```
