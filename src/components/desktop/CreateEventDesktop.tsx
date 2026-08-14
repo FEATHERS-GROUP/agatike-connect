@@ -890,12 +890,12 @@ export function CreateEventDesktop() {
         {steps[step] === "Media" && (
           <div className="space-y-5">
             <Label>Cover image</Label>
-            <label className="relative block aspect-[16/9] cursor-pointer overflow-hidden rounded-2xl border border-dashed border-border bg-secondary/40 transition hover:border-primary">
+            <label className="relative block h-[250px] sm:h-[300px] md:h-[400px] w-full cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary hover:bg-secondary/60">
               {data.coverPreview ? (
                 <>
                   <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity hover:opacity-100 flex items-center justify-center">
-                    <span className="text-white font-medium bg-black/50 px-4 py-2 rounded-full">Change Image</span>
+                  <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity hover:opacity-100 flex items-center justify-center backdrop-blur-[2px]">
+                    <span className="text-white font-medium bg-black/50 px-5 py-2.5 rounded-full shadow-lg">Change Image</span>
                   </div>
                   <Button
                     type="button"
@@ -908,17 +908,22 @@ export function CreateEventDesktop() {
                   </Button>
                 </>
               ) : (
-                <div className="grid h-full place-items-center text-sm text-muted-foreground">
-                  <div className="text-center">
-                    <Upload className="mx-auto h-6 w-6" />
-                    <p className="mt-2">Click to upload (any image)</p>
+                <div className="grid h-full w-full place-items-center text-sm text-muted-foreground">
+                  <div className="text-center flex flex-col items-center gap-3">
+                    <div className="rounded-full bg-background p-4 shadow-sm border border-border/60">
+                      <Upload className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground text-base">Click to upload cover image</p>
+                      <p className="mt-1 text-xs text-muted-foreground">PNG, JPG or WEBP up to 5MB</p>
+                    </div>
                   </div>
                 </div>
               )}
               <input type="file" accept="image/*" hidden onChange={onCoverUpload} />
             </label>
             <p className="text-xs text-muted-foreground">
-              Recommended 1920×1080. We auto-generate social cards.
+              Recommended 1920×1080. We auto-generate social cards for sharing.
             </p>
           </div>
         )}
