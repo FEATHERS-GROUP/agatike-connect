@@ -20,6 +20,7 @@ import { RsvpSummaryCards } from "@/components/dashboard/rsvps/RsvpSummaryCards"
 import { RsvpSearchFilters } from "@/components/dashboard/rsvps/RsvpSearchFilters";
 import { FormCard } from "@/components/dashboard/rsvps/FormCard";
 import { DeleteFormDialog } from "@/components/dashboard/rsvps/DeleteFormDialog";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/rsvps/")({
   component: RsvpsPage,
@@ -33,16 +34,21 @@ function RsvpsPage() {
   const [deleteConfirmForm, setDeleteConfirmForm] = useState<CustomForm | null>(null);
   const [isExportingBeforeDelete, setIsExportingBeforeDelete] = useState(false);
 
-  const { canCreateCustomerForm } = useSubscriptionLimits(
+  const { canCreateCustomerForm, limits } = useSubscriptionLimits(
     activeWorkspace?.orgnizer_id,
     activeWorkspace?.id,
   );
 
-  const { data: forms = [], isLoading } = useQuery<CustomForm[]>({
+  const { data: rawForms = [], isLoading } = useQuery<CustomForm[]>({
     queryKey: ["workspace-forms", activeWorkspace?.id],
     queryFn: () => getWorkspaceForms({ data: { workspace_id: activeWorkspace?.id! } } as any),
     enabled: !!activeWorkspace?.id,
   });
+
+  const limit = limits.max_custom_forms === undefined || limits.max_custom_forms === -1 ? Infinity : limits.max_custom_forms;
+  const sortedForms = [...rawForms].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const forms = limit === Infinity ? sortedForms : sortedForms.slice(0, limit);
+
 
   const moveMutation = useMutation({
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {
@@ -204,6 +210,9 @@ function RsvpsPage() {
 
       {/* Search and Filter */}
       <RsvpSearchFilters search={search} setSearch={setSearch} />
+
+      {limit === 0 && <QuotaExceededBanner limit={limit} total={rawForms.length} centered />}
+      {limit > 0 && <QuotaExceededBanner limit={limit} total={rawForms.length} />}
 
       {isLoading ? (
         <div className="flex justify-center p-12">

@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { SlugPromptModal } from "@/components/page-builder/SlugPromptModal";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/page-builder/")({
   component: PageBuilderGallery,
@@ -50,6 +51,7 @@ function PageBuilderGallery() {
     hasStudioAccess,
     canCreatePageBuilder,
     isLoading: limitsLoading,
+    limits,
   } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
   const queryClient = useQueryClient();
@@ -86,6 +88,12 @@ function PageBuilderGallery() {
       ((p.title || "Untitled Page").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.slug || "").toLowerCase().includes(searchQuery.toLowerCase())),
   );
+
+  const limit = limits.max_page_builders === undefined || limits.max_page_builders === -1 ? Infinity : limits.max_page_builders;
+  
+  const sortedFilteredPages = [...filteredPages].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const visiblePages = limit === Infinity ? sortedFilteredPages : sortedFilteredPages.slice(0, limit);
+
 
   const handleCopyLink = (slug: string) => {
     const url = getWorkspacePageUrl(slug);
@@ -131,7 +139,7 @@ function PageBuilderGallery() {
   };
 
   if (limitsLoading) return null;
-  if (!hasStudioAccess()) {
+  if (!hasStudioAccess() && limit === 0) {
     return (
       <div className="p-6 h-full">
         <UpgradePrompt
@@ -216,9 +224,11 @@ function PageBuilderGallery() {
             </TabsContent>
 
             <TabsContent value="pages">
+              {limit === 0 && <QuotaExceededBanner limit={limit} total={filteredPages.length} centered />}
+              {limit > 0 && <QuotaExceededBanner limit={limit} total={filteredPages.length} />}
               <FolderManager
                 moduleType="page_builder"
-                items={filteredPages}
+                items={visiblePages}
                 getItemId={(item) => item.id}
                 getFolderId={(item) => item.folder_id}
                 onMoveItems={handleBulkMove}

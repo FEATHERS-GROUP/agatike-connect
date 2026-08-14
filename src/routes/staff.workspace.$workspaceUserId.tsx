@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { ModuleModalWrapper } from "@/components/staff-portal/ModuleModalWrapper";
+import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/staff/workspace/$workspaceUserId")({
   component: StaffWorkspaceDashboard,
@@ -65,11 +66,22 @@ function StaffWorkspaceDashboard() {
     }
   }, [workspaces, selectedWorkspaceId]);
 
-  const { data: apps = [] } = useQuery({
+  const { data: rawApps = [] } = useQuery({
     queryKey: ["workspace-apps", selectedWorkspaceId],
     queryFn: () => getWorkspaceApps({ data: { workspace_id: selectedWorkspaceId } } as any),
     enabled: !!selectedWorkspaceId,
   });
+
+  const selectedWorkspace = workspaces.find((w: any) => w.id === selectedWorkspaceId);
+
+  const { limits } = useSubscriptionLimits(
+    selectedWorkspace?.orgnizer_id,
+    selectedWorkspaceId ?? undefined,
+  );
+
+  const limit = limits.max_custom_apps === undefined || limits.max_custom_apps === -1 ? Infinity : limits.max_custom_apps;
+  const sortedApps = [...rawApps].sort((a: any, b: any) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime());
+  const apps = limit === Infinity ? sortedApps : sortedApps.slice(0, limit);
 
   // Use the first app in the workspace for branding, or default
   const appData = apps.length > 0 ? apps[0] : null;
@@ -133,8 +145,6 @@ function StaffWorkspaceDashboard() {
       </button>
     );
   };
-
-  const selectedWorkspace = workspaces.find((w: any) => w.id === selectedWorkspaceId);
 
   return (
     <div

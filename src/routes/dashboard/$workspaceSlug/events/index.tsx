@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { toast } from "sonner";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/events/")({
   component: DashboardEvents,
@@ -79,6 +80,12 @@ function DashboardEvents() {
     enabled: !!activeWorkspace?.id,
   });
 
+  const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+  const limit = limits.max_events === undefined || limits.max_events === -1 ? Infinity : limits.max_events;
+  
+  const sortedRawEvents = [...rawEvents].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const visibleRawEvents = limit === Infinity ? sortedRawEvents : sortedRawEvents.slice(0, limit);
+
   const experienceCategories = [
     "Hiking",
     "Running",
@@ -91,7 +98,7 @@ function DashboardEvents() {
   ];
 
   const events = useMemo(() => {
-    return rawEvents
+    return visibleRawEvents
       .filter((e: any) => !experienceCategories.includes(e.category))
       .map((e: any) => {
         const firstStop = Array.isArray(e.tour_stops) ? e.tour_stops[0] : null;
@@ -107,7 +114,7 @@ function DashboardEvents() {
           revenue,
         };
       });
-  }, [rawEvents]);
+  }, [visibleRawEvents]);
 
   const filteredEvents = useMemo(() => {
     return events.filter((e: any) => {
@@ -120,6 +127,8 @@ function DashboardEvents() {
   return (
     <div className="space-y-6">
       <EventsHeader activeWorkspace={activeWorkspace} />
+      {limit === 0 && <QuotaExceededBanner limit={limit} total={rawEvents.length} centered />}
+      {limit > 0 && <QuotaExceededBanner limit={limit} total={rawEvents.length} />}
       <EventsFilterBar
         search={search}
         setSearch={setSearch}

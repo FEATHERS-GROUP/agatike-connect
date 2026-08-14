@@ -49,8 +49,21 @@ export function useSubscriptionLimits(
         {},
         {
           get: (target, prop) => {
-            if (typeof prop === "string" && (prop.startsWith("has_") || prop.startsWith("can_"))) {
-              return true;
+            if (typeof prop === "string") {
+              if (prop === "max_workspaces") {
+                return dbLimits[prop];
+              }
+              if (prop.startsWith("has_") || prop.startsWith("can_")) {
+                return true;
+              }
+              const dbLimit = dbLimits[prop];
+              if (dbLimit === -1 || dbLimit === undefined || dbLimit === null) {
+                return dbLimit === -1 ? -1 : 10;
+              }
+              if (typeof dbLimit === "number" && dbLimit < 10) {
+                return 10;
+              }
+              return dbLimit;
             }
             return -1;
           },

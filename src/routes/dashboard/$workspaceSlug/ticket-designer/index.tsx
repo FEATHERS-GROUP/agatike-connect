@@ -48,6 +48,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
+import { QuotaExceededBanner } from "@/components/dashboard/QuotaExceededBanner";
 
 // Stubbed mock data
 const ticketProjects: any[] = [];
@@ -128,7 +129,13 @@ function TicketDesignerIndex() {
     hasStudioAccess,
     canCreateTicketDesign,
     isLoading: limitsLoading,
+    limits,
   } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
+
+  const limit = limits.max_ticket_designs === undefined || limits.max_ticket_designs === -1 ? Infinity : limits.max_ticket_designs;
+  const sortedProjects = [...dbProjects].sort((a: any, b: any) => new Date(b.created_at || b.updated_on || 0).getTime() - new Date(a.created_at || a.updated_on || 0).getTime());
+  const projects = limit === Infinity ? sortedProjects : sortedProjects.slice(0, limit);
+
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,7 +143,7 @@ function TicketDesignerIndex() {
   const [selectedAssignment, setSelectedAssignment] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const searchedProjects = dbProjects.filter((p: any) => {
+  const searchedProjects = projects.filter((p: any) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     const eventObj = p.events || events.find((e: any) => e.id === p.eventId);
@@ -247,7 +254,7 @@ function TicketDesignerIndex() {
   };
 
   if (limitsLoading) return null;
-  if (!hasStudioAccess()) {
+  if (!hasStudioAccess() && limit === 0) {
     return (
       <div className="p-6 h-full flex flex-col justify-center">
         <UpgradePrompt
@@ -418,7 +425,10 @@ function TicketDesignerIndex() {
             onDeleteItems={handleBulkDelete}
           >
             {({ filteredItems, folders, handleSelect, selectedIds, ItemMenu }) => (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+              <div className="mt-6 space-y-6">
+                {limit === 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} centered />}
+                {limit > 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} />}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {isLoadingProjects ? (
                   <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -539,6 +549,7 @@ function TicketDesignerIndex() {
                     );
                   })
                 )}
+                </div>
               </div>
             )}
           </FolderManager>
