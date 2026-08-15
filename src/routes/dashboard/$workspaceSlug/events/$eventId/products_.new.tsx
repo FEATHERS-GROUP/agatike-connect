@@ -401,7 +401,7 @@ function NewProductPage() {
                   Basic Information
                 </h3>
 
-                {formData.type === "physical" && (
+                {(formData.type === "physical" || formData.type === "digital") && (
                   <div className="flex flex-col gap-2">
                     <label className="relative flex aspect-[4/5] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-border/50 bg-secondary/20 transition-all hover:border-primary/50 group">
                       {imagePreview ? (

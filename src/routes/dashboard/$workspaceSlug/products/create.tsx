@@ -267,7 +267,7 @@ function CreateProductView() {
             onSubmit={handleSubmit}
             className="space-y-6 animate-in fade-in slide-in-from-right-2"
           >
-            {formData.type === "physical" && (
+            {(formData.type === "physical" || formData.type === "digital") && (
               <div className="flex flex-col items-center gap-2 mb-2">
                 <label className="relative flex h-24 w-24 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary">
                   {imagePreview ? (

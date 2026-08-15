@@ -1674,6 +1674,11 @@ export function RenderedPage({
                                         <div
                                           className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
                                         >
+                                          {item.type === "digital" && (
+                                            <div className="absolute top-3 left-3 z-10 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-md backdrop-blur-sm">
+                                              Digital Product
+                                            </div>
+                                          )}
                                           {item.image_url ||
                                           item.cover ||
                                           item.cover_url ||
@@ -1690,7 +1695,7 @@ export function RenderedPage({
                                                 item.images?.[0]
                                               }
                                               alt=""
-                                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                              className={`w-full h-full ${item.type === "digital" ? "object-contain bg-background/50 p-2" : "object-cover"} group-hover:scale-105 transition-transform duration-500`}
                                             />
                                           ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-50">
@@ -1726,13 +1731,21 @@ export function RenderedPage({
                                         )}
                                         {wrap(
                                           "inv_item_desc",
-                                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 w-full m-0">
-                                            {item.description ||
-                                              item.synopsis ||
-                                              (comp.type === "venue_list"
-                                                ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests`
-                                                : "No details provided.")}
-                                          </p>,
+                                          <div className="text-sm text-muted-foreground mb-4 line-clamp-3 w-full m-0 relative z-10">
+                                            {item.description ? (
+                                              <div 
+                                                className="prose prose-sm dark:prose-invert prose-p:my-0 prose-headings:my-0 prose-ul:my-0 prose-ol:my-0 max-w-none" 
+                                                dangerouslySetInnerHTML={{ __html: item.description }} 
+                                              />
+                                            ) : (
+                                              <p>
+                                                {item.synopsis ||
+                                                  (comp.type === "venue_list"
+                                                    ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests`
+                                                    : "No details provided.")}
+                                              </p>
+                                            )}
+                                          </div>,
                                           "100%",
                                           "auto",
                                           "0px",
@@ -1741,7 +1754,7 @@ export function RenderedPage({
                                         <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
                                           {wrap(
                                             "inv_item_price",
-                                            <span className="font-semibold truncate mr-2 text-sm w-full">
+                                            <span className="font-bold text-lg text-foreground truncate mr-2 w-full">
                                               {(() => {
                                                 if (item.price)
                                                   return `${Number(item.price).toLocaleString()} RWF`;

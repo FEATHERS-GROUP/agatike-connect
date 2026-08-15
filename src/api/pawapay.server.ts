@@ -233,6 +233,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   phone
                   product {
                     name
+                    type
+                    specs
                   }
                 }
               }
@@ -320,16 +322,22 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             let detailedMessage = "";
             let shortSmsMessage = "";
 
+            let digitalDownloadsText = "";
+            const digitalOrders = confirmedOrders.filter((o: any) => o.product?.type === 'digital' && o.product?.specs?.digital_file_url);
+            if (digitalOrders.length > 0) {
+              digitalDownloadsText = `\n\nDownload your digital products here:\n` + digitalOrders.map((o: any) => `- ${o.product.name}: ${o.product.specs.digital_file_url}`).join("\n");
+            }
+
             if (firstAtt) {
               // Ticket purchase
               detailedMessage =
                 `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
                 `\n\nOrganizer: ${orgName}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
-                (productsText ? `\nProducts: ${productsText}` : "");
+                (productsText ? `\nProducts: ${productsText}` : "") + digitalDownloadsText;
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
             } else if (confirmedOrders.length > 0) {
               // Product-only purchase
-              detailedMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${orgName}!`;
+              detailedMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${orgName}!${digitalDownloadsText}`;
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
             } else {
               // General page builder payment
