@@ -31,7 +31,7 @@ export function ProductCheckoutSheet({
   const { addToCart, openCart } = useCart();
   const navigate = useNavigate();
 
-  const currency = product?.workspace?.wallet?.currency || product?.workspace?.currency || "RWF";
+  const currency = product?.currency || product?.workspace?.currency || product?.workspace?.wallet?.currency || "RWF";
 
   // Reset state when a new product is selected
   useEffect(() => {

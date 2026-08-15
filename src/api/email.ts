@@ -261,7 +261,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
           query GetOrdersAndVouchers($ref: String!) {
             product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
               product_id qty size amount_paid qr_code_string phone current_balance
-              product { name type price value_amount }
+              product { name type price value_amount currency workspace { currency wallet { currency } } }
             }
             sponsored_vouchers(where: { booking_ref: { _eq: $ref } }) {
               qr_code_string current_balance

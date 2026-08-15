@@ -64,6 +64,13 @@ const GET_WORKSPACE_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      currency
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
       event_id
       event {
         id
@@ -108,6 +115,13 @@ const GET_EVENT_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      currency
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
       product_orders_aggregate {
         aggregate {
           sum {
@@ -161,6 +175,13 @@ const GET_VENUE_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      currency
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
       product_orders_aggregate {
         aggregate {
           sum {
@@ -205,6 +226,13 @@ const GET_PRODUCT = `
       available_sizes
       available_colors
       specs
+      currency
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
     }
   }
 `;
@@ -239,6 +267,13 @@ const GET_WORKSPACE_RECENT_ORDERS = `
         name
         type
         specs 
+        currency
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
         available_sizes
         available_colors
         event {
@@ -418,6 +453,13 @@ const GET_BOOKING_PRODUCT_ORDERS = `
         name
         type
         specs 
+        currency
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
         image_url
         event_id
         event {
@@ -478,8 +520,14 @@ const GET_DIGITAL_PRODUCT_ORDERS = `
         description
         specs
         workspace_id
+        currency
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
       }
-    }
   }
 `;
 
@@ -511,6 +559,13 @@ export const resendDigitalProductEmail = createServerFn({ method: "POST" }).hand
             description
             specs
             workspace_id
+            currency
+            workspace {
+              currency
+              wallet {
+                currency
+              }
+            }
           }
         }
       }
@@ -556,6 +611,13 @@ export const redeemDigitalProduct = createServerFn({ method: "POST" })
             type
             name
             specs
+            currency
+            workspace {
+              currency
+              wallet {
+                currency
+              }
+            }
           }
         }
       }

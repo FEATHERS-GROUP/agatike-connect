@@ -235,6 +235,13 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     name
                     type
                     specs
+                    currency
+                    workspace {
+                      currency
+                      wallet {
+                        currency
+                      }
+                    }
                   }
                 }
               }
@@ -395,7 +402,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     const seatLabelStr = hasRealSeat ? "Seat" : "Name";
 
                     const ticketCost = Number(att.event_tickets?.cost) || mergedDesign?.price || 0;
-                    const currency = att.events.workspaces?.currency || "RWF";
+                    const currency = att.events.workspaces?.currency || att.events.workspaces?.wallet?.currency || "RWF";
 
                     const fallbackRes = await generateFallbackReceipt({
                       entityName: orgName,
@@ -450,7 +457,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     orgDetails,
                     customerDetails,
                     parseFloat(totalPaidStr || "0"),
-                    firstAtt?.events?.workspaces?.currency || body?.baseCurrency || "RWF",
+                    firstAtt?.events?.workspaces?.currency || firstAtt?.events?.workspaces?.wallet?.currency || body?.baseCurrency || "RWF",
                     body?.currency || "RWF"
                   );
                   productPdfBase64 = pdfBuffer.toString("base64");
@@ -467,7 +474,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       const vBuffer = await generateVoucherPdf(
                         order, 
                         orgDetails, 
-                        firstAtt?.events?.workspaces?.currency || body?.baseCurrency || "RWF"
+                        firstAtt?.events?.workspaces?.currency || firstAtt?.events?.workspaces?.wallet?.currency || body?.baseCurrency || "RWF"
                       );
                       attachments.push({
                         filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
@@ -607,6 +614,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   name
                   description
                   currency
+                  workspace {
+                    currency
+                    wallet {
+                      currency
+                    }
+                  }
                 }
               }
             }`,
@@ -626,7 +639,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 sendMemberWelcomeEmail,
               } = await import("./email");
 
-              const currency = sub.space?.currency || body?.currency || "RWF";
+              const currency = sub.space?.workspace?.currency || sub.space?.workspace?.wallet?.currency || body?.currency || "RWF";
               const priceDisplay = `${currency} ${Number(sub.price || 0).toLocaleString()}`;
               const groupPlanName =
                 sub.booking_type === "group" && sub.team_members

@@ -279,8 +279,10 @@ export async function generateVoucherPdf(order: any, orgDetails: any, currency: 
     parseFloat(order.amount_paid || "0") / qty;
   const value = order.current_balance || unitPrice || 0;
 
+  const actualCurrency = order?.product?.workspace?.wallet?.currency || order?.product?.workspace?.currency || order?.product?.currency || order?.currency || currency;
+
   doc.setFontSize(48);
-  doc.text(`${currency} ${value.toLocaleString()}`, 150, 110, { align: "center" });
+  doc.text(`${actualCurrency} ${value.toLocaleString()}`, 150, 110, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(22);
