@@ -97,14 +97,30 @@ function CartCheckoutPage() {
       const newBookingRef = crypto.randomUUID();
 
       // Map cart items to Product Order objects
-      const orderObjects = items.map((item) => {
+      const orderObjects = items.flatMap((item) => {
         const variantString = [item.size, item.color].filter(Boolean).join(" - ");
         const encodedSize = variantString
           ? `${variantString} | email:${buyerEmail}`
           : `email:${buyerEmail}`;
         const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-        return {
+        if (item.product.type === "digital" && item.qty > 1) {
+          return Array.from({ length: item.qty }).map((_, i) => ({
+            product_id: item.product.id,
+            qty: "1",
+            status: "Pending Payment",
+            amount_paid: item.product.price || 0,
+            phone: buyerPhone,
+            decrptions: newBookingRef,
+            qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-${i}`,
+            ticket_id: null,
+            buyer_id: user?.id || null,
+            picked: false,
+            size: encodedSize,
+          }));
+        }
+
+        return [{
           product_id: item.product.id,
           qty: item.qty.toString(),
           status: "Pending Payment",
@@ -116,7 +132,7 @@ function CartCheckoutPage() {
           buyer_id: user?.id || null,
           picked: false,
           size: encodedSize,
-        };
+        }];
       });
 
       // Create all Product Orders at once (Pending)
