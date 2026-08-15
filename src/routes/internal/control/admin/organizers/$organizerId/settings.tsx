@@ -232,9 +232,12 @@ function OrganizerSettings() {
   const trialStart = trialSub ? new Date(trialSub.start_date) : null;
   const extensionsUsed = trialSub?.trial_extensions_count || 0;
   const maxExtensions = 2;
-  const totalAllowedDays = 14 + (extensionsUsed * 7);
+  const totalAllowedDays = 14 + extensionsUsed * 7;
   const daysUsed = trialStart
-    ? Math.min(totalAllowedDays, Math.max(0, Math.round((Date.now() - trialStart.getTime()) / 86400000)))
+    ? Math.min(
+        totalAllowedDays,
+        Math.max(0, Math.round((Date.now() - trialStart.getTime()) / 86400000)),
+      )
     : 0;
 
   const promptExtendTrial = () => {

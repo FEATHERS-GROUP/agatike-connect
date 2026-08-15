@@ -1342,7 +1342,9 @@ export function RenderedPage({
                               >
                                 <span>{comp.label || "Pay Now"}</span>
                                 {comp.amount && (
-                                  <span className="text-sm opacity-90">{comp.amount} {currency}</span>
+                                  <span className="text-sm opacity-90">
+                                    {comp.amount} {currency}
+                                  </span>
                                 )}
                               </a>
                             ) : (
@@ -1734,9 +1736,11 @@ export function RenderedPage({
                                           "inv_item_desc",
                                           <div className="text-sm text-muted-foreground mb-4 line-clamp-3 w-full m-0 relative z-10">
                                             {item.description ? (
-                                              <div 
-                                                className="prose prose-sm dark:prose-invert prose-p:my-0 prose-headings:my-0 prose-ul:my-0 prose-ol:my-0 max-w-none" 
-                                                dangerouslySetInnerHTML={{ __html: item.description }} 
+                                              <div
+                                                className="prose prose-sm dark:prose-invert prose-p:my-0 prose-headings:my-0 prose-ul:my-0 prose-ol:my-0 max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                  __html: item.description,
+                                                }}
                                               />
                                             ) : (
                                               <p>

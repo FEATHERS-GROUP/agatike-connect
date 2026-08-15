@@ -32,7 +32,11 @@ export function ProductCheckoutSheet({
   const { addToCart, openCart } = useCart();
   const navigate = useNavigate();
 
-  const currency = product?.currency || product?.workspace?.currency || product?.workspace?.wallet?.currency || "RWF";
+  const currency =
+    product?.currency ||
+    product?.workspace?.currency ||
+    product?.workspace?.wallet?.currency ||
+    "RWF";
 
   // Reset state when a new product is selected
   useEffect(() => {
@@ -129,10 +133,11 @@ export function ProductCheckoutSheet({
                         key={colorKey}
                         type="button"
                         onClick={() => setSelectedColor(colorValue)}
-                        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all ${selectedColor === colorValue
+                        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all ${
+                          selectedColor === colorValue
                             ? "border-primary scale-110 shadow-md"
                             : "border-transparent shadow hover:scale-105"
-                          }`}
+                        }`}
                         style={{ backgroundColor: colorValue }}
                       >
                         {selectedColor === colorValue && (
@@ -177,7 +182,9 @@ export function ProductCheckoutSheet({
           <div className="mt-10 pt-6 border-t border-border/40 space-y-5">
             <div className="flex justify-between items-center px-1">
               <span className="text-base text-muted-foreground font-medium">Total</span>
-              <span className="text-2xl font-bold">{currency} {total.toLocaleString()}</span>
+              <span className="text-2xl font-bold">
+                {currency} {total.toLocaleString()}
+              </span>
             </div>
             <Button
               className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"

@@ -23,7 +23,8 @@ export function QuotaExceededBanner({ limit, total, centered = false }: QuotaExc
         </div>
         <h2 className="text-2xl font-bold mb-3">Quota Exceeded</h2>
         <p className="text-muted-foreground max-w-md mb-8">
-          Your current plan allows for {limit} item{limit !== 1 && "s"}. You have reached this limit. Please upgrade your subscription to access and create more items.
+          Your current plan allows for {limit} item{limit !== 1 && "s"}. You have reached this
+          limit. Please upgrade your subscription to access and create more items.
         </p>
 
         <div className="flex gap-4">
@@ -48,11 +49,18 @@ export function QuotaExceededBanner({ limit, total, centered = false }: QuotaExc
         <div>
           <h4 className="font-semibold text-primary">You have exceeded your plan limits</h4>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {hiddenCount} item{hiddenCount !== 1 && "s"} {hiddenCount === 1 ? "is" : "are"} currently hidden. You can only view and manage your {limit} most recent item{limit !== 1 && "s"}.
+            {hiddenCount} item{hiddenCount !== 1 && "s"} {hiddenCount === 1 ? "is" : "are"}{" "}
+            currently hidden. You can only view and manage your {limit} most recent item
+            {limit !== 1 && "s"}.
           </p>
         </div>
       </div>
-      <Button asChild size="sm" className="rounded-full whitespace-nowrap shadow-sm shrink-0" style={{ background: "var(--gradient-primary)" }}>
+      <Button
+        asChild
+        size="sm"
+        className="rounded-full whitespace-nowrap shadow-sm shrink-0"
+        style={{ background: "var(--gradient-primary)" }}
+      >
         <Link to="/dashboard/billing/subscriptions/pricingplans">Upgrade to Pro</Link>
       </Button>
     </div>

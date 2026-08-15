@@ -6,7 +6,15 @@ import { createProductOrders, checkProductOrderStatus } from "@/api/products";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle, ShoppingCart, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CreditCard,
+  Lock,
+  Smartphone,
+  CheckCircle,
+  ShoppingCart,
+  Loader2,
+} from "lucide-react";
 import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PaymentModal } from "@/components/shared/PaymentModal";
@@ -73,15 +81,16 @@ function CartCheckoutPage() {
   const fontFamily = settingsBlock?.fontFamily || "Inter";
   const workspaceId = pageData?.workspace_id;
   const logoUrl = pageData?.logo_url;
-  const workspaceCurrency = pageData?.workspaces?.wallet?.currency || pageData?.workspaces?.currency || "RWF";
+  const workspaceCurrency =
+    pageData?.workspaces?.wallet?.currency || pageData?.workspaces?.currency || "RWF";
   const customerServiceFeePct = parseFloat(pageData?.customer_service_fee_percentage) || 0;
   const customerCollectionFeePct = parseFloat(pageData?.customer_collection_fee_percentage) || 0;
   const customerCollectionFixed = parseFloat(pageData?.customer_collection_fee_fixed) || 0;
 
   const taxAmount = Math.ceil(
     cartTotal * (customerServiceFeePct / 100) +
-    cartTotal * (customerCollectionFeePct / 100) +
-    customerCollectionFixed
+      cartTotal * (customerCollectionFeePct / 100) +
+      customerCollectionFixed,
   );
   const totalDue = cartTotal + taxAmount;
 
@@ -120,19 +129,21 @@ function CartCheckoutPage() {
           }));
         }
 
-        return [{
-          product_id: item.product.id,
-          qty: item.qty.toString(),
-          status: "Pending Payment",
-          amount_paid: (item.product.price || 0) * item.qty,
-          phone: buyerPhone,
-          decrptions: newBookingRef, // Shared booking ref links them!
-          qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-0`,
-          ticket_id: null,
-          buyer_id: user?.id || null,
-          picked: false,
-          size: encodedSize,
-        }];
+        return [
+          {
+            product_id: item.product.id,
+            qty: item.qty.toString(),
+            status: "Pending Payment",
+            amount_paid: (item.product.price || 0) * item.qty,
+            phone: buyerPhone,
+            decrptions: newBookingRef, // Shared booking ref links them!
+            qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-0`,
+            ticket_id: null,
+            buyer_id: user?.id || null,
+            picked: false,
+            size: encodedSize,
+          },
+        ];
       });
 
       // Create all Product Orders at once (Pending)
@@ -212,7 +223,7 @@ function CartCheckoutPage() {
       <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background space-y-6">
         <ShoppingCart className="w-20 h-20 text-muted-foreground opacity-50" />
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <Button onClick={() => window.location.href = "/"} variant="outline">
+        <Button onClick={() => (window.location.href = "/")} variant="outline">
           Return to Home Page
         </Button>
       </div>
@@ -239,7 +250,7 @@ function CartCheckoutPage() {
           <Button
             className="w-full h-12 rounded-xl mt-4 font-bold"
             style={{ backgroundColor: themeColor, color: "#fff" }}
-            onClick={() => window.location.href = "/"}
+            onClick={() => (window.location.href = "/")}
           >
             Return to Home Page
           </Button>
@@ -327,7 +338,8 @@ function CartCheckoutPage() {
                     <div className="flex justify-between items-start">
                       <span className="font-medium text-sm line-clamp-1">{item.product.name}</span>
                       <span className="font-medium text-sm">
-                        {workspaceCurrency} {((item.product.price || 0) * item.qty).toLocaleString()}
+                        {workspaceCurrency}{" "}
+                        {((item.product.price || 0) * item.qty).toLocaleString()}
                       </span>
                     </div>
                     <div className="text-white/70 text-xs mt-1">
@@ -340,15 +352,21 @@ function CartCheckoutPage() {
 
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
               <span className="text-sm">Subtotal</span>
-              <span className="font-medium text-white">{workspaceCurrency} {cartTotal.toLocaleString()}</span>
+              <span className="font-medium text-white">
+                {workspaceCurrency} {cartTotal.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
               <span className="text-sm">Taxes (Service Fee)</span>
-              <span className="font-medium text-white">{workspaceCurrency} {taxAmount.toLocaleString()}</span>
+              <span className="font-medium text-white">
+                {workspaceCurrency} {taxAmount.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between items-center pt-2">
               <span className="font-semibold text-base">Total due today</span>
-              <span className="text-xl font-bold">{workspaceCurrency} {totalDue.toLocaleString()}</span>
+              <span className="text-xl font-bold">
+                {workspaceCurrency} {totalDue.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>

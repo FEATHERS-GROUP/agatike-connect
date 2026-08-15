@@ -1,5 +1,13 @@
 import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
-import { Plus, ShoppingBag, Ticket, QrCode, Check, Image as ImageIcon, Download } from "lucide-react";
+import {
+  Plus,
+  ShoppingBag,
+  Ticket,
+  QrCode,
+  Check,
+  Image as ImageIcon,
+  Download,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -194,7 +202,10 @@ function ProductsAndAddonsView() {
         </div>
         <Button
           onClick={() =>
-            navigate({ to: `/dashboard/$workspaceSlug/events/$eventId/products/new`, params: { workspaceSlug, eventId } })
+            navigate({
+              to: `/dashboard/$workspaceSlug/events/$eventId/products/new`,
+              params: { workspaceSlug, eventId },
+            })
           }
           className="rounded-full shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}

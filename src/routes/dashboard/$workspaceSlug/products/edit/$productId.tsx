@@ -162,19 +162,28 @@ function EditProductView() {
       if (formData.type === "digital" && digitalFile) {
         const formDataUpload = new FormData();
         formDataUpload.append("file", digitalFile);
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "digital_products", formData.name);
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "digital_products",
+          formData.name,
+        );
         formDataUpload.append("folder", folderPath);
-        
+
         try {
           const res = await uploadFormData({ data: formDataUpload } as any);
           payload.specs.digital_file_url = res.url;
         } catch (err) {
-           throw new Error("Failed to upload digital file.");
+          throw new Error("Failed to upload digital file.");
         }
       }
 
       if (imageFile) {
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "products", formData.name, "image");
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "products",
+          formData.name,
+          "image",
+        );
         payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
@@ -312,9 +321,7 @@ function EditProductView() {
 
             {formData.type === "digital" && (
               <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                <Label>
-                  Upload Digital File (Max 20MB)
-                </Label>
+                <Label>Upload Digital File (Max 20MB)</Label>
                 <div className="flex flex-col gap-2">
                   <Input
                     type="file"
@@ -332,7 +339,15 @@ function EditProductView() {
                     <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>
                   ) : digitalFileUrl ? (
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      Current file: <a href={digitalFileUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{digitalFileUrl.split('/').pop()}</a>
+                      Current file:{" "}
+                      <a
+                        href={digitalFileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary hover:underline truncate max-w-[200px]"
+                      >
+                        {digitalFileUrl.split("/").pop()}
+                      </a>
                     </p>
                   ) : null}
                 </div>

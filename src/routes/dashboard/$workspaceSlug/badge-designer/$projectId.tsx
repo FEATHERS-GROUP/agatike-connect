@@ -163,7 +163,12 @@ function BadgeDesignerEditor() {
 
     setUploadingState((prev) => ({ ...prev, [key]: true }));
     try {
-      const folderPath = buildStoragePath(workspaceSlug, "badges", existingProject?.name || projectId, "media");
+      const folderPath = buildStoragePath(
+        workspaceSlug,
+        "badges",
+        existingProject?.name || projectId,
+        "media",
+      );
       const url = await uploadFileToStorage(file, folderPath);
       callback(url);
       toast.success("Image uploaded!");

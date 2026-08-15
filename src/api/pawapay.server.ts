@@ -57,8 +57,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           providerStatus === "COMPLETED"
             ? "completed"
             : providerStatus === "FAILED" ||
-              providerStatus === "REJECTED" ||
-              providerStatus === "REVERSED"
+                providerStatus === "REJECTED" ||
+                providerStatus === "REVERSED"
               ? "failed"
               : "pending",
         raw_callback_data: body,
@@ -330,16 +330,22 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             let shortSmsMessage = "";
 
             let digitalDownloadsText = "";
-            const digitalOrders = confirmedOrders.filter((o: any) => o.product?.type === 'digital' && o.product?.specs?.digital_file_url);
+            const digitalOrders = confirmedOrders.filter(
+              (o: any) => o.product?.type === "digital" && o.product?.specs?.digital_file_url,
+            );
             if (digitalOrders.length > 0) {
               const downloadBaseUrl = `https://${domain}/d/`;
-              const downloadLinksHtml = digitalOrders.map((o: any) => `
+              const downloadLinksHtml = digitalOrders
+                .map(
+                  (o: any) => `
                 <div style="margin-top: 12px; margin-bottom: 12px;">
                   <a href="${downloadBaseUrl}${o.id}" style="display:inline-block; padding:12px 24px; background-color:#F2571D; color:white; border-radius:8px; text-decoration:none; font-weight:bold;">
                     Download ${o.product.name}
                   </a>
                 </div>
-              `).join("");
+              `,
+                )
+                .join("");
 
               digitalDownloadsText = `<div style="background-color: #fff3ed; border: 1px solid #ffd8c4; padding: 20px; border-radius: 12px; margin-top: 24px; text-align: center;">
                 <h4 style="margin-top: 0; margin-bottom: 12px; color: #d94916; font-size: 16px;">Your Digital Products</h4>
@@ -356,7 +362,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               detailedMessage =
                 `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
                 `<br><br><strong>Organizer:</strong> ${orgName}<br><strong>Date:</strong> ${dateStr}<br><strong>Venue:</strong> ${eventLocation}<br>` +
-                (productsText ? `<br><strong>Products:</strong> ${productsText}` : "") + digitalDownloadsText;
+                (productsText ? `<br><strong>Products:</strong> ${productsText}` : "") +
+                digitalDownloadsText;
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
             } else if (confirmedOrders.length > 0) {
               // Product-only purchase
@@ -402,7 +409,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     const seatLabelStr = hasRealSeat ? "Seat" : "Name";
 
                     const ticketCost = Number(att.event_tickets?.cost) || mergedDesign?.price || 0;
-                    const currency = att.events.workspaces?.currency || att.events.workspaces?.wallet?.currency || "RWF";
+                    const currency =
+                      att.events.workspaces?.currency ||
+                      att.events.workspaces?.wallet?.currency ||
+                      "RWF";
 
                     const fallbackRes = await generateFallbackReceipt({
                       entityName: orgName,
@@ -457,8 +467,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     orgDetails,
                     customerDetails,
                     parseFloat(totalPaidStr || "0"),
-                    firstAtt?.events?.workspaces?.currency || firstAtt?.events?.workspaces?.wallet?.currency || body?.baseCurrency || "RWF",
-                    body?.currency || "RWF"
+                    firstAtt?.events?.workspaces?.currency ||
+                      firstAtt?.events?.workspaces?.wallet?.currency ||
+                      body?.baseCurrency ||
+                      "RWF",
+                    body?.currency || "RWF",
                   );
                   productPdfBase64 = pdfBuffer.toString("base64");
                   if (productPdfBase64) {
@@ -474,7 +487,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       const vBuffer = await generateVoucherPdf(
                         order,
                         orgDetails,
-                        firstAtt?.events?.workspaces?.currency || firstAtt?.events?.workspaces?.wallet?.currency || body?.baseCurrency || "RWF"
+                        firstAtt?.events?.workspaces?.currency ||
+                          firstAtt?.events?.workspaces?.wallet?.currency ||
+                          body?.baseCurrency ||
+                          "RWF",
                       );
                       attachments.push({
                         filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
@@ -534,7 +550,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   customerDetails,
                   parseFloat(totalPaidStr || "0"),
                   body?.baseCurrency || "RWF",
-                  body?.currency || "RWF"
+                  body?.currency || "RWF",
                 );
                 productPdfBase64 = pdfBuffer.toString("base64");
                 if (productPdfBase64) {
@@ -550,7 +566,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     const vBuffer = await generateVoucherPdf(
                       order,
                       orgDetails,
-                      body?.baseCurrency || "RWF"
+                      body?.baseCurrency || "RWF",
                     );
                     attachments.push({
                       filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
@@ -639,7 +655,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 sendMemberWelcomeEmail,
               } = await import("./email");
 
-              const currency = sub.space?.workspace?.currency || sub.space?.workspace?.wallet?.currency || body?.currency || "RWF";
+              const currency =
+                sub.space?.workspace?.currency ||
+                sub.space?.workspace?.wallet?.currency ||
+                body?.currency ||
+                "RWF";
               const priceDisplay = `${currency} ${Number(sub.price || 0).toLocaleString()}`;
               const groupPlanName =
                 sub.booking_type === "group" && sub.team_members
@@ -671,10 +691,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
               const formattedStart = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })
                 : sub.start_date;
 
               if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
@@ -743,10 +763,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                 : "today";
 
               const smsText =

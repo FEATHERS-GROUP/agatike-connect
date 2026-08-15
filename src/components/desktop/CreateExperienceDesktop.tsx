@@ -209,7 +209,12 @@ export function CreateExperienceDesktop({
         reader.onerror = rej;
         reader.readAsDataURL(f);
       });
-      const folderPath = buildStoragePath(activeWorkspace?.slug, "experiences", data.title, "cover");
+      const folderPath = buildStoragePath(
+        activeWorkspace?.slug,
+        "experiences",
+        data.title,
+        "cover",
+      );
       const { url } = await uploadFile({
         data: { base64, contentType: f.type, folder: folderPath, ext },
       } as any);

@@ -33,9 +33,9 @@ export const CheckYourPhone = ({
         Processing... Please don't close this window!
       </p>
       <div className="flex justify-center mb-10">
-        <Loader2 
-          className="h-12 w-12 animate-spin" 
-          style={{ color: themeColor || "hsl(var(--primary))" }} 
+        <Loader2
+          className="h-12 w-12 animate-spin"
+          style={{ color: themeColor || "hsl(var(--primary))" }}
         />
       </div>
       {status === "payment" && (

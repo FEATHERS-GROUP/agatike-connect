@@ -89,11 +89,16 @@ function PageBuilderGallery() {
         (p.slug || "").toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
-  const limit = limits.max_page_builders === undefined || limits.max_page_builders === -1 ? Infinity : limits.max_page_builders;
-  
-  const sortedFilteredPages = [...filteredPages].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  const visiblePages = limit === Infinity ? sortedFilteredPages : sortedFilteredPages.slice(0, limit);
+  const limit =
+    limits.max_page_builders === undefined || limits.max_page_builders === -1
+      ? Infinity
+      : limits.max_page_builders;
 
+  const sortedFilteredPages = [...filteredPages].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+  const visiblePages =
+    limit === Infinity ? sortedFilteredPages : sortedFilteredPages.slice(0, limit);
 
   const handleCopyLink = (slug: string) => {
     const url = getWorkspacePageUrl(slug);
@@ -224,7 +229,9 @@ function PageBuilderGallery() {
             </TabsContent>
 
             <TabsContent value="pages">
-              {limit === 0 && <QuotaExceededBanner limit={limit} total={filteredPages.length} centered />}
+              {limit === 0 && (
+                <QuotaExceededBanner limit={limit} total={filteredPages.length} centered />
+              )}
               {limit > 0 && <QuotaExceededBanner limit={limit} total={filteredPages.length} />}
               <FolderManager
                 moduleType="page_builder"

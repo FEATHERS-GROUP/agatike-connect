@@ -111,7 +111,12 @@ function EditProductPage() {
           : [],
       );
       setSpecs(Array.isArray(product.specs) ? product.specs : []);
-      if (product.type === "digital" && product.specs && !Array.isArray(product.specs) && product.specs.digital_file_url) {
+      if (
+        product.type === "digital" &&
+        product.specs &&
+        !Array.isArray(product.specs) &&
+        product.specs.digital_file_url
+      ) {
         setDigitalFileUrl(product.specs.digital_file_url);
       }
     }
@@ -223,7 +228,9 @@ function EditProductPage() {
       }
 
       if (formData.type === "digital") {
-        let currentSpecs: any = { ...((product?.specs && !Array.isArray(product?.specs)) ? product.specs : {}) };
+        let currentSpecs: any = {
+          ...(product?.specs && !Array.isArray(product?.specs) ? product.specs : {}),
+        };
         if (digitalFile) {
           const formDataUpload = new FormData();
           formDataUpload.append("file", digitalFile);
@@ -233,7 +240,7 @@ function EditProductPage() {
             const res = await uploadFormData({ data: formDataUpload } as any);
             currentSpecs.digital_file_url = res.url;
           } catch (err) {
-             throw new Error("Failed to upload digital file.");
+            throw new Error("Failed to upload digital file.");
           }
         }
         payload.specs = currentSpecs;
@@ -405,7 +412,15 @@ function EditProductPage() {
                       <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>
                     ) : digitalFileUrl ? (
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        Current file: <a href={digitalFileUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{digitalFileUrl.split('/').pop()}</a>
+                        Current file:{" "}
+                        <a
+                          href={digitalFileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline truncate max-w-[200px]"
+                        >
+                          {digitalFileUrl.split("/").pop()}
+                        </a>
                       </p>
                     ) : null}
                   </div>

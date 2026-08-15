@@ -75,16 +75,17 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ""}
         <div style="margin: 0;">${message}</div>
         
-        ${badgeLink
-        ? `
+        ${
+          badgeLink
+            ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
           <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
           <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
           <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
-        : ""
-      }
+            : ""
+        }
 
         ${socialsHtml}
       </div>
@@ -101,17 +102,18 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${organizerLogo &&
-        !organizerLogo.includes("localhost") &&
-        organizerLogo.startsWith("http")
-        ? `
+                  ${
+                    organizerLogo &&
+                    !organizerLogo.includes("localhost") &&
+                    organizerLogo.startsWith("http")
+                      ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   `
-        : ""
-      }
+                      : ""
+                  }
                   <td align="center">
                     <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
@@ -626,14 +628,15 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
             <span>${planName} (${billingCycle})</span>
             <strong>${price}</strong>
           </p>
-          ${startDate
-        ? `
+          ${
+            startDate
+              ? `
           <p style="margin: 8px 0; display: flex; justify-content: space-between; font-size: 14px; color: #64748b;">
             <span>Start Date</span>
             <span>${startDate}</span>
           </p>`
-        : ""
-      }
+              : ""
+          }
           <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;">
             <span>Total Paid</span>
             <span>${price}</span>
@@ -761,8 +764,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
             </thead>
             <tbody>
               ${members
-            .map(
-              (m: any, i: number) => `
+                .map(
+                  (m: any, i: number) => `
                 <tr>
                   <td>${i + 1}</td>
                   <td>${m.name || ""}</td>
@@ -771,8 +774,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
                   <td style="font-family: monospace;">${m.membership_id || ""}</td>
                 </tr>
               `,
-            )
-            .join("")}
+                )
+                .join("")}
             </tbody>
           </table>
         </body>

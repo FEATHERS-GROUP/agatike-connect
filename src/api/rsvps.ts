@@ -150,7 +150,7 @@ export const getFormDetails = createServerFn({ method: "POST" }).handler(async (
           const subDate = new Date(activeSub.created_at);
           const now = new Date();
           const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-          const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 7);
+          const totalAllowedDays = 14 + (activeSub.trial_extensions_count || 0) * 7;
           if (diffDays > totalAllowedDays) {
             isTrialExpired = true;
           }
@@ -164,14 +164,20 @@ export const getFormDetails = createServerFn({ method: "POST" }).handler(async (
 
         if (isTrialExpired) {
           const rawLimits = activeSub.pricing_plan?.usage_limits;
-          const dbLimits = typeof rawLimits === "string" ? JSON.parse(rawLimits) : (rawLimits || {});
-          const limit = dbLimits.max_custom_forms === undefined || dbLimits.max_custom_forms === -1 ? Infinity : dbLimits.max_custom_forms;
-          
+          const dbLimits = typeof rawLimits === "string" ? JSON.parse(rawLimits) : rawLimits || {};
+          const limit =
+            dbLimits.max_custom_forms === undefined || dbLimits.max_custom_forms === -1
+              ? Infinity
+              : dbLimits.max_custom_forms;
+
           if (limit === 0) {
             form.is_expired = true;
           } else if (limit !== Infinity) {
             const allForms = subRes.custom_forms || [];
-            const sortedForms = allForms.sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+            const sortedForms = allForms.sort(
+              (a: any, b: any) =>
+                new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+            );
             const visibleForms = sortedForms.slice(0, limit);
             const isVisible = visibleForms.some((f: any) => f.id === form.id);
             if (!isVisible) {

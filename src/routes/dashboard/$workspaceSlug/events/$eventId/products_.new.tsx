@@ -196,14 +196,18 @@ function NewProductPage() {
       if (formData.type === "digital" && digitalFile) {
         const formDataUpload = new FormData();
         formDataUpload.append("file", digitalFile);
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "digital_products", formData.name);
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "digital_products",
+          formData.name,
+        );
         formDataUpload.append("folder", folderPath);
-        
+
         try {
           const res = await uploadFormData({ data: formDataUpload } as any);
           payload.specs = { digital_file_url: res.url };
         } catch (err) {
-           throw new Error("Failed to upload digital file.");
+          throw new Error("Failed to upload digital file.");
         }
       }
 
@@ -452,7 +456,11 @@ function NewProductPage() {
                         }}
                         className="h-14 rounded-2xl bg-secondary/20 border-border/40 focus:bg-background pt-3"
                       />
-                      {digitalFile && <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>}
+                      {digitalFile && (
+                        <p className="text-xs text-muted-foreground">
+                          Selected: {digitalFile.name}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}

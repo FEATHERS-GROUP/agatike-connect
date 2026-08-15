@@ -1,5 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2, ArrowLeft, ImageIcon, Package, Wallet, Ticket, Gift, Download } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  ImageIcon,
+  Package,
+  Wallet,
+  Ticket,
+  Gift,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -128,19 +137,28 @@ function CreateProductView() {
       if (formData.type === "digital" && digitalFile) {
         const formDataUpload = new FormData();
         formDataUpload.append("file", digitalFile);
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "digital_products", formData.name);
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "digital_products",
+          formData.name,
+        );
         formDataUpload.append("folder", folderPath);
-        
+
         try {
           const res = await uploadFormData({ data: formDataUpload } as any);
           payload.specs.digital_file_url = res.url;
         } catch (err) {
-           throw new Error("Failed to upload digital file.");
+          throw new Error("Failed to upload digital file.");
         }
       }
 
       if (imageFile) {
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "products", formData.name, "image");
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "products",
+          formData.name,
+          "image",
+        );
         payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
@@ -313,7 +331,9 @@ function CreateProductView() {
                       setDigitalFile(f);
                     }}
                   />
-                  {digitalFile && <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>}
+                  {digitalFile && (
+                    <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>
+                  )}
                 </div>
               </div>
             )}

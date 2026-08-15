@@ -132,10 +132,16 @@ function TicketDesignerIndex() {
     limits,
   } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
-  const limit = limits.max_ticket_designs === undefined || limits.max_ticket_designs === -1 ? Infinity : limits.max_ticket_designs;
-  const sortedProjects = [...dbProjects].sort((a: any, b: any) => new Date(b.created_at || b.updated_on || 0).getTime() - new Date(a.created_at || a.updated_on || 0).getTime());
+  const limit =
+    limits.max_ticket_designs === undefined || limits.max_ticket_designs === -1
+      ? Infinity
+      : limits.max_ticket_designs;
+  const sortedProjects = [...dbProjects].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || b.updated_on || 0).getTime() -
+      new Date(a.created_at || a.updated_on || 0).getTime(),
+  );
   const projects = limit === Infinity ? sortedProjects : sortedProjects.slice(0, limit);
-
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -426,129 +432,132 @@ function TicketDesignerIndex() {
           >
             {({ filteredItems, folders, handleSelect, selectedIds, ItemMenu }) => (
               <div className="mt-6 space-y-6">
-                {limit === 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} centered />}
+                {limit === 0 && (
+                  <QuotaExceededBanner limit={limit} total={dbProjects.length} centered />
+                )}
                 {limit > 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} />}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {isLoadingProjects ? (
-                  <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    <p className="text-sm font-medium text-muted-foreground mt-4">
-                      Loading ticket designs...
-                    </p>
-                  </div>
-                ) : filteredItems.length === 0 ? (
-                  <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">
-                    <div className="mx-auto h-16 w-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
-                      <Ticket className="h-8 w-8 text-muted-foreground" />
+                  {isLoadingProjects ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 bg-card/30 rounded-[2rem] border border-dashed border-border/50">
+                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                      <p className="text-sm font-medium text-muted-foreground mt-4">
+                        Loading ticket designs...
+                      </p>
                     </div>
-                    <h3 className="text-xl font-semibold tracking-tight">No Saved Projects</h3>
-                    <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
-                      Create your first ticket design by selecting a template above, or select a
-                      different folder.
-                    </p>
-                  </div>
-                ) : (
-                  filteredItems.map((proj: any) => {
-                    const eventObj = proj.events || events.find((e: any) => e.id === proj.eventId);
-                    const venueObj =
-                      proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
-                    const cinemaObj = cinemas.find((c: any) => c.id === proj.cinemaId);
-                    const displayTitle =
-                      eventObj?.title ||
-                      venueObj?.name ||
-                      cinemaObj?.name ||
-                      proj.name ||
-                      "Untitled Design";
-                    const displaySubtitle =
-                      eventObj?.category ||
-                      venueObj?.type ||
-                      (cinemaObj ? "Cinema" : "Ticket Design");
-                    const palette = proj.palette || {
-                      from: "#f97316",
-                      to: "#db2777",
-                      name: "Sunset",
-                    };
-                    const updatedAt = proj.updated_on || new Date().toISOString();
-                    const coverUrl =
-                      proj.coverImage ||
-                      eventObj?.cover ||
-                      venueObj?.cover_url ||
-                      venueObj?.images?.[0] ||
-                      cinemaObj?.cover_url;
+                  ) : filteredItems.length === 0 ? (
+                    <div className="col-span-full text-center py-24 bg-card/40 backdrop-blur-sm rounded-[2rem] border border-dashed border-border/60">
+                      <div className="mx-auto h-16 w-16 bg-secondary/50 rounded-full flex items-center justify-center mb-4">
+                        <Ticket className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-xl font-semibold tracking-tight">No Saved Projects</h3>
+                      <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
+                        Create your first ticket design by selecting a template above, or select a
+                        different folder.
+                      </p>
+                    </div>
+                  ) : (
+                    filteredItems.map((proj: any) => {
+                      const eventObj =
+                        proj.events || events.find((e: any) => e.id === proj.eventId);
+                      const venueObj =
+                        proj.rentable_venues || venues.find((v: any) => v.id === proj.venueId);
+                      const cinemaObj = cinemas.find((c: any) => c.id === proj.cinemaId);
+                      const displayTitle =
+                        eventObj?.title ||
+                        venueObj?.name ||
+                        cinemaObj?.name ||
+                        proj.name ||
+                        "Untitled Design";
+                      const displaySubtitle =
+                        eventObj?.category ||
+                        venueObj?.type ||
+                        (cinemaObj ? "Cinema" : "Ticket Design");
+                      const palette = proj.palette || {
+                        from: "#f97316",
+                        to: "#db2777",
+                        name: "Sunset",
+                      };
+                      const updatedAt = proj.updated_on || new Date().toISOString();
+                      const coverUrl =
+                        proj.coverImage ||
+                        eventObj?.cover ||
+                        venueObj?.cover_url ||
+                        venueObj?.images?.[0] ||
+                        cinemaObj?.cover_url;
 
-                    const isSelected = selectedIds.has(proj.id);
+                      const isSelected = selectedIds.has(proj.id);
 
-                    return (
-                      <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
-                        <div
-                          className="relative group rounded-[1.5rem] border bg-card overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
-                          style={{
-                            borderColor: isSelected
-                              ? "hsl(var(--primary))"
-                              : "hsl(var(--border) / 0.5)",
-                          }}
-                        >
+                      return (
+                        <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
                           <div
-                            className="absolute top-3 left-3 z-20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
-                            onClick={(e) => e.stopPropagation()}
-                            data-state={isSelected ? "checked" : "unchecked"}
-                          >
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
-                              className="bg-background/90 backdrop-blur-md border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-sm"
-                            />
-                          </div>
-                          <Link
-                            to="/dashboard/$workspaceSlug/ticket-designer/$projectId"
-                            params={{ workspaceSlug, projectId: proj.id }}
-                            className="flex flex-col h-full"
+                            className="relative group rounded-[1.5rem] border bg-card overflow-hidden shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2"
+                            style={{
+                              borderColor: isSelected
+                                ? "hsl(var(--primary))"
+                                : "hsl(var(--border) / 0.5)",
+                            }}
                           >
                             <div
-                              className="h-36 p-5 flex flex-col justify-between relative overflow-hidden shrink-0"
-                              style={{
-                                background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})`,
-                              }}
+                              className="absolute top-3 left-3 z-20 transition-opacity duration-200 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
+                              onClick={(e) => e.stopPropagation()}
+                              data-state={isSelected ? "checked" : "unchecked"}
                             >
-                              {coverUrl && (
-                                <img
-                                  src={coverUrl}
-                                  alt=""
-                                  className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none transition-transform duration-700 group-hover:scale-105"
-                                />
-                              )}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
-                              <div className="relative z-10 flex justify-end items-start w-full">
-                                <span className="bg-black/40 text-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                                  {proj.template}
-                                </span>
-                              </div>
-                              <div className="relative z-10 text-white drop-shadow-md mt-auto">
-                                <p className="text-xs font-medium opacity-80 uppercase tracking-wider mb-1">
-                                  {displaySubtitle}
-                                </p>
-                                <h3 className="text-xl font-bold leading-tight line-clamp-1">
-                                  {displayTitle}
-                                </h3>
-                              </div>
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                                className="bg-background/90 backdrop-blur-md border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-sm"
+                              />
                             </div>
-                            <div className="p-5 flex flex-col flex-grow justify-between">
-                              <h4 className="font-semibold text-[15px] mb-3 group-hover:text-primary transition-colors line-clamp-1">
-                                {proj.name}
-                              </h4>
-                              <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground uppercase tracking-wider mt-auto">
-                                <span className="flex items-center gap-1.5">
-                                  <Calendar className="w-3.5 h-3.5" /> Updated{" "}
-                                  {new Date(updatedAt).toLocaleDateString()}
-                                </span>
+                            <Link
+                              to="/dashboard/$workspaceSlug/ticket-designer/$projectId"
+                              params={{ workspaceSlug, projectId: proj.id }}
+                              className="flex flex-col h-full"
+                            >
+                              <div
+                                className="h-36 p-5 flex flex-col justify-between relative overflow-hidden shrink-0"
+                                style={{
+                                  background: `linear-gradient(135deg, ${palette.from || "#f97316"}, ${palette.to || "#db2777"})`,
+                                }}
+                              >
+                                {coverUrl && (
+                                  <img
+                                    src={coverUrl}
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay pointer-events-none transition-transform duration-700 group-hover:scale-105"
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+                                <div className="relative z-10 flex justify-end items-start w-full">
+                                  <span className="bg-black/40 text-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                                    {proj.template}
+                                  </span>
+                                </div>
+                                <div className="relative z-10 text-white drop-shadow-md mt-auto">
+                                  <p className="text-xs font-medium opacity-80 uppercase tracking-wider mb-1">
+                                    {displaySubtitle}
+                                  </p>
+                                  <h3 className="text-xl font-bold leading-tight line-clamp-1">
+                                    {displayTitle}
+                                  </h3>
+                                </div>
                               </div>
-                            </div>
-                          </Link>
-                        </div>
-                      </ItemMenu>
-                    );
-                  })
-                )}
+                              <div className="p-5 flex flex-col flex-grow justify-between">
+                                <h4 className="font-semibold text-[15px] mb-3 group-hover:text-primary transition-colors line-clamp-1">
+                                  {proj.name}
+                                </h4>
+                                <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground uppercase tracking-wider mt-auto">
+                                  <span className="flex items-center gap-1.5">
+                                    <Calendar className="w-3.5 h-3.5" /> Updated{" "}
+                                    {new Date(updatedAt).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </div>
+                            </Link>
+                          </div>
+                        </ItemMenu>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

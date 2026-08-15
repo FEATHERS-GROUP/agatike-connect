@@ -611,7 +611,12 @@ function TicketDesignerPage() {
           data: {
             base64,
             contentType: file.type,
-            folder: buildStoragePath(workspaceSlug, "tickets", dbProject?.name || projectId, "cover"),
+            folder: buildStoragePath(
+              workspaceSlug,
+              "tickets",
+              dbProject?.name || projectId,
+              "cover",
+            ),
             ext: file.type.split("/")[1] || "jpg",
           },
         } as any);
@@ -1188,7 +1193,12 @@ function TicketDesignerPage() {
                             data: {
                               base64,
                               contentType: file.type,
-                              folder: buildStoragePath(workspaceSlug, "tickets", dbProject?.name || projectId, "logo"),
+                              folder: buildStoragePath(
+                                workspaceSlug,
+                                "tickets",
+                                dbProject?.name || projectId,
+                                "logo",
+                              ),
                               ext: "png",
                             },
                           } as any);

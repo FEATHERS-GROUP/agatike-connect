@@ -969,7 +969,7 @@ export const extendAdminOrganizerTrial = createServerFn({ method: "POST" })
     const res = await hasuraRequest<any>(query, { id: organizerId });
     const sub = (res.subscriptions || [])[0];
     const organizer = res.organizers_by_pk;
-    
+
     if (!sub) throw new Error("No active free trial found for this organizer.");
     if (!organizer?.email) throw new Error("Organizer has no email address.");
 
@@ -993,18 +993,20 @@ export const extendAdminOrganizerTrial = createServerFn({ method: "POST" })
       id: sub.id,
       newCount,
     });
-    
+
     // 4. Send Email Notification
-    const totalAllowedDays = 14 + (newCount * 7);
+    const totalAllowedDays = 14 + newCount * 7;
     import("@/api/email").then((module) => {
-      module.sendTrialExtensionEmail({
-        data: {
-          to: organizer.email,
-          organizerName: organizer.name,
-          daysExtended: 7,
-          totalAllowedDays,
-        }
-      } as any).catch(console.error);
+      module
+        .sendTrialExtensionEmail({
+          data: {
+            to: organizer.email,
+            organizerName: organizer.name,
+            daysExtended: 7,
+            totalAllowedDays,
+          },
+        } as any)
+        .catch(console.error);
     });
 
     return data.update_subscriptions_by_pk;

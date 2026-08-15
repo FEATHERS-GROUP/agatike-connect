@@ -3,7 +3,14 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { redeemDigitalProduct } from "@/api/products";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Download, AlertCircle, CheckCircle2, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,8 +20,10 @@ export const Route = createFileRoute("/d/$orderId")({
 
 function DigitalDownloadPage() {
   const { orderId } = Route.useParams();
-  
-  const [downloadState, setDownloadState] = useState<"idle" | "downloading" | "success" | "error">("idle");
+
+  const [downloadState, setDownloadState] = useState<"idle" | "downloading" | "success" | "error">(
+    "idle",
+  );
   const [errorMessage, setErrorMessage] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
   const [productName, setProductName] = useState("");
@@ -25,7 +34,7 @@ function DigitalDownloadPage() {
       setDownloadState("success");
       setDownloadUrl(data.fileUrl);
       setProductName(data.productName || "your file");
-      
+
       // Trigger download automatically
       toast.success("Download started!");
       window.location.href = data.fileUrl;
@@ -33,7 +42,7 @@ function DigitalDownloadPage() {
     onError: (error: any) => {
       setDownloadState("error");
       setErrorMessage(error.message || "Failed to redeem download link.");
-    }
+    },
   });
 
   const handleDownload = () => {
@@ -41,7 +50,7 @@ function DigitalDownloadPage() {
       window.location.href = downloadUrl;
       return;
     }
-    
+
     setDownloadState("downloading");
     redeemMutation.mutate();
   };
@@ -60,21 +69,21 @@ function DigitalDownloadPage() {
             )}
           </div>
           <CardTitle className="text-2xl font-bold">
-            {downloadState === "error" 
-              ? "Download Unavailable" 
-              : downloadState === "success" 
-                ? "Download Ready" 
+            {downloadState === "error"
+              ? "Download Unavailable"
+              : downloadState === "success"
+                ? "Download Ready"
                 : "Secure Download"}
           </CardTitle>
           <CardDescription className="text-base mt-2">
-            {downloadState === "error" 
+            {downloadState === "error"
               ? errorMessage
               : downloadState === "success"
                 ? `Your secure link for ${productName} has been verified.`
                 : "This is a single-use secure link. Once you click download, the link will expire."}
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="flex flex-col gap-4 pt-4">
           {downloadState === "error" ? (
             <div className="bg-destructive/10 text-destructive text-sm p-4 rounded-lg border border-destructive/20 text-center">
@@ -85,7 +94,9 @@ function DigitalDownloadPage() {
               <p className="font-semibold text-slate-800 mb-1">Security Notice</p>
               <ul className="list-disc pl-4 space-y-1">
                 <li>Link expires exactly 24 hours after purchase.</li>
-                <li>Link can only be used <strong>once</strong>.</li>
+                <li>
+                  Link can only be used <strong>once</strong>.
+                </li>
                 <li>Do not refresh the page during download.</li>
               </ul>
             </div>
@@ -94,8 +105,8 @@ function DigitalDownloadPage() {
 
         <CardFooter>
           {downloadState !== "error" && (
-            <Button 
-              className="w-full h-12 text-lg font-medium" 
+            <Button
+              className="w-full h-12 text-lg font-medium"
               onClick={handleDownload}
               disabled={downloadState === "downloading"}
             >
@@ -114,7 +125,7 @@ function DigitalDownloadPage() {
           )}
         </CardFooter>
       </Card>
-      
+
       {/* Loading Overlay */}
       {downloadState === "downloading" && (
         <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">

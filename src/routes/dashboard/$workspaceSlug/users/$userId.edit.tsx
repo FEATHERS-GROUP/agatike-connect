@@ -248,7 +248,12 @@ function EditUserPage() {
             data: {
               base64: match[2],
               contentType: match[1],
-              folder: buildStoragePath(workspaceSlug, "users", payload.first_name || payload.email || "user", "avatar"),
+              folder: buildStoragePath(
+                workspaceSlug,
+                "users",
+                payload.first_name || payload.email || "user",
+                "avatar",
+              ),
               ext: match[1].split("/")[1] || "png",
             },
           } as any);

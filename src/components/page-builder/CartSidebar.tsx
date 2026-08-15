@@ -1,4 +1,10 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
@@ -34,8 +40,12 @@ export function CartSidebar() {
   const themeColor = settingsBlock?.themeColor || pageData?.theme_color || undefined;
   const fontFamily = settingsBlock?.fontFamily || "Inter";
 
-  const fallbackCurrency = items[0]?.product?.workspace?.wallet?.currency || items[0]?.product?.workspace?.currency || "RWF";
-  const workspaceCurrency = pageData?.workspaces?.wallet?.currency || pageData?.workspaces?.currency || fallbackCurrency;
+  const fallbackCurrency =
+    items[0]?.product?.workspace?.wallet?.currency ||
+    items[0]?.product?.workspace?.currency ||
+    "RWF";
+  const workspaceCurrency =
+    pageData?.workspaces?.wallet?.currency || pageData?.workspaces?.currency || fallbackCurrency;
 
   const handleCheckout = () => {
     closeCart();
@@ -164,7 +174,9 @@ export function CartSidebar() {
           <div className="p-6 border-t border-border/40 bg-secondary/10 space-y-4">
             <div className="flex justify-between items-center text-lg">
               <span className="font-medium text-muted-foreground">Subtotal</span>
-              <span className="font-bold text-xl">{workspaceCurrency} {cartTotal.toLocaleString()}</span>
+              <span className="font-bold text-xl">
+                {workspaceCurrency} {cartTotal.toLocaleString()}
+              </span>
             </div>
 
             <Button

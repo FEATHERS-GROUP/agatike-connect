@@ -182,8 +182,10 @@ export async function generateProductReceiptPdf(
   doc.setTextColor(...mutedColor);
   doc.text("Subtotal", 130, cursorY, { align: "right" });
   doc.setTextColor(...darkColor);
-  doc.text(`${baseCurrency} ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, { align: "right" });
-  
+  doc.text(`${baseCurrency} ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, {
+    align: "right",
+  });
+
   const actualTotalPaid = totalPaid || subtotalAmount;
 
   if (baseCurrency !== paidCurrency) {
@@ -197,7 +199,9 @@ export async function generateProductReceiptPdf(
     doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
 
     doc.setTextColor(...primaryColor);
-    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, {
+      align: "right",
+    });
   } else {
     // Same currency, calculate fee and show standard breakdown
     const fee = actualTotalPaid - subtotalAmount;
@@ -218,7 +222,9 @@ export async function generateProductReceiptPdf(
     doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
 
     doc.setTextColor(...primaryColor);
-    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, {
+      align: "right",
+    });
   }
 
   // ── Footer ───────────────────────────────────────────────
@@ -232,7 +238,11 @@ export async function generateProductReceiptPdf(
   return pdfBuffer;
 }
 
-export async function generateVoucherPdf(order: any, orgDetails: any, currency: string = "RWF"): Promise<any> {
+export async function generateVoucherPdf(
+  order: any,
+  orgDetails: any,
+  currency: string = "RWF",
+): Promise<any> {
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
 
@@ -279,7 +289,12 @@ export async function generateVoucherPdf(order: any, orgDetails: any, currency: 
     parseFloat(order.amount_paid || "0") / qty;
   const value = order.current_balance || unitPrice || 0;
 
-  const actualCurrency = order?.product?.workspace?.wallet?.currency || order?.product?.workspace?.currency || order?.product?.currency || order?.currency || currency;
+  const actualCurrency =
+    order?.product?.workspace?.wallet?.currency ||
+    order?.product?.workspace?.currency ||
+    order?.product?.currency ||
+    order?.currency ||
+    currency;
 
   doc.setFontSize(48);
   doc.text(`${actualCurrency} ${value.toLocaleString()}`, 150, 110, { align: "center" });

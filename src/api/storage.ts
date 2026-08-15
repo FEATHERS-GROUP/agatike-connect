@@ -15,7 +15,7 @@ export function buildStoragePath(
   workspaceNameOrSlug: string | undefined | null,
   entityType: string,
   entityName: string | undefined | null,
-  assetType?: string
+  assetType?: string,
 ) {
   const slugify = (str: string) =>
     str
@@ -25,12 +25,12 @@ export function buildStoragePath(
 
   const wSlug = workspaceNameOrSlug ? slugify(workspaceNameOrSlug) : "new-organizer";
   const eSlug = entityName ? slugify(entityName) : "drafts";
-  
+
   if (assetType) {
     const aSlug = slugify(assetType);
     return `${wSlug}/${entityType}/${eSlug}/${aSlug}`;
   }
-  
+
   return `${wSlug}/${entityType}/${eSlug}`;
 }
 

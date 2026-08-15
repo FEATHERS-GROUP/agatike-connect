@@ -3044,13 +3044,13 @@ flowchart TD
 
 **Logic:**
 
-The platform enforces a robust subscription limit architecture that gracefully downgrades access rather than abruptly locking organizers out of their data. When an organizer first creates a workspace, they enter a 14-day trial period where their usage limits are temporarily lifted (capped at a generic safety limit, usually 10, for low-limit resources). 
+The platform enforces a robust subscription limit architecture that gracefully downgrades access rather than abruptly locking organizers out of their data. When an organizer first creates a workspace, they enter a 14-day trial period where their usage limits are temporarily lifted (capped at a generic safety limit, usually 10, for low-limit resources).
 
 ### 35.1 Graceful Downgrade vs Hard Blocking
 
 - **Post-Trial Fallback:** Once the 14-day trial expires, or if a paid subscription lapses, the system does **not** permanently lock the organizer out of their account or throw a generic "Page Not Found" error for their public pages.
-- **Limit Slicing:** Instead, the system parses the `max_*` limits associated with their current (or fallback Free) plan. If the organizer has created 4 Custom Apps but their plan only allows 1, the dashboard and API routes will mathematically sort the resources by `created_at` (descending) and **slice** the array to match the limit (`array.slice(0, limit)`). 
-- **Visibility:** 
+- **Limit Slicing:** Instead, the system parses the `max_*` limits associated with their current (or fallback Free) plan. If the organizer has created 4 Custom Apps but their plan only allows 1, the dashboard and API routes will mathematically sort the resources by `created_at` (descending) and **slice** the array to match the limit (`array.slice(0, limit)`).
+- **Visibility:**
   - The single most recently created app/page remains fully visible and operable to both the organizer and the public.
   - The remaining out-of-bounds items (e.g., items #2 through #4) are hidden from the dashboard lists, and any direct public access to them displays a gentle "Subscription Expired" or "Temporarily Unavailable" message.
 
@@ -3065,7 +3065,7 @@ The platform enforces a robust subscription limit architecture that gracefully d
 
 ### 35.3 Admin Trial Extensions (Mathematical Approach)
 
-- **Incremental Extension:** System Admins have the ability to extend an organizer's trial via the Internal Admin dashboard. 
+- **Incremental Extension:** System Admins have the ability to extend an organizer's trial via the Internal Admin dashboard.
 - **Math-based Limit:** Rather than overriding a date, extensions increment a `trial_extensions_count` integer on the free subscription (up to a max of 2 extensions).
 - **Dynamic Calculation:** The trial's expiration logic is determined dynamically across all API routes (`workspaces.ts`, `workspace-pages.ts`, `rsvps.ts`) using the formula: `Total Allowed Days = 14 + (trial_extensions_count * 7)`.
 - **Email Notifications:** When an admin triggers an extension, the system automatically sends a professionally branded email to the organizer, notifying them of the new 7-day grace period and inviting them back into the platform.
@@ -3075,16 +3075,16 @@ flowchart TD
     Org["Organizer Creates Item"] --> Check{Is 14-Day Trial Active?}
     Check -->|Yes| TrialLimit["Use Generous Trial Limit (e.g. 10)"]
     Check -->|No| PlanLimit["Use strict plan limit (e.g. max_pages: 1)"]
-    
+
     TrialLimit & PlanLimit --> Sort["Sort all items by created_at DESC"]
     Sort --> Slice["Slice array to match allowed limit"]
-    
+
     Slice --> InBounds["Item within limit (Index 0)"]
     Slice --> OutBounds["Item exceeds limit (Index 1+)"]
-    
+
     InBounds -->|Dashboard| DashVisible["Visible in Dashboard lists"]
     InBounds -->|Public API| PubVisible["Fully accessible via public URLs"]
-    
+
     OutBounds -->|Dashboard| DashHidden["Hidden from Dashboard lists\nShows Upgrade Banner"]
     OutBounds -->|Public API| PubHidden["Returns 'is_expired: true'\nShows 'Subscription Expired' UI"]
 ```

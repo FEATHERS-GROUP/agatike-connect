@@ -25,7 +25,7 @@ async function main() {
       `,
     }),
   });
-  
+
   const json = await fetchPromise.json();
   console.log(JSON.stringify(json, null, 2));
 }
