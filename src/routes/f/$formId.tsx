@@ -239,7 +239,9 @@ function PublicFormPage() {
             {form ? (form.is_expired ? "Subscription Expired" : form.title) : "Form Unavailable"}
           </h1>
           <p className="text-muted-foreground mt-3 relative z-10 text-base">
-            {form?.is_expired ? "This form is temporarily unavailable due to workspace limits." : "This form is no longer accepting responses."}
+            {form?.is_expired
+              ? "This form is temporarily unavailable due to workspace limits."
+              : "This form is no longer accepting responses."}
           </p>
         </div>
       </div>

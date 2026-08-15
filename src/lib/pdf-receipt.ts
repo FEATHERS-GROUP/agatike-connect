@@ -188,7 +188,7 @@ export const generateFallbackReceipt = async (options: {
       ticket?.price !== undefined
         ? ticket.price === 0
           ? "Free"
-          : `${ticket.currency || ""} ${ticket.price}`.trim()
+          : `${ticket?.workspace?.wallet?.currency || ticket?.workspace?.currency || ticket.currency || ""} ${ticket.price}`.trim()
         : "Standard";
     pdf.text(priceStr, 20, 298);
   }

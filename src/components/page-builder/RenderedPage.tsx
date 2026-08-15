@@ -257,6 +257,7 @@ export function RenderedPage({
   // Uniform branding: inherit theme and logo from parent
   const theme_color = page.parent?.theme_color || page.theme_color || "#000000";
   const logo_url = page.parent?.logo_url || page.logo_url;
+  const currency = page.currency || page.parent?.currency || page.workspaces?.currency || "RWF";
 
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
   const parentSettingsBlock = page.parent?.components?.find((c: any) => c.type === "page_settings");
@@ -912,7 +913,7 @@ export function RenderedPage({
                                     <div className="flex items-start justify-between mb-4 w-full">
                                       {wrap(
                                         "card_item_title",
-                                        <h3 className="text-2xl font-bold group-hover:opacity-80 transition-opacity m-0">
+                                        <h3 className="text-2xl font-bold transition-opacity m-0 text-foreground">
                                           {card.customTitle || linkedForm.title}
                                         </h3>,
                                         "100%",
@@ -1223,7 +1224,7 @@ export function RenderedPage({
                           <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full min-w-0">
                             {wrap(
                               "form_title",
-                              <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors m-0 w-full">
+                              <h3 className="text-2xl font-bold mb-2 text-foreground transition-colors m-0 w-full">
                                 {displayTitle}
                               </h3>,
                               "100%",
@@ -1341,7 +1342,9 @@ export function RenderedPage({
                               >
                                 <span>{comp.label || "Pay Now"}</span>
                                 {comp.amount && (
-                                  <span className="text-sm opacity-90">{comp.amount} RWF</span>
+                                  <span className="text-sm opacity-90">
+                                    {comp.amount} {currency}
+                                  </span>
                                 )}
                               </a>
                             ) : (
@@ -1457,7 +1460,7 @@ export function RenderedPage({
                                 {title.charAt(0)}
                               </span>
                             </div>
-                            <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                            <h3 className="text-xl font-bold text-foreground transition-colors">
                               {title}
                             </h3>
                             <p className="text-muted-foreground line-clamp-2 text-sm">
@@ -1674,6 +1677,11 @@ export function RenderedPage({
                                         <div
                                           className={`${isGrid ? "w-full aspect-[4/3]" : "w-full h-48 sm:h-full sm:w-40 md:w-48 min-h-[140px]"} relative bg-secondary overflow-hidden shrink-0`}
                                         >
+                                          {item.type === "digital" && (
+                                            <div className="absolute top-3 left-3 z-10 bg-primary/90 text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-md backdrop-blur-sm">
+                                              Digital Product
+                                            </div>
+                                          )}
                                           {item.image_url ||
                                           item.cover ||
                                           item.cover_url ||
@@ -1690,7 +1698,7 @@ export function RenderedPage({
                                                 item.images?.[0]
                                               }
                                               alt=""
-                                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                              className={`w-full h-full ${item.type === "digital" ? "object-contain bg-background/50 p-2" : "object-cover"} group-hover:scale-105 transition-transform duration-500`}
                                             />
                                           ) : (
                                             <div className="w-full h-full flex items-center justify-center opacity-50">
@@ -1706,7 +1714,7 @@ export function RenderedPage({
                                       <div className="p-5 flex-1 flex flex-col min-w-0">
                                         {wrap(
                                           "inv_item_title",
-                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors m-0 w-full">
+                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 text-foreground transition-colors m-0 w-full">
                                             {item.name || item.title}
                                           </h4>,
                                           "100%",
@@ -1726,13 +1734,23 @@ export function RenderedPage({
                                         )}
                                         {wrap(
                                           "inv_item_desc",
-                                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 w-full m-0">
-                                            {item.description ||
-                                              item.synopsis ||
-                                              (comp.type === "venue_list"
-                                                ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests`
-                                                : "No details provided.")}
-                                          </p>,
+                                          <div className="text-sm text-muted-foreground mb-4 line-clamp-3 w-full m-0 relative z-10">
+                                            {item.description ? (
+                                              <div
+                                                className="prose prose-sm dark:prose-invert prose-p:my-0 prose-headings:my-0 prose-ul:my-0 prose-ol:my-0 max-w-none"
+                                                dangerouslySetInnerHTML={{
+                                                  __html: item.description,
+                                                }}
+                                              />
+                                            ) : (
+                                              <p>
+                                                {item.synopsis ||
+                                                  (comp.type === "venue_list"
+                                                    ? `${item.city ? item.city + " • " : ""}Up to ${item.capacity || "TBD"} guests`
+                                                    : "No details provided.")}
+                                              </p>
+                                            )}
+                                          </div>,
                                           "100%",
                                           "auto",
                                           "0px",
@@ -1741,10 +1759,10 @@ export function RenderedPage({
                                         <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
                                           {wrap(
                                             "inv_item_price",
-                                            <span className="font-semibold truncate mr-2 text-sm w-full">
+                                            <span className="font-bold text-lg truncate mr-2 w-full text-primary transition-colors">
                                               {(() => {
                                                 if (item.price)
-                                                  return `${Number(item.price).toLocaleString()} RWF`;
+                                                  return `${Number(item.price).toLocaleString()} ${currency}`;
                                                 if (comp.type === "event_list") {
                                                   if (
                                                     item.event_tickets &&
@@ -1757,7 +1775,7 @@ export function RenderedPage({
                                                     );
                                                     return minPrice === 0
                                                       ? "Free"
-                                                      : `From ${minPrice.toLocaleString()} RWF`;
+                                                      : `From ${minPrice.toLocaleString()} ${currency}`;
                                                   }
                                                   return "Free";
                                                 }

@@ -6,7 +6,15 @@ import { createProductOrders, checkProductOrderStatus } from "@/api/products";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  CreditCard,
+  Lock,
+  Smartphone,
+  CheckCircle,
+  ShoppingCart,
+  Loader2,
+} from "lucide-react";
 import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PaymentModal } from "@/components/shared/PaymentModal";
@@ -73,6 +81,18 @@ export function CartCheckoutPage() {
   const fontFamily = settingsBlock?.fontFamily || "Inter";
   const workspaceId = pageData?.workspace_id;
   const logoUrl = pageData?.logo_url;
+  const workspaceCurrency =
+    pageData?.workspaces?.wallet?.currency || pageData?.workspaces?.currency || "RWF";
+  const customerServiceFeePct = parseFloat(pageData?.customer_service_fee_percentage) || 0;
+  const customerCollectionFeePct = parseFloat(pageData?.customer_collection_fee_percentage) || 0;
+  const customerCollectionFixed = parseFloat(pageData?.customer_collection_fee_fixed) || 0;
+
+  const taxAmount = Math.ceil(
+    cartTotal * (customerServiceFeePct / 100) +
+      cartTotal * (customerCollectionFeePct / 100) +
+      customerCollectionFixed,
+  );
+  const totalDue = cartTotal + taxAmount;
 
   // 3. Payment Processing Mutation
   const paymentMutation = useMutation({
@@ -86,26 +106,44 @@ export function CartCheckoutPage() {
       const newBookingRef = crypto.randomUUID();
 
       // Map cart items to Product Order objects
-      const orderObjects = items.map((item) => {
+      const orderObjects = items.flatMap((item) => {
         const variantString = [item.size, item.color].filter(Boolean).join(" - ");
         const encodedSize = variantString
           ? `${variantString} | email:${buyerEmail}`
           : `email:${buyerEmail}`;
         const qrBase = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-        return {
-          product_id: item.product.id,
-          qty: item.qty.toString(),
-          status: "Pending Payment",
-          amount_paid: (item.product.price || 0) * item.qty,
-          phone: buyerPhone,
-          decrptions: newBookingRef, // Shared booking ref links them!
-          qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-0`,
-          ticket_id: null,
-          buyer_id: user?.id || null,
-          picked: false,
-          size: encodedSize,
-        };
+        if (item.product.type === "digital" && item.qty > 1) {
+          return Array.from({ length: item.qty }).map((_, i) => ({
+            product_id: item.product.id,
+            qty: "1",
+            status: "Pending Payment",
+            amount_paid: item.product.price || 0,
+            phone: buyerPhone,
+            decrptions: newBookingRef,
+            qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-${i}`,
+            ticket_id: null,
+            buyer_id: user?.id || null,
+            picked: false,
+            size: encodedSize,
+          }));
+        }
+
+        return [
+          {
+            product_id: item.product.id,
+            qty: item.qty.toString(),
+            status: "Pending Payment",
+            amount_paid: (item.product.price || 0) * item.qty,
+            phone: buyerPhone,
+            decrptions: newBookingRef, // Shared booking ref links them!
+            qr_code_string: `${qrBase}-${item.product.id.substring(0, 4).toUpperCase()}-0`,
+            ticket_id: null,
+            buyer_id: user?.id || null,
+            picked: false,
+            size: encodedSize,
+          },
+        ];
       });
 
       // Create all Product Orders at once (Pending)
@@ -124,10 +162,10 @@ export function CartCheckoutPage() {
         data: {
           amount: finalAmount,
           baseAmount: baseAmount,
-          baseCurrency: "RWF",
+          baseCurrency: workspaceCurrency,
           phone: paymentDetails.phone,
           network: paymentDetails.network,
-          currency: paymentDetails.currency || "RWF",
+          currency: paymentDetails.currency || workspaceCurrency,
           type: `page_builder_checkout::${window.location.hostname}`,
           referenceId: newBookingRef,
           workspaceId: workspaceId,
@@ -185,8 +223,8 @@ export function CartCheckoutPage() {
       <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background space-y-6">
         <ShoppingCart className="w-20 h-20 text-muted-foreground opacity-50" />
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <Button onClick={() => window.history.back()} variant="outline">
-          Return to {pageData?.title || "Store"}
+        <Button onClick={() => (window.location.href = "/")} variant="outline">
+          Return to Home Page
         </Button>
       </div>
     );
@@ -212,9 +250,9 @@ export function CartCheckoutPage() {
           <Button
             className="w-full h-12 rounded-xl mt-4 font-bold"
             style={{ backgroundColor: themeColor, color: "#fff" }}
-            onClick={() => window.history.back()}
+            onClick={() => (window.location.href = "/")}
           >
-            Return to {pageData?.title || "Store"}
+            Return to Home Page
           </Button>
         </div>
       </div>
@@ -279,7 +317,7 @@ export function CartCheckoutPage() {
             <h3 className="text-white/80 text-base mb-2">Pay for Order</h3>
             <div className="flex items-baseline gap-2 mb-4">
               <span className="text-4xl md:text-5xl font-bold tracking-tight">
-                RWF {cartTotal.toLocaleString()}
+                {workspaceCurrency} {cartTotal.toLocaleString()}
               </span>
             </div>
           </div>
@@ -300,7 +338,8 @@ export function CartCheckoutPage() {
                     <div className="flex justify-between items-start">
                       <span className="font-medium text-sm line-clamp-1">{item.product.name}</span>
                       <span className="font-medium text-sm">
-                        RWF {((item.product.price || 0) * item.qty).toLocaleString()}
+                        {workspaceCurrency}{" "}
+                        {((item.product.price || 0) * item.qty).toLocaleString()}
                       </span>
                     </div>
                     <div className="text-white/70 text-xs mt-1">
@@ -313,15 +352,21 @@ export function CartCheckoutPage() {
 
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
               <span className="text-sm">Subtotal</span>
-              <span className="font-medium text-white">RWF {cartTotal.toLocaleString()}</span>
+              <span className="font-medium text-white">
+                {workspaceCurrency} {cartTotal.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
-              <span className="text-sm">Taxes</span>
-              <span className="font-medium text-white">RWF 0.00</span>
+              <span className="text-sm">Taxes (Service Fee)</span>
+              <span className="font-medium text-white">
+                {workspaceCurrency} {taxAmount.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between items-center pt-2">
               <span className="font-semibold text-base">Total due today</span>
-              <span className="text-xl font-bold">RWF {cartTotal.toLocaleString()}</span>
+              <span className="text-xl font-bold">
+                {workspaceCurrency} {totalDue.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
@@ -471,9 +516,14 @@ export function CartCheckoutPage() {
               onClick={handlePayClick}
               disabled={paymentMutation.isPending}
             >
-              {paymentMutation.isPending
-                ? "Processing..."
-                : `Pay RWF ${cartTotal.toLocaleString()}`}
+              {paymentMutation.isPending ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Pay ${workspaceCurrency} ${totalDue.toLocaleString()}`
+              )}
             </Button>
 
             <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed max-w-sm mx-auto">
@@ -494,7 +544,7 @@ export function CartCheckoutPage() {
           baseAmount={cartTotal}
           quantity={items.length}
           itemLabel={`Buy ${items.length} items`}
-          baseCurrency="RWF"
+          baseCurrency={workspaceCurrency}
           userPhone={buyerPhone}
           isProcessing={paymentMutation.isPending}
           isGenerating={false}

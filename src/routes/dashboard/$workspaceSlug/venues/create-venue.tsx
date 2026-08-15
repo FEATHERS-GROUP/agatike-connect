@@ -357,7 +357,12 @@ function NewVenueWizard() {
         continue;
       }
       try {
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "venues", formData.name, "images");
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "venues",
+          formData.name,
+          "images",
+        );
         const url = await uploadFileToStorage(file, folderPath);
         newUrls.push(url);
       } catch (err) {
@@ -378,7 +383,12 @@ function NewVenueWizard() {
     }
     setIsUploading(true);
     try {
-      const folderPath = buildStoragePath(activeWorkspace?.slug, "venues", formData.name, "sections");
+      const folderPath = buildStoragePath(
+        activeWorkspace?.slug,
+        "venues",
+        formData.name,
+        "sections",
+      );
       const url = await uploadFileToStorage(file, folderPath);
       updateSection(idx, "image_url", url);
     } catch (err) {
@@ -460,7 +470,12 @@ function NewVenueWizard() {
     if (file.size > 5 * 1024 * 1024) return toast.error("File exceeds 5MB limit");
     setIsUploading(true);
     try {
-      const folderPath = buildStoragePath(activeWorkspace?.slug, "venues", formData.name, "facilities");
+      const folderPath = buildStoragePath(
+        activeWorkspace?.slug,
+        "venues",
+        formData.name,
+        "facilities",
+      );
       const url = await uploadFileToStorage(file, folderPath);
       updateFacility(idx, "image_url", url);
     } catch (err) {

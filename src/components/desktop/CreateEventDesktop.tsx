@@ -410,7 +410,12 @@ export function CreateEventDesktop() {
               const blob = await resp.blob();
               const file = new File([blob], "merch.jpg", { type: blob.type });
               const base64 = await fileToBase64(file);
-              const folderPath = buildStoragePath(activeWorkspace?.slug, "events", data.title, "merch");
+              const folderPath = buildStoragePath(
+                activeWorkspace?.slug,
+                "events",
+                data.title,
+                "merch",
+              );
               const res = await uploadFile({
                 data: { base64, contentType: file.type, folder: folderPath, ext: "jpg" },
               } as any);
@@ -897,7 +902,9 @@ export function CreateEventDesktop() {
                 <>
                   <img src={data.coverPreview} alt="cover" className="h-full w-full object-cover" />
                   <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity hover:opacity-100 flex items-center justify-center backdrop-blur-[2px]">
-                    <span className="text-white font-medium bg-black/50 px-5 py-2.5 rounded-full shadow-lg">Change Image</span>
+                    <span className="text-white font-medium bg-black/50 px-5 py-2.5 rounded-full shadow-lg">
+                      Change Image
+                    </span>
                   </div>
                   <Button
                     type="button"
@@ -916,8 +923,12 @@ export function CreateEventDesktop() {
                       <Upload className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground text-base">Click to upload cover image</p>
-                      <p className="mt-1 text-xs text-muted-foreground">PNG, JPG or WEBP up to 5MB</p>
+                      <p className="font-medium text-foreground text-base">
+                        Click to upload cover image
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        PNG, JPG or WEBP up to 5MB
+                      </p>
                     </div>
                   </div>
                 </div>

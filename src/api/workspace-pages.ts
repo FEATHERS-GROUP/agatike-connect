@@ -43,6 +43,12 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         created_at
         updated_at
         parent_id
+        workspaces {
+          currency
+          wallet {
+            currency
+          }
+        }
         parent {
           slug
           title
@@ -70,6 +76,10 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
       query GetOrganizerSub($workspace_id: uuid!) {
         workspaces_by_pk(id: $workspace_id) {
           orgnizer_id
+          currency
+          wallet {
+            currency
+          }
         }
       }
     `;
@@ -96,6 +106,9 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
               trial_extensions_count
               pricing_plan {
                 usage_limits
+                customer_service_fee_percentage
+                customer_collection_fee_percentage
+                customer_collection_fee_fixed
               }
             }
             workspace_pages(
@@ -112,13 +125,24 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         page.is_expired = false;
 
         const activeSub = subRes.subscriptions?.[0];
+
+        // Attach fee and currency to the page object
+        page.currency =
+          wsData.workspaces_by_pk?.wallet?.currency || wsData.workspaces_by_pk?.currency || "RWF";
+        page.customer_service_fee_percentage =
+          activeSub?.pricing_plan?.customer_service_fee_percentage || 0;
+        page.customer_collection_fee_percentage =
+          activeSub?.pricing_plan?.customer_collection_fee_percentage || 0;
+        page.customer_collection_fee_fixed =
+          activeSub?.pricing_plan?.customer_collection_fee_fixed || 0;
+
         let isTrialExpired = false;
         if (activeSub) {
           if (activeSub.amount === 0) {
             const subDate = new Date(activeSub.created_at);
             const now = new Date();
             const diffDays = (now.getTime() - subDate.getTime()) / (1000 * 3600 * 24);
-            const totalAllowedDays = 14 + ((activeSub.trial_extensions_count || 0) * 7);
+            const totalAllowedDays = 14 + (activeSub.trial_extensions_count || 0) * 7;
             if (diffDays > totalAllowedDays) {
               isTrialExpired = true;
             }
@@ -133,14 +157,22 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
           if (isTrialExpired) {
             // Check limits
             const rawLimits = activeSub.pricing_plan?.usage_limits;
-            const dbLimits = typeof rawLimits === "string" ? JSON.parse(rawLimits) : (rawLimits || {});
-            const limit = dbLimits.max_pages === undefined || dbLimits.max_pages === -1 ? Infinity : dbLimits.max_pages;
-            
+            const dbLimits =
+              typeof rawLimits === "string" ? JSON.parse(rawLimits) : rawLimits || {};
+            const limit =
+              dbLimits.max_pages === undefined || dbLimits.max_pages === -1
+                ? Infinity
+                : dbLimits.max_pages;
+
             if (limit === 0) {
               page.is_expired = true;
             } else if (limit !== Infinity) {
               const allPages = subRes.workspace_pages || [];
-              const sortedPages = allPages.sort((a: any, b: any) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime());
+              const sortedPages = allPages.sort(
+                (a: any, b: any) =>
+                  new Date(b.created_at || b.updated_at || 0).getTime() -
+                  new Date(a.created_at || a.updated_at || 0).getTime(),
+              );
               const visiblePages = sortedPages.slice(0, limit);
               const isVisible = visiblePages.some((p: any) => p.id === page.id);
               if (!isVisible) {

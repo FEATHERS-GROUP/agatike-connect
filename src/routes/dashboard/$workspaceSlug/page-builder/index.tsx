@@ -89,11 +89,16 @@ function PageBuilderGallery() {
         (p.slug || "").toLowerCase().includes(searchQuery.toLowerCase())),
   );
 
-  const limit = limits.max_page_builders === undefined || limits.max_page_builders === -1 ? Infinity : limits.max_page_builders;
-  
-  const sortedFilteredPages = [...filteredPages].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  const visiblePages = limit === Infinity ? sortedFilteredPages : sortedFilteredPages.slice(0, limit);
+  const limit =
+    limits.max_page_builders === undefined || limits.max_page_builders === -1
+      ? Infinity
+      : limits.max_page_builders;
 
+  const sortedFilteredPages = [...filteredPages].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+  const visiblePages =
+    limit === Infinity ? sortedFilteredPages : sortedFilteredPages.slice(0, limit);
 
   const handleCopyLink = (slug: string) => {
     const url = getWorkspacePageUrl(slug);
@@ -152,8 +157,8 @@ function PageBuilderGallery() {
 
   return (
     <div className="flex flex-col h-full bg-secondary/10">
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-6 py-6">
+        <div className="max-w-[1400px] w-full mx-auto">
           <Tabs defaultValue="templates" className="w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <TabsList>
@@ -224,7 +229,9 @@ function PageBuilderGallery() {
             </TabsContent>
 
             <TabsContent value="pages">
-              {limit === 0 && <QuotaExceededBanner limit={limit} total={filteredPages.length} centered />}
+              {limit === 0 && (
+                <QuotaExceededBanner limit={limit} total={filteredPages.length} centered />
+              )}
               {limit > 0 && <QuotaExceededBanner limit={limit} total={filteredPages.length} />}
               <FolderManager
                 moduleType="page_builder"

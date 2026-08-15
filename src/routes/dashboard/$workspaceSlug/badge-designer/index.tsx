@@ -116,10 +116,16 @@ function BadgeDesignerIndex() {
   });
 
   const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
-  const limit = limits.max_badge_designs === undefined || limits.max_badge_designs === -1 ? Infinity : limits.max_badge_designs;
-  const sortedProjects = [...rawDbProjects].sort((a: any, b: any) => new Date(b.created_at || b.updated_on || 0).getTime() - new Date(a.created_at || a.updated_on || 0).getTime());
+  const limit =
+    limits.max_badge_designs === undefined || limits.max_badge_designs === -1
+      ? Infinity
+      : limits.max_badge_designs;
+  const sortedProjects = [...rawDbProjects].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || b.updated_on || 0).getTime() -
+      new Date(a.created_at || a.updated_on || 0).getTime(),
+  );
   const dbProjects = limit === Infinity ? sortedProjects : sortedProjects.slice(0, limit);
-
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -364,99 +370,105 @@ function BadgeDesignerIndex() {
           >
             {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
               <div className="mt-4 space-y-6">
-                {limit === 0 && <QuotaExceededBanner limit={limit} total={rawDbProjects.length} centered />}
+                {limit === 0 && (
+                  <QuotaExceededBanner limit={limit} total={rawDbProjects.length} centered />
+                )}
                 {limit > 0 && <QuotaExceededBanner limit={limit} total={rawDbProjects.length} />}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {isLoadingProjects ? (
-                  <div className="col-span-full flex flex-col items-center justify-center py-12">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                  </div>
-                ) : filteredItems.length === 0 ? (
-                  <div className="col-span-full text-center py-12 bg-card rounded-[2rem] border border-dashed border-border/60 p-8">
-                    <UserCheck className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                    <h3 className="text-lg font-semibold">No Saved Designs</h3>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                      Create your first badge design by selecting a template above.
-                    </p>
-                  </div>
-                ) : (
-                  filteredItems.map((proj: any) => {
-                    const eventObj = events.find((e: any) => e.id === proj.event_id);
-                    const displayTitle = proj.logo_text || "Untitled Badge";
-                    const gradient = proj.gradient_class || "from-slate-900 to-black";
-                    const accent = proj.accent_color || "#f59e0b";
-                    const isSelected = selectedIds.has(proj.id);
+                  {isLoadingProjects ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-12">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    </div>
+                  ) : filteredItems.length === 0 ? (
+                    <div className="col-span-full text-center py-12 bg-card rounded-[2rem] border border-dashed border-border/60 p-8">
+                      <UserCheck className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
+                      <h3 className="text-lg font-semibold">No Saved Designs</h3>
+                      <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                        Create your first badge design by selecting a template above.
+                      </p>
+                    </div>
+                  ) : (
+                    filteredItems.map((proj: any) => {
+                      const eventObj = events.find((e: any) => e.id === proj.event_id);
+                      const displayTitle = proj.logo_text || "Untitled Badge";
+                      const gradient = proj.gradient_class || "from-slate-900 to-black";
+                      const accent = proj.accent_color || "#f59e0b";
+                      const isSelected = selectedIds.has(proj.id);
 
-                    return (
-                      <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
-                        <div
-                          className="relative group rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
-                          style={{
-                            borderColor: isSelected
-                              ? "hsl(var(--primary))"
-                              : "hsl(var(--border) / 0.6)",
-                          }}
-                        >
+                      return (
+                        <ItemMenu key={proj.id} itemId={proj.id} folderId={proj.folder_id}>
                           <div
-                            className="absolute top-3 left-3 z-20"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Checkbox
-                              checked={isSelected}
-                              onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
-                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
-                            />
-                          </div>
-                          <Link
-                            to="/dashboard/$workspaceSlug/badge-designer/$projectId"
-                            params={{ workspaceSlug, projectId: proj.id }}
-                            className="block"
+                            className="relative group rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm transition-all hover:shadow-lg hover:border-primary/50"
+                            style={{
+                              borderColor: isSelected
+                                ? "hsl(var(--primary))"
+                                : "hsl(var(--border) / 0.6)",
+                            }}
                           >
                             <div
-                              className={`h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${gradient}`}
+                              className="absolute top-3 left-3 z-20"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <div className="absolute inset-0 bg-white/5 backdrop-blur-md pointer-events-none" />
-                              <div className="relative z-10 flex justify-between items-start">
-                                <span
-                                  className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
-                                  style={{ background: `${accent}33`, color: accent }}
-                                >
-                                  {proj.theme || "glass"}
-                                </span>
-                              </div>
-                              <div className="relative z-10 text-white drop-shadow-md">
-                                <p className="text-xs opacity-70">
-                                  {eventObj?.title || "No event linked"}
-                                </p>
-                                <h3 className="text-xl font-bold leading-tight">{displayTitle}</h3>
-                              </div>
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(c) => handleSelect(proj.id, c as boolean)}
+                                className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
+                              />
                             </div>
-                            <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
-                              <span>Edit Design</span>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors z-20"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (
-                                      confirm("Are you sure you want to delete this badge design?")
-                                    ) {
-                                      deleteMutation.mutate(proj.id);
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                                <ChevronRight className="h-4 w-4" />
+                            <Link
+                              to="/dashboard/$workspaceSlug/badge-designer/$projectId"
+                              params={{ workspaceSlug, projectId: proj.id }}
+                              className="block"
+                            >
+                              <div
+                                className={`h-36 p-5 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br ${gradient}`}
+                              >
+                                <div className="absolute inset-0 bg-white/5 backdrop-blur-md pointer-events-none" />
+                                <div className="relative z-10 flex justify-between items-start">
+                                  <span
+                                    className="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
+                                    style={{ background: `${accent}33`, color: accent }}
+                                  >
+                                    {proj.theme || "glass"}
+                                  </span>
+                                </div>
+                                <div className="relative z-10 text-white drop-shadow-md">
+                                  <p className="text-xs opacity-70">
+                                    {eventObj?.title || "No event linked"}
+                                  </p>
+                                  <h3 className="text-xl font-bold leading-tight">
+                                    {displayTitle}
+                                  </h3>
+                                </div>
                               </div>
-                            </div>
-                          </Link>
-                        </div>
-                      </ItemMenu>
-                    );
-                  })
-                )}
+                              <div className="px-5 py-3 flex items-center justify-between text-sm text-muted-foreground group-hover:text-primary transition-colors">
+                                <span>Edit Design</span>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    className="p-1.5 rounded-md hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors z-20"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (
+                                        confirm(
+                                          "Are you sure you want to delete this badge design?",
+                                        )
+                                      ) {
+                                        deleteMutation.mutate(proj.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                  <ChevronRight className="h-4 w-4" />
+                                </div>
+                              </div>
+                            </Link>
+                          </div>
+                        </ItemMenu>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}

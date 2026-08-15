@@ -9,7 +9,7 @@ import { getProduct, updateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
-import { buildStoragePath } from "@/api/storage";
+import { buildStoragePath, uploadFormData } from "@/api/storage";
 import { cn } from "@/lib/utils";
 import { getWorkspaceEvents } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
@@ -48,6 +48,12 @@ const PRODUCT_TYPES = [
     description: "Users earn stamps to get a reward.",
     icon: Gift,
   },
+  {
+    id: "digital",
+    title: "Digital Product",
+    description: "Sell downloadable files like PDFs, ZIPs, or eBooks.",
+    icon: Package, // Using Package icon since Download isn't imported from lucide-react in this file, or we can just stick to Package
+  },
 ];
 
 function EditProductView() {
@@ -75,6 +81,8 @@ function EditProductView() {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [digitalFile, setDigitalFile] = useState<File | null>(null);
+  const [digitalFileUrl, setDigitalFileUrl] = useState<string>("");
   const [linkedEvents, setLinkedEvents] = useState<string[]>([]);
   const [linkedVenues, setLinkedVenues] = useState<string[]>([]);
 
@@ -116,6 +124,9 @@ function EditProductView() {
         setLinkedEvents(events);
         setLinkedVenues(venues);
       }
+      if (product.specs?.digital_file_url) {
+        setDigitalFileUrl(product.specs.digital_file_url);
+      }
     }
   }, [product]);
 
@@ -148,8 +159,31 @@ function EditProductView() {
         event_id: linkedEvents.length > 0 ? linkedEvents[0] : null,
       };
 
+      if (formData.type === "digital" && digitalFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", digitalFile);
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "digital_products",
+          formData.name,
+        );
+        formDataUpload.append("folder", folderPath);
+
+        try {
+          const res = await uploadFormData({ data: formDataUpload } as any);
+          payload.specs.digital_file_url = res.url;
+        } catch (err) {
+          throw new Error("Failed to upload digital file.");
+        }
+      }
+
       if (imageFile) {
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "products", formData.name, "image");
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "products",
+          formData.name,
+          "image",
+        );
         payload.image_url = await uploadFileToStorage(imageFile, folderPath);
       }
 
@@ -257,7 +291,7 @@ function EditProductView() {
             onSubmit={handleSubmit}
             className="space-y-6 animate-in fade-in slide-in-from-right-2"
           >
-            {formData.type === "physical" && (
+            {(formData.type === "physical" || formData.type === "digital") && (
               <div className="flex flex-col items-center gap-2 mb-2">
                 <label className="relative flex h-24 w-24 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-secondary/40 transition hover:border-primary">
                   {imagePreview ? (
@@ -282,6 +316,41 @@ function EditProductView() {
                   />
                 </label>
                 <p className="text-xs text-muted-foreground">Campaign Image (Optional)</p>
+              </div>
+            )}
+
+            {formData.type === "digital" && (
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                <Label>Upload Digital File (Max 20MB)</Label>
+                <div className="flex flex-col gap-2">
+                  <Input
+                    type="file"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (!f) return;
+                      if (f.size > 20 * 1024 * 1024) {
+                        toast.error("File must be smaller than 20MB");
+                        return;
+                      }
+                      setDigitalFile(f);
+                    }}
+                  />
+                  {digitalFile ? (
+                    <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>
+                  ) : digitalFileUrl ? (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      Current file:{" "}
+                      <a
+                        href={digitalFileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary hover:underline truncate max-w-[200px]"
+                      >
+                        {digitalFileUrl.split("/").pop()}
+                      </a>
+                    </p>
+                  ) : null}
+                </div>
               </div>
             )}
 

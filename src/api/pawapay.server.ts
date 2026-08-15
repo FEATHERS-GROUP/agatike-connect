@@ -195,8 +195,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       logoColorMode
                       logoScale
                       logoOpacity
-                      layout
-                      back
                       design_overrides
                     }
                   }
@@ -227,6 +225,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 _set: { status: "Confirmed" }
               ) {
                 returning {
+                  id
                   product_id
                   qty
                   size
@@ -235,6 +234,14 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   phone
                   product {
                     name
+                    type
+                    specs
+                    workspace {
+                      currency
+                      wallet {
+                        currency
+                      }
+                    }
                   }
                 }
               }
@@ -258,10 +265,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
           let appUrl = process.env.PROJECT_PRODUCTION_URL
             ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-            : "https://agatike.com";
+            : "https://agatike.rw";
 
           if (wsSlug) {
-            appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+            appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.rw"}`;
           }
 
           let eventName = "Your Event";
@@ -309,7 +316,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const feeText =
             customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
 
-          const baseDomain = process.env.PROJECT_PRODUCTION_URL || "agatike.com";
+          const baseDomain = process.env.PROJECT_PRODUCTION_URL || "agatike.rw";
           const domain = wsSlug ? `${wsSlug}.${baseDomain}` : baseDomain;
           // ── NOTIFICATIONS (Skipped for Web Portal Checkouts) ──
           if (!tx.type?.startsWith("portal_")) {
@@ -322,16 +329,45 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             let detailedMessage = "";
             let shortSmsMessage = "";
 
+            let digitalDownloadsText = "";
+            const digitalOrders = confirmedOrders.filter(
+              (o: any) => o.product?.type === "digital" && o.product?.specs?.digital_file_url,
+            );
+            if (digitalOrders.length > 0) {
+              const downloadBaseUrl = `https://${domain}/d/`;
+              const downloadLinksHtml = digitalOrders
+                .map(
+                  (o: any) => `
+                <div style="margin-top: 12px; margin-bottom: 12px;">
+                  <a href="${downloadBaseUrl}${o.id}" style="display:inline-block; padding:12px 24px; background-color:#F2571D; color:white; border-radius:8px; text-decoration:none; font-weight:bold;">
+                    Download ${o.product.name}
+                  </a>
+                </div>
+              `,
+                )
+                .join("");
+
+              digitalDownloadsText = `<div style="background-color: #fff3ed; border: 1px solid #ffd8c4; padding: 20px; border-radius: 12px; margin-top: 24px; text-align: center;">
+                <h4 style="margin-top: 0; margin-bottom: 12px; color: #d94916; font-size: 16px;">Your Digital Products</h4>
+                <p style="margin-bottom: 16px; font-size: 14px; color: #555;">Click below to securely download your files.</p>
+                ${downloadLinksHtml}
+                <p style="margin-top: 16px; margin-bottom: 0; font-size: 12px; color: #d94916; font-weight: 600;">
+                  Security Notice: Link expires exactly 24 hours after purchase and can only be used once.
+                </p>
+              </div>`;
+            }
+
             if (firstAtt) {
               // Ticket purchase
               detailedMessage =
                 `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
-                `\n\nOrganizer: ${orgName}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
-                (productsText ? `\nProducts: ${productsText}` : "");
+                `<br><br><strong>Organizer:</strong> ${orgName}<br><strong>Date:</strong> ${dateStr}<br><strong>Venue:</strong> ${eventLocation}<br>` +
+                (productsText ? `<br><strong>Products:</strong> ${productsText}` : "") +
+                digitalDownloadsText;
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
             } else if (confirmedOrders.length > 0) {
               // Product-only purchase
-              detailedMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${orgName}!`;
+              detailedMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! You purchased: ${productsText}. Order Ref: ${productQrCode || "N/A"}. Thank you for shopping with ${orgName}!${digitalDownloadsText}`;
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! You bought: ${productsText}. Ref: ${productQrCode || "N/A"}`;
             } else {
               // General page builder payment
@@ -373,7 +409,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     const seatLabelStr = hasRealSeat ? "Seat" : "Name";
 
                     const ticketCost = Number(att.event_tickets?.cost) || mergedDesign?.price || 0;
-                    const currency = att.events.workspaces?.currency || "RWF";
+                    const currency =
+                      att.events.workspaces?.currency ||
+                      att.events.workspaces?.wallet?.currency ||
+                      "RWF";
 
                     const fallbackRes = await generateFallbackReceipt({
                       entityName: orgName,
@@ -427,7 +466,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     confirmedOrders,
                     orgDetails,
                     customerDetails,
-                    customerFee,
+                    parseFloat(totalPaidStr || "0"),
+                    firstAtt?.events?.workspaces?.currency ||
+                      firstAtt?.events?.workspaces?.wallet?.currency ||
+                      body?.baseCurrency ||
+                      "RWF",
+                    body?.currency || "RWF",
                   );
                   productPdfBase64 = pdfBuffer.toString("base64");
                   if (productPdfBase64) {
@@ -440,7 +484,14 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
                   for (const order of confirmedOrders) {
                     if (order.product?.type === "voucher") {
-                      const vBuffer = await generateVoucherPdf(order, orgDetails);
+                      const vBuffer = await generateVoucherPdf(
+                        order,
+                        orgDetails,
+                        firstAtt?.events?.workspaces?.currency ||
+                          firstAtt?.events?.workspaces?.wallet?.currency ||
+                          body?.baseCurrency ||
+                          "RWF",
+                      );
                       attachments.push({
                         filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
                         content: vBuffer.toString("base64"),
@@ -497,7 +548,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   confirmedOrders,
                   orgDetails,
                   customerDetails,
-                  customerFee,
+                  parseFloat(totalPaidStr || "0"),
+                  body?.baseCurrency || "RWF",
+                  body?.currency || "RWF",
                 );
                 productPdfBase64 = pdfBuffer.toString("base64");
                 if (productPdfBase64) {
@@ -510,7 +563,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
                 for (const order of confirmedOrders) {
                   if (order.product?.type === "voucher") {
-                    const vBuffer = await generateVoucherPdf(order, orgDetails);
+                    const vBuffer = await generateVoucherPdf(
+                      order,
+                      orgDetails,
+                      body?.baseCurrency || "RWF",
+                    );
                     attachments.push({
                       filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
                       content: vBuffer.toString("base64"),
@@ -573,6 +630,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   name
                   description
                   currency
+                  workspace {
+                    currency
+                    wallet {
+                      currency
+                    }
+                  }
                 }
               }
             }`,
@@ -592,7 +655,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 sendMemberWelcomeEmail,
               } = await import("./email");
 
-              const currency = sub.space?.currency || body?.currency || "RWF";
+              const currency =
+                sub.space?.workspace?.currency ||
+                sub.space?.workspace?.wallet?.currency ||
+                body?.currency ||
+                "RWF";
               const priceDisplay = `${currency} ${Number(sub.price || 0).toLocaleString()}`;
               const groupPlanName =
                 sub.booking_type === "group" && sub.team_members
@@ -786,9 +853,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           let msg = "";
           if (tx.type === "subscription") {
-            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com/dashboard`;
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com`;
           } else if (tx.type === "space_subscription") {
-            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com/dashboard`;
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com`;
           } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
             try {
               const bookingId = tx.reference_id?.split(",")[0];

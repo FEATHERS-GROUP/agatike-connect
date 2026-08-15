@@ -1,5 +1,13 @@
 import { createFileRoute, useParams, useNavigate } from "@tanstack/react-router";
-import { Plus, ShoppingBag, Ticket, QrCode, Check, Image as ImageIcon, Download } from "lucide-react";
+import {
+  Plus,
+  ShoppingBag,
+  Ticket,
+  QrCode,
+  Check,
+  Image as ImageIcon,
+  Download,
+} from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +23,7 @@ export const Route = createFileRoute("/dashboard/$workspaceSlug/events/$eventId/
 function ProductsAndAddonsView() {
   const params = useParams({ strict: false });
   const eventId = params.eventId as string;
+  const workspaceSlug = params.workspaceSlug as string;
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
 
@@ -111,7 +120,7 @@ function ProductsAndAddonsView() {
                     onClick={() =>
                       navigate({
                         to: `/dashboard/$workspaceSlug/events/$eventId/products/$productId`,
-                        params: { ...params, productId: m.id },
+                        params: { workspaceSlug, eventId, productId: m.id },
                       })
                     }
                     className="border-b border-border/50 last:border-0 hover:bg-secondary/20 transition-colors cursor-pointer group"
@@ -193,7 +202,10 @@ function ProductsAndAddonsView() {
         </div>
         <Button
           onClick={() =>
-            navigate({ to: `/dashboard/$workspaceSlug/events/$eventId/products/new`, params })
+            navigate({
+              to: `/dashboard/$workspaceSlug/events/$eventId/products/new`,
+              params: { workspaceSlug, eventId },
+            })
           }
           className="rounded-full shadow-[var(--shadow-glow)]"
           style={{ background: "var(--gradient-primary)" }}

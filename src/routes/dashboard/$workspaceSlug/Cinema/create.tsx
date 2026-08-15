@@ -350,11 +350,13 @@ function CreateCinemaPage() {
                         if (!e.target.files?.[0]) return;
                         setIsUploadingCover(true);
                         try {
-                          const folderPath = buildStoragePath(activeWorkspace?.slug, "cinema", form.name, "cover");
-                          const url = await uploadFileToStorage(
-                            e.target.files[0],
-                            folderPath,
+                          const folderPath = buildStoragePath(
+                            activeWorkspace?.slug,
+                            "cinema",
+                            form.name,
+                            "cover",
                           );
+                          const url = await uploadFileToStorage(e.target.files[0], folderPath);
                           set("cover_url", url);
                           toast.success("Cover uploaded!");
                         } catch (err) {
@@ -407,7 +409,12 @@ function CreateCinemaPage() {
                         if (!e.target.files?.[0]) return;
                         setIsUploadingLogo(true);
                         try {
-                          const folderPath = buildStoragePath(activeWorkspace?.slug, "cinema", form.name, "logo");
+                          const folderPath = buildStoragePath(
+                            activeWorkspace?.slug,
+                            "cinema",
+                            form.name,
+                            "logo",
+                          );
                           const url = await uploadFileToStorage(e.target.files[0], folderPath);
                           set("logo_url", url);
                           toast.success("Logo uploaded!");

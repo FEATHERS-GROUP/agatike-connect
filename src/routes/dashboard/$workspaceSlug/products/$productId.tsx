@@ -1,5 +1,10 @@
 import { createFileRoute, useParams, useNavigate, Link } from "@tanstack/react-router";
-import { getProduct, getWorkspaceRecentOrders, getDigitalProductOrders, resendDigitalProductEmail } from "@/api/products";
+import {
+  getProduct,
+  getWorkspaceRecentOrders,
+  getDigitalProductOrders,
+  resendDigitalProductEmail,
+} from "@/api/products";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -323,7 +328,9 @@ function ProductDetailsView() {
             </h3>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-secondary/30 p-4 rounded-xl border border-border/40">
               <div className="flex-1 truncate">
-                <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">File URL</p>
+                <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">
+                  File URL
+                </p>
                 <p className="font-mono text-sm truncate text-primary">
                   {product.specs?.digital_file_url || "No file uploaded"}
                 </p>
@@ -348,9 +355,7 @@ function ProductDetailsView() {
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium mb-2">
               Total Downloads
             </p>
-            <p className="text-3xl font-bold tracking-tight">
-              {digitalOrders.length}
-            </p>
+            <p className="text-3xl font-bold tracking-tight">{digitalOrders.length}</p>
             <p className="text-sm text-muted-foreground mt-2">Successful deliveries</p>
           </div>
         </div>
@@ -394,10 +399,12 @@ function ProductDetailsView() {
       <div className="rounded-2xl border border-border/60 bg-card shadow-[var(--shadow-card)] overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-4 gap-4">
           <div>
-            <h3 className="font-semibold text-lg">{product.type === "digital" ? "Downloads" : "Sold Gift Cards"}</h3>
+            <h3 className="font-semibold text-lg">
+              {product.type === "digital" ? "Downloads" : "Sold Gift Cards"}
+            </h3>
             <p className="text-sm text-muted-foreground">
-              {product.type === "digital" 
-                ? "Track users who have purchased and downloaded this file." 
+              {product.type === "digital"
+                ? "Track users who have purchased and downloaded this file."
                 : "Manage and track all sold instances of this gift card."}
             </p>
           </div>
@@ -439,27 +446,33 @@ function ProductDetailsView() {
               )}
             </thead>
             <tbody className="divide-y divide-border/60">
-              {product.type === "digital" ? (
-                digitalOrders.map((order: any) => (
-                  <DigitalProductRow key={order.id} order={order} />
-                ))
-              ) : (
-                paginatedOrders.map((order: any) => (
-                  <GiftCardRow
-                    key={order.id}
-                    order={order}
-                    currency={activeWorkspace?.currency || "RWF"}
-                    initialValue={initialValue}
-                  />
-                ))
-              )}
-              {((product.type === "digital" && digitalOrders.length === 0) || 
+              {product.type === "digital"
+                ? digitalOrders.map((order: any) => (
+                    <DigitalProductRow key={order.id} order={order} />
+                  ))
+                : paginatedOrders.map((order: any) => (
+                    <GiftCardRow
+                      key={order.id}
+                      order={order}
+                      currency={activeWorkspace?.currency || "RWF"}
+                      initialValue={initialValue}
+                    />
+                  ))}
+              {((product.type === "digital" && digitalOrders.length === 0) ||
                 (product.type !== "digital" && productOrders.length === 0)) && (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      {product.type === "digital" ? <Download className="h-8 w-8 opacity-20" /> : <Wallet className="h-8 w-8 opacity-20" />}
-                      <p>{product.type === "digital" ? "No downloads yet." : "No gift cards have been sold yet."}</p>
+                      {product.type === "digital" ? (
+                        <Download className="h-8 w-8 opacity-20" />
+                      ) : (
+                        <Wallet className="h-8 w-8 opacity-20" />
+                      )}
+                      <p>
+                        {product.type === "digital"
+                          ? "No downloads yet."
+                          : "No gift cards have been sold yet."}
+                      </p>
                     </div>
                   </td>
                 </tr>

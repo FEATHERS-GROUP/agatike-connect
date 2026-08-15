@@ -105,10 +105,15 @@ function VenueDesignerIndex() {
     limits,
   } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
 
-  const limit = limits.max_ticket_designs === undefined || limits.max_ticket_designs === -1 ? Infinity : limits.max_ticket_designs;
-  const sortedProjects = [...dbProjects].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const limit =
+    limits.max_ticket_designs === undefined || limits.max_ticket_designs === -1
+      ? Infinity
+      : limits.max_ticket_designs;
+  const sortedProjects = [...dbProjects].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+  );
   const projects = limit === Infinity ? sortedProjects : sortedProjects.slice(0, limit);
-
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -530,7 +535,9 @@ function VenueDesignerIndex() {
           >
             {({ filteredItems, handleSelect, selectedIds, ItemMenu }) => (
               <div className="mt-6 space-y-6">
-                {limit === 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} centered />}
+                {limit === 0 && (
+                  <QuotaExceededBanner limit={limit} total={dbProjects.length} centered />
+                )}
                 {limit > 0 && <QuotaExceededBanner limit={limit} total={dbProjects.length} />}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {isLoadingProjects ? (

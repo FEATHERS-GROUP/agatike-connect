@@ -303,7 +303,12 @@ function CommunityPage() {
           data: {
             base64,
             contentType: selectedFile.type,
-            folder: buildStoragePath(workspaceSlug, "community", mainChannelName || "channel", "cover"),
+            folder: buildStoragePath(
+              workspaceSlug,
+              "community",
+              mainChannelName || "channel",
+              "cover",
+            ),
             ext,
           } as any,
         });

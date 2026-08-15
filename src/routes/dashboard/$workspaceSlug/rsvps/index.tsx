@@ -45,10 +45,15 @@ function RsvpsPage() {
     enabled: !!activeWorkspace?.id,
   });
 
-  const limit = limits.max_custom_forms === undefined || limits.max_custom_forms === -1 ? Infinity : limits.max_custom_forms;
-  const sortedForms = [...rawForms].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const limit =
+    limits.max_custom_forms === undefined || limits.max_custom_forms === -1
+      ? Infinity
+      : limits.max_custom_forms;
+  const sortedForms = [...rawForms].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+  );
   const forms = limit === Infinity ? sortedForms : sortedForms.slice(0, limit);
-
 
   const moveMutation = useMutation({
     mutationFn: async ({ id, folderId }: { id: string; folderId: string | null }) => {

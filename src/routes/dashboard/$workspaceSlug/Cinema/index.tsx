@@ -41,9 +41,13 @@ function CinemaDashboardList() {
   });
 
   const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
-  const limit = limits.max_cinemas === undefined || limits.max_cinemas === -1 ? Infinity : limits.max_cinemas;
-  
-  const sortedRawCinemas = [...rawCinemas].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const limit =
+    limits.max_cinemas === undefined || limits.max_cinemas === -1 ? Infinity : limits.max_cinemas;
+
+  const sortedRawCinemas = [...rawCinemas].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+  );
   const cinemas = limit === Infinity ? sortedRawCinemas : sortedRawCinemas.slice(0, limit);
 
   const handleDelete = async (id: string, name: string) => {

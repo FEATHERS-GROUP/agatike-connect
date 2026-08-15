@@ -79,8 +79,15 @@ function StaffWorkspaceDashboard() {
     selectedWorkspaceId ?? undefined,
   );
 
-  const limit = limits.max_custom_apps === undefined || limits.max_custom_apps === -1 ? Infinity : limits.max_custom_apps;
-  const sortedApps = [...rawApps].sort((a: any, b: any) => new Date(b.created_at || b.updated_at || 0).getTime() - new Date(a.created_at || a.updated_at || 0).getTime());
+  const limit =
+    limits.max_custom_apps === undefined || limits.max_custom_apps === -1
+      ? Infinity
+      : limits.max_custom_apps;
+  const sortedApps = [...rawApps].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || b.updated_at || 0).getTime() -
+      new Date(a.created_at || a.updated_at || 0).getTime(),
+  );
   const apps = limit === Infinity ? sortedApps : sortedApps.slice(0, limit);
 
   // Use the first app in the workspace for branding, or default

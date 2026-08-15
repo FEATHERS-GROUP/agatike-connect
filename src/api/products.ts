@@ -64,6 +64,12 @@ const GET_WORKSPACE_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
       event_id
       event {
         id
@@ -108,6 +114,12 @@ const GET_EVENT_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
       product_orders_aggregate {
         aggregate {
           sum {
@@ -161,6 +173,12 @@ const GET_VENUE_PRODUCTS = `
       available_sizes
       available_colors
       specs
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
       product_orders_aggregate {
         aggregate {
           sum {
@@ -205,6 +223,12 @@ const GET_PRODUCT = `
       available_sizes
       available_colors
       specs
+      workspace {
+        currency
+        wallet {
+          currency
+        }
+      }
     }
   }
 `;
@@ -239,6 +263,12 @@ const GET_WORKSPACE_RECENT_ORDERS = `
         name
         type
         specs 
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
         available_sizes
         available_colors
         event {
@@ -418,6 +448,12 @@ const GET_BOOKING_PRODUCT_ORDERS = `
         name
         type
         specs 
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
         image_url
         event_id
         event {
@@ -478,8 +514,13 @@ const GET_DIGITAL_PRODUCT_ORDERS = `
         description
         specs
         workspace_id
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
       }
-    }
   }
 `;
 
@@ -492,12 +533,11 @@ export const getDigitalProductOrders = createServerFn({ method: "POST" }).handle
   return data.product_orders || [];
 });
 
-export const resendDigitalProductEmail = createServerFn({ method: "POST" }).handler(
-  async (ctx) => {
-    const payload = (ctx.data as any).data || ctx.data;
-    const { order_id } = payload as { order_id: string };
+export const resendDigitalProductEmail = createServerFn({ method: "POST" }).handler(async (ctx) => {
+  const payload = (ctx.data as any).data || ctx.data;
+  const { order_id } = payload as { order_id: string };
 
-    const query = `
+  const query = `
       query GetOrderForResend($id: uuid!) {
         product_orders_by_pk(id: $id) {
           id
@@ -511,33 +551,100 @@ export const resendDigitalProductEmail = createServerFn({ method: "POST" }).hand
             description
             specs
             workspace_id
+            workspace {
+              currency
+              wallet {
+                currency
+              }
+            }
           }
         }
       }
     `;
 
-    const data = await hasuraRequest<{ product_orders_by_pk: any }>(query, { id: order_id });
+  const data = await hasuraRequest<{ product_orders_by_pk: any }>(query, { id: order_id });
+  const order = data.product_orders_by_pk;
+
+  if (!order) throw new Error("Order not found");
+
+  const buyerEmail = order.user?.email;
+  const fileUrl = order.product?.specs?.digital_file_url;
+
+  if (!buyerEmail) throw new Error("No buyer email found for this order");
+  if (!fileUrl) throw new Error("No file URL found for this product");
+
+  const { sendDigitalProductDeliveryEmail } = await import("./email");
+  return await sendDigitalProductDeliveryEmail({
+    data: {
+      to: buyerEmail,
+      customerName: order.user?.username || "Customer",
+      productName: order.product?.name || "Digital Product",
+      productDescription: order.product?.description || "",
+      fileUrl,
+      workspaceId: order.product?.workspace_id || null,
+    },
+  } as any);
+});
+
+export const redeemDigitalProduct = createServerFn({ method: "POST" })
+  .validator((d: { orderId: string }) => d)
+  .handler(async (ctx) => {
+    const { orderId } = ctx.data;
+
+    const query = `
+      query GetOrderForRedemption($id: uuid!) {
+        # cache-buster: ${Date.now()}
+        product_orders_by_pk(id: $id) {
+          id
+          picked
+          created_at
+          product {
+            type
+            name
+            specs
+            workspace {
+              currency
+              wallet {
+                currency
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ product_orders_by_pk: any }>(query, { id: orderId });
     const order = data.product_orders_by_pk;
 
-    if (!order) throw new Error("Order not found");
+    if (!order) throw new Error("Order not found.");
+    if (order.product?.type !== "digital") throw new Error("Not a digital product.");
 
-    const buyerEmail = order.user?.email;
+    const orderTime = new Date(order.created_at).getTime();
+    const now = Date.now();
+    const hoursSincePurchase = (now - orderTime) / (1000 * 60 * 60);
+
+    if (hoursSincePurchase > 24) {
+      throw new Error("This download link has expired (24-hour limit exceeded).");
+    }
+
+    if (order.picked) {
+      throw new Error("This secure download link has already been used.");
+    }
+
+    const mutation = `
+      mutation MarkOrderPicked($id: uuid!) {
+        update_product_orders_by_pk(pk_columns: { id: $id }, _set: { picked: true }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(mutation, { id: orderId });
+
     const fileUrl = order.product?.specs?.digital_file_url;
+    if (!fileUrl) throw new Error("Digital file not found for this product.");
 
-    if (!buyerEmail) throw new Error("No buyer email found for this order");
-    if (!fileUrl) throw new Error("No file URL found for this product");
-
-    const { sendDigitalProductDeliveryEmail } = await import("./email");
-    return await sendDigitalProductDeliveryEmail({
-      data: {
-        to: buyerEmail,
-        customerName: order.user?.username || "Customer",
-        productName: order.product?.name || "Digital Product",
-        productDescription: order.product?.description || "",
-        fileUrl,
-        workspaceId: order.product?.workspace_id || null,
-      },
-    } as any);
-  },
-);
-
+    return {
+      fileUrl,
+      productName: order.product?.name,
+    };
+  });

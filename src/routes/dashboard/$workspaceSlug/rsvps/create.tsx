@@ -254,7 +254,12 @@ function CreateFormPage() {
           const base64 = await fileToBase64(coverFile);
           const ext = coverFile.name.split(".").pop() || "jpg";
           const res = await uploadFile({
-            data: { base64, contentType: coverFile.type, folder: buildStoragePath(workspaceSlug, "rsvps", values.title || "form", "cover"), ext },
+            data: {
+              base64,
+              contentType: coverFile.type,
+              folder: buildStoragePath(workspaceSlug, "rsvps", values.title || "form", "cover"),
+              ext,
+            },
           } as any);
           finalCoverUrl = res.url;
         } catch (err) {

@@ -54,6 +54,7 @@ import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DashboardForgotPasswordRouteImport } from './routes/dashboard/forgot-password'
 import { Route as DashboardCreateOrganizerRouteImport } from './routes/dashboard/create-organizer'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
+import { Route as DOrderIdRouteImport } from './routes/d/$orderId'
 import { Route as CinemasCinemaIdRouteImport } from './routes/cinemas/$cinemaId'
 import { Route as CheckoutCartRouteImport } from './routes/checkout/cart'
 import { Route as BusesMobileRouteImport } from './routes/buses/mobile'
@@ -462,6 +463,11 @@ const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
   getParentRoute: () => DashboardRoute,
+} as any)
+const DOrderIdRoute = DOrderIdRouteImport.update({
+  id: '/d/$orderId',
+  path: '/d/$orderId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CinemasCinemaIdRoute = CinemasCinemaIdRouteImport.update({
   id: '/cinemas/$cinemaId',
@@ -1574,6 +1580,7 @@ export interface FileRoutesByFullPath {
   '/buses/mobile': typeof BusesMobileRoute
   '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
+  '/d/$orderId': typeof DOrderIdRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
@@ -1803,6 +1810,7 @@ export interface FileRoutesByTo {
   '/buses/mobile': typeof BusesMobileRoute
   '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
+  '/d/$orderId': typeof DOrderIdRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
@@ -2029,6 +2037,7 @@ export interface FileRoutesById {
   '/buses/mobile': typeof BusesMobileRoute
   '/checkout/cart': typeof CheckoutCartRoute
   '/cinemas/$cinemaId': typeof CinemasCinemaIdRoute
+  '/d/$orderId': typeof DOrderIdRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/create-organizer': typeof DashboardCreateOrganizerRoute
   '/dashboard/forgot-password': typeof DashboardForgotPasswordRoute
@@ -2260,6 +2269,7 @@ export interface FileRouteTypes {
     | '/buses/mobile'
     | '/checkout/cart'
     | '/cinemas/$cinemaId'
+    | '/d/$orderId'
     | '/dashboard/analytics'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
@@ -2489,6 +2499,7 @@ export interface FileRouteTypes {
     | '/buses/mobile'
     | '/checkout/cart'
     | '/cinemas/$cinemaId'
+    | '/d/$orderId'
     | '/dashboard/analytics'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
@@ -2714,6 +2725,7 @@ export interface FileRouteTypes {
     | '/buses/mobile'
     | '/checkout/cart'
     | '/cinemas/$cinemaId'
+    | '/d/$orderId'
     | '/dashboard/analytics'
     | '/dashboard/create-organizer'
     | '/dashboard/forgot-password'
@@ -2944,6 +2956,7 @@ export interface RootRouteChildren {
   BusesMobileRoute: typeof BusesMobileRoute
   CheckoutCartRoute: typeof CheckoutCartRoute
   CinemasCinemaIdRoute: typeof CinemasCinemaIdRoute
+  DOrderIdRoute: typeof DOrderIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   FFormIdRoute: typeof FFormIdRoute
   OrganizersOrganizerIdRoute: typeof OrganizersOrganizerIdRoute
@@ -3289,6 +3302,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/analytics'
       preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/d/$orderId': {
+      id: '/d/$orderId'
+      path: '/d/$orderId'
+      fullPath: '/d/$orderId'
+      preLoaderRoute: typeof DOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/cinemas/$cinemaId': {
       id: '/cinemas/$cinemaId'
@@ -5132,6 +5152,7 @@ const rootRouteChildren: RootRouteChildren = {
   BusesMobileRoute: BusesMobileRoute,
   CheckoutCartRoute: CheckoutCartRoute,
   CinemasCinemaIdRoute: CinemasCinemaIdRoute,
+  DOrderIdRoute: DOrderIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   FFormIdRoute: FFormIdRoute,
   OrganizersOrganizerIdRoute: OrganizersOrganizerIdRoute,

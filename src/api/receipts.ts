@@ -2,7 +2,9 @@ export async function generateProductReceiptPdf(
   orders: any[],
   orgDetails: any,
   customerDetails: any,
-  customerFee: number = 0,
+  totalPaid: number = 0,
+  baseCurrency: string = "RWF",
+  paidCurrency: string = "RWF",
 ): Promise<any> {
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
@@ -180,27 +182,50 @@ export async function generateProductReceiptPdf(
   doc.setTextColor(...mutedColor);
   doc.text("Subtotal", 130, cursorY, { align: "right" });
   doc.setTextColor(...darkColor);
-  doc.text(`RWF ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  doc.text(`${baseCurrency} ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, {
+    align: "right",
+  });
 
-  // Fees
-  cursorY += 8;
-  doc.setTextColor(...mutedColor);
-  doc.text("Platform Fees", 130, cursorY, { align: "right" });
-  doc.setTextColor(...darkColor);
-  doc.text(`RWF ${customerFee.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  const actualTotalPaid = totalPaid || subtotalAmount;
 
-  // Total
-  cursorY += 6;
-  doc.line(120, cursorY, W - 14, cursorY);
+  if (baseCurrency !== paidCurrency) {
+    // Cross currency, just show total paid
+    cursorY += 6;
+    doc.line(120, cursorY, W - 14, cursorY);
 
-  cursorY += 8;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
+    cursorY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
 
-  doc.setTextColor(...primaryColor);
-  const finalTotal = subtotalAmount + customerFee;
-  doc.text(`RWF ${finalTotal.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+    doc.setTextColor(...primaryColor);
+    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, {
+      align: "right",
+    });
+  } else {
+    // Same currency, calculate fee and show standard breakdown
+    const fee = actualTotalPaid - subtotalAmount;
+    if (fee > 0) {
+      cursorY += 8;
+      doc.setTextColor(...mutedColor);
+      doc.text("Platform Fees", 130, cursorY, { align: "right" });
+      doc.setTextColor(...darkColor);
+      doc.text(`${paidCurrency} ${fee.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+    }
+
+    cursorY += 6;
+    doc.line(120, cursorY, W - 14, cursorY);
+
+    cursorY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
+
+    doc.setTextColor(...primaryColor);
+    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, {
+      align: "right",
+    });
+  }
 
   // ── Footer ───────────────────────────────────────────────
   doc.setFont("helvetica", "normal");
@@ -213,7 +238,11 @@ export async function generateProductReceiptPdf(
   return pdfBuffer;
 }
 
-export async function generateVoucherPdf(order: any, orgDetails: any): Promise<any> {
+export async function generateVoucherPdf(
+  order: any,
+  orgDetails: any,
+  currency: string = "RWF",
+): Promise<any> {
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
 
@@ -260,8 +289,15 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
     parseFloat(order.amount_paid || "0") / qty;
   const value = order.current_balance || unitPrice || 0;
 
+  const actualCurrency =
+    order?.product?.workspace?.wallet?.currency ||
+    order?.product?.workspace?.currency ||
+    order?.product?.currency ||
+    order?.currency ||
+    currency;
+
   doc.setFontSize(48);
-  doc.text(`RWF ${value.toLocaleString()}`, 150, 110, { align: "center" });
+  doc.text(`${actualCurrency} ${value.toLocaleString()}`, 150, 110, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(22);

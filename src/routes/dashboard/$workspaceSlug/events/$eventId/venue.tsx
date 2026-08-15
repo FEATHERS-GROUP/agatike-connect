@@ -135,10 +135,7 @@ function VenueView() {
 
           if (updatedStop.venueImageFile) {
             const folderPath = buildStoragePath(workspaceSlug, "events", event?.title, "venues");
-            const url = await uploadFileToStorage(
-              updatedStop.venueImageFile,
-              folderPath,
-            );
+            const url = await uploadFileToStorage(updatedStop.venueImageFile, folderPath);
             updatedStop.venue_image_url = url;
             updatedStop.venueImageFile = undefined;
           }

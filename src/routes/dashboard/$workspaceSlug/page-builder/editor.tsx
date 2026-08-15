@@ -350,7 +350,12 @@ function PageBuilder() {
     }
     const loadingToast = toast.loading("Uploading image...");
     try {
-      const folderPath = buildStoragePath(workspaceSlug, "page-builder", editorState.title || "page", "media");
+      const folderPath = buildStoragePath(
+        workspaceSlug,
+        "page-builder",
+        editorState.title || "page",
+        "media",
+      );
       const url = await uploadFileToStorage(file, folderPath);
       setter(url);
       toast.success("Uploaded!", { id: loadingToast });

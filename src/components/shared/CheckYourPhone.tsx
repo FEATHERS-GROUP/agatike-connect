@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import agatikeIcon from "@/assets/logo/Agatike Icon.png";
+import { Loader2 } from "lucide-react";
 
 interface CheckYourPhoneProps {
   amount?: number;
@@ -31,18 +32,10 @@ export const CheckYourPhone = ({
       <p className="text-md text-foreground font-semibold mb-10 max-w-sm mx-auto">
         Processing... Please don't close this window!
       </p>
-      <div className="flex gap-3 mb-10 justify-center">
-        <div
-          className="h-3 w-3 rounded-full"
-          style={{ backgroundColor: themeColor || "var(--primary)" }}
-        />
-        <div
-          className="h-3 w-3 rounded-full"
-          style={{ backgroundColor: themeColor || "var(--primary)" }}
-        />
-        <div
-          className="h-3 w-3 rounded-full"
-          style={{ backgroundColor: themeColor || "var(--primary)" }}
+      <div className="flex justify-center mb-10">
+        <Loader2
+          className="h-12 w-12 animate-spin"
+          style={{ color: themeColor || "hsl(var(--primary))" }}
         />
       </div>
       {status === "payment" && (

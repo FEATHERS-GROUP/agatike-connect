@@ -1,24 +1,33 @@
-import { hasuraRequest } from "./src/api/graphql.server";
+import { getServerConfig } from "./src/lib/config.server.ts";
 
-async function run() {
-  const query = `
-    query GetFees {
-      payment_provider_fees(where: { network: { _eq: "MTN_MOMO_RWA" } }) {
-        network
-        country_code
-        collection_percentage
-        collection_fixed_fee
-        is_tiered
-        tiered_rules
-      }
-    }
-  `;
-  try {
-    const data = await hasuraRequest(query);
-    console.log(JSON.stringify(data, null, 2));
-  } catch (e) {
-    console.error(e);
-  }
+async function main() {
+  const config = getServerConfig();
+  console.log("Config loaded");
+
+  if (!config.hasuraAdminApi) throw new Error("Missing HASURA_ADMIN_API");
+  if (!config.hasuraAdminSecret) throw new Error("Missing HASURA_ADMIN_SECRETE");
+
+  const fetchPromise = await fetch(config.hasuraAdminApi, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-hasura-admin-secret": config.hasuraAdminSecret,
+    },
+    body: JSON.stringify({
+      query: `
+        query {
+          product_orders(limit: 5, order_by: { created_at: desc }) {
+            id
+            picked
+            status
+          }
+        }
+      `,
+    }),
+  });
+
+  const json = await fetchPromise.json();
+  console.log(JSON.stringify(json, null, 2));
 }
 
-run();
+main().catch(console.error);

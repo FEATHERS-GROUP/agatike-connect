@@ -196,14 +196,18 @@ function NewProductPage() {
       if (formData.type === "digital" && digitalFile) {
         const formDataUpload = new FormData();
         formDataUpload.append("file", digitalFile);
-        const folderPath = buildStoragePath(activeWorkspace?.slug, "digital_products", formData.name);
+        const folderPath = buildStoragePath(
+          activeWorkspace?.slug,
+          "digital_products",
+          formData.name,
+        );
         formDataUpload.append("folder", folderPath);
-        
+
         try {
           const res = await uploadFormData({ data: formDataUpload } as any);
           payload.specs = { digital_file_url: res.url };
         } catch (err) {
-           throw new Error("Failed to upload digital file.");
+          throw new Error("Failed to upload digital file.");
         }
       }
 
@@ -401,7 +405,7 @@ function NewProductPage() {
                   Basic Information
                 </h3>
 
-                {formData.type === "physical" && (
+                {(formData.type === "physical" || formData.type === "digital") && (
                   <div className="flex flex-col gap-2">
                     <label className="relative flex aspect-[4/5] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-border/50 bg-secondary/20 transition-all hover:border-primary/50 group">
                       {imagePreview ? (
@@ -452,7 +456,11 @@ function NewProductPage() {
                         }}
                         className="h-14 rounded-2xl bg-secondary/20 border-border/40 focus:bg-background pt-3"
                       />
-                      {digitalFile && <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>}
+                      {digitalFile && (
+                        <p className="text-xs text-muted-foreground">
+                          Selected: {digitalFile.name}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}

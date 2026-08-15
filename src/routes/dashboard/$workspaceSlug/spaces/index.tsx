@@ -67,9 +67,13 @@ function SpacesListingsPage() {
   });
 
   const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
-  const limit = limits.max_spaces === undefined || limits.max_spaces === -1 ? Infinity : limits.max_spaces;
-  
-  const sortedRawSpaces = [...rawSpaces].sort((a: any, b: any) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+  const limit =
+    limits.max_spaces === undefined || limits.max_spaces === -1 ? Infinity : limits.max_spaces;
+
+  const sortedRawSpaces = [...rawSpaces].sort(
+    (a: any, b: any) =>
+      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(),
+  );
   const spaces = limit === Infinity ? sortedRawSpaces : sortedRawSpaces.slice(0, limit);
 
   const totalSpaces = spaces.length;

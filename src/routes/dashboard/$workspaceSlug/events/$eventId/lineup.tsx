@@ -60,7 +60,12 @@ function LineupPage() {
       const processedLineup = await Promise.all(
         lineup.map(async (member) => {
           if (member.avatarFile) {
-            const folderPath = buildStoragePath(activeWorkspace?.slug, "events", event?.title, "lineup");
+            const folderPath = buildStoragePath(
+              activeWorkspace?.slug,
+              "events",
+              event?.title,
+              "lineup",
+            );
             const url = await uploadFileToStorage(member.avatarFile, folderPath);
             return { ...member, avatarUrl: url, avatarFile: undefined };
           }

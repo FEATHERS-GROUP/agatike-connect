@@ -81,9 +81,12 @@ function DashboardEvents() {
   });
 
   const { limits } = useSubscriptionLimits(activeWorkspace?.orgnizer_id, activeWorkspace?.id);
-  const limit = limits.max_events === undefined || limits.max_events === -1 ? Infinity : limits.max_events;
-  
-  const sortedRawEvents = [...rawEvents].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const limit =
+    limits.max_events === undefined || limits.max_events === -1 ? Infinity : limits.max_events;
+
+  const sortedRawEvents = [...rawEvents].sort(
+    (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
   const visibleRawEvents = limit === Infinity ? sortedRawEvents : sortedRawEvents.slice(0, limit);
 
   const experienceCategories = [
