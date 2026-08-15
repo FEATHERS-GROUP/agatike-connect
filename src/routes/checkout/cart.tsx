@@ -73,7 +73,7 @@ function CartCheckoutPage() {
   const fontFamily = settingsBlock?.fontFamily || "Inter";
   const workspaceId = pageData?.workspace_id;
   const logoUrl = pageData?.logo_url;
-  const workspaceCurrency = pageData?.currency || "RWF";
+  const workspaceCurrency = pageData?.workspace?.wallet?.currency || pageData?.workspace?.currency || "RWF";
   const customerServiceFeePct = parseFloat(pageData?.customer_service_fee_percentage) || 0;
   const customerCollectionFeePct = parseFloat(pageData?.customer_collection_fee_percentage) || 0;
   const customerCollectionFixed = parseFloat(pageData?.customer_collection_fee_fixed) || 0;

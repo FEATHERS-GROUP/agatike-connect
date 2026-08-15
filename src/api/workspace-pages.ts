@@ -43,6 +43,12 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         created_at
         updated_at
         parent_id
+        workspace {
+          currency
+          wallet {
+            currency
+          }
+        }
         parent {
           slug
           title

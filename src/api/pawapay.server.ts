@@ -57,8 +57,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           providerStatus === "COMPLETED"
             ? "completed"
             : providerStatus === "FAILED" ||
-                providerStatus === "REJECTED" ||
-                providerStatus === "REVERSED"
+              providerStatus === "REJECTED" ||
+              providerStatus === "REVERSED"
               ? "failed"
               : "pending",
         raw_callback_data: body,
@@ -225,6 +225,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 _set: { status: "Confirmed" }
               ) {
                 returning {
+                  id
                   product_id
                   qty
                   size
@@ -264,10 +265,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const firstAtt = confirmedAttendees.length > 0 ? confirmedAttendees[0] : null;
           let appUrl = process.env.PROJECT_PRODUCTION_URL
             ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-            : "https://agatike.com";
+            : "https://agatike.rw";
 
           if (wsSlug) {
-            appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+            appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.rw"}`;
           }
 
           let eventName = "Your Event";
@@ -315,7 +316,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           const feeText =
             customerFee > 0 ? `(Inc. ${customerFee} ${body?.currency || ""} fee)` : "";
 
-          const baseDomain = process.env.PROJECT_PRODUCTION_URL || "agatike.com";
+          const baseDomain = process.env.PROJECT_PRODUCTION_URL || "agatike.rw";
           const domain = wsSlug ? `${wsSlug}.${baseDomain}` : baseDomain;
           // ── NOTIFICATIONS (Skipped for Web Portal Checkouts) ──
           if (!tx.type?.startsWith("portal_")) {
@@ -471,8 +472,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   for (const order of confirmedOrders) {
                     if (order.product?.type === "voucher") {
                       const vBuffer = await generateVoucherPdf(
-                        order, 
-                        orgDetails, 
+                        order,
+                        orgDetails,
                         firstAtt?.events?.workspaces?.currency || firstAtt?.events?.workspaces?.wallet?.currency || body?.baseCurrency || "RWF"
                       );
                       attachments.push({
@@ -547,7 +548,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 for (const order of confirmedOrders) {
                   if (order.product?.type === "voucher") {
                     const vBuffer = await generateVoucherPdf(
-                      order, 
+                      order,
                       orgDetails,
                       body?.baseCurrency || "RWF"
                     );
@@ -670,10 +671,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
               const formattedStart = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
                 : sub.start_date;
 
               if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
@@ -742,10 +743,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
                 : "today";
 
               const smsText =
@@ -832,9 +833,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
           let msg = "";
           if (tx.type === "subscription") {
-            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com/dashboard`;
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your Agatike subscription plan is now active. Manage your account at: https://agatike.com`;
           } else if (tx.type === "space_subscription") {
-            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com/dashboard`;
+            msg = `Your Agatike Payment of ${amountDisplay} confirmed! Your space subscription is now active. Visit: https://agatike.com`;
           } else if (tx.type === "venue_booking" || tx.type === "portal_venue_booking") {
             try {
               const bookingId = tx.reference_id?.split(",")[0];
