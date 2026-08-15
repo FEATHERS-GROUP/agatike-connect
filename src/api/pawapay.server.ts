@@ -195,8 +195,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                       logoColorMode
                       logoScale
                       logoOpacity
-                      layout
-                      back
                       design_overrides
                     }
                   }

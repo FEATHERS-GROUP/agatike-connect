@@ -152,8 +152,8 @@ function PageBuilderGallery() {
 
   return (
     <div className="flex flex-col h-full bg-secondary/10">
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 md:px-6 py-6">
+        <div className="max-w-[1400px] w-full mx-auto">
           <Tabs defaultValue="templates" className="w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <TabsList>
