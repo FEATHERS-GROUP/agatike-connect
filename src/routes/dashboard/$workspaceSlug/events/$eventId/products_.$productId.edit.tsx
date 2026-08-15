@@ -17,7 +17,7 @@ import { getProduct, updateProduct } from "@/api/products";
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { uploadFileToStorage } from "@/lib/firebase-storage";
-import { buildStoragePath } from "@/api/storage";
+import { buildStoragePath, uploadFormData } from "@/api/storage";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -63,6 +63,8 @@ function EditProductPage() {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [digitalFile, setDigitalFile] = useState<File | null>(null);
+  const [digitalFileUrl, setDigitalFileUrl] = useState<string>("");
 
   type ColorVariant = { name: string; stock: number };
   type SizeVariant = { name: string; stock: number; colors: ColorVariant[] };
@@ -109,6 +111,9 @@ function EditProductPage() {
           : [],
       );
       setSpecs(Array.isArray(product.specs) ? product.specs : []);
+      if (product.type === "digital" && product.specs && !Array.isArray(product.specs) && product.specs.digital_file_url) {
+        setDigitalFileUrl(product.specs.digital_file_url);
+      }
     }
   }, [product]);
 
@@ -215,6 +220,23 @@ function EditProductPage() {
 
         const validSpecs = specs.filter((s) => s.key.trim() && s.value.trim());
         payload.specs = validSpecs.length > 0 ? validSpecs : null;
+      }
+
+      if (formData.type === "digital") {
+        let currentSpecs: any = { ...((product?.specs && !Array.isArray(product?.specs)) ? product.specs : {}) };
+        if (digitalFile) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("file", digitalFile);
+          const folderPath = buildStoragePath(workspaceSlug, "digital_products", formData.name);
+          formDataUpload.append("folder", folderPath);
+          try {
+            const res = await uploadFormData({ data: formDataUpload } as any);
+            currentSpecs.digital_file_url = res.url;
+          } catch (err) {
+             throw new Error("Failed to upload digital file.");
+          }
+        }
+        payload.specs = currentSpecs;
       }
 
       if (imageFile) {
@@ -328,7 +350,7 @@ function EditProductPage() {
                 Basic Information
               </h3>
 
-              {formData.type === "physical" && (
+              {(formData.type === "physical" || formData.type === "digital") && (
                 <div className="flex flex-col gap-2">
                   <label className="relative flex aspect-[4/5] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-border/50 bg-secondary/20 transition-all hover:border-primary/50 group">
                     {imagePreview ? (
@@ -357,6 +379,36 @@ function EditProductPage() {
                       }}
                     />
                   </label>
+                </div>
+              )}
+
+              {formData.type === "digital" && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <Label className="text-xs uppercase tracking-widest font-semibold text-muted-foreground">
+                    Upload Digital File (Max 20MB)
+                  </Label>
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      type="file"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        if (f.size > 20 * 1024 * 1024) {
+                          toast.error("File must be smaller than 20MB");
+                          return;
+                        }
+                        setDigitalFile(f);
+                      }}
+                      className="h-14 rounded-2xl bg-secondary/20 border-border/40 focus:bg-background pt-3"
+                    />
+                    {digitalFile ? (
+                      <p className="text-xs text-muted-foreground">Selected: {digitalFile.name}</p>
+                    ) : digitalFileUrl ? (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        Current file: <a href={digitalFileUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate max-w-[200px]">{digitalFileUrl.split('/').pop()}</a>
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               )}
 

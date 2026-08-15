@@ -257,6 +257,7 @@ export function RenderedPage({
   // Uniform branding: inherit theme and logo from parent
   const theme_color = page.parent?.theme_color || page.theme_color || "#000000";
   const logo_url = page.parent?.logo_url || page.logo_url;
+  const currency = page.currency || page.parent?.currency || page.workspaces?.currency || "RWF";
 
   const settingsBlock = components?.find((c: any) => c.type === "page_settings");
   const parentSettingsBlock = page.parent?.components?.find((c: any) => c.type === "page_settings");
@@ -1341,7 +1342,7 @@ export function RenderedPage({
                               >
                                 <span>{comp.label || "Pay Now"}</span>
                                 {comp.amount && (
-                                  <span className="text-sm opacity-90">{comp.amount} RWF</span>
+                                  <span className="text-sm opacity-90">{comp.amount} {currency}</span>
                                 )}
                               </a>
                             ) : (
@@ -1754,10 +1755,10 @@ export function RenderedPage({
                                         <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
                                           {wrap(
                                             "inv_item_price",
-                                            <span className="font-bold text-lg text-foreground truncate mr-2 w-full">
+                                            <span className="font-bold text-lg truncate mr-2 w-full text-primary transition-colors">
                                               {(() => {
                                                 if (item.price)
-                                                  return `${Number(item.price).toLocaleString()} RWF`;
+                                                  return `${Number(item.price).toLocaleString()} ${currency}`;
                                                 if (comp.type === "event_list") {
                                                   if (
                                                     item.event_tickets &&
@@ -1770,7 +1771,7 @@ export function RenderedPage({
                                                     );
                                                     return minPrice === 0
                                                       ? "Free"
-                                                      : `From ${minPrice.toLocaleString()} RWF`;
+                                                      : `From ${minPrice.toLocaleString()} ${currency}`;
                                                   }
                                                   return "Free";
                                                 }
