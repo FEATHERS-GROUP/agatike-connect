@@ -73,6 +73,17 @@ function CartCheckoutPage() {
   const fontFamily = settingsBlock?.fontFamily || "Inter";
   const workspaceId = pageData?.workspace_id;
   const logoUrl = pageData?.logo_url;
+  const workspaceCurrency = pageData?.currency || "RWF";
+  const customerServiceFeePct = parseFloat(pageData?.customer_service_fee_percentage) || 0;
+  const customerCollectionFeePct = parseFloat(pageData?.customer_collection_fee_percentage) || 0;
+  const customerCollectionFixed = parseFloat(pageData?.customer_collection_fee_fixed) || 0;
+
+  const taxAmount = Math.ceil(
+    cartTotal * (customerServiceFeePct / 100) +
+    cartTotal * (customerCollectionFeePct / 100) +
+    customerCollectionFixed
+  );
+  const totalDue = cartTotal + taxAmount;
 
   // 3. Payment Processing Mutation
   const paymentMutation = useMutation({
@@ -124,10 +135,10 @@ function CartCheckoutPage() {
         data: {
           amount: finalAmount,
           baseAmount: baseAmount,
-          baseCurrency: "RWF",
+          baseCurrency: workspaceCurrency,
           phone: paymentDetails.phone,
           network: paymentDetails.network,
-          currency: paymentDetails.currency || "RWF",
+          currency: paymentDetails.currency || workspaceCurrency,
           type: `page_builder_checkout::${window.location.hostname}`,
           referenceId: newBookingRef,
           workspaceId: workspaceId,
@@ -185,8 +196,8 @@ function CartCheckoutPage() {
       <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center bg-background space-y-6">
         <ShoppingCart className="w-20 h-20 text-muted-foreground opacity-50" />
         <h2 className="text-2xl font-bold">Your cart is empty</h2>
-        <Button onClick={() => window.history.back()} variant="outline">
-          Return to {pageData?.title || "Store"}
+        <Button onClick={() => window.location.href = "/"} variant="outline">
+          Return to Home Page
         </Button>
       </div>
     );
@@ -212,9 +223,9 @@ function CartCheckoutPage() {
           <Button
             className="w-full h-12 rounded-xl mt-4 font-bold"
             style={{ backgroundColor: themeColor, color: "#fff" }}
-            onClick={() => window.history.back()}
+            onClick={() => window.location.href = "/"}
           >
-            Return to {pageData?.title || "Store"}
+            Return to Home Page
           </Button>
         </div>
       </div>
@@ -279,7 +290,7 @@ function CartCheckoutPage() {
             <h3 className="text-white/80 text-base mb-2">Pay for Order</h3>
             <div className="flex items-baseline gap-2 mb-4">
               <span className="text-4xl md:text-5xl font-bold tracking-tight">
-                RWF {cartTotal.toLocaleString()}
+                {workspaceCurrency} {cartTotal.toLocaleString()}
               </span>
             </div>
           </div>
@@ -300,7 +311,7 @@ function CartCheckoutPage() {
                     <div className="flex justify-between items-start">
                       <span className="font-medium text-sm line-clamp-1">{item.product.name}</span>
                       <span className="font-medium text-sm">
-                        RWF {((item.product.price || 0) * item.qty).toLocaleString()}
+                        {workspaceCurrency} {((item.product.price || 0) * item.qty).toLocaleString()}
                       </span>
                     </div>
                     <div className="text-white/70 text-xs mt-1">
@@ -313,15 +324,15 @@ function CartCheckoutPage() {
 
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
               <span className="text-sm">Subtotal</span>
-              <span className="font-medium text-white">RWF {cartTotal.toLocaleString()}</span>
+              <span className="font-medium text-white">{workspaceCurrency} {cartTotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
-              <span className="text-sm">Taxes</span>
-              <span className="font-medium text-white">RWF 0.00</span>
+              <span className="text-sm">Taxes (Service Fee)</span>
+              <span className="font-medium text-white">{workspaceCurrency} {taxAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center pt-2">
               <span className="font-semibold text-base">Total due today</span>
-              <span className="text-xl font-bold">RWF {cartTotal.toLocaleString()}</span>
+              <span className="text-xl font-bold">{workspaceCurrency} {totalDue.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -473,7 +484,7 @@ function CartCheckoutPage() {
             >
               {paymentMutation.isPending
                 ? "Processing..."
-                : `Pay RWF ${cartTotal.toLocaleString()}`}
+                : `Pay ${workspaceCurrency} ${totalDue.toLocaleString()}`}
             </Button>
 
             <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed max-w-sm mx-auto">
@@ -494,7 +505,7 @@ function CartCheckoutPage() {
           baseAmount={cartTotal}
           quantity={items.length}
           itemLabel={`Buy ${items.length} items`}
-          baseCurrency="RWF"
+          baseCurrency={workspaceCurrency}
           userPhone={buyerPhone}
           isProcessing={paymentMutation.isPending}
           isGenerating={false}

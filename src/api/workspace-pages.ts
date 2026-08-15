@@ -70,6 +70,10 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
       query GetOrganizerSub($workspace_id: uuid!) {
         workspaces_by_pk(id: $workspace_id) {
           orgnizer_id
+          currency
+          wallet {
+            currency
+          }
         }
       }
     `;
@@ -96,6 +100,9 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
               trial_extensions_count
               pricing_plan {
                 usage_limits
+                customer_service_fee_percentage
+                customer_collection_fee_percentage
+                customer_collection_fee_fixed
               }
             }
             workspace_pages(
@@ -112,6 +119,13 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
         page.is_expired = false;
 
         const activeSub = subRes.subscriptions?.[0];
+        
+        // Attach fee and currency to the page object
+        page.currency = wsData.workspaces_by_pk?.wallet?.currency || wsData.workspaces_by_pk?.currency || "RWF";
+        page.customer_service_fee_percentage = activeSub?.pricing_plan?.customer_service_fee_percentage || 0;
+        page.customer_collection_fee_percentage = activeSub?.pricing_plan?.customer_collection_fee_percentage || 0;
+        page.customer_collection_fee_fixed = activeSub?.pricing_plan?.customer_collection_fee_fixed || 0;
+
         let isTrialExpired = false;
         if (activeSub) {
           if (activeSub.amount === 0) {

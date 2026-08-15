@@ -39,17 +39,23 @@ export async function deductInventoryFromOrders(orders: any[]) {
         newSoldCount += qty;
 
         if (newStockLimit !== null) {
-          // Do not decrease stock_limit as it represents total capacity.
-          // sold_count already tracks what's been sold.
+          newStockLimit = Math.max(0, newStockLimit - qty);
         }
 
         let parsedSize = order.size;
         let parsedColor = order.color;
 
-        if (order.size && !order.color && order.size.includes(" - ")) {
-          const parts = order.size.split(" - ");
-          parsedSize = parts[0];
-          parsedColor = parts[1];
+        // Strip out the appended email data
+        if (parsedSize && parsedSize.includes("| email:")) {
+          parsedSize = parsedSize.split("| email:")[0].trim();
+        } else if (parsedSize && parsedSize.startsWith("email:")) {
+          parsedSize = null;
+        }
+
+        if (parsedSize && !parsedColor && parsedSize.includes(" - ")) {
+          const parts = parsedSize.split(" - ");
+          parsedSize = parts[0].trim();
+          parsedColor = parts[1].trim();
         }
 
         if (parsedSize) {
@@ -87,13 +93,15 @@ export async function deductInventoryFromOrders(orders: any[]) {
       const updateQuery = `
         mutation UpdateProductInventory(
           $id: uuid!, 
-          $sold_count: String, 
+          $sold_count: String,
+          $stock_limit: String,
           $available_sizes: jsonb
         ) {
           update_products_by_pk(
             pk_columns: { id: $id },
             _set: {
               sold_count: $sold_count,
+              stock_limit: $stock_limit,
               available_sizes: $available_sizes
             }
           ) {
@@ -105,6 +113,7 @@ export async function deductInventoryFromOrders(orders: any[]) {
       await hasuraRequest(updateQuery, {
         id: productId,
         sold_count: String(newSoldCount),
+        stock_limit: newStockLimit !== null ? String(newStockLimit) : null,
         available_sizes: sizes.length > 0 ? sizes : null,
       });
     } catch (e) {
