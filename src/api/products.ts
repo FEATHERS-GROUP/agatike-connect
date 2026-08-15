@@ -64,7 +64,6 @@ const GET_WORKSPACE_PRODUCTS = `
       available_sizes
       available_colors
       specs
-      currency
       workspace {
         currency
         wallet {
@@ -115,7 +114,6 @@ const GET_EVENT_PRODUCTS = `
       available_sizes
       available_colors
       specs
-      currency
       workspace {
         currency
         wallet {
@@ -175,7 +173,6 @@ const GET_VENUE_PRODUCTS = `
       available_sizes
       available_colors
       specs
-      currency
       workspace {
         currency
         wallet {
@@ -226,7 +223,6 @@ const GET_PRODUCT = `
       available_sizes
       available_colors
       specs
-      currency
       workspace {
         currency
         wallet {
@@ -267,7 +263,6 @@ const GET_WORKSPACE_RECENT_ORDERS = `
         name
         type
         specs 
-        currency
         workspace {
           currency
           wallet {
@@ -453,7 +448,6 @@ const GET_BOOKING_PRODUCT_ORDERS = `
         name
         type
         specs 
-        currency
         workspace {
           currency
           wallet {
@@ -520,7 +514,6 @@ const GET_DIGITAL_PRODUCT_ORDERS = `
         description
         specs
         workspace_id
-        currency
         workspace {
           currency
           wallet {
@@ -559,7 +552,6 @@ export const resendDigitalProductEmail = createServerFn({ method: "POST" }).hand
             description
             specs
             workspace_id
-            currency
             workspace {
               currency
               wallet {
@@ -611,7 +603,6 @@ export const redeemDigitalProduct = createServerFn({ method: "POST" })
             type
             name
             specs
-            currency
             workspace {
               currency
               wallet {

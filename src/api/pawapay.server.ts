@@ -235,7 +235,6 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     name
                     type
                     specs
-                    currency
                     workspace {
                       currency
                       wallet {
