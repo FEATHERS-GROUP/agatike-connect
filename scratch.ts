@@ -3,6 +3,10 @@ import { getServerConfig } from "./src/lib/config.server.ts";
 async function main() {
   const config = getServerConfig();
   console.log("Config loaded");
+
+  if (!config.hasuraAdminApi) throw new Error("Missing HASURA_ADMIN_API");
+  if (!config.hasuraAdminSecret) throw new Error("Missing HASURA_ADMIN_SECRETE");
+
   const fetchPromise = await fetch(config.hasuraAdminApi, {
     method: "POST",
     headers: {
