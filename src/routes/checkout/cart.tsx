@@ -6,7 +6,7 @@ import { createProductOrders, checkProductOrderStatus } from "@/api/products";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle, ShoppingCart } from "lucide-react";
+import { ArrowLeft, CreditCard, Lock, Smartphone, CheckCircle, ShoppingCart, Loader2 } from "lucide-react";
 import { CheckYourPhone } from "@/components/shared/CheckYourPhone";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PaymentModal } from "@/components/shared/PaymentModal";
@@ -498,9 +498,14 @@ function CartCheckoutPage() {
               onClick={handlePayClick}
               disabled={paymentMutation.isPending}
             >
-              {paymentMutation.isPending
-                ? "Processing..."
-                : `Pay ${workspaceCurrency} ${totalDue.toLocaleString()}`}
+              {paymentMutation.isPending ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Pay ${workspaceCurrency} ${totalDue.toLocaleString()}`
+              )}
             </Button>
 
             <p className="text-[11px] text-center text-muted-foreground mt-4 leading-relaxed max-w-sm mx-auto">

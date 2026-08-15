@@ -99,12 +99,7 @@ function DigitalDownloadPage() {
               onClick={handleDownload}
               disabled={downloadState === "downloading"}
             >
-              {downloadState === "downloading" ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Verifying...
-                </>
-              ) : downloadState === "success" ? (
+              {downloadState === "success" ? (
                 <>
                   <Download className="w-5 h-5 mr-2" />
                   Download Again
@@ -119,6 +114,17 @@ function DigitalDownloadPage() {
           )}
         </CardFooter>
       </Card>
+      
+      {/* Loading Overlay */}
+      {downloadState === "downloading" && (
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+          <Loader2 className="w-16 h-16 animate-spin text-primary mb-8" />
+          <h2 className="text-3xl font-bold mb-4">Preparing your download...</h2>
+          <p className="text-lg text-muted-foreground max-w-sm">
+            Please wait while we verify your purchase and generate your secure link.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
