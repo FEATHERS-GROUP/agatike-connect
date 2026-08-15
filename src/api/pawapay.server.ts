@@ -464,7 +464,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
                   for (const order of confirmedOrders) {
                     if (order.product?.type === "voucher") {
-                      const vBuffer = await generateVoucherPdf(order, orgDetails);
+                      const vBuffer = await generateVoucherPdf(
+                        order, 
+                        orgDetails, 
+                        firstAtt?.events?.workspaces?.currency || body?.baseCurrency || "RWF"
+                      );
                       attachments.push({
                         filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
                         content: vBuffer.toString("base64"),
@@ -536,7 +540,11 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
                 for (const order of confirmedOrders) {
                   if (order.product?.type === "voucher") {
-                    const vBuffer = await generateVoucherPdf(order, orgDetails);
+                    const vBuffer = await generateVoucherPdf(
+                      order, 
+                      orgDetails,
+                      body?.baseCurrency || "RWF"
+                    );
                     attachments.push({
                       filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
                       content: vBuffer.toString("base64"),

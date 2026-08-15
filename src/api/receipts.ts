@@ -232,7 +232,7 @@ export async function generateProductReceiptPdf(
   return pdfBuffer;
 }
 
-export async function generateVoucherPdf(order: any, orgDetails: any): Promise<any> {
+export async function generateVoucherPdf(order: any, orgDetails: any, currency: string = "RWF"): Promise<any> {
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
 
@@ -280,7 +280,7 @@ export async function generateVoucherPdf(order: any, orgDetails: any): Promise<a
   const value = order.current_balance || unitPrice || 0;
 
   doc.setFontSize(48);
-  doc.text(`RWF ${value.toLocaleString()}`, 150, 110, { align: "center" });
+  doc.text(`${currency} ${value.toLocaleString()}`, 150, 110, { align: "center" });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(22);
