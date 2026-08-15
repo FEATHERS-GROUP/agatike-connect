@@ -541,3 +541,58 @@ export const resendDigitalProductEmail = createServerFn({ method: "POST" }).hand
   },
 );
 
+export const redeemDigitalProduct = createServerFn({ method: "POST" })
+  .validator((d: { orderId: string }) => d)
+  .handler(async (ctx) => {
+    const { orderId } = ctx.data;
+
+    const query = `
+      query GetOrderForRedemption($id: uuid!) {
+        product_orders_by_pk(id: $id) {
+          id
+          picked
+          created_at
+          product {
+            type
+            name
+            specs
+          }
+        }
+      }
+    `;
+
+    const data = await hasuraRequest<{ product_orders_by_pk: any }>(query, { id: orderId });
+    const order = data.product_orders_by_pk;
+
+    if (!order) throw new Error("Order not found.");
+    if (order.product?.type !== "digital") throw new Error("Not a digital product.");
+
+    const orderTime = new Date(order.created_at).getTime();
+    const now = Date.now();
+    const hoursSincePurchase = (now - orderTime) / (1000 * 60 * 60);
+
+    if (hoursSincePurchase > 24) {
+      throw new Error("This download link has expired (24-hour limit exceeded).");
+    }
+
+    if (order.picked) {
+      throw new Error("This secure download link has already been used.");
+    }
+
+    const mutation = `
+      mutation MarkOrderPicked($id: uuid!) {
+        update_product_orders_by_pk(pk_columns: { id: $id }, _set: { picked: true }) {
+          id
+        }
+      }
+    `;
+    await hasuraRequest(mutation, { id: orderId });
+
+    const fileUrl = order.product?.specs?.digital_file_url;
+    if (!fileUrl) throw new Error("Digital file not found for this product.");
+
+    return {
+      fileUrl,
+      productName: order.product?.name
+    };
+  });

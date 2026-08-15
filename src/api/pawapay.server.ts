@@ -325,15 +325,31 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             let digitalDownloadsText = "";
             const digitalOrders = confirmedOrders.filter((o: any) => o.product?.type === 'digital' && o.product?.specs?.digital_file_url);
             if (digitalOrders.length > 0) {
-              digitalDownloadsText = `\n\nDownload your digital products here:\n` + digitalOrders.map((o: any) => `- ${o.product.name}: ${o.product.specs.digital_file_url}`).join("\n");
+              const downloadBaseUrl = `https://${domain}/d/`;
+              const downloadLinksHtml = digitalOrders.map((o: any) => `
+                <div style="margin-top: 12px; margin-bottom: 12px;">
+                  <a href="${downloadBaseUrl}${o.id}" style="display:inline-block; padding:12px 24px; background-color:#F2571D; color:white; border-radius:8px; text-decoration:none; font-weight:bold;">
+                    Download ${o.product.name}
+                  </a>
+                </div>
+              `).join("");
+
+              digitalDownloadsText = `<div style="background-color: #fff3ed; border: 1px solid #ffd8c4; padding: 20px; border-radius: 12px; margin-top: 24px; text-align: center;">
+                <h4 style="margin-top: 0; margin-bottom: 12px; color: #d94916; font-size: 16px;">Your Digital Products</h4>
+                <p style="margin-bottom: 16px; font-size: 14px; color: #555;">Click below to securely download your files.</p>
+                ${downloadLinksHtml}
+                <p style="margin-top: 16px; margin-bottom: 0; font-size: 12px; color: #d94916; font-weight: 600;">
+                  Security Notice: Link expires exactly 24 hours after purchase and can only be used once.
+                </p>
+              </div>`;
             }
 
             if (firstAtt) {
               // Ticket purchase
               detailedMessage =
                 `Payment of ${totalPaidStr} ${body?.currency || ""} ${feeText ? `(${feeText}) ` : ""}confirmed! Thank you for purchasing ${ticketCodes} for ${eventName}. ` +
-                `\n\nOrganizer: ${orgName}\nDate: ${dateStr}\nVenue: ${eventLocation}\n` +
-                (productsText ? `\nProducts: ${productsText}` : "") + digitalDownloadsText;
+                `<br><br><strong>Organizer:</strong> ${orgName}<br><strong>Date:</strong> ${dateStr}<br><strong>Venue:</strong> ${eventLocation}<br>` +
+                (productsText ? `<br><strong>Products:</strong> ${productsText}` : "") + digitalDownloadsText;
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Tickets: ${ticketCodes}. View at: ${appUrl}/ticket/${firstAtt?.id}`;
             } else if (confirmedOrders.length > 0) {
               // Product-only purchase
