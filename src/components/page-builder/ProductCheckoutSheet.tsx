@@ -6,6 +6,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
@@ -53,7 +54,7 @@ export function ProductCheckoutSheet({
   const handleProceed = () => {
     addToCart(product, quantity, selectedSize || undefined, selectedColor || undefined);
     onClose();
-    openCart();
+    toast.success("Added to cart");
   };
 
   return (

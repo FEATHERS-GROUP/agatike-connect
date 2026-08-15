@@ -278,7 +278,7 @@ function RootComponent() {
 
                     <InstallPrompt />
                     <SplashLoader />
-                    <Toaster position="top-center" />
+                    <Toaster position="bottom-right" />
                   </CartProvider>
                 </LoaderProvider>
               </WorkspaceProvider>

@@ -913,7 +913,7 @@ export function RenderedPage({
                                     <div className="flex items-start justify-between mb-4 w-full">
                                       {wrap(
                                         "card_item_title",
-                                        <h3 className="text-2xl font-bold group-hover:opacity-80 transition-opacity m-0">
+                                        <h3 className="text-2xl font-bold transition-opacity m-0 text-foreground">
                                           {card.customTitle || linkedForm.title}
                                         </h3>,
                                         "100%",
@@ -1224,7 +1224,7 @@ export function RenderedPage({
                           <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left w-full min-w-0">
                             {wrap(
                               "form_title",
-                              <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors m-0 w-full">
+                              <h3 className="text-2xl font-bold mb-2 text-foreground transition-colors m-0 w-full">
                                 {displayTitle}
                               </h3>,
                               "100%",
@@ -1458,7 +1458,7 @@ export function RenderedPage({
                                 {title.charAt(0)}
                               </span>
                             </div>
-                            <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                            <h3 className="text-xl font-bold text-foreground transition-colors">
                               {title}
                             </h3>
                             <p className="text-muted-foreground line-clamp-2 text-sm">
@@ -1712,7 +1712,7 @@ export function RenderedPage({
                                       <div className="p-5 flex-1 flex flex-col min-w-0">
                                         {wrap(
                                           "inv_item_title",
-                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors m-0 w-full">
+                                          <h4 className="font-bold text-lg mb-1 line-clamp-1 text-foreground transition-colors m-0 w-full">
                                             {item.name || item.title}
                                           </h4>,
                                           "100%",

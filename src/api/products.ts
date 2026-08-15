@@ -595,6 +595,7 @@ export const redeemDigitalProduct = createServerFn({ method: "POST" })
 
     const query = `
       query GetOrderForRedemption($id: uuid!) {
+        # cache-buster: ${Date.now()}
         product_orders_by_pk(id: $id) {
           id
           picked
