@@ -449,7 +449,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     confirmedOrders,
                     orgDetails,
                     customerDetails,
-                    customerFee,
+                    parseFloat(totalPaidStr || "0"),
+                    firstAtt?.events?.workspaces?.currency || body?.baseCurrency || "RWF",
+                    body?.currency || "RWF"
                   );
                   productPdfBase64 = pdfBuffer.toString("base64");
                   if (productPdfBase64) {
@@ -519,7 +521,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   confirmedOrders,
                   orgDetails,
                   customerDetails,
-                  customerFee,
+                  parseFloat(totalPaidStr || "0"),
+                  body?.baseCurrency || "RWF",
+                  body?.currency || "RWF"
                 );
                 productPdfBase64 = pdfBuffer.toString("base64");
                 if (productPdfBase64) {

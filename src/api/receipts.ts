@@ -2,7 +2,9 @@ export async function generateProductReceiptPdf(
   orders: any[],
   orgDetails: any,
   customerDetails: any,
-  customerFee: number = 0,
+  totalPaid: number = 0,
+  baseCurrency: string = "RWF",
+  paidCurrency: string = "RWF",
 ): Promise<any> {
   const { jsPDF } = await import("jspdf");
   const { Buffer } = await import("buffer");
@@ -180,27 +182,44 @@ export async function generateProductReceiptPdf(
   doc.setTextColor(...mutedColor);
   doc.text("Subtotal", 130, cursorY, { align: "right" });
   doc.setTextColor(...darkColor);
-  doc.text(`RWF ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  doc.text(`${baseCurrency} ${subtotalAmount.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  
+  const actualTotalPaid = totalPaid || subtotalAmount;
 
-  // Fees
-  cursorY += 8;
-  doc.setTextColor(...mutedColor);
-  doc.text("Platform Fees", 130, cursorY, { align: "right" });
-  doc.setTextColor(...darkColor);
-  doc.text(`RWF ${customerFee.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  if (baseCurrency !== paidCurrency) {
+    // Cross currency, just show total paid
+    cursorY += 6;
+    doc.line(120, cursorY, W - 14, cursorY);
 
-  // Total
-  cursorY += 6;
-  doc.line(120, cursorY, W - 14, cursorY);
+    cursorY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
 
-  cursorY += 8;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
+    doc.setTextColor(...primaryColor);
+    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  } else {
+    // Same currency, calculate fee and show standard breakdown
+    const fee = actualTotalPaid - subtotalAmount;
+    if (fee > 0) {
+      cursorY += 8;
+      doc.setTextColor(...mutedColor);
+      doc.text("Platform Fees", 130, cursorY, { align: "right" });
+      doc.setTextColor(...darkColor);
+      doc.text(`${paidCurrency} ${fee.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+    }
 
-  doc.setTextColor(...primaryColor);
-  const finalTotal = subtotalAmount + customerFee;
-  doc.text(`RWF ${finalTotal.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+    cursorY += 6;
+    doc.line(120, cursorY, W - 14, cursorY);
+
+    cursorY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("TOTAL PAID", 130, cursorY, { align: "right" });
+
+    doc.setTextColor(...primaryColor);
+    doc.text(`${paidCurrency} ${actualTotalPaid.toLocaleString()}`, W - 18, cursorY, { align: "right" });
+  }
 
   // ── Footer ───────────────────────────────────────────────
   doc.setFont("helvetica", "normal");
