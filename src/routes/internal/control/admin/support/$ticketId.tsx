@@ -407,7 +407,14 @@ function AdminTicketDetailPage() {
           <SelectRow
             label="Status"
             value={ticket.status}
-            onChange={(v) => statusMutation.mutate(v as TicketStatus)}
+            onChange={(v) => {
+              if (v === "resolved" || v === "closed") {
+                if (!confirm(`Are you sure you want to mark this ticket as ${v}? An email will be sent to the organizer.`)) {
+                  return;
+                }
+              }
+              statusMutation.mutate(v as TicketStatus);
+            }}
             disabled={statusMutation.isPending}
           >
             <option value="open">Open</option>
