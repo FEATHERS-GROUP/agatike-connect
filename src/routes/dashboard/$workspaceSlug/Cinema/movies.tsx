@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Checkbox as RadixCheckbox } from "@/components/ui/checkbox";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -45,6 +45,9 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/Cinema/movies")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    highlight: search.highlight as string | undefined,
+  }),
   component: GlobalMoviesCatalog,
 });
 
@@ -75,6 +78,21 @@ const RATING_COLORS: Record<string, string> = {
 
 function GlobalMoviesCatalog() {
   const { activeWorkspace } = useWorkspace();
+  const searchParam = useSearch({ from: "/dashboard/$workspaceSlug/Cinema/movies" });
+  const highlightId = searchParam.highlight;
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightId) return;
+    setHighlightedId(highlightId);
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`row-${highlightId}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => setHighlightedId(null), 3000);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [highlightId]);
+
   const { canCreateMovie } = useSubscriptionLimits(
     activeWorkspace?.orgnizer_id,
     activeWorkspace?.id,
@@ -262,16 +280,22 @@ function GlobalMoviesCatalog() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                  {visibleMovies.map((movie: any) => (
-                    <ItemMenu key={movie.id} itemId={movie.id} folderId={movie.folder_id}>
-                      <div
-                        className="group relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-md transition-all duration-300"
-                        style={{
-                          outline: selectedIds.has(movie.id)
-                            ? "2px solid hsl(var(--primary))"
-                            : undefined,
-                        }}
-                      >
+                  {visibleMovies.map((movie: any) => {
+                    const isHighlighted = highlightedId === movie.id;
+                    return (
+                      <ItemMenu key={movie.id} itemId={movie.id} folderId={movie.folder_id}>
+                        <div
+                          id={`row-${movie.id}`}
+                          className={[
+                            "group relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-md transition-all duration-300",
+                            isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse" : "",
+                          ].join(" ")}
+                          style={{
+                            outline: selectedIds.has(movie.id)
+                              ? "2px solid hsl(var(--primary))"
+                              : undefined,
+                          }}
+                        >
                         {/* Checkbox */}
                         <div
                           className="absolute top-2 left-2 z-20"
@@ -369,7 +393,8 @@ function GlobalMoviesCatalog() {
                         </div>
                       </div>
                     </ItemMenu>
-                  ))}
+                  );
+                })}
                 </div>
               );
             }}

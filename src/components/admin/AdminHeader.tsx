@@ -20,6 +20,7 @@ import {
   QrCode,
   CalendarDays,
   CalendarCheck,
+  Film,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { logoutAdmin } from "@/api/admin_auth";
@@ -185,6 +186,19 @@ const CATEGORY_CONFIG = [
     getTitle: (r: any) => r.customer_name || r.customer_email || "—",
     getSub: (r: any) =>
       [r.space?.name, r.plan_name, r.status].filter(Boolean).join(" · "),
+  },
+  {
+    key: "cinema_bookings" as const,
+    label: "Cinema Bookings",
+    icon: Film,
+    color: "text-pink-500",
+    bg: "bg-pink-500/10",
+    detailPage: false,
+    getHref: (r: any) =>
+      r.cinema?.workspace_id ? `/dashboard/${r.cinema.workspace_id}/Cinema/movies?highlight=${r.schedule?.movie?.id}` : `/internal/control/admin`,
+    getTitle: (r: any) => r.names || r.email || "—",
+    getSub: (r: any) =>
+      [r.qrcode_number, r.status, r.schedule?.movie?.title, r.cinema?.name].filter(Boolean).join(" · "),
   },
 ] as const;
 
