@@ -24,7 +24,7 @@ export async function getPesapalToken() {
     const data = await res.json();
     if (data.status !== "200") {
       console.error(`[PESAPAL] Auth Error: ${data.message}`);
-      throw new Error(`Pesapal Auth Error: ${data.message}`);
+      throw new Error(`Payment Auth Error: ${data.message}`);
     }
     console.log(`[PESAPAL] Successfully authenticated! Token received.`);
     return { token: data.token, baseUrl };
@@ -180,13 +180,13 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
     const orderData = await orderRes.json();
     if (orderData.status === "500" || orderData.error) {
       console.error(`[PESAPAL] Order Submission Error:`, orderData);
-      throw new Error(`Pesapal Error: ${orderData.error?.message || orderData.message || JSON.stringify(orderData)}`);
+      throw new Error(`Payment Error: ${orderData.error?.message || orderData.message || JSON.stringify(orderData)}`);
     }
 
     redirectUrl = orderData.redirect_url;
     if (!redirectUrl) {
       console.error(`[PESAPAL] Missing redirect_url. Response:`, orderData);
-      throw new Error(`Pesapal Error: Missing redirect_url in response. ${JSON.stringify(orderData)}`);
+      throw new Error(`Payment Error: Missing redirect_url in response. ${JSON.stringify(orderData)}`);
     }
     orderTrackingId = orderData.order_tracking_id;
     console.log(`[PESAPAL] Order submitted successfully! Redirect URL generated.`);
@@ -244,7 +244,7 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
       cust_fee: customerFee,
       org_fee: organizerFee,
       platform_fee: organizerFee,
-      description: pageSlug ? `Agatike Pesapal::${pageSlug}` : "Agatike Pesapal",
+      description: pageSlug ? `Agatike::${pageSlug}` : "Agatike",
     },
   );
 
