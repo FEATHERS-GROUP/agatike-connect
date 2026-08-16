@@ -80,6 +80,7 @@ const ALL_NETWORKS = [
   { label: "Orange Sierra Leone", value: "ORANGE_SLE", curr: "SLE", code: "232", maxLen: 8 },
   { label: "Moov Benin", value: "MOOV_BEN", curr: "XOF", code: "229", maxLen: 8 },
   { label: "MTN Benin", value: "MTN_MOMO_BEN", curr: "XOF", code: "229", maxLen: 8 },
+  { label: "Credit/Debit Card", value: "PESAPAL_CARD", curr: "ALL", code: "", maxLen: 0 },
 ];
 
 export function PaymentModal({
@@ -154,19 +155,20 @@ export function PaymentModal({
     : "RWA";
 
   // Simulation Engine (Pre-flight check)
+  const activeNetwork = paymentMethod === "card" ? "PESAPAL_CARD" : network;
   const { data: simulation, isLoading: isSimulating } = useQuery({
-    queryKey: ["simulate", baseAmount, workspaceId, network, countryCode],
+    queryKey: ["simulate", baseAmount, workspaceId, activeNetwork, countryCode],
     queryFn: () =>
       simulateTransaction({
         data: {
           basePrice: baseAmount,
           workspaceId,
-          network: network || "UNKNOWN",
+          network: activeNetwork || "UNKNOWN",
           countryCode,
           transactionId: crypto.randomUUID(),
         },
       } as any),
-    enabled: isOpen && !!workspaceId && !!baseAmount && paymentMethod === "momo" && !!network,
+    enabled: isOpen && !!workspaceId && !!baseAmount && (paymentMethod === "momo" && !!network || paymentMethod === "card"),
     retry: false,
     staleTime: 60000,
   });
@@ -189,6 +191,13 @@ export function PaymentModal({
       onProceed({
         phone: fullPhone,
         network,
+        currency: targetCurrency,
+        convertedAmount,
+        shortfall: simulation?.shortfall || 0,
+      });
+    } else if (paymentMethod === "card") {
+      onProceed({
+        network: "PESAPAL_CARD",
         currency: targetCurrency,
         convertedAmount,
         shortfall: simulation?.shortfall || 0,
@@ -221,7 +230,7 @@ export function PaymentModal({
             </DialogHeader>
 
             <div className="flex flex-col gap-3">
-              {/* Temporarily hidden Apple Pay & Credit Card per request
+              {/* Temporarily hidden Apple Pay
               <button
                 onClick={() => setPaymentMethod("apple")}
                 className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all ${
@@ -243,29 +252,31 @@ export function PaymentModal({
                   {paymentMethod === "apple" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
                 </div>
               </button>
-
-              <button
-                onClick={() => setPaymentMethod("card")}
-                className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all ${
-                  paymentMethod === "card"
-                    ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]"
-                    : "border-border/60 hover:bg-secondary/40"
-                }`}
-              >
-                <div className="h-10 w-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center shrink-0">
-                  <CreditCard className="h-5 w-5" />
-                </div>
-                <div className="text-left flex-1">
-                  <p className="font-bold">Credit Card</p>
-                  <p className="text-xs text-muted-foreground">Visa, Mastercard, Amex</p>
-                </div>
-                <div
-                  className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground/30"}`}
-                >
-                  {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
-                </div>
-              </button>
               */}
+
+              {supportedNetworks.includes("PESAPAL_CARD") && (
+                <button
+                  onClick={() => setPaymentMethod("card")}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                    paymentMethod === "card"
+                      ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]"
+                      : "border-border/60 hover:bg-secondary/40"
+                  }`}
+                >
+                  <div className="h-10 w-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center shrink-0">
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="font-bold">Credit Card</p>
+                    <p className="text-xs text-muted-foreground">Visa, Mastercard, Amex</p>
+                  </div>
+                  <div
+                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground/30"}`}
+                  >
+                    {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
+                  </div>
+                </button>
+              )}
 
               <div
                 className={`w-full flex flex-col gap-4 p-4 rounded-2xl border transition-all ${
@@ -450,7 +461,7 @@ export function PaymentModal({
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Calculating exact fees...</span>
                     </div>
-                  ) : simulation && paymentMethod === "momo" ? (
+                  ) : simulation && (paymentMethod === "momo" || paymentMethod === "card") ? (
                     <div className="space-y-1 w-full text-sm">
                       <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Base Ticket</span>

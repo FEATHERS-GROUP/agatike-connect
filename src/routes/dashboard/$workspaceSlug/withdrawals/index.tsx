@@ -204,6 +204,7 @@ function WithdrawalsPage() {
           <div className="overflow-y-auto flex-1 pr-2 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
+                { label: "Pesapal Credit/Debit Card", value: "PESAPAL_CARD", curr: "Any Currency", isCard: true },
                 { label: "MTN Rwanda", value: "MTN_MOMO_RWA", curr: "RWF" },
                 { label: "Airtel Rwanda", value: "AIRTEL_OAPI_RWA", curr: "RWF" },
                 { label: "MTN Uganda", value: "MTN_MOMO_UGA", curr: "UGX" },
@@ -220,18 +221,26 @@ function WithdrawalsPage() {
               ].map((network) => {
                 const isChecked = selectedNetworks.includes(network.value);
                 return (
-                  <div
-                    key={network.value}
-                    className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${isChecked ? "border-primary bg-primary/5" : "border-border/40 bg-secondary/20"}`}
-                  >
-                    <div>
-                      <Label className="font-semibold">{network.label}</Label>
-                      <p className="text-xs text-muted-foreground">Charges in {network.curr}</p>
+                  <div key={network.value} className="flex flex-col gap-2">
+                    <div
+                      className={`flex items-center justify-between p-4 rounded-xl border transition-colors ${isChecked ? "border-primary bg-primary/5" : "border-border/40 bg-secondary/20"}`}
+                    >
+                      <div>
+                        <Label className="font-semibold">{network.label}</Label>
+                        <p className="text-xs text-muted-foreground">
+                          {network.curr === "Any Currency" ? "Accepts all currencies" : `Charges in ${network.curr}`}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={isChecked}
+                        onCheckedChange={(c) => toggleNetwork(network.value, c)}
+                      />
                     </div>
-                    <Switch
-                      checked={isChecked}
-                      onCheckedChange={(c) => toggleNetwork(network.value, c)}
-                    />
+                    {network.isCard && isChecked && (
+                      <div className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-2 rounded border border-amber-200 dark:border-amber-900/50">
+                        <strong>Note:</strong> Card payments incur an additional 1.5% processing fee on top of your standard plan rates.
+                      </div>
+                    )}
                   </div>
                 );
               })}

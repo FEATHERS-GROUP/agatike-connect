@@ -137,9 +137,18 @@ function CheckoutPage() {
         },
       } as any);
 
-      return { isPawaPay: true, depositId: pawaRes.depositId, bookingRef: newBookingRef };
+      return {
+        isPawaPay: true,
+        depositId: pawaRes.depositId,
+        bookingRef: newBookingRef,
+        redirectUrl: (pawaRes as any).redirectUrl,
+      };
     },
     onSuccess: (data) => {
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setBookingRef(data.bookingRef);

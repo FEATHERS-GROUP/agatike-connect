@@ -194,7 +194,11 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       const customerFee =
         baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
       const grossAmount = baseAmount + customerFee;
-      const organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
+      
+      let organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
+      if (network === "PESAPAL_CARD") {
+        organizerFee += baseAmount * 0.015; // Extra 1.5% for card payments
+      }
 
       // Evaluate tiered rules based on grossAmount
       if (providerFees.is_tiered && providerFees.tiered_rules) {
@@ -250,6 +254,11 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       shortfall = 0,
       pageSlug,
     } = ctx.data as any;
+
+    if (network === "PESAPAL_CARD") {
+      const { initiatePesapalPayment } = await import("./pesapal");
+      return initiatePesapalPayment({ data: ctx.data } as any);
+    }
 
     if (!currency) {
       throw new Error("Currency is required for Agatike deposit.");
