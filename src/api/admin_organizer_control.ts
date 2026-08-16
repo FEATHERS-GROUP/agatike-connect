@@ -331,6 +331,20 @@ export const getAdminOrganizerVenues = createServerFn({ method: "POST" })
           show_rsvp_form_button
           rsvp_form_button_text
         }
+        venue_bookings(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          id
+          customer_name
+          customer_email
+          customer_phone
+          status
+          payment_status
+          start_time
+          end_time
+          total_amount
+          created_at
+          rentable_venue { name }
+          workspace_id
+        }
       }
     `;
     const data = await hasuraRequest<any>(query, { wsIds });
@@ -345,7 +359,12 @@ export const getAdminOrganizerVenues = createServerFn({ method: "POST" })
       workspaceName: wsNameMap[s.workspace_id] || "—",
     }));
 
-    return { venues, spaces };
+    const bookings = (data.venue_bookings || []).map((b: any) => ({
+      ...b,
+      workspaceName: wsNameMap[b.workspace_id] || "—",
+    }));
+
+    return { venues, spaces, bookings };
   });
 
 // ----------------------------------------------------
