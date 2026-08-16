@@ -223,7 +223,8 @@ function UsersPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
-                        to={`/internal/control/admin/agatike-users/${user.id}`}
+                        to="/internal/control/admin/agatike-users/$userId"
+                        params={{ userId: user.id }}
                         className="p-2 text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#333333] rounded-lg transition-colors inline-block"
                         title="View User Details"
                       >

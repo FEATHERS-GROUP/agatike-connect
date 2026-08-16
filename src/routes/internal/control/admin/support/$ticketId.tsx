@@ -470,7 +470,7 @@ function AdminTicketDetailPage() {
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             {/* Original message */}
             <div className="flex gap-3">
-              <Avatar name={organizerName} />
+              <Avatar name={organizerName} src={(ticket as any).organizer?.image} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-[13px] font-semibold text-gray-900 dark:text-white">
@@ -497,10 +497,11 @@ function AdminTicketDetailPage() {
               const authorName = isAdmin
                 ? (ticket as any).assignedAdmin?.email?.split("@")[0] || "Support Team"
                 : comment.author_name || organizerName;
+              const authorImage = isAdmin ? undefined : (ticket as any).organizer?.image;
 
               return (
                 <div key={comment.id} className="flex gap-3">
-                  <Avatar name={authorName} />
+                  <Avatar name={authorName} src={authorImage} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[13px] font-semibold text-gray-900 dark:text-white">
@@ -715,7 +716,8 @@ function AdminTicketDetailPage() {
                 ((ticket as any).organizer?.support_tickets || []).map((pt: any) => (
                   <Link
                     key={pt.id}
-                    to={`/internal/control/admin/support/${pt.id}`}
+                    to="/internal/control/admin/support/$ticketId"
+                    params={{ ticketId: pt.id }}
                     className="block border border-gray-200 dark:border-[#252526] rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-1.5">

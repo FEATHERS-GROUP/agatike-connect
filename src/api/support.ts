@@ -503,7 +503,7 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
       const orgRes = await hasuraRequest<{
         organizers_by_pk: any;
       }>(`
-        query GetOrg($id: uuid!, $ticketId: uuid!) { 
+        query GetOrg($id: uuid!) { 
           organizers_by_pk(id: $id) { 
             id 
             name 
@@ -511,21 +511,36 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
             image
             phone
             country
-            support_tickets(where: {id: {_neq: $ticketId}}, order_by: {created_at: desc}, limit: 3) {
-              id
-              subject
-              status
-              priority
-              created_at
-            }
           } 
         }
       `, {
         id: ticket.organizer_id,
+      });
+      
+      const ticketsRes = await hasuraRequest<{
+        support_tickets: any[];
+      }>(`
+        query GetOrgTickets($orgId: uuid!, $ticketId: uuid!) {
+          support_tickets(where: { organizer_id: { _eq: $orgId }, id: { _neq: $ticketId } }, order_by: { created_at: desc }, limit: 3) {
+            id
+            subject
+            status
+            priority
+            created_at
+          }
+        }
+      `, {
+        orgId: ticket.organizer_id,
         ticketId: ticket.id,
       });
+
       (ticket as any).organizer = orgRes.organizers_by_pk;
-    } catch (_) {}
+      if ((ticket as any).organizer) {
+        (ticket as any).organizer.support_tickets = ticketsRes.support_tickets || [];
+      }
+    } catch (err) {
+      console.error("Failed to enrich organizer", err);
+    }
 
     return ticket;
   });
