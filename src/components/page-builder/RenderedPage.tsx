@@ -138,7 +138,7 @@ export function RenderedPage({
       shortfall?: number;
     }) => {
       const isPawaPay =
-        paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+        ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) || paymentMethod === "card");
 
       if (!isPawaPay || !selectedPaymentBlock) throw new Error("Invalid payment details");
       const baseAmount = Number(selectedPaymentBlock.amount || 0);

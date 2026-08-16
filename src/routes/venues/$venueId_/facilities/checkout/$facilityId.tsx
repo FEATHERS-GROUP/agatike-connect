@@ -387,10 +387,10 @@ function FacilityCheckoutPage() {
 
       const bookingStatus = facility?.requires_approval ? "Pending" : "Confirmed";
       const isPawaPay =
-        totalAmount > 0 &&
+        ((totalAmount > 0 &&
         paymentMethod === "momo" &&
         paymentDetails?.phone &&
-        paymentDetails?.network;
+        paymentDetails?.network) || paymentMethod === "card");
       const paymentRef = isPawaPay
         ? Math.random().toString(36).substring(2, 12).toUpperCase()
         : undefined;

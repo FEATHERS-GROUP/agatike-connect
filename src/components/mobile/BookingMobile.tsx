@@ -355,7 +355,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     }) => {
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
-        total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+        total > 0 && ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) || paymentMethod === "card");
 
       const attendeesPayload = attendees.map((a, idx) => {
         const otp = Math.random().toString(36).substring(2, 10).toUpperCase();

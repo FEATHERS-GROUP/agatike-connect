@@ -10,6 +10,7 @@ export async function getPesapalToken() {
   const baseUrl = isLive ? "https://pay.pesapal.com/v3" : "https://cybqa.pesapal.com/pesapalv3";
 
   const res = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
+    signal: AbortSignal.timeout(15000),
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -128,6 +129,7 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
   let ipnId = "mock-ipn-id";
   try {
     const ipnRes = await fetch(`${baseUrl}/api/URLSetup/RegisterIPN`, {
+      signal: AbortSignal.timeout(10000),
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, Accept: "application/json" },
       body: JSON.stringify({ url: ipnUrl, ipn_notification_type: "GET" })
@@ -156,6 +158,7 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
   };
 
   const orderRes = await fetch(`${baseUrl}/api/Transactions/SubmitOrderRequest`, {
+    signal: AbortSignal.timeout(15000),
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, Accept: "application/json" },
     body: JSON.stringify(payload)
@@ -167,6 +170,9 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
   }
 
   const redirectUrl = orderData.redirect_url;
+  if (!redirectUrl) {
+    throw new Error(`Pesapal Error: Missing redirect_url in response. ${JSON.stringify(orderData)}`);
+  }
   const orderTrackingId = orderData.order_tracking_id;
 
   // Insert Transaction
