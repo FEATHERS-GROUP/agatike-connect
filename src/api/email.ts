@@ -1410,7 +1410,7 @@ export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
 
     const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: #10b981; padding: 40px 24px; text-align: center;">
+      <div style="background-color: #f97316; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
           <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
@@ -1426,7 +1426,7 @@ export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
         </div>
         <p>If you still experience issues or have any further questions, please feel free to open a new ticket or reply to your existing one.</p>
         <div style="margin-top: 32px; text-align: center;">
-          <a href="${baseUrl}/dashboard/support" style="background-color: #10b981; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">View Ticket</a>
+          <a href="${baseUrl}/dashboard/support" style="background-color: #f97316; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">View Ticket</a>
         </div>
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
