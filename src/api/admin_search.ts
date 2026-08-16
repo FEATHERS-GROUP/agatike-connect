@@ -144,6 +144,75 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           created_at
           workspace { name }
         }
+
+        event_attendees(
+          where: { _or: [
+            { names: { _ilike: $q } },
+            { email: { _ilike: $q } },
+            { phone: { _ilike: $q } },
+            { qrcode_number: { _ilike: $q } },
+            { ticket_type: { _ilike: $q } }
+          ]}
+          limit: 6
+          order_by: { created_at: desc }
+        ) {
+          id
+          names
+          email
+          phone
+          qrcode_number
+          ticket_type
+          status
+          events { id title workspaces { id name } }
+        }
+
+        venue_bookings(
+          where: { _or: [
+            { customer_name: { _ilike: $q } },
+            { customer_email: { _ilike: $q } },
+            { customer_phone: { _ilike: $q } },
+            { status: { _ilike: $q } },
+            { payment_status: { _ilike: $q } }
+          ]}
+          limit: 5
+          order_by: { created_at: desc }
+        ) {
+          id
+          customer_name
+          customer_email
+          customer_phone
+          status
+          payment_status
+          start_time
+          end_time
+          total_amount
+          tickets_data
+          rentable_venue { name }
+          workspace { id name }
+        }
+
+        space_subscriptions(
+          where: { _or: [
+            { customer_name: { _ilike: $q } },
+            { customer_email: { _ilike: $q } },
+            { customer_phone: { _ilike: $q } },
+            { plan_name: { _ilike: $q } },
+            { status: { _ilike: $q } }
+          ]}
+          limit: 5
+          order_by: { created_at: desc }
+        ) {
+          id
+          customer_name
+          customer_email
+          customer_phone
+          plan_name
+          status
+          billing_cycle
+          price
+          start_date
+          space { id name workspaces { id name } }
+        }
       }
       
       
@@ -200,6 +269,9 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
         leads: (data.leads || []) as any[],
         wallet_transactions: (data.wallet_transactions || []) as any[],
         withdrawal_requests: (data.withdrawal_requests || []) as any[],
+        event_attendees: (data.event_attendees || []) as any[],
+        venue_bookings: (data.venue_bookings || []) as any[],
+        space_subscriptions: (data.space_subscriptions || []) as any[],
       };
     } catch (e: any) {
       console.error("[Admin Search] Error:", e);
@@ -212,6 +284,9 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
         leads: [],
         wallet_transactions: [],
         withdrawal_requests: [],
+        event_attendees: [],
+        venue_bookings: [],
+        space_subscriptions: [],
       };
     }
   });

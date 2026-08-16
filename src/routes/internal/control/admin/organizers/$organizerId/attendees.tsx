@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { getAdminOrganizerAttendees } from "@/api/admin_organizer_control";
 import { UserRound, Building2, Search, Calendar, Hash } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/attendees")({
   loader: async ({ params }) => {
@@ -10,12 +10,29 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
     } as any);
     return { attendees };
   },
+  validateSearch: (search: Record<string, unknown>) => ({
+    highlight: search.highlight as string | undefined,
+  }),
   component: OrganizerAttendees,
 });
 
 function OrganizerAttendees() {
   const { attendees } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
+  const search = useSearch({ from: "/internal/control/admin/organizers/$organizerId/attendees" });
+  const highlightId = search.highlight;
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightId) return;
+    setHighlightedId(highlightId);
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`row-${highlightId}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => setHighlightedId(null), 3000);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [highlightId]);
 
   const filteredAttendees = attendees.filter(
     (a: any) =>
@@ -83,12 +100,20 @@ function OrganizerAttendees() {
                   </td>
                 </tr>
               ) : (
-                filteredAttendees.map((a: any) => (
-                  <tr
-                    key={a.id}
-                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
-                  >
-                    <td className="py-2 px-4">
+                filteredAttendees.map((a: any) => {
+                  const isHighlighted = highlightedId === a.id;
+                  return (
+                    <tr
+                      key={a.id}
+                      id={`row-${a.id}`}
+                      className={[
+                        "transition-colors",
+                        isHighlighted
+                          ? "bg-[#f97316]/15 ring-2 ring-inset ring-[#f97316]/50 animate-pulse"
+                          : "hover:bg-gray-200 dark:hover:bg-[#2d2d30]",
+                      ].join(" ")}
+                    >
+                      <td className="py-2 px-4">
                       <div className="flex items-center gap-1.5 font-mono text-[#569cd6]">
                         <Hash className="h-3 w-3 shrink-0" />
                         {a.qrcode_number || "—"}
@@ -141,9 +166,10 @@ function OrganizerAttendees() {
                     </td>
                     <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
                       {a.created_at ? new Date(a.created_at).toLocaleDateString("en-US") : "—"}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

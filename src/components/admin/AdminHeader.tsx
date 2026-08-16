@@ -17,6 +17,9 @@ import {
   ChevronRight,
   Loader2,
   ExternalLink,
+  QrCode,
+  CalendarDays,
+  CalendarCheck,
 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { logoutAdmin } from "@/api/admin_auth";
@@ -143,6 +146,45 @@ const CATEGORY_CONFIG = [
       [r.payout_method, r.status, r.currency && `${r.currency} ${Number(r.amount || 0).toLocaleString()}`]
         .filter(Boolean)
         .join(" · "),
+  },
+  {
+    key: "event_attendees" as const,
+    label: "Attendees",
+    icon: QrCode,
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+    detailPage: false,
+    getHref: (r: any) =>
+      r.events?.workspaces?.id ? `/internal/control/admin/organizers/${r.events.workspaces.id}/attendees?highlight=${r.id}` : `/internal/control/admin`,
+    getTitle: (r: any) => r.names || r.email || "—",
+    getSub: (r: any) =>
+      [r.qrcode_number, r.ticket_type, r.status, r.events?.title].filter(Boolean).join(" · "),
+  },
+  {
+    key: "venue_bookings" as const,
+    label: "Venue Bookings",
+    icon: CalendarDays,
+    color: "text-teal-500",
+    bg: "bg-teal-500/10",
+    detailPage: false,
+    getHref: (r: any) =>
+      r.workspace?.id ? `/internal/control/admin/organizers/${r.workspace.id}/venues?highlight=${r.id}` : `/internal/control/admin`,
+    getTitle: (r: any) => r.customer_name || r.customer_email || "—",
+    getSub: (r: any) =>
+      [r.rentable_venue?.name, r.status, r.payment_status].filter(Boolean).join(" · "),
+  },
+  {
+    key: "space_subscriptions" as const,
+    label: "Memberships",
+    icon: CalendarCheck,
+    color: "text-fuchsia-500",
+    bg: "bg-fuchsia-500/10",
+    detailPage: false,
+    getHref: (r: any) =>
+      r.space?.workspaces?.id ? `/internal/control/admin/organizers/${r.space.workspaces.id}/memberships?highlight=${r.id}` : `/internal/control/admin`,
+    getTitle: (r: any) => r.customer_name || r.customer_email || "—",
+    getSub: (r: any) =>
+      [r.space?.name, r.plan_name, r.status].filter(Boolean).join(" · "),
   },
 ] as const;
 
