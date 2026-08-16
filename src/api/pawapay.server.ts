@@ -375,8 +375,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Thank you for your payment to ${domain}.`;
             }
 
-            if (firstAtt) {
-              const { sendAttendeeEmail } = await import("./email");
+            if (firstAtt) { 
+              const { sendAttendeeEmailRaw} = await import("./email");
 
               const emailAddresses = [
                 ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
@@ -505,7 +505,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               }
 
               for (const email of emailAddresses) {
-                await sendAttendeeEmail({
+                await sendAttendeeEmailRaw({
                   data: {
                     to: email,
                     subject: `Your purchase for ${eventName} is confirmed!`,
@@ -518,9 +518,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   },
                 } as any).catch((e) => console.error("Failed to send attendee email", e));
               }
-            } else if (confirmedOrders.length > 0 && guestEmail) {
+            } else if (confirmedOrders.length > 0 && guestEmail) { 
               // Product-only purchase email receipt
-              const { sendAttendeeEmail } = await import("./email");
+              const { sendAttendeeEmailRaw} = await import("./email");
 
               const attachments: any[] = [];
               let productPdfBase64: string | undefined = undefined;
@@ -579,7 +579,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 console.error("Failed to generate product receipt PDF", e);
               }
 
-              await sendAttendeeEmail({
+              await sendAttendeeEmailRaw({
                 data: {
                   to: guestEmail,
                   subject: `Your purchase from ${orgName} is confirmed!`,
@@ -648,12 +648,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             // Generate Invoice & Send Emails (just like Checkout does)
             try {
               const { createInvoiceRecord } = await import("./invoices");
-              const {
-                sendSubscriptionConfirmationEmail,
-                sendSubscriptionInvoiceEmail,
-                sendCompanyRosterEmail,
-                sendMemberWelcomeEmail,
-              } = await import("./email");
+              const { 
+                sendSubscriptionConfirmationEmailRaw,
+                sendSubscriptionInvoiceEmailRaw,
+                sendCompanyRosterEmailRaw,
+                sendMemberWelcomeEmailRaw,
+               } = await import("./email");
 
               const currency =
                 sub.space?.workspace?.currency ||
@@ -699,7 +699,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
               if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
                 // Send group company email
-                await sendCompanyRosterEmail({
+                await sendCompanyRosterEmailRaw({
                   data: {
                     to: sub.customer_email,
                     companyName: sub.customer_name,
@@ -719,7 +719,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 // Welcome each member
                 for (const m of sub.team_members) {
                   if (m.email) {
-                    await sendMemberWelcomeEmail({
+                    await sendMemberWelcomeEmailRaw({
                       data: {
                         to: m.email,
                         memberName: m.name,
@@ -736,7 +736,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 }
               } else {
                 // Individual Booking — send confirmation with invoice PDF attached
-                await sendSubscriptionConfirmationEmail({
+                await sendSubscriptionConfirmationEmailRaw({
                   data: {
                     to: sub.customer_email,
                     customerName: sub.customer_name,

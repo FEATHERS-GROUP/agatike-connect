@@ -1,7 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-export const sendAttendeeEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendAttendeeEmailRaw = async (ctx: any) => {
     const {
       to,
       subject,
@@ -165,9 +163,7 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
     return data;
   });
 
-export const sendTicketsEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendTicketsEmailRaw = async (ctx: any) => {
     const {
       to,
       customerName,
@@ -423,9 +419,7 @@ export const sendTicketsEmail = createServerFn({ method: "POST" })
     return data;
   });
 
-export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendProfileUpdateOTPRaw = async (ctx: any) => {
     const { to, otp } = ctx.data as any;
 
     const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -483,9 +477,7 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
     return data;
   });
 
-export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendSubscriptionConfirmationEmailRaw = async (ctx: any) => {
     const {
       to,
       customerName,
@@ -574,9 +566,7 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
     return data;
   });
 
-export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendSubscriptionInvoiceEmailRaw = async (ctx: any) => {
     const {
       to,
       customerName,
@@ -681,9 +671,7 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
   });
 
 // Sends the company email with invoice PDF + member roster PDF attached
-export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendCompanyRosterEmailRaw = async (ctx: any) => {
     const {
       to,
       companyName,
@@ -817,9 +805,7 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
   });
 
 // Sends a personal welcome email to each individual team member
-export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendMemberWelcomeEmailRaw = async (ctx: any) => {
     const { to, memberName, companyName, spaceName, planName, startDate, membershipId } =
       ctx.data as any;
 
@@ -886,9 +872,7 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
     return data;
   });
 
-export const sendVisitorPassEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendVisitorPassEmailRaw = async (ctx: any) => {
     const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } =
       ctx.data as any;
 
@@ -1026,9 +1010,7 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
   return resData;
 };
 
-export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendWorkspaceUserInviteEmailRaw = async (ctx: any) => {
     return await executeSendWorkspaceUserInviteEmail(ctx.data);
   });
 
@@ -1089,9 +1071,7 @@ export const executeSendProjectAccessEmail = async (data: any) => {
   return resData;
 };
 
-export const sendVenueBookingEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendVenueBookingEmailRaw = async (ctx: any) => {
     const {
       to,
       customerName,
@@ -1157,9 +1137,7 @@ export const sendVenueBookingEmail = createServerFn({ method: "POST" })
     return resData;
   });
 
-export const sendTrialExtensionEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendTrialExtensionEmailRaw = async (ctx: any) => {
     const { to, organizerName, daysExtended, totalAllowedDays } = ctx.data as any;
 
     const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -1252,9 +1230,7 @@ export const sendEmail = async ({
   return data;
 };
 
-export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendDigitalProductDeliveryEmailRaw = async (ctx: any) => {
     const { to, customerName, productName, productDescription, fileUrl, workspaceId } =
       ctx.data as any;
 
@@ -1387,9 +1363,7 @@ export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" }
     return data;
   });
 
-export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
-  .validator((d: any) => d)
-  .handler(async (ctx) => {
+export const sendSupportTicketResolvedEmailRaw = async (ctx: any) => {
     const { to, organizerName, ticketId, subject } = ctx.data as any;
 
     const baseUrl = process.env.PROJECT_PRODUCTION_URL
@@ -1452,3 +1426,58 @@ export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
     }
     return data;
   });
+
+
+// --- Server Function Wrappers ---
+export const sendAttendeeEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendAttendeeEmailRaw(ctx));
+
+export const sendTicketsEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendTicketsEmailRaw(ctx));
+
+export const sendProfileUpdateOTP = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendProfileUpdateOTPRaw(ctx));
+
+export const sendSubscriptionConfirmationEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendSubscriptionConfirmationEmailRaw(ctx));
+
+export const sendSubscriptionInvoiceEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendSubscriptionInvoiceEmailRaw(ctx));
+
+export const sendCompanyRosterEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendCompanyRosterEmailRaw(ctx));
+
+export const sendMemberWelcomeEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendMemberWelcomeEmailRaw(ctx));
+
+export const sendVisitorPassEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendVisitorPassEmailRaw(ctx));
+
+export const sendWorkspaceUserInviteEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendWorkspaceUserInviteEmailRaw(ctx));
+
+export const sendVenueBookingEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendVenueBookingEmailRaw(ctx));
+
+export const sendTrialExtensionEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendTrialExtensionEmailRaw(ctx));
+
+export const sendDigitalProductDeliveryEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendDigitalProductDeliveryEmailRaw(ctx));
+
+export const sendSupportTicketResolvedEmail = createServerFn({ method: 'POST' })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendSupportTicketResolvedEmailRaw(ctx));
+
