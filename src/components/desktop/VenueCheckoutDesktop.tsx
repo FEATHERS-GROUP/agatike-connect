@@ -258,7 +258,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       const totalAttendees = 1 + attendees.length;
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
-        total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+        total > 0 && ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) || paymentMethod === "card");
 
       const payload = {
         workspace_id: venue.workspace_id,
@@ -346,6 +346,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           res,
           isPawaPay: true,
           depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
           totalPaid: paymentDetails?.convertedAmount || total,
         };
       }
@@ -357,6 +358,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const res = data.res;
       if (data.totalPaid) {
         setFinalTotalPaid(data.totalPaid);

@@ -1408,32 +1408,123 @@ export const getAdminWithdrawals = createServerFn({ method: "POST" }).handler(as
               organizers(where: { id: { _in: $ids } }) {
                 id
                 name
-                email
-                phone
-                image
                 handle
+                email
+                image
+                phone
               }
             }
           `;
         const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
-        orgMap = new Map((orgData.organizers || []).map((o: any) => [o.id, o]));
+        const orgs: any[] = orgData.organizers || [];
+        orgs.forEach((o: any) => orgMap.set(o.id, o));
       }
     }
 
     return transactions.map((tx: any) => {
       const orgId = wsOrgMap.get(tx.workspace_id);
+      const org = orgId ? orgMap.get(orgId) : null;
       return {
         ...tx,
+        organizer: org || null,
         // map to raw_callback_data so the UI badge "Admin approval needed" keeps working
         raw_callback_data: { requires_admin_approval: true },
-        organizer: orgId ? orgMap.get(orgId) || null : null,
       };
     });
   } catch (e) {
-    console.error("Failed to fetch admin withdrawals:", e);
+    console.error("Failed to fetch platform withdrawals:", e);
     return [];
   }
 });
+
+// ----------------------------------------------------
+// WALLET TRANSACTIONS
+// ----------------------------------------------------
+
+export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" }).handler(async () => {
+  const session = await getAdminSession();
+  if (!session) throw new Error("unauthenticated");
+
+  const query = `
+      query GetAllPlatformWalletTransactions {
+        wallet_transactions(
+          order_by: { created_at: desc }
+        ) {
+          id
+          type
+          amount
+          net_amount
+          currency
+          status
+          description
+          created_at
+          workspace_id
+          provider_reference
+        }
+      }
+    `;
+
+  try {
+    const data = await hasuraRequest<any>(query, {});
+    const transactions = data.wallet_transactions || [];
+    if (transactions.length === 0) return [];
+
+    const wsIds = [...new Set(transactions.map((t: any) => t.workspace_id).filter(Boolean))];
+    let wsOrgMap = new Map<string, string>(); // workspace_id -> organizer_id
+    let wsNameMap = new Map<string, string>(); // workspace_id -> workspace name
+    let orgMap = new Map<string, any>(); // organizer_id -> organizer
+
+    if (wsIds.length > 0) {
+      const wsQuery = `
+          query GetWorkspacesForWallet($ids: [uuid!]!) {
+            workspaces(where: { id: { _in: $ids } }) {
+              id
+              name
+              orgnizer_id
+            }
+          }
+        `;
+      const wsData = await hasuraRequest<any>(wsQuery, { ids: wsIds });
+      const workspaces: any[] = wsData.workspaces || [];
+      workspaces.forEach((w: any) => {
+        wsOrgMap.set(w.id, w.orgnizer_id);
+        wsNameMap.set(w.id, w.name);
+      });
+
+      const orgIds = [...new Set(workspaces.map((w: any) => w.orgnizer_id).filter(Boolean))];
+      if (orgIds.length > 0) {
+        const orgQuery = `
+            query GetOrgsForWallet($ids: [uuid!]!) {
+              organizers(where: { id: { _in: $ids } }) {
+                id
+                name
+                handle
+                email
+                image
+              }
+            }
+          `;
+        const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
+        const orgs: any[] = orgData.organizers || [];
+        orgs.forEach((o: any) => orgMap.set(o.id, o));
+      }
+    }
+
+    return transactions.map((tx: any) => {
+      const orgId = wsOrgMap.get(tx.workspace_id);
+      const org = orgId ? orgMap.get(orgId) : null;
+      return {
+        ...tx,
+        organizer: org || null,
+        workspaceName: wsNameMap.get(tx.workspace_id) || "—",
+      };
+    });
+  } catch (e) {
+    console.error("Failed to fetch platform wallet transactions:", e);
+    return [];
+  }
+});
+
 
 export const sendAdminWithdrawalOtp = createServerFn({ method: "POST" })
   .validator((d: { transactionId: string }) => d)

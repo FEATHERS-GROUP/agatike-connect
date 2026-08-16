@@ -387,10 +387,10 @@ function FacilityCheckoutPage() {
 
       const bookingStatus = facility?.requires_approval ? "Pending" : "Confirmed";
       const isPawaPay =
-        totalAmount > 0 &&
+        ((totalAmount > 0 &&
         paymentMethod === "momo" &&
         paymentDetails?.phone &&
-        paymentDetails?.network;
+        paymentDetails?.network) || paymentMethod === "card");
       const paymentRef = isPawaPay
         ? Math.random().toString(36).substring(2, 12).toUpperCase()
         : undefined;
@@ -466,12 +466,16 @@ function FacilityCheckoutPage() {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { results, isPawaPay: true, depositId: pawaRes.depositId, bookingRef: currentRef };
+        return { results, isPawaPay: true, depositId: pawaRes.depositId, redirectUrl: (pawaRes as any).redirectUrl, bookingRef: currentRef };
       }
 
       return { results, isPawaPay: false, bookingRef: currentRef };
     },
     onSuccess: async (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const res = data.results?.[0];
       const td = res?.tickets_data;
       if (td?.issued) {

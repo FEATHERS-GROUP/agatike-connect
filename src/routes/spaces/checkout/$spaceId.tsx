@@ -147,10 +147,10 @@ function CheckoutPage() {
 
     try {
       const isPawaPay =
-        finalPriceNum > 0 &&
+        ((finalPriceNum > 0 &&
         paymentMethod === "momo" &&
         paymentDetails?.phone &&
-        paymentDetails?.network;
+        paymentDetails?.network) || paymentMethod === "card");
 
       // 1. Save Subscription to Database (with membership IDs generated server-side)
       const subscription = await createSpaceSubscription({
@@ -188,6 +188,12 @@ function CheckoutPage() {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
+
+        if ((pawaRes as any).redirectUrl) {
+          window.location.href = (pawaRes as any).redirectUrl;
+          return;
+        }
+
         setPawapayDepositId(pawaRes.depositId);
         setIsPollingPawaPay(true);
         setIsPaymentModalOpen(false);

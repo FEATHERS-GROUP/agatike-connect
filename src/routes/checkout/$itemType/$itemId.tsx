@@ -84,8 +84,8 @@ function CheckoutPage() {
     mutationFn: async (paymentDetails: any) => {
       if (!workspaceId || !product) throw new Error("Missing required data for checkout.");
 
-      const isPawaPay = paymentDetails?.network && paymentDetails?.phone;
-      if (!isPawaPay) throw new Error("Currently only mobile money is supported.");
+      const isPawaPay = (paymentDetails?.network && paymentDetails?.phone) || paymentDetails?.network === "AGATIKE_CARD";
+      if (!isPawaPay) throw new Error("Missing payment details.");
 
       const newBookingRef = crypto.randomUUID();
 
@@ -137,9 +137,18 @@ function CheckoutPage() {
         },
       } as any);
 
-      return { isPawaPay: true, depositId: pawaRes.depositId, bookingRef: newBookingRef };
+      return {
+        isPawaPay: true,
+        depositId: pawaRes.depositId,
+        bookingRef: newBookingRef,
+        redirectUrl: (pawaRes as any).redirectUrl,
+      };
     },
     onSuccess: (data) => {
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setBookingRef(data.bookingRef);

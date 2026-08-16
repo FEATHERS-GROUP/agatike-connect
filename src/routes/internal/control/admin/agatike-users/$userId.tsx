@@ -37,6 +37,11 @@ function UserDetailsPage() {
   const venues = data.venue_bookings || [];
   const subscriptions = data.space_subscriptions || [];
 
+  const getAvatarUrl = (user: any) => {
+    if (typeof user.profile === "string" && user.profile.startsWith("http")) return user.profile;
+    return user.profile?.avatar_url || user.profile?.image || user.profile?.photoURL || user.image;
+  };
+
   const handleToggleActive = async () => {
     if (
       !confirm(
@@ -158,9 +163,9 @@ function UserDetailsPage() {
           <div className="col-span-1 md:col-span-1 space-y-6">
             <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl p-6 flex flex-col items-center text-center">
               <div className="w-24 h-24 rounded-full bg-gray-50 dark:bg-[#252526] border border-gray-300 dark:border-[#444444] flex items-center justify-center overflow-hidden mb-4">
-                {user.profile?.avatar_url ? (
+                {getAvatarUrl(user) ? (
                   <img
-                    src={user.profile.avatar_url}
+                    src={getAvatarUrl(user)}
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />

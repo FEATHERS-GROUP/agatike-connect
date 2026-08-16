@@ -400,7 +400,15 @@ function avatarColor(seed: string) {
   return palette[h % palette.length];
 }
 
-function Initials({ name, size = "h-7 w-7" }: { name: string; size?: string }) {
+function Initials({ name, src, size = "h-7 w-7" }: { name: string; src?: string; size?: string }) {
+  if (src) {
+    return (
+      <div className={`${size} rounded-full overflow-hidden shrink-0`}>
+        <img src={src} alt={name} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+
   const parts = (name || "?").trim().split(/\s+/);
   const letters =
     parts.length >= 2
@@ -1030,7 +1038,7 @@ function AdminSupportPage() {
                                   }
                                 >
                                   <div className="flex items-center gap-2">
-                                    <Initials name={customerName} />
+                                    <Initials name={customerName} src={ticket.organizer?.image} />
                                     <span className="text-[12px] text-gray-700 dark:text-[#ccc] whitespace-nowrap">
                                       {customerName}
                                     </span>

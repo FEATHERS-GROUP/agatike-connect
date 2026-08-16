@@ -75,17 +75,16 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ""}
         <div style="margin: 0;">${message}</div>
         
-        ${
-          badgeLink
-            ? `
+        ${badgeLink
+        ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
           <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
           <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
           <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
-            : ""
-        }
+        : ""
+      }
 
         ${socialsHtml}
       </div>
@@ -102,18 +101,17 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${
-                    organizerLogo &&
-                    !organizerLogo.includes("localhost") &&
-                    organizerLogo.startsWith("http")
-                      ? `
+                  ${organizerLogo &&
+        !organizerLogo.includes("localhost") &&
+        organizerLogo.startsWith("http")
+        ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   `
-                      : ""
-                  }
+        : ""
+      }
                   <td align="center">
                     <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
@@ -123,7 +121,6 @@ export const sendAttendeeEmail = createServerFn({ method: "POST" })
           </tr>
         </table>
         
-        <div style="color: #F2571D; font-weight: 900; font-size: 16px; letter-spacing: 1px;">AGATIKE</div>
       </div>
     </div>
   `;
@@ -431,8 +428,8 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { to, otp } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NODE_ENV === "production"
@@ -501,8 +498,8 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
       invoiceNumber,
     } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -628,15 +625,14 @@ export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
             <span>${planName} (${billingCycle})</span>
             <strong>${price}</strong>
           </p>
-          ${
-            startDate
-              ? `
+          ${startDate
+        ? `
           <p style="margin: 8px 0; display: flex; justify-content: space-between; font-size: 14px; color: #64748b;">
             <span>Start Date</span>
             <span>${startDate}</span>
           </p>`
-              : ""
-          }
+        : ""
+      }
           <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;">
             <span>Total Paid</span>
             <span>${price}</span>
@@ -703,8 +699,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
       pdfBase64,
     } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -764,8 +760,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
             </thead>
             <tbody>
               ${members
-                .map(
-                  (m: any, i: number) => `
+            .map(
+              (m: any, i: number) => `
                 <tr>
                   <td>${i + 1}</td>
                   <td>${m.name || ""}</td>
@@ -774,8 +770,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
                   <td style="font-family: monospace;">${m.membership_id || ""}</td>
                 </tr>
               `,
-                )
-                .join("")}
+            )
+            .join("")}
             </tbody>
           </table>
         </body>
@@ -827,8 +823,8 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
     const { to, memberName, companyName, spaceName, planName, startDate, membershipId } =
       ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -896,8 +892,8 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
     const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } =
       ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -970,8 +966,8 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
 export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
   const { to, userName, initialPassword, organizerName } = data;
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NODE_ENV === "production"
@@ -1039,8 +1035,8 @@ export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
 export const executeSendProjectAccessEmail = async (data: any) => {
   const { to, userName, organizerName, projectName, projectLink } = data;
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NODE_ENV === "production"
@@ -1166,8 +1162,8 @@ export const sendTrialExtensionEmail = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { to, organizerName, daysExtended, totalAllowedDays } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -1312,11 +1308,10 @@ export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" }
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
       <!-- Header -->
       <div style="background-color: ${themeColor}; padding: 40px 24px; text-align: center;">
-        ${
-          organizerLogo && !organizerLogo.includes("localhost") && organizerLogo.startsWith("http")
-            ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto 16px auto; background: white; padding: 6px 12px;" />`
-            : `<div style="background: white; width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${agatikeFooterIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`
-        }
+        ${organizerLogo && !organizerLogo.includes("localhost") && organizerLogo.startsWith("http")
+        ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto 16px auto; background: white; padding: 6px 12px;" />`
+        : `<div style="background: white; width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${agatikeFooterIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`
+      }
         <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">Your Download is Ready!</h2>
         <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0 0; font-size: 14px;">from ${organizerName}</p>
       </div>
@@ -1328,11 +1323,10 @@ export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" }
           Thank you for your purchase! Your digital product <strong>${productName}</strong> is ready for download.
         </p>
 
-        ${
-          productDescription
-            ? `<p style="margin: 0 0 24px 0; color: #555; font-size: 15px;">${productDescription}</p>`
-            : ""
-        }
+        ${productDescription
+        ? `<p style="margin: 0 0 24px 0; color: #555; font-size: 15px;">${productDescription}</p>`
+        : ""
+      }
 
         <!-- Download Card -->
         <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 24px; text-align: center; margin: 24px 0;">
@@ -1389,6 +1383,72 @@ export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" }
     if (!res.ok) {
       console.warn("Failed to send digital product delivery email:", data);
       throw new Error(data.message || "Failed to send digital product delivery email");
+    }
+    return data;
+  });
+
+export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { to, organizerName, ticketId, subject } = ctx.data as any;
+
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "https://agatike.rw";
+
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+    const ticketShortId = `#${String(ticketId).slice(-6).toUpperCase()}`;
+
+    const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #f97316; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Issue Resolved!</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi ${organizerName || "Organizer"},</p>
+        <p>We are writing to let you know that your support ticket <strong>${ticketShortId}</strong> has been resolved and closed.</p>
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
+          <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Ticket Details</h3>
+          <p style="margin: 8px 0;"><strong>Ticket ID:</strong> ${ticketShortId}</p>
+          <p style="margin: 8px 0;"><strong>Subject:</strong> ${subject}</p>
+        </div>
+        <p>If you still experience issues or have any further questions, please feel free to open a new ticket or reply to your existing one.</p>
+        <div style="margin-top: 32px; text-align: center;">
+          <a href="${baseUrl}/dashboard/support" style="background-color: #f97316; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">View Ticket</a>
+        </div>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
+      </div>
+    </div>
+  `;
+
+    const emailPayload: any = {
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Ticket Resolved: ${subject}`,
+      html: html,
+    };
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn("Failed to send support ticket resolved email:", data);
     }
     return data;
   });

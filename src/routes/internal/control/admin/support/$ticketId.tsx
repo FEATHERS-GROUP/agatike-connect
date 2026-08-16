@@ -66,13 +66,23 @@ function avatarColor(seed: string) {
 
 function Avatar({
   name,
+  src,
   size = "h-8 w-8",
   text = "text-[11px]",
 }: {
   name: string;
+  src?: string;
   size?: string;
   text?: string;
 }) {
+  if (src) {
+    return (
+      <div className={`${size} rounded-full overflow-hidden shrink-0`}>
+        <img src={src} alt={name} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+
   const parts = (name || "?").trim().split(/\s+/);
   const letters =
     parts.length >= 2
@@ -208,19 +218,30 @@ function SelectRow({
 }) {
   return (
     <SideRow label={label}>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className="w-full text-[13px] text-gray-800 dark:text-[#e0e0e0] bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded-md px-2.5 py-1.5 outline-none focus:border-blue-400 disabled:opacity-50 appearance-none pr-7 cursor-pointer"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "right 8px center",
-        }}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          className="w-full text-[13px] text-gray-800 dark:text-[#e0e0e0] bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333] rounded-md px-2.5 py-1.5 outline-none focus:border-blue-400 disabled:opacity-50 appearance-none pr-7 cursor-pointer"
+          style={
+            disabled
+              ? undefined
+              : {
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 8px center",
+                }
+          }
+        >
+          {children}
+        </select>
+        {disabled && (
+          <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-orange-500" />
+          </div>
+        )}
+      </div>
     </SideRow>
   );
 }
@@ -386,7 +407,14 @@ function AdminTicketDetailPage() {
           <SelectRow
             label="Status"
             value={ticket.status}
-            onChange={(v) => statusMutation.mutate(v as TicketStatus)}
+            onChange={(v) => {
+              if (v === "resolved" || v === "closed") {
+                if (!confirm(`Are you sure you want to mark this ticket as ${v}? An email will be sent to the organizer.`)) {
+                  return;
+                }
+              }
+              statusMutation.mutate(v as TicketStatus);
+            }}
             disabled={statusMutation.isPending}
           >
             <option value="open">Open</option>
@@ -460,7 +488,7 @@ function AdminTicketDetailPage() {
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             {/* Original message */}
             <div className="flex gap-3">
-              <Avatar name={organizerName} />
+              <Avatar name={organizerName} src={(ticket as any).organizer?.image} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-[13px] font-semibold text-gray-900 dark:text-white">
@@ -487,10 +515,11 @@ function AdminTicketDetailPage() {
               const authorName = isAdmin
                 ? (ticket as any).assignedAdmin?.email?.split("@")[0] || "Support Team"
                 : comment.author_name || organizerName;
+              const authorImage = isAdmin ? undefined : (ticket as any).organizer?.image;
 
               return (
                 <div key={comment.id} className="flex gap-3">
-                  <Avatar name={authorName} />
+                  <Avatar name={authorName} src={authorImage} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-[13px] font-semibold text-gray-900 dark:text-white">
@@ -600,7 +629,7 @@ function AdminTicketDetailPage() {
                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-40 ${
                   activeComposer === "note"
                     ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-[#f97316] text-white hover:bg-[#ea6c0a]"
                 }`}
               >
                 {replyMutation.isPending ? (
@@ -635,7 +664,7 @@ function AdminTicketDetailPage() {
           {/* Avatar + name */}
           <div className="px-4 py-4 border-b border-gray-100 dark:border-[#252526]">
             <div className="flex items-center gap-3 mb-3">
-              <Avatar name={organizerName} size="h-10 w-10" text="text-[13px]" />
+              <Avatar name={organizerName} src={(ticket as any).organizer?.image} size="h-10 w-10" text="text-[13px]" />
               <div>
                 <div className="text-[13px] font-semibold text-gray-900 dark:text-white">
                   {organizerName}
@@ -655,16 +684,10 @@ function AdminTicketDetailPage() {
                   <span>{(ticket as any).organizer.phone}</span>
                 </div>
               )}
-              {(ticket as any).organizer?.company && (
-                <div className="flex items-center gap-2 text-[12px] text-gray-500">
-                  <Globe className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                  <span>{(ticket as any).organizer.company}</span>
-                </div>
-              )}
-              {(ticket as any).organizer?.address && (
+              {(ticket as any).organizer?.country && (
                 <div className="flex items-center gap-2 text-[12px] text-gray-500">
                   <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                  <span>{(ticket as any).organizer.address}</span>
+                  <span>{(ticket as any).organizer.country}</span>
                 </div>
               )}
               {ticket.subscription_plan_name && (
@@ -705,49 +728,49 @@ function AdminTicketDetailPage() {
               Previous Tickets
             </div>
             <div className="space-y-3">
-              {/* Placeholder previous tickets — in production these would come from API */}
-              {[
-                {
-                  id: "#" + ticketShortId.slice(1, 4) + "65",
-                  subject: "Fridge making strange noises",
-                  status: "resolved",
-                  priority: "normal",
-                  date: "13 Sep 2023, 04:32 PM",
-                },
-                {
-                  id: "#" + ticketShortId.slice(1, 4) + "62",
-                  subject: "Oven not heating evenly",
-                  status: "resolved",
-                  priority: "low",
-                  date: "06 Aug 2023, 11:27 AM",
-                },
-              ].map((pt) => (
-                <div
-                  key={pt.id}
-                  className="border border-gray-200 dark:border-[#252526] rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400">
-                      {pt.id}
-                    </span>
-                    <span className="text-[10px] text-gray-400">{pt.date}</span>
-                  </div>
-                  <p className="text-[12px] text-gray-600 dark:text-[#bbb] mb-2 leading-snug">
-                    {pt.subject}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-semibold">
-                      <CheckCircle2 className="h-2.5 w-2.5" />
-                      Resolved
-                    </span>
-                    <span
-                      className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-semibold ${PRIORITY_BG[pt.priority]} ${PRIORITY_COLORS[pt.priority]}`}
-                    >
-                      {pt.priority.charAt(0).toUpperCase() + pt.priority.slice(1)}
-                    </span>
-                  </div>
-                </div>
-              ))}
+              {((ticket as any).organizer?.support_tickets || []).length === 0 ? (
+                <div className="text-[12px] text-gray-500 italic">No previous tickets</div>
+              ) : (
+                ((ticket as any).organizer?.support_tickets || []).map((pt: any) => (
+                  <Link
+                    key={pt.id}
+                    to="/internal/control/admin/support/$ticketId"
+                    params={{ ticketId: pt.id }}
+                    className="block border border-gray-200 dark:border-[#252526] rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400 truncate pr-2">
+                        #{pt.id.split("-")[0]}
+                      </span>
+                      <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatFullDate(pt.created_at)}</span>
+                    </div>
+                    <p className="text-[12px] text-gray-600 dark:text-[#bbb] mb-2 leading-snug line-clamp-2">
+                      {pt.subject}
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                          pt.status === "resolved" || pt.status === "closed"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {pt.status === "resolved" || pt.status === "closed" ? (
+                          <CheckCircle2 className="h-2.5 w-2.5" />
+                        ) : (
+                          <Clock className="h-2.5 w-2.5" />
+                        )}
+                        {pt.status.replace("_", " ")}
+                      </span>
+                      <span
+                        className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-semibold ${PRIORITY_BG[pt.priority as TicketPriority]} ${PRIORITY_COLORS[pt.priority as TicketPriority]}`}
+                      >
+                        {pt.priority.charAt(0).toUpperCase() + pt.priority.slice(1)}
+                      </span>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
 
             {/* Assigned admin */}

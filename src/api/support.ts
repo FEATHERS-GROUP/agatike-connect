@@ -378,11 +378,11 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
 
     let whereClause = "{}";
     if (status === "unassigned") {
-      whereClause = `{ assigned_to: { _is_null: true }, status: { _neq: "closed" } }`;
+      whereClause = `{ assigned_to: { _is_null: true }, status: { _nin: ["closed", "resolved"] } }`;
     } else if (status === "in_progress") {
-      whereClause = `{ assigned_to: { _is_null: false }, status: { _neq: "closed" } }`;
+      whereClause = `{ assigned_to: { _is_null: false }, status: { _nin: ["closed", "resolved"] } }`;
     } else if (status === "resolved" || status === "closed") {
-      whereClause = `{ status: { _eq: "closed" } }`;
+      whereClause = `{ status: { _in: ["resolved", "closed"] } }`;
     }
     // 'all' => no filter
 
@@ -429,9 +429,9 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
 
       try {
         const orgRes = await hasuraRequest<{
-          organizers: { id: string; name: string; email: string }[];
+          organizers: { id: string; name: string; email: string; image?: string; workspaces?: { logo?: string }[] }[];
         }>(
-          `query GetOrgs($ids: [uuid!]!) { organizers(where: { id: { _in: $ids } }) { id name email } }`,
+          `query GetOrgs($ids: [uuid!]!) { organizers(where: { id: { _in: $ids } }) { id name email image workspaces { logo } } }`,
           { ids: orgIds },
         );
         orgMap = Object.fromEntries((orgRes.organizers || []).map((o: any) => [o.id, o]));
@@ -447,13 +447,19 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
         } catch (_) {}
       }
 
-      return tickets.map((t: any) => ({
-        ...t,
-        organizer: orgMap[t.organizer_id] || null,
-        assignedAdmin: t.assigned_to ? adminMap[t.assigned_to] || null : null,
-        commentCount: t.comments_aggregate?.aggregate?.count || 0,
-        lastComment: t.comments?.[0] || null,
-      }));
+      return tickets.map((t: any) => {
+        const org = orgMap[t.organizer_id] || null;
+        if (org && !org.image && org.workspaces?.length > 0) {
+          org.image = org.workspaces[0].logo;
+        }
+        return {
+          ...t,
+          organizer: org,
+          assignedAdmin: t.assigned_to ? adminMap[t.assigned_to] || null : null,
+          commentCount: t.comments_aggregate?.aggregate?.count || 0,
+          lastComment: t.comments?.[0] || null,
+        };
+      });
     }
 
     return tickets;
@@ -501,12 +507,52 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
     // Enrich organizer info
     try {
       const orgRes = await hasuraRequest<{
-        organizers_by_pk: { id: string; name: string; email: string } | null;
-      }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { id name email } }`, {
+        organizers_by_pk: any;
+      }>(`
+        query GetOrg($id: uuid!) { 
+          organizers_by_pk(id: $id) { 
+            id 
+            name 
+            email 
+            image
+            phone
+            country
+            workspaces {
+              logo
+            }
+          } 
+        }
+      `, {
         id: ticket.organizer_id,
       });
+      
+      const ticketsRes = await hasuraRequest<{
+        support_tickets: any[];
+      }>(`
+        query GetOrgTickets($orgId: uuid!, $ticketId: uuid!) {
+          support_tickets(where: { organizer_id: { _eq: $orgId }, id: { _neq: $ticketId } }, order_by: { created_at: desc }, limit: 3) {
+            id
+            subject
+            status
+            priority
+            created_at
+          }
+        }
+      `, {
+        orgId: ticket.organizer_id,
+        ticketId: ticket.id,
+      });
+
       (ticket as any).organizer = orgRes.organizers_by_pk;
-    } catch (_) {}
+      if ((ticket as any).organizer) {
+        if (!(ticket as any).organizer.image && (ticket as any).organizer.workspaces?.length > 0) {
+          (ticket as any).organizer.image = (ticket as any).organizer.workspaces[0].logo;
+        }
+        (ticket as any).organizer.support_tickets = ticketsRes.support_tickets || [];
+      }
+    } catch (err) {
+      console.error("Failed to enrich organizer", err);
+    }
 
     return ticket;
   });
@@ -548,6 +594,34 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
 
     const { ticketId, status } = ctx.data;
 
+    let ticketSubject = "Support Ticket";
+    let orgEmail = "";
+    let orgName = "";
+    if (status === "resolved" || status === "closed") {
+      try {
+        const ticketCheck = await hasuraRequest<{
+          support_tickets_by_pk: { organizer_id: string; subject: string } | null;
+        }>(`query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id subject } }`, {
+          id: ticketId,
+        });
+        
+        if (ticketCheck.support_tickets_by_pk) {
+          ticketSubject = ticketCheck.support_tickets_by_pk.subject;
+          const orgRes = await hasuraRequest<{
+            organizers_by_pk: { id: string; name: string; email: string } | null;
+          }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { id name email } }`, {
+            id: ticketCheck.support_tickets_by_pk.organizer_id,
+          });
+          if (orgRes.organizers_by_pk) {
+            orgEmail = orgRes.organizers_by_pk.email;
+            orgName = orgRes.organizers_by_pk.name;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch ticket details for email notification", err);
+      }
+    }
+
     const res = await hasuraRequest<{
       update_support_tickets_by_pk: { id: string; status: string };
     }>(
@@ -559,6 +633,22 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
       }`,
       { id: ticketId, status, now: new Date().toISOString() },
     );
+
+    if ((status === "resolved" || status === "closed") && orgEmail) {
+      try {
+        const { sendSupportTicketResolvedEmail } = await import("./email");
+        await sendSupportTicketResolvedEmail({
+          data: {
+            to: orgEmail,
+            organizerName: orgName,
+            ticketId,
+            subject: ticketSubject,
+          }
+        });
+      } catch (err) {
+        console.error("Failed to send support ticket resolved email", err);
+      }
+    }
 
     return res.update_support_tickets_by_pk;
   });
@@ -682,10 +772,10 @@ export const getAdminSupportStats = createServerFn({ method: "POST" }).handler(a
   const query = `
     query GetSupportStats {
       total: support_tickets_aggregate { aggregate { count } }
-      open: support_tickets_aggregate(where: { status: { _neq: "closed" } }) { aggregate { count } }
-      unassigned: support_tickets_aggregate(where: { assigned_to: { _is_null: true }, status: { _neq: "closed" } }) { aggregate { count } }
-      in_progress: support_tickets_aggregate(where: { assigned_to: { _is_null: false }, status: { _neq: "closed" } }) { aggregate { count } }
-      closed: support_tickets_aggregate(where: { status: { _eq: "closed" } }) { aggregate { count } }
+      open: support_tickets_aggregate(where: { status: { _nin: ["closed", "resolved"] } }) { aggregate { count } }
+      unassigned: support_tickets_aggregate(where: { assigned_to: { _is_null: true }, status: { _nin: ["closed", "resolved"] } }) { aggregate { count } }
+      in_progress: support_tickets_aggregate(where: { assigned_to: { _is_null: false }, status: { _nin: ["closed", "resolved"] } }) { aggregate { count } }
+      closed: support_tickets_aggregate(where: { status: { _in: ["resolved", "closed"] } }) { aggregate { count } }
     }
   `;
 

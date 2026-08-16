@@ -44,10 +44,31 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       network: string;
       countryCode: string;
       transactionId: string;
+      baseCurrency?: string;
+      targetCurrency?: string;
     }) => d,
   )
   .handler(async (ctx) => {
-    const { basePrice, workspaceId, network, countryCode, transactionId } = ctx.data;
+    const { basePrice, workspaceId, network, countryCode, transactionId, baseCurrency, targetCurrency } = ctx.data;
+
+    let markupRate = 1;
+    if (baseCurrency && targetCurrency) {
+      const safeBase = baseCurrency.toUpperCase().replace("FRW", "RWF");
+      const safeTarget = targetCurrency.toUpperCase().replace("FRW", "RWF");
+      if (safeBase !== safeTarget) {
+        try {
+          const res = await fetch(`https://open.er-api.com/v6/latest/${safeBase}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.rates && data.rates[safeTarget]) {
+              markupRate = data.rates[safeTarget] * 1.02; // Add 2% markup
+            }
+          }
+        } catch (e) {
+          console.error("Simulation FX Error:", e);
+        }
+      }
+    }
 
     try {
       // Combine workspace and payment provider fees into a single query
@@ -99,7 +120,10 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine
-      const organizerFee = basePrice * (organizerCollectionPct / 100) + organizerCollectionFixed;
+      let organizerFee = basePrice * (organizerCollectionPct / 100) + organizerCollectionFixed;
+      if (network === "AGATIKE_CARD") {
+        organizerFee += basePrice * 0.015;
+      }
 
       // 3. Platform Margin Buffer
       const platformBufferPct = planFees.platform_margin_buffer || 0; // Explicitly defined, not ad-hoc
@@ -219,6 +243,9 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           customerServicePct: customerCollectionPct,
           organizerContributionPct: organizerCollectionPct,
           providerFees,
+          markupRate,
+          baseCurrency,
+          targetCurrency
         },
         expected_collection_cost: expectedCollectionCost,
         expected_disbursement_cost: expectedDisbursementCost,
@@ -235,11 +262,13 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       return {
         decision,
         failureClassification,
-        serviceFee: customerFee,
-        organizerFee: organizerFee,
-        totalCustomerCharge,
-        expectedMargin,
-        shortfall: isSubsidized ? shortfall : 0,
+        serviceFee: customerFee * markupRate,
+        organizerFee: organizerFee * markupRate,
+        totalCustomerCharge: Math.ceil(totalCustomerCharge * markupRate),
+        convertedBasePrice: Math.ceil(basePrice * markupRate),
+        expectedMargin: expectedMargin * markupRate,
+        shortfall: isSubsidized ? (shortfall * markupRate) : 0,
+        markupRate,
         structuredError,
         transactionId,
       };
@@ -249,9 +278,11 @@ export const simulateTransaction = createServerFn({ method: "POST" })
       return {
         decision: "blocked",
         serviceFee: 0,
-        totalCustomerCharge: basePrice,
+        totalCustomerCharge: Math.ceil(basePrice * markupRate),
+        convertedBasePrice: Math.ceil(basePrice * markupRate),
         expectedMargin: 0,
         shortfall: 0,
+        markupRate,
         structuredError: {
           title: "❌ Simulation Error",
           description: "Simulation engine encountered an error.",

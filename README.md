@@ -586,6 +586,44 @@ flowchart TD
     WalletCheck -->|Subscription| Skip["Do not deposit (Platform Retains)"]
 ```
 
+### 12.5 Pesapal Integration (Card Payments)
+
+In addition to PawaPay (Mobile Money), Agatike Connect uses **Pesapal** to process credit and debit card payments.
+
+**Logic:**
+
+- **Order Submission:** When a user chooses to pay via Card, the `initiatePesapalPayment` API first authenticates with Pesapal using a Consumer Key and Secret to obtain a bearer token.
+- **Dynamic Fee Calculation:** The system calculates the Customer and Organizer fees (fetching live rules from `payment_provider_fees`), specifically applying an extra **1.5%** fee to the organizer for card transactions.
+- **IPN Setup:** It registers the platform's webhook URL (`/api/pesapal/webhook`) as an Instant Payment Notification (IPN) endpoint dynamically per transaction.
+- **Hosted Checkout:** The system submits the order and receives a secure `redirect_url`. A pending `wallet_transaction` and `earnings` record are created, and the user is redirected to Pesapal's hosted checkout page.
+- **Callback:** After payment, Pesapal redirects the user to `/api/pesapal/callback`, which safely routes them to their Ticket or Dashboard page based on the `reference_id` while the transaction processes in the background.
+
+#### Webhook Adapter Pattern
+
+To avoid duplicating the massive amount of logic required for post-payment actions (like generating digital tickets, creating RSVPs, sending SMS, and issuing email receipts), the Pesapal webhook implements an **Adapter Pattern**.
+
+```mermaid
+sequenceDiagram
+    participant Pesapal as Pesapal Server
+    participant WH as Pesapal Webhook API
+    participant PP_WH as PawaPay Webhook Logic
+    participant DB as Hasura DB
+
+    Pesapal->>WH: GET /api/pesapal/webhook (OrderTrackingId)
+    WH->>Pesapal: Fetch real Transaction Status
+    Pesapal-->>WH: Returns "COMPLETED" / "FAILED"
+    Note over WH: Translate Pesapal status to generic format
+    WH->>PP_WH: Mock Request & Hand off to handlePawaPayWebhook()
+    Note over PP_WH: Reuses existing ticket issuance & ledger logic
+    PP_WH->>DB: Atomically updates wallet & issues tickets
+    WH-->>Pesapal: 200 OK (Acknowledged)
+```
+
+- When the Pesapal IPN fires, the server uses the `OrderTrackingId` to proactively query Pesapal for the *true* transaction status.
+- It translates Pesapal's status codes into standard internal formats (`COMPLETED`, `FAILED`, `PENDING`).
+- **The Handoff:** It then creates a mocked `Request` object containing the translated status and the `OrderTrackingId` (which maps to `provider_reference` in the DB), and passes it directly to `handlePawaPayWebhook()`.
+- This ensures that a successful Pesapal payment triggers the exact same highly-tested ticket issuance and wallet funding logic as a PawaPay Mobile Money payment.
+
 ---
 
 ## Routing Architecture Reminder

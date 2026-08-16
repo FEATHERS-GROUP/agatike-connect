@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getSession } from "./auth"; // to see if there is a logged in user
+import { getCookie } from "@tanstack/react-start/server";
+import { jwtVerify } from "jose";
+import { getSession, SECRET } from "./auth"; // to see if there is a logged in user
 
 export const recordHeartbeat = createServerFn({ method: "POST" })
   .validator(
@@ -9,9 +11,27 @@ export const recordHeartbeat = createServerFn({ method: "POST" })
     const { sessionId, path, userAgent, visibilityState } = ctx.data;
 
     // Attempt to get user session to link it to an organizer or user
+    let userId = "anonymous";
+    let userType = "anonymous";
+
     const session = await getSession().catch(() => null);
-    const userId = session?.sub || "anonymous";
-    const userType = session?.type || "anonymous";
+    if (session) {
+      userId = session.sub;
+      userType = session.type;
+    } else {
+      const userToken = getCookie("agatike_user_auth");
+      if (userToken) {
+        try {
+          const { payload } = await jwtVerify(userToken, SECRET);
+          if (payload && payload.type === "user") {
+            userId = payload.sub as string;
+            userType = "user";
+          }
+        } catch (e) {
+          // invalid or expired token
+        }
+      }
+    }
 
     try {
       const { getFirebaseAdmin } = await import("@/lib/firebase.server");

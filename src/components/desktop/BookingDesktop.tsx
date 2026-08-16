@@ -359,7 +359,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     }) => {
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
-        total > 0 && paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network;
+        total > 0 && ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) || paymentMethod === "card");
 
       // Map attendees to Hasura table payload
       const attendeesPayload = attendees.map((a, idx) => {
@@ -470,6 +470,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           attendeesPayload,
           isPawaPay: true,
           depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
           paymentDetails,
           booking_ref,
         };
@@ -478,6 +479,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       return { res, attendeesPayload, isPawaPay: false, paymentDetails, booking_ref };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const { res, attendeesPayload } = data;
       const returned = res?.insert_event_attendees?.returning || [];
 
