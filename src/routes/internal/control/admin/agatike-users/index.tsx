@@ -23,6 +23,11 @@ function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
+  const getAvatarUrl = (user: any) => {
+    if (typeof user.profile === "string" && user.profile.startsWith("http")) return user.profile;
+    return user.profile?.avatar_url || user.profile?.image || user.profile?.photoURL || user.image;
+  };
+
   const filteredUsers = users.filter(
     (u: any) =>
       (u.username || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -101,9 +106,9 @@ function UsersPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] overflow-hidden shrink-0 border border-gray-300 dark:border-[#444444] flex items-center justify-center">
-                          {user.profile?.avatar_url ? (
+                          {getAvatarUrl(user) ? (
                             <img
-                              src={user.profile.avatar_url}
+                              src={getAvatarUrl(user)}
                               alt={user.username || "User"}
                               className="w-full h-full object-cover"
                             />
@@ -290,9 +295,9 @@ function UsersPage() {
               >
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-[#333333] overflow-hidden shrink-0 border border-gray-300 dark:border-[#444444] flex items-center justify-center">
-                  {user.profile?.avatar_url ? (
+                  {getAvatarUrl(user) ? (
                     <img
-                      src={user.profile.avatar_url}
+                      src={getAvatarUrl(user)}
                       alt={user.username || "User"}
                       className="w-full h-full object-cover"
                     />
