@@ -172,7 +172,8 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
             { customer_email: { _ilike: $q } },
             { customer_phone: { _ilike: $q } },
             { status: { _ilike: $q } },
-            { payment_status: { _ilike: $q } }
+            { payment_status: { _ilike: $q } },
+            { tickets_data: { _cast: { String: { _ilike: $q } } } }
           ]}
           limit: 5
           order_by: { created_at: desc }
@@ -197,7 +198,8 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
             { customer_email: { _ilike: $q } },
             { customer_phone: { _ilike: $q } },
             { plan_name: { _ilike: $q } },
-            { status: { _ilike: $q } }
+            { status: { _ilike: $q } },
+            { team_members: { _cast: { String: { _ilike: $q } } } }
           ]}
           limit: 5
           order_by: { created_at: desc }
@@ -211,6 +213,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           billing_cycle
           price
           start_date
+          team_members
           space { id name workspaces { id name } }
         }
       }
