@@ -501,9 +501,28 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
     // Enrich organizer info
     try {
       const orgRes = await hasuraRequest<{
-        organizers_by_pk: { id: string; name: string; email: string } | null;
-      }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { id name email } }`, {
+        organizers_by_pk: any;
+      }>(`
+        query GetOrg($id: uuid!, $ticketId: uuid!) { 
+          organizers_by_pk(id: $id) { 
+            id 
+            name 
+            email 
+            image
+            phone
+            country
+            support_tickets(where: {id: {_neq: $ticketId}}, order_by: {created_at: desc}, limit: 3) {
+              id
+              subject
+              status
+              priority
+              created_at
+            }
+          } 
+        }
+      `, {
         id: ticket.organizer_id,
+        ticketId: ticket.id,
       });
       (ticket as any).organizer = orgRes.organizers_by_pk;
     } catch (_) {}
