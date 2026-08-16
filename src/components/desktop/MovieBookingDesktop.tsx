@@ -207,10 +207,11 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
       const fullName = `${attendeeInfo.firstName} ${attendeeInfo.lastName}`.trim();
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
-        ((totalPrice > 0 &&
-        paymentMethod === "momo" &&
-        paymentDetails?.phone &&
-        paymentDetails?.network) || paymentMethod === "card");
+        (totalPrice > 0 &&
+          paymentMethod === "momo" &&
+          paymentDetails?.phone &&
+          paymentDetails?.network) ||
+        paymentMethod === "card";
 
       for (const [tierId, qty] of Object.entries(ticketQuantities)) {
         if (qty <= 0) continue;
@@ -267,7 +268,13 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { isPawaPay: true, depositId: pawaRes.depositId, redirectUrl: (pawaRes as any).redirectUrl, res, tiers };
+        return {
+          isPawaPay: true,
+          depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
+          res,
+          tiers,
+        };
       }
 
       return { isPawaPay: false, res, tiers };

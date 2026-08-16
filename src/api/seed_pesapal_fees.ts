@@ -2,7 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const url = process.env.HASURA_GRAPHQL_ENDPOINT || "https://open-languages.hasura.app/v1/graphql";
-const secret = process.env.HASURA_GRAPHQL_ADMIN_SECRET || "tbK6HLeobyLxHpgiwuMNUlKNSl4r7yrF3XOnSYWza9ocZQ57NKghx5xFFq7YNn9e";
+const secret =
+  process.env.HASURA_GRAPHQL_ADMIN_SECRET ||
+  "tbK6HLeobyLxHpgiwuMNUlKNSl4r7yrF3XOnSYWza9ocZQ57NKghx5xFFq7YNn9e";
 
 async function updatePesapal() {
   const mutation = `

@@ -74,7 +74,7 @@ export const APIRoute = createAPIFileRoute("/api/pesapal/webhook")({
           status: pawaPayMappedStatus,
 
           // ── Fields used by handlePawaPayWebhook to build notification messages ──
-          depositedAmount: String(pesapalAmount),   // shown as "amount paid" in emails/SMS
+          depositedAmount: String(pesapalAmount), // shown as "amount paid" in emails/SMS
           requestedAmount: String(pesapalAmount),
           currency: pesapalCurrency,
           baseCurrency: pesapalCurrency,
@@ -120,10 +120,9 @@ export const APIRoute = createAPIFileRoute("/api/pesapal/webhook")({
         );
       }
 
-      return new Response(
-        JSON.stringify({ message: "Status pending, no action taken" }),
-        { status: 200 },
-      );
+      return new Response(JSON.stringify({ message: "Status pending, no action taken" }), {
+        status: 200,
+      });
     } catch (e: any) {
       console.error("Pesapal webhook handling error", e);
       return new Response(JSON.stringify({ error: e.message }), { status: 500 });

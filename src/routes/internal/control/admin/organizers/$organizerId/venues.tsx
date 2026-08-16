@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { getAdminOrganizerVenues } from "@/api/admin_organizer_control";
 import {
   MapPin,
@@ -14,8 +14,9 @@ import {
   Map,
   Shield,
   FileText,
+  CalendarCheck,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -26,10 +27,13 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
     } as any);
     return data;
   },
+  validateSearch: (search: Record<string, unknown>) => ({
+    highlight: search.highlight as string | undefined,
+  }),
   component: OrganizerVenuesAndSpaces,
 });
 
-type Tab = "venues" | "spaces";
+type Tab = "venues" | "spaces" | "bookings";
 
 function EmptyRow({ cols, label }: { cols: number; label: string }) {
   return (
@@ -79,9 +83,36 @@ function DetailBlock({
 }
 
 function OrganizerVenuesAndSpaces() {
-  const { venues, spaces } = Route.useLoaderData() as any;
+  const { venues, spaces, bookings } = Route.useLoaderData() as any;
   const [activeTab, setActiveTab] = useState<Tab>("venues");
   const [searchQuery, setSearchQuery] = useState("");
+  const searchParam = useSearch({ from: "/internal/control/admin/organizers/$organizerId/venues" });
+  const highlightId = searchParam.highlight;
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightId) return;
+    setHighlightedId(highlightId);
+
+    // Auto-detect which tab the highlighted item belongs to
+    if (venues?.some((v: any) => v.id === highlightId)) {
+      setActiveTab("venues");
+    } else if (spaces?.some((s: any) => s.id === highlightId)) {
+      setActiveTab("spaces");
+    } else if (bookings?.some((b: any) => b.id === highlightId)) {
+      setActiveTab("bookings");
+    }
+
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`row-${highlightId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      setTimeout(() => setHighlightedId(null), 3000);
+    }, 800); // Increased timeout to ensure React has fully rendered the tab switch
+
+    return () => clearTimeout(timer);
+  }, [highlightId, venues, spaces, bookings]);
 
   const tabs: { key: Tab; label: string; icon: any; count: number; color: string }[] = [
     {
@@ -98,6 +129,13 @@ function OrganizerVenuesAndSpaces() {
       count: spaces?.length || 0,
       color: "text-[#c586c0]",
     },
+    {
+      key: "bookings",
+      label: "Bookings",
+      icon: CalendarCheck,
+      count: bookings?.length || 0,
+      color: "text-[#4ec9b0]",
+    },
   ];
 
   const q = searchQuery.toLowerCase();
@@ -112,6 +150,14 @@ function OrganizerVenuesAndSpaces() {
       (s.name || "").toLowerCase().includes(q) || (s.workspaceName || "").toLowerCase().includes(q),
   );
 
+  const filteredBookings = (bookings || []).filter(
+    (b: any) =>
+      (b.customer_name || "").toLowerCase().includes(q) ||
+      (b.customer_email || "").toLowerCase().includes(q) ||
+      (b.rentable_venue?.name || "").toLowerCase().includes(q) ||
+      (b.workspaceName || "").toLowerCase().includes(q),
+  );
+
   return (
     <div className="space-y-4 font-sans text-sm pb-10">
       {/* Header */}
@@ -119,10 +165,12 @@ function OrganizerVenuesAndSpaces() {
         <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
           {activeTab === "venues" ? (
             <MapPin className="h-5 w-5 text-[#569cd6]" />
-          ) : (
+          ) : activeTab === "spaces" ? (
             <LayoutGrid className="h-5 w-5 text-[#c586c0]" />
+          ) : (
+            <CalendarCheck className="h-5 w-5 text-[#4ec9b0]" />
           )}
-          Venues & Spaces
+          Venues, Spaces & Bookings
         </h2>
 
         <div className="relative">
@@ -612,6 +660,105 @@ function OrganizerVenuesAndSpaces() {
                       </td>
                     </tr>
                   ))
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {/* Bookings */}
+          {activeTab === "bookings" && (
+            <table className="w-full text-left text-[13px] whitespace-nowrap">
+              <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
+                <tr>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Customer
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Venue
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Dates
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Amount
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
+                {filteredBookings.length === 0 ? (
+                  <EmptyRow cols={6} label="No bookings found matching criteria" />
+                ) : (
+                  filteredBookings.map((b: any) => {
+                    const isHighlighted = highlightedId === b.id;
+                    return (
+                      <tr
+                        key={b.id}
+                        id={`row-${b.id}`}
+                        className={[
+                          "transition-colors",
+                          isHighlighted
+                            ? "bg-[#f97316]/15 ring-2 ring-inset ring-[#f97316]/50 animate-pulse"
+                            : "hover:bg-gray-200 dark:hover:bg-[#2d2d30]",
+                        ].join(" ")}
+                      >
+                        <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
+                          {String(b.id).substring(0, 8)}...
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {b.customer_name || "Unknown"}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-[#797775]">
+                            {b.customer_email || b.customer_phone || "—"}
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {b.rentable_venue?.name || "—"}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-[#797775]">
+                            {b.workspaceName}
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="text-gray-900 dark:text-white">
+                            {b.start_time
+                              ? new Date(b.start_time).toLocaleDateString("en-US")
+                              : "—"}
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-[#797775]">
+                            To:{" "}
+                            {b.end_time ? new Date(b.end_time).toLocaleDateString("en-US") : "—"}
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-gray-200 dark:bg-[#333333] text-gray-700 dark:text-[#cccccc] w-fit">
+                              {b.status || "—"}
+                            </span>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded-sm w-fit ${
+                                b.payment_status === "paid" || b.payment_status === "success"
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                  : "bg-gray-200 dark:bg-[#333333] text-gray-700 dark:text-[#cccccc]"
+                              }`}
+                            >
+                              {b.payment_status || "—"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4 font-medium text-[#dcdcaa]">
+                          RWF {Number(b.total_amount || 0).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

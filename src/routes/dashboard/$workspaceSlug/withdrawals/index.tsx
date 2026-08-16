@@ -207,7 +207,12 @@ function WithdrawalsPage() {
           <div className="overflow-y-auto flex-1 pr-2 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { label: "Credit/Debit Card", value: "AGATIKE_CARD", curr: "Any Currency", isCard: true },
+                {
+                  label: "Credit/Debit Card",
+                  value: "AGATIKE_CARD",
+                  curr: "Any Currency",
+                  isCard: true,
+                },
                 { label: "MTN Rwanda", value: "MTN_MOMO_RWA", curr: "RWF" },
                 { label: "Airtel Rwanda", value: "AIRTEL_OAPI_RWA", curr: "RWF" },
                 { label: "MTN Uganda", value: "MTN_MOMO_UGA", curr: "UGX" },
@@ -231,7 +236,9 @@ function WithdrawalsPage() {
                       <div>
                         <Label className="font-semibold">{network.label}</Label>
                         <p className="text-xs text-muted-foreground">
-                          {network.curr === "Any Currency" ? "Accepts all currencies" : `Charges in ${network.curr}`}
+                          {network.curr === "Any Currency"
+                            ? "Accepts all currencies"
+                            : `Charges in ${network.curr}`}
                         </p>
                       </div>
                       <Switch
@@ -241,7 +248,8 @@ function WithdrawalsPage() {
                     </div>
                     {network.isCard && isChecked && (
                       <div className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-2 rounded border border-amber-200 dark:border-amber-900/50">
-                        <strong>Note:</strong> Card payments incur an additional 1.5% processing fee on top of your standard plan rates.
+                        <strong>Note:</strong> Card payments incur an additional 1.5% processing fee
+                        on top of your standard plan rates.
                       </div>
                     )}
                   </div>

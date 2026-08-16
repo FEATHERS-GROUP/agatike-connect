@@ -1,63 +1,63 @@
 import { createServerFn } from "@tanstack/react-start";
 export const sendAttendeeEmailRaw = async (ctx: any) => {
-    const {
-      to,
-      subject,
-      message,
-      eventName,
-      organizerName,
-      organizerLogo,
-      organizerSocials,
-      badgeLink,
-      appUrl,
-      pdfBase64,
-      attachments,
-    } = ctx.data as any;
+  const {
+    to,
+    subject,
+    message,
+    eventName,
+    organizerName,
+    organizerLogo,
+    organizerSocials,
+    badgeLink,
+    appUrl,
+    pdfBase64,
+    attachments,
+  } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NODE_ENV === "production"
-          ? "https://agatike.rw"
-          : appUrl || "https://agatike.com";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === "production"
+        ? "https://agatike.rw"
+        : appUrl || "https://agatike.com";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    // Build Social Links HTML if available
-    let socialsHtml = "";
-    if (organizerSocials && typeof organizerSocials === "object") {
-      const socialLinks = Object.entries(organizerSocials)
-        .filter(([_, url]) => url)
-        .map(([platform, url]) => {
-          let iconUrl = "https://img.icons8.com/ios-filled/24/666666/link--v1.png";
-          if (platform.toLowerCase().includes("twitter") || platform.toLowerCase().includes("x"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/twitter.png";
-          else if (platform.toLowerCase().includes("instagram"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/instagram-new.png";
-          else if (platform.toLowerCase().includes("facebook"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/facebook-new.png";
-          else if (platform.toLowerCase().includes("linkedin"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/linkedin.png";
+  // Build Social Links HTML if available
+  let socialsHtml = "";
+  if (organizerSocials && typeof organizerSocials === "object") {
+    const socialLinks = Object.entries(organizerSocials)
+      .filter(([_, url]) => url)
+      .map(([platform, url]) => {
+        let iconUrl = "https://img.icons8.com/ios-filled/24/666666/link--v1.png";
+        if (platform.toLowerCase().includes("twitter") || platform.toLowerCase().includes("x"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/twitter.png";
+        else if (platform.toLowerCase().includes("instagram"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/instagram-new.png";
+        else if (platform.toLowerCase().includes("facebook"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/facebook-new.png";
+        else if (platform.toLowerCase().includes("linkedin"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/linkedin.png";
 
-          return `<a href="${url}" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+        return `<a href="${url}" style="display: inline-block; margin: 0 8px; text-decoration: none;">
                   <img src="${iconUrl}" alt="${platform}" style="width: 24px; height: 24px;" />
                 </a>`;
-        })
-        .join("");
+      })
+      .join("");
 
-      if (socialLinks) {
-        socialsHtml = `
+    if (socialLinks) {
+      socialsHtml = `
         <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #eaeaea; text-align: center;">
           <p style="font-size: 14px; color: #666; margin-bottom: 12px; font-weight: 500;">Follow ${organizerName || "us"} on Social Media</p>
           <div>${socialLinks}</div>
         </div>
       `;
-      }
     }
+  }
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
       <!-- Header -->
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
@@ -73,16 +73,17 @@ export const sendAttendeeEmailRaw = async (ctx: any) => {
         ${eventName ? `<h3 style="margin-top: 0; color: #111; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 24px;">Regarding: ${eventName}</h3>` : ""}
         <div style="margin: 0;">${message}</div>
         
-        ${badgeLink
-        ? `
+        ${
+          badgeLink
+            ? `
         <div style="margin-top: 32px; text-align: center; background-color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px dashed #cbd5e1;">
           <h4 style="margin: 0 0 16px 0; color: #0f172a; font-size: 16px;">Your Ticket</h4>
           <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569;">Click below to open and save your ticket. You can use it to check in at the event!</p>
           <a href="${badgeLink}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;">View My Ticket</a>
         </div>
         `
-        : ""
-      }
+            : ""
+        }
 
         ${socialsHtml}
       </div>
@@ -99,17 +100,18 @@ export const sendAttendeeEmailRaw = async (ctx: any) => {
             <td align="center">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  ${organizerLogo &&
-        !organizerLogo.includes("localhost") &&
-        organizerLogo.startsWith("http")
-        ? `
+                  ${
+                    organizerLogo &&
+                    !organizerLogo.includes("localhost") &&
+                    organizerLogo.startsWith("http")
+                      ? `
                   <td align="center" style="padding-right: 16px; border-right: 1px solid #cbd5e1;">
                     <img src="${organizerLogo}" alt="${organizerName}" style="height: 40px; border-radius: 8px; object-fit: contain; display: block;" />
                   </td>
                   <td width="16"></td>
                   `
-        : ""
-      }
+                      : ""
+                  }
                   <td align="center">
                     <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; display: block;" />
                   </td>
@@ -123,136 +125,136 @@ export const sendAttendeeEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const sanitizedName = organizerName
-      ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "")
-      : "hello";
-    const senderEmail = `${sanitizedName}@agatike.rw`;
-    const senderName = organizerName || "Agatike Connect";
+  const sanitizedName = organizerName
+    ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "")
+    : "hello";
+  const senderEmail = `${sanitizedName}@agatike.rw`;
+  const senderName = organizerName || "Agatike Connect";
 
-    const payload: any = {
-      from: `${senderName} <${senderEmail}>`,
-      to: [to],
-      subject: subject || `Update from ${organizerName}: ${eventName}`,
-      html: html,
-    };
+  const payload: any = {
+    from: `${senderName} <${senderEmail}>`,
+    to: [to],
+    subject: subject || `Update from ${organizerName}: ${eventName}`,
+    html: html,
+  };
 
-    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
-      payload.attachments = attachments;
-    } else if (pdfBase64) {
-      payload.attachments = [
-        {
-          filename: `Receipt.pdf`,
-          content: pdfBase64,
-        },
-      ];
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+  if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+    payload.attachments = attachments;
+  } else if (pdfBase64) {
+    payload.attachments = [
+      {
+        filename: `Receipt.pdf`,
+        content: pdfBase64,
       },
-      body: JSON.stringify(payload),
-    });
+    ];
+  }
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to send email via Resend");
-    }
-    return data;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send email via Resend");
+  }
+  return data;
 };
 
 export const sendTicketsEmailRaw = async (ctx: any) => {
-    const {
-      to,
-      customerName,
-      venueName,
-      eventName,
-      attachments, // Array of { filename: string, content: string (base64) }
-      hasMerch,
-      workspaceId,
-      phone,
-      isVenue,
-      totalPaid,
-      ticketCodes,
-      bookingRef,
-      isPortal,
-    } = ctx.data as any;
+  const {
+    to,
+    customerName,
+    venueName,
+    eventName,
+    attachments, // Array of { filename: string, content: string (base64) }
+    hasMerch,
+    workspaceId,
+    phone,
+    isVenue,
+    totalPaid,
+    ticketCodes,
+    bookingRef,
+    isPortal,
+  } = ctx.data as any;
 
-    const emailAttachments = [...(attachments || [])];
+  const emailAttachments = [...(attachments || [])];
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NODE_ENV === "production"
-          ? "https://agatike.rw"
-          : "https://agatike.com";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === "production"
+        ? "https://agatike.rw"
+        : "https://agatike.com";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    let organizerName = "Agatike Connect";
-    let organizerLogo = "";
-    let organizerSocials: any = null;
-    let themeColor = "#F2571D";
-    let wsSlug = "";
+  let organizerName = "Agatike Connect";
+  let organizerLogo = "";
+  let organizerSocials: any = null;
+  let themeColor = "#F2571D";
+  let wsSlug = "";
 
-    if (workspaceId) {
-      try {
-        const { hasuraRequest } = await import("./graphql.server");
-        const wsData = await hasuraRequest<{
-          workspaces_by_pk: { name: string; orgnizer_id: string };
-          workspace_pages: { slug: string; theme_color: string; components: any }[];
-        }>(
-          `
+  if (workspaceId) {
+    try {
+      const { hasuraRequest } = await import("./graphql.server");
+      const wsData = await hasuraRequest<{
+        workspaces_by_pk: { name: string; orgnizer_id: string };
+        workspace_pages: { slug: string; theme_color: string; components: any }[];
+      }>(
+        `
           query GetWS($id: uuid!) { 
             workspaces_by_pk(id: $id) { name orgnizer_id } 
             workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { slug theme_color components }
           }
         `,
-          { id: workspaceId },
-        );
+        { id: workspaceId },
+      );
 
-        if (wsData?.workspaces_by_pk) {
-          organizerName = wsData.workspaces_by_pk.name;
-          if (wsData.workspaces_by_pk.orgnizer_id) {
-            const orgData = await hasuraRequest<{
-              organizers_by_pk: { name: string; socials: any };
-            }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name socials } }`, {
-              id: wsData.workspaces_by_pk.orgnizer_id,
-            });
-            if (orgData?.organizers_by_pk) {
-              if (orgData.organizers_by_pk.socials)
-                organizerSocials = orgData.organizers_by_pk.socials;
-            }
+      if (wsData?.workspaces_by_pk) {
+        organizerName = wsData.workspaces_by_pk.name;
+        if (wsData.workspaces_by_pk.orgnizer_id) {
+          const orgData = await hasuraRequest<{
+            organizers_by_pk: { name: string; socials: any };
+          }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { name socials } }`, {
+            id: wsData.workspaces_by_pk.orgnizer_id,
+          });
+          if (orgData?.organizers_by_pk) {
+            if (orgData.organizers_by_pk.socials)
+              organizerSocials = orgData.organizers_by_pk.socials;
           }
         }
-        if (wsData?.workspace_pages?.length) {
-          wsSlug = wsData.workspace_pages[0].slug;
-          let dbTheme = wsData.workspace_pages[0].theme_color;
-          const components = wsData.workspace_pages[0].components;
-          if (components && Array.isArray(components)) {
-            const settingsBlock = components.find((b: any) => b.type === "settings");
-            if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
-          }
-          if (dbTheme) themeColor = dbTheme;
-        }
-      } catch (e) {
-        console.error("Failed to fetch workspace for email", e);
       }
+      if (wsData?.workspace_pages?.length) {
+        wsSlug = wsData.workspace_pages[0].slug;
+        let dbTheme = wsData.workspace_pages[0].theme_color;
+        const components = wsData.workspace_pages[0].components;
+        if (components && Array.isArray(components)) {
+          const settingsBlock = components.find((b: any) => b.type === "settings");
+          if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
+        }
+        if (dbTheme) themeColor = dbTheme;
+      }
+    } catch (e) {
+      console.error("Failed to fetch workspace for email", e);
     }
+  }
 
-    let socialsHtml = "";
-    if (bookingRef) {
-      try {
-        const { hasuraRequest } = await import("./graphql.server");
-        const ordersData = await hasuraRequest<{
-          product_orders: any[];
-          sponsored_vouchers: any[];
-        }>(
-          `
+  let socialsHtml = "";
+  if (bookingRef) {
+    try {
+      const { hasuraRequest } = await import("./graphql.server");
+      const ordersData = await hasuraRequest<{
+        product_orders: any[];
+        sponsored_vouchers: any[];
+      }>(
+        `
           query GetOrdersAndVouchers($ref: String!) {
             product_orders(where: { decrptions: { _eq: $ref }, status: { _eq: "Confirmed" } }) {
               product_id qty size amount_paid qr_code_string phone current_balance
@@ -264,96 +266,96 @@ export const sendTicketsEmailRaw = async (ctx: any) => {
             }
           }
         `,
-          { ref: bookingRef },
+        { ref: bookingRef },
+      );
+
+      const confirmedOrders = ordersData?.product_orders || [];
+      if (confirmedOrders.length > 0) {
+        const { generateProductReceiptPdf, generateVoucherPdf } = await import("./receipts");
+        const orgDetails = {
+          name: eventName || venueName || organizerName,
+          themeColor: themeColor,
+        };
+        const customerDetails = { name: customerName, email: to, phone: phone || "" };
+        const pdfBuffer = await generateProductReceiptPdf(
+          confirmedOrders,
+          orgDetails,
+          customerDetails,
+          0,
         );
-
-        const confirmedOrders = ordersData?.product_orders || [];
-        if (confirmedOrders.length > 0) {
-          const { generateProductReceiptPdf, generateVoucherPdf } = await import("./receipts");
-          const orgDetails = {
-            name: eventName || venueName || organizerName,
-            themeColor: themeColor,
-          };
-          const customerDetails = { name: customerName, email: to, phone: phone || "" };
-          const pdfBuffer = await generateProductReceiptPdf(
-            confirmedOrders,
-            orgDetails,
-            customerDetails,
-            0,
-          );
-          if (pdfBuffer) {
-            emailAttachments.push({
-              filename: `Receipt-${bookingRef}.pdf`,
-              content: pdfBuffer.toString("base64"),
-              contentType: "application/pdf",
-            });
-          }
-          for (const order of confirmedOrders) {
-            if (order.product?.type === "voucher") {
-              const vBuffer = await generateVoucherPdf(order, orgDetails);
-              emailAttachments.push({
-                filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
-                content: vBuffer.toString("base64"),
-                contentType: "application/pdf",
-              });
-            }
-          }
+        if (pdfBuffer) {
+          emailAttachments.push({
+            filename: `Receipt-${bookingRef}.pdf`,
+            content: pdfBuffer.toString("base64"),
+            contentType: "application/pdf",
+          });
         }
-
-        const sponsoredVouchers = ordersData?.sponsored_vouchers || [];
-        if (sponsoredVouchers.length > 0) {
-          const { generateVoucherPdf } = await import("./receipts");
-          const orgDetails = {
-            name: eventName || venueName || organizerName,
-            themeColor: themeColor,
-          };
-          for (const voucher of sponsoredVouchers) {
-            // We coerce the voucher into the structure generateVoucherPdf expects:
-            // order.batch?.name is natively supported, current_balance is natively supported.
-            const vBuffer = await generateVoucherPdf(voucher, orgDetails);
+        for (const order of confirmedOrders) {
+          if (order.product?.type === "voucher") {
+            const vBuffer = await generateVoucherPdf(order, orgDetails);
             emailAttachments.push({
-              filename: `Voucher-${voucher.qr_code_string || "Promo"}.pdf`,
+              filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
               content: vBuffer.toString("base64"),
               contentType: "application/pdf",
             });
           }
         }
-      } catch (e) {
-        console.error("Failed to generate product receipts for email", e);
       }
+
+      const sponsoredVouchers = ordersData?.sponsored_vouchers || [];
+      if (sponsoredVouchers.length > 0) {
+        const { generateVoucherPdf } = await import("./receipts");
+        const orgDetails = {
+          name: eventName || venueName || organizerName,
+          themeColor: themeColor,
+        };
+        for (const voucher of sponsoredVouchers) {
+          // We coerce the voucher into the structure generateVoucherPdf expects:
+          // order.batch?.name is natively supported, current_balance is natively supported.
+          const vBuffer = await generateVoucherPdf(voucher, orgDetails);
+          emailAttachments.push({
+            filename: `Voucher-${voucher.qr_code_string || "Promo"}.pdf`,
+            content: vBuffer.toString("base64"),
+            contentType: "application/pdf",
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to generate product receipts for email", e);
     }
+  }
 
-    if (organizerSocials && typeof organizerSocials === "object") {
-      const socialLinks = Object.entries(organizerSocials)
-        .filter(([_, url]) => url)
-        .map(([platform, url]) => {
-          let iconUrl = "https://img.icons8.com/ios-filled/24/666666/link--v1.png";
-          if (platform.toLowerCase().includes("twitter") || platform.toLowerCase().includes("x"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/twitter.png";
-          else if (platform.toLowerCase().includes("instagram"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/instagram-new.png";
-          else if (platform.toLowerCase().includes("facebook"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/facebook-new.png";
-          else if (platform.toLowerCase().includes("linkedin"))
-            iconUrl = "https://img.icons8.com/ios-filled/24/666666/linkedin.png";
+  if (organizerSocials && typeof organizerSocials === "object") {
+    const socialLinks = Object.entries(organizerSocials)
+      .filter(([_, url]) => url)
+      .map(([platform, url]) => {
+        let iconUrl = "https://img.icons8.com/ios-filled/24/666666/link--v1.png";
+        if (platform.toLowerCase().includes("twitter") || platform.toLowerCase().includes("x"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/twitter.png";
+        else if (platform.toLowerCase().includes("instagram"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/instagram-new.png";
+        else if (platform.toLowerCase().includes("facebook"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/facebook-new.png";
+        else if (platform.toLowerCase().includes("linkedin"))
+          iconUrl = "https://img.icons8.com/ios-filled/24/666666/linkedin.png";
 
-          return `<a href="${url as string}" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+        return `<a href="${url as string}" style="display: inline-block; margin: 0 8px; text-decoration: none;">
                   <img src="${iconUrl}" alt="${platform}" style="width: 24px; height: 24px;" />
                 </a>`;
-        })
-        .join("");
+      })
+      .join("");
 
-      if (socialLinks) {
-        socialsHtml = `
+    if (socialLinks) {
+      socialsHtml = `
         <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #eaeaea; text-align: center;">
           <p style="font-size: 14px; color: #666; margin-bottom: 12px; font-weight: 500;">Follow ${organizerName} on Social Media</p>
           <div>${socialLinks}</div>
         </div>
       `;
-      }
     }
+  }
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: ${themeColor}; padding: 40px 24px; text-align: center;">
         ${organizerLogo ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; margin-bottom: 16px; display: inline-block; object-fit: contain;" />` : `<div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;"><img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`}
@@ -376,64 +378,64 @@ export const sendTicketsEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: "Agatike <planetevents@agatike.rw>",
-        to: [to],
-        subject: `Your Tickets for ${venueName} are Confirmed!`,
-        html: html,
-        attachments: emailAttachments,
-      }),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify({
+      from: "Agatike <planetevents@agatike.rw>",
+      to: [to],
+      subject: `Your Tickets for ${venueName} are Confirmed!`,
+      html: html,
+      attachments: emailAttachments,
+    }),
+  });
 
-    if (phone) {
-      let smsMsg = "";
-      if (isVenue) {
-        smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed.`;
+  if (phone) {
+    let smsMsg = "";
+    if (isVenue) {
+      smsMsg = `Your Agatike Payment of ${totalPaid || ""} confirmed! Your venue booking is confirmed.`;
+    } else {
+      if (wsSlug && !isPortal) {
+        const appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
+        smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
       } else {
-        if (wsSlug && !isPortal) {
-          const appUrl = `https://${wsSlug}.${process.env.PROJECT_PRODUCTION_URL || "agatike.com"}`;
-          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}. View at: ${appUrl}`;
-        } else {
-          smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}.`;
-        }
-      }
-
-      try {
-        const { sendSMS } = await import("./pindo.server");
-        await sendSMS(phone, smsMsg);
-      } catch (e) {
-        console.error("Failed to send SMS alongside tickets email", e);
+        smsMsg = `Payment of ${totalPaid || ""} confirmed! Tickets: ${ticketCodes || "Attached"}.`;
       }
     }
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to send tickets via Resend");
+    try {
+      const { sendSMS } = await import("./pindo.server");
+      await sendSMS(phone, smsMsg);
+    } catch (e) {
+      console.error("Failed to send SMS alongside tickets email", e);
     }
-    return data;
+  }
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send tickets via Resend");
+  }
+  return data;
 };
 
 export const sendProfileUpdateOTPRaw = async (ctx: any) => {
-    const { to, otp } = ctx.data as any;
+  const { to, otp } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : process.env.NODE_ENV === "production"
-          ? "https://agatike.rw"
-          : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NODE_ENV === "production"
+        ? "https://agatike.rw"
+        : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid white;">
@@ -456,50 +458,50 @@ export const sendProfileUpdateOTPRaw = async (ctx: any) => {
     </div>
   `;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
-        to: [to],
-        subject: `Your Profile Verification OTP: ${otp}`,
-        html: html,
-      }),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Your Profile Verification OTP: ${otp}`,
+      html: html,
+    }),
+  });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to send OTP via Resend");
-    }
-    return data;
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send OTP via Resend");
+  }
+  return data;
 };
 
 export const sendSubscriptionConfirmationEmailRaw = async (ctx: any) => {
-    const {
-      to,
-      customerName,
-      spaceName,
-      planName,
-      price,
-      billingCycle,
-      startDate,
-      pdfBase64,
-      invoiceNumber,
-    } = ctx.data as any;
+  const {
+    to,
+    customerName,
+    spaceName,
+    planName,
+    price,
+    billingCycle,
+    startDate,
+    pdfBase64,
+    invoiceNumber,
+  } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -530,66 +532,66 @@ export const sendSubscriptionConfirmationEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const emailPayload: any = {
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: `Booking Confirmed: ${spaceName}`,
-      html: html,
-      attachments: [],
-    };
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Booking Confirmed: ${spaceName}`,
+    html: html,
+    attachments: [],
+  };
 
-    if (pdfBase64) {
-      emailPayload.attachments.push({
-        filename: `Invoice-${invoiceNumber || "Receipt"}.pdf`,
-        content: pdfBase64,
-      });
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
+  if (pdfBase64) {
+    emailPayload.attachments.push({
+      filename: `Invoice-${invoiceNumber || "Receipt"}.pdf`,
+      content: pdfBase64,
     });
+  }
 
-    const data = await res.json();
-    console.log("Resend Subscription Confirmation API Response:", {
-      status: res.status,
-      ok: res.ok,
-      data,
-    });
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to send confirmation email");
-    }
-    return data;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
+
+  const data = await res.json();
+  console.log("Resend Subscription Confirmation API Response:", {
+    status: res.status,
+    ok: res.ok,
+    data,
+  });
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send confirmation email");
+  }
+  return data;
 };
 
 export const sendSubscriptionInvoiceEmailRaw = async (ctx: any) => {
-    const {
-      to,
-      customerName,
-      spaceName,
-      planName,
-      price,
-      billingCycle,
-      invoiceDate,
-      invoiceNumber,
-      startDate,
-      pdfBase64,
-    } = ctx.data as any;
+  const {
+    to,
+    customerName,
+    spaceName,
+    planName,
+    price,
+    billingCycle,
+    invoiceDate,
+    invoiceNumber,
+    startDate,
+    pdfBase64,
+  } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.PROJECT_PRODUCTION_URL
       ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.PROJECT_PRODUCTION_URL
-        ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-        : "https://agatike.rw";
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -615,14 +617,15 @@ export const sendSubscriptionInvoiceEmailRaw = async (ctx: any) => {
             <span>${planName} (${billingCycle})</span>
             <strong>${price}</strong>
           </p>
-          ${startDate
-        ? `
+          ${
+            startDate
+              ? `
           <p style="margin: 8px 0; display: flex; justify-content: space-between; font-size: 14px; color: #64748b;">
             <span>Start Date</span>
             <span>${startDate}</span>
           </p>`
-        : ""
-      }
+              : ""
+          }
           <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 12px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 700;">
             <span>Total Paid</span>
             <span>${price}</span>
@@ -638,65 +641,65 @@ export const sendSubscriptionInvoiceEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const emailPayload: any = {
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: `Invoice ${invoiceNumber} — ${spaceName}`,
-      html: html,
-      attachments: [],
-    };
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Invoice ${invoiceNumber} — ${spaceName}`,
+    html: html,
+    attachments: [],
+  };
 
-    // Attach pre-generated PDF if provided
-    if (pdfBase64) {
-      emailPayload.attachments.push({
-        filename: `Invoice-${invoiceNumber}.pdf`,
-        content: pdfBase64,
-      });
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
+  // Attach pre-generated PDF if provided
+  if (pdfBase64) {
+    emailPayload.attachments.push({
+      filename: `Invoice-${invoiceNumber}.pdf`,
+      content: pdfBase64,
     });
+  }
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to send invoice email");
-    }
-    return data;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to send invoice email");
+  }
+  return data;
 };
 
 // Sends the company email with invoice PDF + member roster PDF attached
 export const sendCompanyRosterEmailRaw = async (ctx: any) => {
-    const {
-      to,
-      companyName,
-      spaceName,
-      planName,
-      price,
-      billingCycle,
-      startDate,
-      invoiceNumber,
-      invoiceDate,
-      memberCount,
-      members,
-      pdfBase64,
-    } = ctx.data as any;
+  const {
+    to,
+    companyName,
+    spaceName,
+    planName,
+    price,
+    billingCycle,
+    startDate,
+    invoiceNumber,
+    invoiceDate,
+    memberCount,
+    members,
+    pdfBase64,
+  } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #0f172a; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -726,13 +729,13 @@ export const sendCompanyRosterEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const attachments: any[] = [];
+  const attachments: any[] = [];
 
-    // 1. Generate member roster CSV and attach it
-    if (members && members.length > 0) {
-      try {
-        const { Buffer } = await import("buffer");
-        const xlsContent = `
+  // 1. Generate member roster CSV and attach it
+  if (members && members.length > 0) {
+    try {
+      const { Buffer } = await import("buffer");
+      const xlsContent = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
         <head><meta charset="utf-8" /></head>
         <body>
@@ -748,8 +751,8 @@ export const sendCompanyRosterEmailRaw = async (ctx: any) => {
             </thead>
             <tbody>
               ${members
-            .map(
-              (m: any, i: number) => `
+                .map(
+                  (m: any, i: number) => `
                 <tr>
                   <td>${i + 1}</td>
                   <td>${m.name || ""}</td>
@@ -758,67 +761,67 @@ export const sendCompanyRosterEmailRaw = async (ctx: any) => {
                   <td style="font-family: monospace;">${m.membership_id || ""}</td>
                 </tr>
               `,
-            )
-            .join("")}
+                )
+                .join("")}
             </tbody>
           </table>
         </body>
         </html>
       `;
-        const xlsBase64 = Buffer.from(xlsContent, "utf-8").toString("base64");
-        attachments.push({
-          filename: `Member-Roster-${companyName.replace(/\s+/g, "-")}-${invoiceNumber}.xls`,
-          content: xlsBase64,
-        });
-        console.log("[sendCompanyRosterEmail] XLS generated for", members.length, "members");
-      } catch (xlsErr) {
-        console.error("[sendCompanyRosterEmail] XLS generation FAILED:", xlsErr);
-      }
-    }
-
-    // 2. Attach pre-generated invoice PDF if provided
-    if (pdfBase64) {
+      const xlsBase64 = Buffer.from(xlsContent, "utf-8").toString("base64");
       attachments.push({
-        filename: `Invoice-${invoiceNumber}.pdf`,
-        content: pdfBase64,
+        filename: `Member-Roster-${companyName.replace(/\s+/g, "-")}-${invoiceNumber}.xls`,
+        content: xlsBase64,
       });
+      console.log("[sendCompanyRosterEmail] XLS generated for", members.length, "members");
+    } catch (xlsErr) {
+      console.error("[sendCompanyRosterEmail] XLS generation FAILED:", xlsErr);
     }
+  }
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
-        to: [to],
-        subject: `Group Booking Confirmed: ${spaceName} — ${memberCount} Member(s)`,
-        html,
-        attachments,
-      }),
+  // 2. Attach pre-generated invoice PDF if provided
+  if (pdfBase64) {
+    attachments.push({
+      filename: `Invoice-${invoiceNumber}.pdf`,
+      content: pdfBase64,
     });
+  }
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to send company roster email");
-    return data;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Group Booking Confirmed: ${spaceName} — ${memberCount} Member(s)`,
+      html,
+      attachments,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to send company roster email");
+  return data;
 };
 
 // Sends a personal welcome email to each individual team member
 export const sendMemberWelcomeEmailRaw = async (ctx: any) => {
-    const { to, memberName, companyName, spaceName, planName, startDate, membershipId } =
-      ctx.data as any;
+  const { to, memberName, companyName, spaceName, planName, startDate, membershipId } =
+    ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #F2571D; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -852,40 +855,39 @@ export const sendMemberWelcomeEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: "Agatike Connect <hello@agatike.rw>",
-        to: [to],
-        subject: `Your Membership at ${spaceName} — ID: ${membershipId}`,
-        html,
-      }),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify({
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Your Membership at ${spaceName} — ID: ${membershipId}`,
+      html,
+    }),
+  });
 
-    const data = await res.json();
-    console.log("Resend Member Welcome API Response:", { status: res.status, ok: res.ok, data });
-    if (!res.ok) throw new Error(data.message || "Failed to send member welcome email");
-    return data;
+  const data = await res.json();
+  console.log("Resend Member Welcome API Response:", { status: res.status, ok: res.ok, data });
+  if (!res.ok) throw new Error(data.message || "Failed to send member welcome email");
+  return data;
 };
 
 export const sendVisitorPassEmailRaw = async (ctx: any) => {
-    const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } =
-      ctx.data as any;
+  const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #e11d48; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -918,33 +920,33 @@ export const sendVisitorPassEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const emailPayload: any = {
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: `Visitor Pass for ${spaceName}`,
-      html: html,
-      attachments: [],
-    };
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Visitor Pass for ${spaceName}`,
+    html: html,
+    attachments: [],
+  };
 
-    if (pdfBase64) {
-      emailPayload.attachments.push({
-        filename: `VisitorPass-${visitorId}.pdf`,
-        content: pdfBase64,
-      });
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
+  if (pdfBase64) {
+    emailPayload.attachments.push({
+      filename: `VisitorPass-${visitorId}.pdf`,
+      content: pdfBase64,
     });
+  }
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to send visitor pass email");
-    return data;
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Failed to send visitor pass email");
+  return data;
 };
 
 export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
@@ -1011,7 +1013,7 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
 };
 
 export const sendWorkspaceUserInviteEmailRaw = async (ctx: any) => {
-    return await executeSendWorkspaceUserInviteEmail(ctx.data);
+  return await executeSendWorkspaceUserInviteEmail(ctx.data);
 };
 
 export const executeSendProjectAccessEmail = async (data: any) => {
@@ -1072,18 +1074,18 @@ export const executeSendProjectAccessEmail = async (data: any) => {
 };
 
 export const sendVenueBookingEmailRaw = async (ctx: any) => {
-    const {
-      to,
-      customerName,
-      facilityName,
-      venueName,
-      venueLocation,
-      dateRange,
-      timeRange,
-      bookingRef,
-    } = ctx.data;
+  const {
+    to,
+    customerName,
+    facilityName,
+    venueName,
+    venueLocation,
+    dateRange,
+    timeRange,
+    bookingRef,
+  } = ctx.data;
 
-    const html = `
+  const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaec; border-radius: 8px; overflow: hidden;">
         <div style="background-color: #f9fafb; padding: 24px; text-align: center; border-bottom: 1px solid #eaeaec;">
           <h2 style="margin: 0; color: #111827; font-size: 24px;">Booking Confirmed!</h2>
@@ -1112,44 +1114,44 @@ export const sendVenueBookingEmailRaw = async (ctx: any) => {
       </div>
     `;
 
-    const emailPayload: any = {
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: `Booking Confirmed: ${facilityName} at ${venueName}`,
-      html,
-    };
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Booking Confirmed: ${facilityName} at ${venueName}`,
+    html,
+  };
 
-    if (ctx.data.attachments && ctx.data.attachments.length > 0) {
-      emailPayload.attachments = ctx.data.attachments;
-    }
+  if (ctx.data.attachments && ctx.data.attachments.length > 0) {
+    emailPayload.attachments = ctx.data.attachments;
+  }
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
 
-    const resData = await res.json();
-    if (!res.ok) throw new Error(resData.message || "Failed to send venue booking email");
-    return resData;
+  const resData = await res.json();
+  if (!res.ok) throw new Error(resData.message || "Failed to send venue booking email");
+  return resData;
 };
 
 export const sendTrialExtensionEmailRaw = async (ctx: any) => {
-    const { to, organizerName, daysExtended, totalAllowedDays } = ctx.data as any;
+  const { to, organizerName, daysExtended, totalAllowedDays } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #eb790eff; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -1177,27 +1179,27 @@ export const sendTrialExtensionEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const emailPayload: any = {
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: "Your Free Trial has been extended!",
-      html: html,
-    };
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: "Your Free Trial has been extended!",
+    html: html,
+  };
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
 
-    const data = await res.json();
-    if (!res.ok) {
-      console.warn("Failed to send trial extension email:", data);
-    }
-    return data;
+  const data = await res.json();
+  if (!res.ok) {
+    console.warn("Failed to send trial extension email:", data);
+  }
+  return data;
 };
 
 export const sendEmail = async ({
@@ -1231,63 +1233,64 @@ export const sendEmail = async ({
 };
 
 export const sendDigitalProductDeliveryEmailRaw = async (ctx: any) => {
-    const { to, customerName, productName, productDescription, fileUrl, workspaceId } =
-      ctx.data as any;
+  const { to, customerName, productName, productDescription, fileUrl, workspaceId } =
+    ctx.data as any;
 
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
 
-    let organizerName = "Agatike Connect";
-    let organizerLogo = "";
-    let themeColor = "#F2571D";
+  let organizerName = "Agatike Connect";
+  let organizerLogo = "";
+  let themeColor = "#F2571D";
 
-    if (workspaceId) {
-      try {
-        const { hasuraRequest } = await import("./graphql.server");
-        const wsData = await hasuraRequest<{
-          workspaces_by_pk: { name: string; orgnizer_id: string };
-          workspace_pages: { theme_color: string; components: any }[];
-        }>(
-          `
+  if (workspaceId) {
+    try {
+      const { hasuraRequest } = await import("./graphql.server");
+      const wsData = await hasuraRequest<{
+        workspaces_by_pk: { name: string; orgnizer_id: string };
+        workspace_pages: { theme_color: string; components: any }[];
+      }>(
+        `
           query GetWSForDigital($id: uuid!) {
             workspaces_by_pk(id: $id) { name orgnizer_id }
             workspace_pages(where: { workspace_id: { _eq: $id } }, order_by: { updated_at: desc }, limit: 1) { theme_color components logo_url }
           }
         `,
-          { id: workspaceId },
-        );
+        { id: workspaceId },
+      );
 
-        if (wsData?.workspaces_by_pk) {
-          organizerName = wsData.workspaces_by_pk.name;
-        }
-        if (wsData?.workspace_pages?.length) {
-          const page = wsData.workspace_pages[0] as any;
-          let dbTheme = page.theme_color;
-          const components = page.components;
-          if (components && Array.isArray(components)) {
-            const settingsBlock = components.find((b: any) => b.type === "settings");
-            if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
-          }
-          if (dbTheme) themeColor = dbTheme;
-          if (page.logo_url) organizerLogo = page.logo_url;
-        }
-      } catch (e) {
-        console.error("Failed to fetch workspace for digital product email", e);
+      if (wsData?.workspaces_by_pk) {
+        organizerName = wsData.workspaces_by_pk.name;
       }
+      if (wsData?.workspace_pages?.length) {
+        const page = wsData.workspace_pages[0] as any;
+        let dbTheme = page.theme_color;
+        const components = page.components;
+        if (components && Array.isArray(components)) {
+          const settingsBlock = components.find((b: any) => b.type === "settings");
+          if (settingsBlock?.themeColor) dbTheme = settingsBlock.themeColor;
+        }
+        if (dbTheme) themeColor = dbTheme;
+        if (page.logo_url) organizerLogo = page.logo_url;
+      }
+    } catch (e) {
+      console.error("Failed to fetch workspace for digital product email", e);
     }
+  }
 
-    const sanitizedName = organizerName
-      ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "")
-      : "hello";
-    const senderEmail = `${sanitizedName}@agatike.rw`;
+  const sanitizedName = organizerName
+    ? organizerName.toLowerCase().replace(/[^a-z0-9]/g, "")
+    : "hello";
+  const senderEmail = `${sanitizedName}@agatike.rw`;
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
       <!-- Header -->
       <div style="background-color: ${themeColor}; padding: 40px 24px; text-align: center;">
-        ${organizerLogo && !organizerLogo.includes("localhost") && organizerLogo.startsWith("http")
-        ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto 16px auto; background: white; padding: 6px 12px;" />`
-        : `<div style="background: white; width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${agatikeFooterIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`
-      }
+        ${
+          organizerLogo && !organizerLogo.includes("localhost") && organizerLogo.startsWith("http")
+            ? `<img src="${organizerLogo}" alt="${organizerName}" style="height: 48px; border-radius: 8px; object-fit: contain; display: block; margin: 0 auto 16px auto; background: white; padding: 6px 12px;" />`
+            : `<div style="background: white; width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="${agatikeFooterIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" /></div>`
+        }
         <h2 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">Your Download is Ready!</h2>
         <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0 0; font-size: 14px;">from ${organizerName}</p>
       </div>
@@ -1299,10 +1302,11 @@ export const sendDigitalProductDeliveryEmailRaw = async (ctx: any) => {
           Thank you for your purchase! Your digital product <strong>${productName}</strong> is ready for download.
         </p>
 
-        ${productDescription
-        ? `<p style="margin: 0 0 24px 0; color: #555; font-size: 15px;">${productDescription}</p>`
-        : ""
-      }
+        ${
+          productDescription
+            ? `<p style="margin: 0 0 24px 0; color: #555; font-size: 15px;">${productDescription}</p>`
+            : ""
+        }
 
         <!-- Download Card -->
         <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px 24px; text-align: center; margin: 24px 0;">
@@ -1339,44 +1343,44 @@ export const sendDigitalProductDeliveryEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const emailPayload: any = {
-      from: `${organizerName} <${senderEmail}>`,
-      to: [to],
-      subject: `Your download is ready: ${productName}`,
-      html,
-    };
+  const emailPayload: any = {
+    from: `${organizerName} <${senderEmail}>`,
+    to: [to],
+    subject: `Your download is ready: ${productName}`,
+    html,
+  };
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
 
-    const data = await res.json();
-    if (!res.ok) {
-      console.warn("Failed to send digital product delivery email:", data);
-      throw new Error(data.message || "Failed to send digital product delivery email");
-    }
-    return data;
+  const data = await res.json();
+  if (!res.ok) {
+    console.warn("Failed to send digital product delivery email:", data);
+    throw new Error(data.message || "Failed to send digital product delivery email");
+  }
+  return data;
 };
 
 export const sendSupportTicketResolvedEmailRaw = async (ctx: any) => {
-    const { to, organizerName, ticketId, subject } = ctx.data as any;
+  const { to, organizerName, ticketId, subject } = ctx.data as any;
 
-    const baseUrl = process.env.PROJECT_PRODUCTION_URL
-      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://agatike.rw";
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
 
-    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
-    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
-    const ticketShortId = `#${String(ticketId).slice(-6).toUpperCase()}`;
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const ticketShortId = `#${String(ticketId).slice(-6).toUpperCase()}`;
 
-    const html = `
+  const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #f97316; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
@@ -1404,80 +1408,78 @@ export const sendSupportTicketResolvedEmailRaw = async (ctx: any) => {
     </div>
   `;
 
-    const emailPayload: any = {
-      from: "Agatike Connect <hello@agatike.rw>",
-      to: [to],
-      subject: `Ticket Resolved: ${subject}`,
-      html: html,
-    };
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Ticket Resolved: ${subject}`,
+    html: html,
+  };
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + process.env.RESEND_API_KEY,
-      },
-      body: JSON.stringify(emailPayload),
-    });
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
 
-    const data = await res.json();
-    if (!res.ok) {
-      console.warn("Failed to send support ticket resolved email:", data);
-    }
-    return data;
+  const data = await res.json();
+  if (!res.ok) {
+    console.warn("Failed to send support ticket resolved email:", data);
+  }
+  return data;
 };
 
-
 // --- Server Function Wrappers ---
-export const sendAttendeeEmail = createServerFn({ method: 'POST' })
+export const sendAttendeeEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendAttendeeEmailRaw(ctx));
 
-export const sendTicketsEmail = createServerFn({ method: 'POST' })
+export const sendTicketsEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendTicketsEmailRaw(ctx));
 
-export const sendProfileUpdateOTP = createServerFn({ method: 'POST' })
+export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendProfileUpdateOTPRaw(ctx));
 
-export const sendSubscriptionConfirmationEmail = createServerFn({ method: 'POST' })
+export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendSubscriptionConfirmationEmailRaw(ctx));
 
-export const sendSubscriptionInvoiceEmail = createServerFn({ method: 'POST' })
+export const sendSubscriptionInvoiceEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendSubscriptionInvoiceEmailRaw(ctx));
 
-export const sendCompanyRosterEmail = createServerFn({ method: 'POST' })
+export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendCompanyRosterEmailRaw(ctx));
 
-export const sendMemberWelcomeEmail = createServerFn({ method: 'POST' })
+export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendMemberWelcomeEmailRaw(ctx));
 
-export const sendVisitorPassEmail = createServerFn({ method: 'POST' })
+export const sendVisitorPassEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendVisitorPassEmailRaw(ctx));
 
-export const sendWorkspaceUserInviteEmail = createServerFn({ method: 'POST' })
+export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendWorkspaceUserInviteEmailRaw(ctx));
 
-export const sendVenueBookingEmail = createServerFn({ method: 'POST' })
+export const sendVenueBookingEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendVenueBookingEmailRaw(ctx));
 
-export const sendTrialExtensionEmail = createServerFn({ method: 'POST' })
+export const sendTrialExtensionEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendTrialExtensionEmailRaw(ctx));
 
-export const sendDigitalProductDeliveryEmail = createServerFn({ method: 'POST' })
+export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendDigitalProductDeliveryEmailRaw(ctx));
 
-export const sendSupportTicketResolvedEmail = createServerFn({ method: 'POST' })
+export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendSupportTicketResolvedEmailRaw(ctx));
-

@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { getAdminOrganizerMemberships } from "@/api/admin_organizer_control";
 import { Users, Search, Building2, LayoutGrid, CheckCircle2, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/memberships")(
   {
@@ -11,6 +11,9 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
       } as any);
       return { memberships };
     },
+    validateSearch: (search: Record<string, unknown>) => ({
+      highlight: search.highlight as string | undefined,
+    }),
     component: OrganizerMemberships,
   },
 );
@@ -18,6 +21,20 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
 function OrganizerMemberships() {
   const { memberships } = Route.useLoaderData();
   const [searchQuery, setSearchQuery] = useState("");
+  const search = useSearch({ from: "/internal/control/admin/organizers/$organizerId/memberships" });
+  const highlightId = search.highlight;
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightId) return;
+    setHighlightedId(highlightId);
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`row-${highlightId}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => setHighlightedId(null), 3000);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [highlightId]);
 
   const filteredMemberships = memberships.filter(
     (m: any) =>
@@ -85,58 +102,67 @@ function OrganizerMemberships() {
                   </td>
                 </tr>
               ) : (
-                filteredMemberships.map((m: any) => (
-                  <tr
-                    key={m.id}
-                    className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
-                  >
-                    <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
-                      {String(m.id).substring(0, 8)}...
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="font-medium text-gray-900 dark:text-white">
-                        {m.customer_name || "Unknown"}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-[#797775]">
-                        {m.customer_email || "No Email"}
-                      </div>
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="text-[#dcdcaa] font-medium">
-                        {m.plan_name || "Custom Plan"}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-[#797775] capitalize">
-                        {m.booking_type || "individual"}
-                      </div>
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
-                          <LayoutGrid className="h-3 w-3 shrink-0 text-[#c586c0]" />
-                          {m.spaceName}
+                filteredMemberships.map((m: any) => {
+                  const isHighlighted = highlightedId === m.id;
+                  return (
+                    <tr
+                      key={m.id}
+                      id={`row-${m.id}`}
+                      className={[
+                        "transition-colors",
+                        isHighlighted
+                          ? "bg-[#f97316]/15 ring-2 ring-inset ring-[#f97316]/50 animate-pulse"
+                          : "hover:bg-gray-200 dark:hover:bg-[#2d2d30]",
+                      ].join(" ")}
+                    >
+                      <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
+                        {String(m.id).substring(0, 8)}...
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="font-medium text-gray-900 dark:text-white">
+                          {m.customer_name || "Unknown"}
                         </div>
-                        <div className="flex items-center gap-1.5 text-gray-600 dark:text-[#797775] text-xs">
-                          <Building2 className="h-3 w-3 shrink-0" />
-                          {m.workspaceName}
+                        <div className="text-xs text-gray-600 dark:text-[#797775]">
+                          {m.customer_email || "No Email"}
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-2 px-4">
-                      {m.status === "active" ? (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e] flex items-center gap-1 w-max capitalize">
-                          <CheckCircle2 className="h-3 w-3" /> {m.status}
-                        </span>
-                      ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775] flex items-center gap-1 w-max capitalize">
-                          <XCircle className="h-3 w-3" /> {m.status || "Inactive"}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
-                      {m.created_at ? new Date(m.created_at).toLocaleDateString("en-US") : "—"}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="text-[#dcdcaa] font-medium">
+                          {m.plan_name || "Custom Plan"}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-[#797775] capitalize">
+                          {m.booking_type || "individual"}
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
+                            <LayoutGrid className="h-3 w-3 shrink-0 text-[#c586c0]" />
+                            {m.spaceName}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-gray-600 dark:text-[#797775] text-xs">
+                            <Building2 className="h-3 w-3 shrink-0" />
+                            {m.workspaceName}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        {m.status === "active" ? (
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e] flex items-center gap-1 w-max capitalize">
+                            <CheckCircle2 className="h-3 w-3" /> {m.status}
+                          </span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775] flex items-center gap-1 w-max capitalize">
+                            <XCircle className="h-3 w-3" /> {m.status || "Inactive"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
+                        {m.created_at ? new Date(m.created_at).toLocaleDateString("en-US") : "—"}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

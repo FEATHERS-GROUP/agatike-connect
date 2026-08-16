@@ -375,8 +375,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               shortSmsMessage = `Payment of ${totalPaidStr} ${body?.currency || ""} confirmed! Thank you for your payment to ${domain}.`;
             }
 
-            if (firstAtt) { 
-              const { sendAttendeeEmailRaw} = await import("./email");
+            if (firstAtt) {
+              const { sendAttendeeEmailRaw } = await import("./email");
 
               const emailAddresses = [
                 ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
@@ -518,9 +518,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   },
                 } as any).catch((e) => console.error("Failed to send attendee email", e));
               }
-            } else if (confirmedOrders.length > 0 && guestEmail) { 
+            } else if (confirmedOrders.length > 0 && guestEmail) {
               // Product-only purchase email receipt
-              const { sendAttendeeEmailRaw} = await import("./email");
+              const { sendAttendeeEmailRaw } = await import("./email");
 
               const attachments: any[] = [];
               let productPdfBase64: string | undefined = undefined;
@@ -648,12 +648,12 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             // Generate Invoice & Send Emails (just like Checkout does)
             try {
               const { createInvoiceRecord } = await import("./invoices");
-              const { 
+              const {
                 sendSubscriptionConfirmationEmailRaw,
                 sendSubscriptionInvoiceEmailRaw,
                 sendCompanyRosterEmailRaw,
                 sendMemberWelcomeEmailRaw,
-               } = await import("./email");
+              } = await import("./email");
 
               const currency =
                 sub.space?.workspace?.currency ||
