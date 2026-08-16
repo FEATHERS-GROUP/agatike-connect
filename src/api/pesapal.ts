@@ -42,6 +42,8 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
     baseAmount,
     baseCurrency,
     phone,
+    email,
+    name,
     type,
     referenceId,
     workspaceId,
@@ -157,11 +159,11 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
     callback_url: `${appHost}/api/pesapal/callback?reference_id=${referenceId}&type=${type}`,
     notification_id: ipnId,
     billing_address: {
-      email_address: "guest@agatike.com", // Pesapal requires email or phone
+      email_address: email || "guest@agatike.com",
       phone_number: phone || "0000000000",
       country_code: "RW",
-      first_name: "Agatike",
-      last_name: "User"
+      first_name: name ? name.split(" ")[0] : "Agatike",
+      last_name: name ? (name.split(" ").slice(1).join(" ") || "User") : "User",
     }
   };
 

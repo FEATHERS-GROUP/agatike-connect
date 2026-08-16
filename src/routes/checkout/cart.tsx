@@ -164,6 +164,8 @@ export function CartCheckoutPage() {
           baseAmount: baseAmount,
           baseCurrency: workspaceCurrency,
           phone: paymentDetails.phone,
+          email: buyerEmail || undefined,
+          name: buyerName || undefined,
           network: paymentDetails.network,
           currency: paymentDetails.currency || workspaceCurrency,
           type: `page_builder_checkout::${window.location.hostname}`,
@@ -479,41 +481,43 @@ export function CartCheckoutPage() {
                   </Label>
                 </div>
 
-                <div
-                  className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "card" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
-                  onClick={() => setSelectedPaymentGroup("card")}
-                  style={
-                    selectedPaymentGroup === "card" && themeColor
-                      ? ({
-                          borderColor: themeColor,
-                          backgroundColor: `${themeColor}0A`,
-                          "--tw-ring-color": themeColor,
-                        } as any)
-                      : {}
-                  }
-                >
-                  <RadioGroupItem
-                    value="card"
-                    id="card"
+                {pageData?.has_agatike_card && (
+                  <div
+                    className={`flex items-center space-x-3 border p-4 rounded-xl cursor-pointer transition-all ${selectedPaymentGroup === "card" ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm" : "border-border hover:border-foreground/20 shadow-sm"}`}
+                    onClick={() => setSelectedPaymentGroup("card")}
                     style={
                       selectedPaymentGroup === "card" && themeColor
-                        ? { color: themeColor, borderColor: themeColor }
+                        ? ({
+                            borderColor: themeColor,
+                            backgroundColor: `${themeColor}0A`,
+                            "--tw-ring-color": themeColor,
+                          } as any)
                         : {}
                     }
-                  />
-                  <Label
-                    htmlFor="card"
-                    className="flex flex-1 items-center justify-between cursor-pointer"
                   >
-                    <span className="flex items-center gap-3 font-medium text-sm">
-                      <CreditCard className="w-5 h-5 text-muted-foreground" />
-                      Credit / Debit Card
-                    </span>
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Visa / MC
-                    </span>
-                  </Label>
-                </div>
+                    <RadioGroupItem
+                      value="card"
+                      id="card"
+                      style={
+                        selectedPaymentGroup === "card" && themeColor
+                          ? { color: themeColor, borderColor: themeColor }
+                          : {}
+                      }
+                    />
+                    <Label
+                      htmlFor="card"
+                      className="flex flex-1 items-center justify-between cursor-pointer"
+                    >
+                      <span className="flex items-center gap-3 font-medium text-sm">
+                        <CreditCard className="w-5 h-5 text-muted-foreground" />
+                        Credit / Debit Card
+                      </span>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Visa / MC
+                      </span>
+                    </Label>
+                  </div>
+                )}
               </RadioGroup>
             </section>
 

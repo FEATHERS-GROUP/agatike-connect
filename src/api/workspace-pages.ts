@@ -118,11 +118,15 @@ export const getWorkspacePageBySlug = createServerFn({ method: "GET" }).handler(
               created_at
               updated_at
             }
+            payment_provider_fees(where: { network: { _eq: "AGATIKE_CARD" } }, limit: 1) {
+              id
+            }
           }
         `;
         const subRes = await hasuraRequest<any>(subQuery);
         page.organizer_active = subRes.organizers_by_pk?.active ?? true;
         page.is_expired = false;
+        page.has_agatike_card = (subRes.payment_provider_fees?.length ?? 0) > 0;
 
         const activeSub = subRes.subscriptions?.[0];
 
