@@ -7,15 +7,17 @@ import {
   sendAdminWithdrawalOtp,
   approveAdminPayout,
   rejectAdminPayout,
+  getAllPlatformWalletTransactions,
 } from "@/api/admin_organizer_control";
 
 export const Route = createFileRoute("/internal/control/admin/transactions")({
   loader: async () => {
-    const [invoices, withdrawals] = await Promise.all([
+    const [invoices, withdrawals, walletTransactions] = await Promise.all([
       getAllPlatformTransactions(),
       getAdminWithdrawals(),
+      getAllPlatformWalletTransactions(),
     ]);
-    return { invoices, withdrawals };
+    return { invoices, withdrawals, walletTransactions };
   },
   component: TransactionsPage,
 });
@@ -345,13 +347,13 @@ function ApprovalModal({
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 function TransactionsPage() {
-  const { invoices, withdrawals } = Route.useLoaderData();
+  const { invoices, withdrawals, walletTransactions } = Route.useLoaderData();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"invoices" | "withdrawals">("withdrawals");
+  const [activeTab, setActiveTab] = useState<"invoices" | "withdrawals" | "wallet">("withdrawals");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTx, setSelectedTx] = useState<any>(null);
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 50;
 
   const pendingCount = (withdrawals as any[]).filter((w) => w.status === "pending").length;
 
@@ -362,7 +364,8 @@ function TransactionsPage() {
       (tx.organizer?.name || "").toLowerCase().includes(search) ||
       (tx.organizer?.email || "").toLowerCase().includes(search) ||
       (tx.subscription?.pricing_plan?.name || "").toLowerCase().includes(search) ||
-      tx.status.toLowerCase().includes(search)
+      tx.status.toLowerCase().includes(search) ||
+      (tx.id || "").toLowerCase().includes(search)
     );
   });
 
@@ -373,11 +376,32 @@ function TransactionsPage() {
       (tx.organizer?.name || "").toLowerCase().includes(search) ||
       (tx.organizer?.email || "").toLowerCase().includes(search) ||
       tx.status.toLowerCase().includes(search) ||
-      (tx.payout_account || "").toLowerCase().includes(search)
+      (tx.payout_account || "").toLowerCase().includes(search) ||
+      (tx.id || "").toLowerCase().includes(search)
     );
   });
 
-  const activeList = activeTab === "invoices" ? filteredInvoices : filteredWithdrawals;
+  // Wallet tab
+  const filteredWallet = (walletTransactions as any[]).filter((tx) => {
+    const search = searchQuery.toLowerCase();
+    return (
+      (tx.organizer?.name || "").toLowerCase().includes(search) ||
+      (tx.organizer?.email || "").toLowerCase().includes(search) ||
+      (tx.workspaceName || "").toLowerCase().includes(search) ||
+      tx.type.toLowerCase().includes(search) ||
+      tx.status.toLowerCase().includes(search) ||
+      (tx.description || "").toLowerCase().includes(search) ||
+      (tx.id || "").toLowerCase().includes(search) ||
+      (tx.provider_reference || "").toLowerCase().includes(search)
+    );
+  });
+
+  const activeList =
+    activeTab === "invoices"
+      ? filteredInvoices
+      : activeTab === "withdrawals"
+        ? filteredWithdrawals
+        : filteredWallet;
   const totalPages = Math.ceil(activeList.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginated = activeList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -390,7 +414,7 @@ function TransactionsPage() {
     .filter((tx) => tx.status === "completed")
     .reduce((s, tx) => s + parseFloat(tx.amount || "0"), 0);
 
-  const handleTabChange = (tab: "invoices" | "withdrawals") => {
+  const handleTabChange = (tab: "invoices" | "withdrawals" | "wallet") => {
     setActiveTab(tab);
     setCurrentPage(1);
     setSearchQuery("");
@@ -498,6 +522,13 @@ function TransactionsPage() {
           <LucideIcons.FileText className="w-4 h-4" />
           Subscription Invoices
         </button>
+        <button
+          onClick={() => handleTabChange("wallet")}
+          className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === "wallet" ? "border-[#f97316] text-[#f97316]" : "border-transparent text-gray-500 dark:text-[#888888] hover:text-gray-900 dark:hover:text-white"}`}
+        >
+          <LucideIcons.Wallet className="w-4 h-4" />
+          Wallet Transactions
+        </button>
       </div>
 
       {/* Table */}
@@ -507,6 +538,7 @@ function TransactionsPage() {
             <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
               <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
                 <tr>
+                  <th className="px-4 py-3 font-medium">Ref ID</th>
                   <th className="px-4 py-3 font-medium">Organizer</th>
                   <th className="px-4 py-3 font-medium">Payout Details</th>
                   <th className="px-4 py-3 font-medium">Amount Requested</th>
@@ -520,7 +552,7 @@ function TransactionsPage() {
                 {paginated.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
                     >
                       {searchQuery
@@ -537,6 +569,11 @@ function TransactionsPage() {
                         key={tx.id}
                         className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
                       >
+                        <td className="px-6 py-4">
+                          <div className="font-mono text-xs text-gray-500 dark:text-[#888888]" title={tx.id}>
+                            {tx.id ? `${tx.id.substring(0, 8)}...` : "—"}
+                          </div>
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
@@ -623,10 +660,11 @@ function TransactionsPage() {
                 )}
               </tbody>
             </table>
-          ) : (
+          ) : activeTab === "invoices" ? (
             <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
               <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
                 <tr>
+                  <th className="px-4 py-3 font-medium">Ref ID</th>
                   <th className="px-4 py-3 font-medium">Organizer</th>
                   <th className="px-4 py-3 font-medium">Plan</th>
                   <th className="px-4 py-3 font-medium">Amount</th>
@@ -639,7 +677,7 @@ function TransactionsPage() {
                 {paginated.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
                     >
                       {searchQuery ? "No invoices match your search." : "No invoices found."}
@@ -655,6 +693,11 @@ function TransactionsPage() {
                         key={tx.id}
                         className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
                       >
+                        <td className="px-4 py-3">
+                          <div className="font-mono text-[11px] text-gray-500 dark:text-[#888888]" title={tx.id}>
+                            {tx.id ? `${tx.id.substring(0, 8)}...` : "—"}
+                          </div>
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
@@ -717,6 +760,117 @@ function TransactionsPage() {
                                 year: "numeric",
                                 month: "short",
                                 day: "numeric",
+                              })
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
+              <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Ref ID</th>
+                  <th className="px-4 py-3 font-medium">Organizer / Workspace</th>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Description</th>
+                  <th className="px-4 py-3 font-medium">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
+                    >
+                      {searchQuery ? "No wallet transactions match your search." : "No wallet transactions found."}
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((tx: any) => {
+                    const org = tx.organizer || {};
+                    return (
+                      <tr
+                        key={tx.id}
+                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="font-mono text-[11px] text-gray-500 dark:text-[#888888]" title={`ID: ${tx.id}\nProvider: ${tx.provider_reference || 'N/A'}`}>
+                            {tx.provider_reference || (tx.id ? `${tx.id.substring(0, 8)}...` : "—")}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
+                              {org.image ? (
+                                <img
+                                  src={org.image}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {org.name || "Unknown"}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-[#888888]">
+                                {tx.workspaceName || "Unknown Workspace"}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900 dark:text-white uppercase">
+                            {tx.type}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">
+                          <div className="flex flex-col gap-0.5">
+                            <span>
+                              {tx.currency} {Number(tx.amount).toLocaleString()}
+                            </span>
+                            {tx.amount !== tx.net_amount && (
+                              <span className="text-[10px] text-green-500 font-medium">
+                                Net: {tx.currency} {Number(tx.net_amount).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
+                              tx.status === "completed"
+                                ? "bg-green-500/10 text-green-500"
+                                : tx.status === "pending"
+                                  ? "bg-yellow-500/10 text-yellow-400"
+                                  : tx.status === "failed" || tx.status === "rejected"
+                                    ? "bg-red-500/10 text-red-500"
+                                    : "bg-gray-500/10 text-gray-400"
+                            }`}
+                          >
+                            {tx.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
+                          {tx.description || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
+                          {tx.created_at
+                            ? new Date(tx.created_at).toLocaleDateString("en-GB", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
                               })
                             : "—"}
                         </td>
