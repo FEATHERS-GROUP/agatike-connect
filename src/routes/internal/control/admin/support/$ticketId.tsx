@@ -611,7 +611,7 @@ function AdminTicketDetailPage() {
                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-[12px] font-semibold transition-colors disabled:opacity-40 ${
                   activeComposer === "note"
                     ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-[#f97316] text-white hover:bg-[#ea6c0a]"
                 }`}
               >
                 {replyMutation.isPending ? (

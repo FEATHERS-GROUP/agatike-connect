@@ -429,9 +429,9 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
 
       try {
         const orgRes = await hasuraRequest<{
-          organizers: { id: string; name: string; email: string }[];
+          organizers: { id: string; name: string; email: string; image?: string; workspaces?: { logo?: string }[] }[];
         }>(
-          `query GetOrgs($ids: [uuid!]!) { organizers(where: { id: { _in: $ids } }) { id name email } }`,
+          `query GetOrgs($ids: [uuid!]!) { organizers(where: { id: { _in: $ids } }) { id name email image workspaces { logo } } }`,
           { ids: orgIds },
         );
         orgMap = Object.fromEntries((orgRes.organizers || []).map((o: any) => [o.id, o]));
@@ -447,13 +447,19 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
         } catch (_) {}
       }
 
-      return tickets.map((t: any) => ({
-        ...t,
-        organizer: orgMap[t.organizer_id] || null,
-        assignedAdmin: t.assigned_to ? adminMap[t.assigned_to] || null : null,
-        commentCount: t.comments_aggregate?.aggregate?.count || 0,
-        lastComment: t.comments?.[0] || null,
-      }));
+      return tickets.map((t: any) => {
+        const org = orgMap[t.organizer_id] || null;
+        if (org && !org.image && org.workspaces?.length > 0) {
+          org.image = org.workspaces[0].logo;
+        }
+        return {
+          ...t,
+          organizer: org,
+          assignedAdmin: t.assigned_to ? adminMap[t.assigned_to] || null : null,
+          commentCount: t.comments_aggregate?.aggregate?.count || 0,
+          lastComment: t.comments?.[0] || null,
+        };
+      });
     }
 
     return tickets;
@@ -511,6 +517,9 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
             image
             phone
             country
+            workspaces {
+              logo
+            }
           } 
         }
       `, {
@@ -536,6 +545,9 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
 
       (ticket as any).organizer = orgRes.organizers_by_pk;
       if ((ticket as any).organizer) {
+        if (!(ticket as any).organizer.image && (ticket as any).organizer.workspaces?.length > 0) {
+          (ticket as any).organizer.image = (ticket as any).organizer.workspaces[0].logo;
+        }
         (ticket as any).organizer.support_tickets = ticketsRes.support_tickets || [];
       }
     } catch (err) {
