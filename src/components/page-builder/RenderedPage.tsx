@@ -159,9 +159,13 @@ export function RenderedPage({
         },
       } as any);
 
-      return { isPawaPay: true, depositId: pawaRes.depositId };
+      return { isPawaPay: true, depositId: pawaRes.depositId, redirectUrl: (pawaRes as any).redirectUrl };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       if (data.isPawaPay) {
         setPawapayDepositId(data.depositId);
         setIsPollingPawaPay(true);

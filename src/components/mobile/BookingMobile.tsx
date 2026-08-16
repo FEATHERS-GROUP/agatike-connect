@@ -463,6 +463,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           attendeesPayload,
           isPawaPay: true,
           depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
           paymentDetails,
           booking_ref,
         };
@@ -471,6 +472,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       return { res, attendeesPayload, isPawaPay: false, paymentDetails, booking_ref };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const { res, attendeesPayload, paymentDetails } = data;
       const returned = res?.insert_event_attendees?.returning || [];
       const ticketsToIssue = attendees.map((a, idx) => {

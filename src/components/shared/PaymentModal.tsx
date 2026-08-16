@@ -13,7 +13,7 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceWallet } from "@/api/wallet";
-import { getExchangeRate, getProfitableNetworks } from "@/api/pawapay";
+import { getProfitableNetworks } from "@/api/pawapay";
 import { simulateTransaction } from "@/api/simulation";
 
 interface PaymentModalProps {
@@ -102,6 +102,18 @@ export function PaymentModal({
 }: PaymentModalProps) {
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("");
+  const [cardCurrency, setCardCurrency] = useState("");
+
+  const CARD_CURRENCIES = [
+    { label: "Rwanda (RWF)", value: "RWF" },
+    { label: "Kenya (KES)", value: "KES" },
+    { label: "Uganda (UGX)", value: "UGX" },
+    { label: "Tanzania (TZS)", value: "TZS" },
+    { label: "Zambia (ZMW)", value: "ZMW" },
+    { label: "United States (USD)", value: "USD" },
+    { label: "Europe (EUR)", value: "EUR" },
+    { label: "United Kingdom (GBP)", value: "GBP" },
+  ];
 
   // Fetch Wallet to get base currency and supported networks
   const { data: wallet, isLoading: isWalletLoading } = useQuery({
@@ -140,15 +152,7 @@ export function PaymentModal({
     [network, availableNetworks],
   );
   const targetCurrency =
-    paymentMethod === "momo" ? selectedNetworkObj?.curr || baseCurrency : baseCurrency;
-
-  const { data: fxData, isLoading: isFxLoading } = useQuery({
-    queryKey: ["fx", baseCurrency, targetCurrency],
-    queryFn: () => getExchangeRate({ data: { base: baseCurrency, target: targetCurrency } } as any),
-    enabled: !!baseCurrency && !!targetCurrency && baseCurrency !== targetCurrency,
-    retry: false,
-    staleTime: 60000,
-  });
+    paymentMethod === "momo" ? selectedNetworkObj?.curr || baseCurrency : (cardCurrency || baseCurrency);
 
   const countryCode = selectedNetworkObj
     ? selectedNetworkObj.value.split("_").pop() || "RWA"
@@ -157,7 +161,7 @@ export function PaymentModal({
   // Simulation Engine (Pre-flight check)
   const activeNetwork = paymentMethod === "card" ? "PESAPAL_CARD" : network;
   const { data: simulation, isLoading: isSimulating } = useQuery({
-    queryKey: ["simulate", baseAmount, workspaceId, activeNetwork, countryCode],
+    queryKey: ["simulate", baseAmount, workspaceId, activeNetwork, countryCode, baseCurrency, targetCurrency],
     queryFn: () =>
       simulateTransaction({
         data: {
@@ -166,6 +170,8 @@ export function PaymentModal({
           network: activeNetwork || "UNKNOWN",
           countryCode,
           transactionId: crypto.randomUUID(),
+          baseCurrency,
+          targetCurrency,
         },
       } as any),
     enabled: isOpen && !!workspaceId && !!baseAmount && (paymentMethod === "momo" && !!network || paymentMethod === "card"),
@@ -174,16 +180,21 @@ export function PaymentModal({
   });
 
   // Calculate final amount
-  const markupRate = fxData?.markupRate || 1;
+  const markupRate = simulation?.markupRate || 1;
   const simulatedAmount = simulation?.totalCustomerCharge || baseAmount;
-  const convertedAmount = Math.ceil(simulatedAmount * markupRate);
+  const convertedAmount = simulatedAmount;
 
   // Set default network if none selected and available exists
   useEffect(() => {
     if (isOpen && !network && availableNetworks.length > 0) {
       setNetwork(availableNetworks[0].value);
     }
-  }, [isOpen, availableNetworks, network]);
+    if (isOpen && !cardCurrency && baseCurrency) {
+      // Default card currency to base currency if it's in the list, otherwise USD or RWF
+      const exists = CARD_CURRENCIES.find((c) => c.value === baseCurrency);
+      setCardCurrency(exists ? baseCurrency : "USD");
+    }
+  }, [isOpen, availableNetworks, network, baseCurrency, cardCurrency]);
 
   const handleProceed = () => {
     if (paymentMethod === "momo") {
@@ -255,27 +266,51 @@ export function PaymentModal({
               */}
 
               {supportedNetworks.includes("PESAPAL_CARD") && (
-                <button
-                  onClick={() => setPaymentMethod("card")}
-                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                <div
+                  className={`w-full flex flex-col gap-4 p-4 rounded-2xl border transition-all ${
                     paymentMethod === "card"
                       ? "border-primary bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]"
                       : "border-border/60 hover:bg-secondary/40"
                   }`}
                 >
-                  <div className="h-10 w-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center shrink-0">
-                    <CreditCard className="h-5 w-5" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-bold">Credit Card</p>
-                    <p className="text-xs text-muted-foreground">Visa, Mastercard, Amex</p>
-                  </div>
-                  <div
-                    className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground/30"}`}
+                  <button
+                    onClick={() => setPaymentMethod("card")}
+                    className="w-full flex items-center gap-4 text-left"
                   >
-                    {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
-                  </div>
-                </button>
+                    <div className="h-10 w-10 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center shrink-0">
+                      <CreditCard className="h-5 w-5" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className="font-bold">Credit Card</p>
+                      <p className="text-xs text-muted-foreground">Visa, Mastercard, Amex</p>
+                    </div>
+                    <div
+                      className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground/30"}`}
+                    >
+                      {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
+                    </div>
+                  </button>
+                  
+                  {paymentMethod === "card" && (
+                    <div className="pt-2 pb-1 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                      <div className="space-y-1.5 text-left">
+                        <Label className="text-xs text-muted-foreground">Billing Currency</Label>
+                        <Select value={cardCurrency} onValueChange={setCardCurrency}>
+                          <SelectTrigger className="bg-background border-border/60 h-11">
+                            <SelectValue placeholder="Select Currency" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {CARD_CURRENCIES.map((curr) => (
+                              <SelectItem key={curr.value} value={curr.value}>
+                                {curr.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               <div
@@ -421,18 +456,18 @@ export function PaymentModal({
                     Base Price
                   </span>
                   <span className="font-semibold">
-                    {baseCurrency} {baseAmount.toLocaleString()}
+                    {targetCurrency} {Math.ceil(baseAmount * markupRate).toLocaleString()}
                   </span>
                 </div>
 
-                {paymentMethod === "momo" && baseCurrency !== targetCurrency && (
+                {baseCurrency !== targetCurrency && (
                   <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3 mt-4">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                       <ArrowRightLeft className="w-3 h-3 text-primary" />
                       Currency Conversion
                     </div>
 
-                    {isFxLoading ? (
+                    {isSimulating ? (
                       <div className="flex items-center gap-2 text-sm text-primary">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         Fetching live rates...
@@ -466,18 +501,18 @@ export function PaymentModal({
                       <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Base Ticket</span>
                         <span>
-                          {baseAmount} {baseCurrency}
+                          {simulation.convertedBasePrice?.toLocaleString() || baseAmount} {targetCurrency}
                         </span>
                       </div>
                       <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Service Fee</span>
                         <span>
-                          {simulation.serviceFee.toFixed(2)} {baseCurrency}
+                          {simulation.serviceFee.toFixed(2)} {targetCurrency}
                         </span>
                       </div>
                       <div className="flex justify-end font-medium text-foreground md:text-primary-foreground border-t border-border/40 md:border-primary-foreground/20 pt-1">
                         <span>
-                          {simulation.totalCustomerCharge.toFixed(2)} {baseCurrency}
+                          {simulation.totalCustomerCharge.toLocaleString()} {targetCurrency}
                         </span>
                       </div>
                       {isBlocked && simulation.structuredError ? (
@@ -549,11 +584,10 @@ export function PaymentModal({
                 disabled={
                   isProcessing ||
                   isGenerating ||
-                  isFxLoading ||
                   isSimulating ||
                   isBlocked ||
                   (paymentMethod === "momo" &&
-                    (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
+                    (!isMomoComplete || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-lg shadow-orange-500/20 font-bold tracking-wide bg-orange-500 text-white hover:bg-orange-600 block md:hidden"
               >
@@ -561,7 +595,7 @@ export function PaymentModal({
                   ? "Generating..."
                   : isProcessing
                     ? "Processing..."
-                    : `Pay ${paymentMethod === "momo" ? targetCurrency : baseCurrency} ${convertedAmount.toLocaleString()}`}
+                    : `Pay ${targetCurrency} ${convertedAmount.toLocaleString()}`}
               </Button>
 
               {/* Desktop Button */}
@@ -570,11 +604,10 @@ export function PaymentModal({
                 disabled={
                   isProcessing ||
                   isGenerating ||
-                  isFxLoading ||
                   isSimulating ||
                   isBlocked ||
                   (paymentMethod === "momo" &&
-                    (!isMomoComplete || isFxLoading || availableNetworks.length === 0))
+                    (!isMomoComplete || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide hover:opacity-90 md:shadow-xl hidden md:block"
                 style={{ backgroundColor: "#ffffff", color: themeColor || "var(--primary)" }}
@@ -583,7 +616,7 @@ export function PaymentModal({
                   ? "Generating..."
                   : isProcessing
                     ? "Processing..."
-                    : `Pay ${paymentMethod === "momo" ? targetCurrency : baseCurrency} ${convertedAmount.toLocaleString()}`}
+                    : `Pay ${targetCurrency} ${convertedAmount.toLocaleString()}`}
               </Button>
             </div>
           </div>

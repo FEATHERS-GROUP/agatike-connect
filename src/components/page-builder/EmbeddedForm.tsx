@@ -157,6 +157,11 @@ export function EmbeddedForm({
         },
       } as any);
 
+      if ((pawaRes as any).redirectUrl) {
+        window.location.href = (pawaRes as any).redirectUrl;
+        return;
+      }
+
       setPawapayDepositId(pawaRes.depositId);
       setIsPollingPawaPay(true);
     } catch (e: any) {

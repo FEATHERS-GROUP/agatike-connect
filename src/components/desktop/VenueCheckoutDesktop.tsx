@@ -346,6 +346,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
           res,
           isPawaPay: true,
           depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
           totalPaid: paymentDetails?.convertedAmount || total,
         };
       }
@@ -357,6 +358,10 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const res = data.res;
       if (data.totalPaid) {
         setFinalTotalPaid(data.totalPaid);

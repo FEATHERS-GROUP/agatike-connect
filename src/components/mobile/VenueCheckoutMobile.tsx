@@ -334,13 +334,18 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           res,
           isPawaPay: true,
           depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
           totalPaid: paymentDetails?.convertedAmount || total,
         };
       }
 
-      return { res, isPawaPay: false, totalPaid: paymentDetails?.convertedAmount || total };
+      return { res, isPawaPay: false };
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const res = data.res;
       const td = res?.tickets_data;
 

@@ -309,12 +309,16 @@ export function VenueCheckoutSheet({
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, isPawaPay: true, depositId: pawaRes.depositId };
+        return { res, isPawaPay: true, depositId: pawaRes.depositId, redirectUrl: (pawaRes as any).redirectUrl };
       }
 
       return { res, isPawaPay: false };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const res = data.res;
       const td = res?.tickets_data;
       if (td?.issued) {

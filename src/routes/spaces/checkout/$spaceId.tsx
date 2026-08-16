@@ -188,6 +188,12 @@ function CheckoutPage() {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
+
+        if ((pawaRes as any).redirectUrl) {
+          window.location.href = (pawaRes as any).redirectUrl;
+          return;
+        }
+
         setPawapayDepositId(pawaRes.depositId);
         setIsPollingPawaPay(true);
         setIsPaymentModalOpen(false);

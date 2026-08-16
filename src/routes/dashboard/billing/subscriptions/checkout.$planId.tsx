@@ -292,6 +292,12 @@ function CheckoutPage() {
             shortfall: 0,
           },
         } as any);
+
+        if ((pawaRes as any).redirectUrl) {
+          window.location.href = (pawaRes as any).redirectUrl;
+          return;
+        }
+
         setPawapayDepositId(pawaRes.depositId);
         setIsPollingPawaPay(true);
         // Keep processing true while polling

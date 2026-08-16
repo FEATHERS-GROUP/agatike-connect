@@ -232,6 +232,12 @@ function SubscriptionCard({
             type: "space_subscription",
           },
         });
+
+        if ((res as any).redirectUrl) {
+          window.location.href = (res as any).redirectUrl;
+          return;
+        }
+
         setPawapayDepositId(res.depositId);
         setPaymentAmount(details.convertedAmount);
         setPaymentCurrency(details.currency);

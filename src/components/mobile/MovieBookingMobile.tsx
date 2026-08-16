@@ -264,12 +264,16 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { isPawaPay: true, depositId: pawaRes.depositId, res, tiers };
+        return { isPawaPay: true, depositId: pawaRes.depositId, redirectUrl: (pawaRes as any).redirectUrl, res, tiers };
       }
 
       return { isPawaPay: false, res, tiers };
     },
     onSuccess: (data: any) => {
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       const ticketsToIssue = data.res.map((r: any, idx: number) => ({
         id: r.id,
         otp: r.qrcode_number,
