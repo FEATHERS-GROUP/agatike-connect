@@ -292,7 +292,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             .filter(Boolean)
             .join(", ");
           // Extract Guest Email from product_orders if present
-          let guestEmail: string | null = null;
+          let guestEmail: string | null = body?.guestEmail || null;
           let productQrCode: string | null = null;
 
           if (confirmedOrders.length > 0) {

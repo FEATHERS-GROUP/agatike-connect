@@ -127,6 +127,8 @@ function CheckoutPage() {
           baseAmount: baseAmount,
           baseCurrency: "RWF",
           phone: paymentDetails.phone,
+          email: buyerEmail || undefined,
+          name: buyerName || undefined,
           network: paymentDetails.network,
           currency: paymentDetails.currency || "RWF",
           type: `page_builder_checkout::${window.location.hostname}`,

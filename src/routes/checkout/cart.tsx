@@ -164,6 +164,8 @@ export function CartCheckoutPage() {
           baseAmount: baseAmount,
           baseCurrency: workspaceCurrency,
           phone: paymentDetails.phone,
+          email: buyerEmail || undefined,
+          name: buyerName || undefined,
           network: paymentDetails.network,
           currency: paymentDetails.currency || workspaceCurrency,
           type: `page_builder_checkout::${window.location.hostname}`,
