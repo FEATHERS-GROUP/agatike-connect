@@ -570,11 +570,20 @@ function TransactionsPage() {
       <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {activeTab === "withdrawals" ? (
-            <WithdrawalsTable paginated={paginated} searchQuery={searchQuery} setSelectedTx={setSelectedTx} highlightedId={highlightedId} />
+            <WithdrawalsTable
+              paginated={paginated}
+              searchQuery={searchQuery}
+              setSelectedTx={setSelectedTx}
+              highlightedId={highlightedId}
+            />
           ) : activeTab === "invoices" ? (
             <InvoicesTable paginated={paginated} searchQuery={searchQuery} />
           ) : (
-            <WalletTable paginated={paginated} searchQuery={searchQuery} highlightedId={highlightedId} />
+            <WalletTable
+              paginated={paginated}
+              searchQuery={searchQuery}
+              highlightedId={highlightedId}
+            />
           )}
         </div>
       </div>

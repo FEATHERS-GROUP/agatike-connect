@@ -194,7 +194,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       const customerFee =
         baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
       const grossAmount = baseAmount + customerFee;
-      
+
       let organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
       if (network === "AGATIKE_CARD") {
         organizerFee += baseAmount * 0.015; // Extra 1.5% for card payments

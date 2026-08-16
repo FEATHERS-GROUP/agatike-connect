@@ -49,7 +49,15 @@ export const simulateTransaction = createServerFn({ method: "POST" })
     }) => d,
   )
   .handler(async (ctx) => {
-    const { basePrice, workspaceId, network, countryCode, transactionId, baseCurrency, targetCurrency } = ctx.data;
+    const {
+      basePrice,
+      workspaceId,
+      network,
+      countryCode,
+      transactionId,
+      baseCurrency,
+      targetCurrency,
+    } = ctx.data;
 
     let markupRate = 1;
     if (baseCurrency && targetCurrency) {
@@ -245,7 +253,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
           providerFees,
           markupRate,
           baseCurrency,
-          targetCurrency
+          targetCurrency,
         },
         expected_collection_cost: expectedCollectionCost,
         expected_disbursement_cost: expectedDisbursementCost,
@@ -267,7 +275,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         totalCustomerCharge: Math.ceil(totalCustomerCharge * markupRate),
         convertedBasePrice: Math.ceil(basePrice * markupRate),
         expectedMargin: expectedMargin * markupRate,
-        shortfall: isSubsidized ? (shortfall * markupRate) : 0,
+        shortfall: isSubsidized ? shortfall * markupRate : 0,
         markupRate,
         structuredError,
         transactionId,

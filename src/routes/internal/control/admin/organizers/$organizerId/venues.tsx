@@ -728,10 +728,13 @@ function OrganizerVenuesAndSpaces() {
                         </td>
                         <td className="py-2 px-4">
                           <div className="text-gray-900 dark:text-white">
-                            {b.start_time ? new Date(b.start_time).toLocaleDateString("en-US") : "—"}
+                            {b.start_time
+                              ? new Date(b.start_time).toLocaleDateString("en-US")
+                              : "—"}
                           </div>
                           <div className="text-xs text-gray-600 dark:text-[#797775]">
-                            To: {b.end_time ? new Date(b.end_time).toLocaleDateString("en-US") : "—"}
+                            To:{" "}
+                            {b.end_time ? new Date(b.end_time).toLocaleDateString("en-US") : "—"}
                           </div>
                         </td>
                         <td className="py-2 px-4">

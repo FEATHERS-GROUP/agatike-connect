@@ -147,10 +147,11 @@ function CheckoutPage() {
 
     try {
       const isPawaPay =
-        ((finalPriceNum > 0 &&
-        paymentMethod === "momo" &&
-        paymentDetails?.phone &&
-        paymentDetails?.network) || paymentMethod === "card");
+        (finalPriceNum > 0 &&
+          paymentMethod === "momo" &&
+          paymentDetails?.phone &&
+          paymentDetails?.network) ||
+        paymentMethod === "card";
 
       // 1. Save Subscription to Database (with membership IDs generated server-side)
       const subscription = await createSpaceSubscription({

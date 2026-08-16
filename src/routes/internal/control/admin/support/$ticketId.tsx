@@ -409,7 +409,11 @@ function AdminTicketDetailPage() {
             value={ticket.status}
             onChange={(v) => {
               if (v === "resolved" || v === "closed") {
-                if (!confirm(`Are you sure you want to mark this ticket as ${v}? An email will be sent to the organizer.`)) {
+                if (
+                  !confirm(
+                    `Are you sure you want to mark this ticket as ${v}? An email will be sent to the organizer.`,
+                  )
+                ) {
                   return;
                 }
               }
@@ -664,7 +668,12 @@ function AdminTicketDetailPage() {
           {/* Avatar + name */}
           <div className="px-4 py-4 border-b border-gray-100 dark:border-[#252526]">
             <div className="flex items-center gap-3 mb-3">
-              <Avatar name={organizerName} src={(ticket as any).organizer?.image} size="h-10 w-10" text="text-[13px]" />
+              <Avatar
+                name={organizerName}
+                src={(ticket as any).organizer?.image}
+                size="h-10 w-10"
+                text="text-[13px]"
+              />
               <div>
                 <div className="text-[13px] font-semibold text-gray-900 dark:text-white">
                   {organizerName}
@@ -742,7 +751,9 @@ function AdminTicketDetailPage() {
                       <span className="text-[12px] font-semibold text-blue-600 dark:text-blue-400 truncate pr-2">
                         #{pt.id.split("-")[0]}
                       </span>
-                      <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatFullDate(pt.created_at)}</span>
+                      <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                        {formatFullDate(pt.created_at)}
+                      </span>
                     </div>
                     <p className="text-[12px] text-gray-600 dark:text-[#bbb] mb-2 leading-snug line-clamp-2">
                       {pt.subject}

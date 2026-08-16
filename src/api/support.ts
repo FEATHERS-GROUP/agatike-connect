@@ -429,7 +429,13 @@ export const getAdminSupportTickets = createServerFn({ method: "POST" })
 
       try {
         const orgRes = await hasuraRequest<{
-          organizers: { id: string; name: string; email: string; image?: string; workspaces?: { logo?: string }[] }[];
+          organizers: {
+            id: string;
+            name: string;
+            email: string;
+            image?: string;
+            workspaces?: { logo?: string }[];
+          }[];
         }>(
           `query GetOrgs($ids: [uuid!]!) { organizers(where: { id: { _in: $ids } }) { id name email image workspaces { logo } } }`,
           { ids: orgIds },
@@ -508,7 +514,8 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
     try {
       const orgRes = await hasuraRequest<{
         organizers_by_pk: any;
-      }>(`
+      }>(
+        `
         query GetOrg($id: uuid!) { 
           organizers_by_pk(id: $id) { 
             id 
@@ -522,13 +529,16 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
             }
           } 
         }
-      `, {
-        id: ticket.organizer_id,
-      });
-      
+      `,
+        {
+          id: ticket.organizer_id,
+        },
+      );
+
       const ticketsRes = await hasuraRequest<{
         support_tickets: any[];
-      }>(`
+      }>(
+        `
         query GetOrgTickets($orgId: uuid!, $ticketId: uuid!) {
           support_tickets(where: { organizer_id: { _eq: $orgId }, id: { _neq: $ticketId } }, order_by: { created_at: desc }, limit: 3) {
             id
@@ -538,10 +548,12 @@ export const getAdminTicketWithComments = createServerFn({ method: "POST" })
             created_at
           }
         }
-      `, {
-        orgId: ticket.organizer_id,
-        ticketId: ticket.id,
-      });
+      `,
+        {
+          orgId: ticket.organizer_id,
+          ticketId: ticket.id,
+        },
+      );
 
       (ticket as any).organizer = orgRes.organizers_by_pk;
       if ((ticket as any).organizer) {
@@ -604,7 +616,7 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
         }>(`query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id subject } }`, {
           id: ticketId,
         });
-        
+
         if (ticketCheck.support_tickets_by_pk) {
           ticketSubject = ticketCheck.support_tickets_by_pk.subject;
           const orgRes = await hasuraRequest<{
@@ -643,7 +655,7 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
             organizerName: orgName,
             ticketId,
             subject: ticketSubject,
-          }
+          },
         });
       } catch (err) {
         console.error("Failed to send support ticket resolved email", err);

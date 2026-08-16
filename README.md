@@ -619,7 +619,7 @@ sequenceDiagram
     WH-->>Pesapal: 200 OK (Acknowledged)
 ```
 
-- When the Pesapal IPN fires, the server uses the `OrderTrackingId` to proactively query Pesapal for the *true* transaction status.
+- When the Pesapal IPN fires, the server uses the `OrderTrackingId` to proactively query Pesapal for the _true_ transaction status.
 - It translates Pesapal's status codes into standard internal formats (`COMPLETED`, `FAILED`, `PENDING`).
 - **The Handoff:** It then creates a mocked `Request` object containing the translated status and the `OrderTrackingId` (which maps to `provider_reference` in the DB), and passes it directly to `handlePawaPayWebhook()`.
 - This ensures that a successful Pesapal payment triggers the exact same highly-tested ticket issuance and wallet funding logic as a PawaPay Mobile Money payment.

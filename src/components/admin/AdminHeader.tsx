@@ -76,8 +76,7 @@ const CATEGORY_CONFIG = [
     detailPage: true,
     getHref: (r: any) => `/internal/control/admin/support/${r.id}`,
     getTitle: (r: any) => r.subject || "—",
-    getSub: (r: any) =>
-      [r.status, r.priority, r.organizer?.name].filter(Boolean).join(" · "),
+    getSub: (r: any) => [r.status, r.priority, r.organizer?.name].filter(Boolean).join(" · "),
   },
   {
     key: "wallets" as const,
@@ -115,8 +114,7 @@ const CATEGORY_CONFIG = [
     detailPage: true,
     getHref: (r: any) => `/internal/control/admin/leads/${r.id}`,
     getTitle: (r: any) => r.name || "—",
-    getSub: (r: any) =>
-      [r.company, r.email, r.status].filter(Boolean).join(" · "),
+    getSub: (r: any) => [r.company, r.email, r.status].filter(Boolean).join(" · "),
   },
   {
     key: "wallet_transactions" as const,
@@ -129,7 +127,12 @@ const CATEGORY_CONFIG = [
       `/internal/control/admin/transactions?highlight=${r.id}&ref=${encodeURIComponent(r.reference_id || "")}`,
     getTitle: (r: any) => r.reference_id || r.id?.slice(0, 12) || "—",
     getSub: (r: any) =>
-      [r.type, r.status, r.currency && `${r.currency} ${Number(r.amount || 0).toLocaleString()}`, r.wallets?.workspaces?.name]
+      [
+        r.type,
+        r.status,
+        r.currency && `${r.currency} ${Number(r.amount || 0).toLocaleString()}`,
+        r.wallets?.workspaces?.name,
+      ]
         .filter(Boolean)
         .join(" · "),
   },
@@ -140,11 +143,14 @@ const CATEGORY_CONFIG = [
     color: "text-rose-500",
     bg: "bg-rose-500/10",
     detailPage: false,
-    getHref: (r: any) =>
-      `/internal/control/admin/transactions?highlight=${r.id}&type=withdrawal`,
+    getHref: (r: any) => `/internal/control/admin/transactions?highlight=${r.id}&type=withdrawal`,
     getTitle: (r: any) => r.workspace?.name || r.payout_account || "—",
     getSub: (r: any) =>
-      [r.payout_method, r.status, r.currency && `${r.currency} ${Number(r.amount || 0).toLocaleString()}`]
+      [
+        r.payout_method,
+        r.status,
+        r.currency && `${r.currency} ${Number(r.amount || 0).toLocaleString()}`,
+      ]
         .filter(Boolean)
         .join(" · "),
   },
@@ -156,7 +162,9 @@ const CATEGORY_CONFIG = [
     bg: "bg-emerald-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.events?.workspaces?.orgnizer_id ? `/internal/control/admin/organizers/${r.events.workspaces.orgnizer_id}/attendees?highlight=${r.id}` : `/internal/control/admin`,
+      r.events?.workspaces?.orgnizer_id
+        ? `/internal/control/admin/organizers/${r.events.workspaces.orgnizer_id}/attendees?highlight=${r.id}`
+        : `/internal/control/admin`,
     getTitle: (r: any) => r.names || r.email || "—",
     getSub: (r: any) =>
       [r.qrcode_number, r.ticket_type, r.status, r.events?.title].filter(Boolean).join(" · "),
@@ -169,7 +177,9 @@ const CATEGORY_CONFIG = [
     bg: "bg-teal-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.workspace?.orgnizer_id ? `/internal/control/admin/organizers/${r.workspace.orgnizer_id}/venues?highlight=${r.id}` : `/internal/control/admin`,
+      r.workspace?.orgnizer_id
+        ? `/internal/control/admin/organizers/${r.workspace.orgnizer_id}/venues?highlight=${r.id}`
+        : `/internal/control/admin`,
     getTitle: (r: any) => r.customer_name || r.customer_email || "—",
     getSub: (r: any) =>
       [r.rentable_venue?.name, r.status, r.payment_status].filter(Boolean).join(" · "),
@@ -182,10 +192,11 @@ const CATEGORY_CONFIG = [
     bg: "bg-fuchsia-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.space?.workspace?.orgnizer_id ? `/internal/control/admin/organizers/${r.space.workspace.orgnizer_id}/memberships?highlight=${r.id}` : `/internal/control/admin`,
+      r.space?.workspace?.orgnizer_id
+        ? `/internal/control/admin/organizers/${r.space.workspace.orgnizer_id}/memberships?highlight=${r.id}`
+        : `/internal/control/admin`,
     getTitle: (r: any) => r.customer_name || r.customer_email || "—",
-    getSub: (r: any) =>
-      [r.space?.name, r.plan_name, r.status].filter(Boolean).join(" · "),
+    getSub: (r: any) => [r.space?.name, r.plan_name, r.status].filter(Boolean).join(" · "),
   },
   {
     key: "cinema_bookings" as const,
@@ -195,10 +206,14 @@ const CATEGORY_CONFIG = [
     bg: "bg-pink-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.cinema?.workspace_id ? `/dashboard/${r.cinema.workspace_id}/Cinema/movies?highlight=${r.schedule?.movie?.id}` : `/internal/control/admin`,
+      r.cinema?.workspace_id
+        ? `/dashboard/${r.cinema.workspace_id}/Cinema/movies?highlight=${r.schedule?.movie?.id}`
+        : `/internal/control/admin`,
     getTitle: (r: any) => r.names || r.email || "—",
     getSub: (r: any) =>
-      [r.qrcode_number, r.status, r.schedule?.movie?.title, r.cinema?.name].filter(Boolean).join(" · "),
+      [r.qrcode_number, r.status, r.schedule?.movie?.title, r.cinema?.name]
+        .filter(Boolean)
+        .join(" · "),
   },
 ] as const;
 
@@ -246,7 +261,9 @@ export function AdminHeader() {
       .catch(() => {
         if (!cancelled) setIsLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedQuery]);
 
   // Close on outside click
@@ -288,7 +305,9 @@ export function AdminHeader() {
       if (e.key === "g" || e.key === "G") {
         gPressed = true;
         clearTimeout(gTimer);
-        gTimer = setTimeout(() => { gPressed = false; }, 800);
+        gTimer = setTimeout(() => {
+          gPressed = false;
+        }, 800);
       }
       if (gPressed && e.key === "/") {
         e.preventDefault();
@@ -363,14 +382,21 @@ export function AdminHeader() {
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setIsOpen(true);
+          }}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           placeholder="Search users, organizers, tickets… (Ctrl+K)"
           className="h-8 w-full rounded-sm border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111] pl-9 pr-8 text-xs text-gray-900 dark:text-white outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316] transition-colors placeholder:text-gray-400 dark:placeholder:text-[#797775]"
         />
         {query && (
           <button
-            onClick={() => { setQuery(""); setResults(null); setIsOpen(false); }}
+            onClick={() => {
+              setQuery("");
+              setResults(null);
+              setIsOpen(false);
+            }}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white"
           >
             <X className="h-3.5 w-3.5" />
@@ -440,7 +466,9 @@ export function AdminHeader() {
                             ].join(" ")}
                           >
                             {/* Icon bubble */}
-                            <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${cat.bg}`}>
+                            <div
+                              className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${cat.bg}`}
+                            >
                               <Icon className={`h-4 w-4 ${cat.color}`} />
                             </div>
 
@@ -478,13 +506,21 @@ export function AdminHeader() {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between px-3 py-2 text-[10px] text-gray-400 dark:text-[#555] border-t border-gray-100 dark:border-[#222] bg-gray-50 dark:bg-[#111]">
-                  <span>{totalResults} result{totalResults !== 1 ? "s" : ""}</span>
+                  <span>
+                    {totalResults} result{totalResults !== 1 ? "s" : ""}
+                  </span>
                   <span className="flex items-center gap-2">
-                    <kbd className="bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] rounded px-1.5 py-0.5 font-mono text-[9px]">↑↓</kbd>
+                    <kbd className="bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] rounded px-1.5 py-0.5 font-mono text-[9px]">
+                      ↑↓
+                    </kbd>
                     navigate
-                    <kbd className="bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] rounded px-1.5 py-0.5 font-mono text-[9px]">↵</kbd>
+                    <kbd className="bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] rounded px-1.5 py-0.5 font-mono text-[9px]">
+                      ↵
+                    </kbd>
                     open
-                    <kbd className="bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] rounded px-1.5 py-0.5 font-mono text-[9px]">Esc</kbd>
+                    <kbd className="bg-gray-200 dark:bg-[#333] text-gray-500 dark:text-[#888] rounded px-1.5 py-0.5 font-mono text-[9px]">
+                      Esc
+                    </kbd>
                     close
                   </span>
                 </div>

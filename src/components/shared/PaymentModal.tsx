@@ -152,7 +152,9 @@ export function PaymentModal({
     [network, availableNetworks],
   );
   const targetCurrency =
-    paymentMethod === "momo" ? selectedNetworkObj?.curr || baseCurrency : (cardCurrency || baseCurrency);
+    paymentMethod === "momo"
+      ? selectedNetworkObj?.curr || baseCurrency
+      : cardCurrency || baseCurrency;
 
   const countryCode = selectedNetworkObj
     ? selectedNetworkObj.value.split("_").pop() || "RWA"
@@ -161,7 +163,15 @@ export function PaymentModal({
   // Simulation Engine (Pre-flight check)
   const activeNetwork = paymentMethod === "card" ? "AGATIKE_CARD" : network;
   const { data: simulation, isLoading: isSimulating } = useQuery({
-    queryKey: ["simulate", baseAmount, workspaceId, activeNetwork, countryCode, baseCurrency, targetCurrency],
+    queryKey: [
+      "simulate",
+      baseAmount,
+      workspaceId,
+      activeNetwork,
+      countryCode,
+      baseCurrency,
+      targetCurrency,
+    ],
     queryFn: () =>
       simulateTransaction({
         data: {
@@ -174,7 +184,11 @@ export function PaymentModal({
           targetCurrency,
         },
       } as any),
-    enabled: isOpen && !!workspaceId && !!baseAmount && (paymentMethod === "momo" && !!network || paymentMethod === "card"),
+    enabled:
+      isOpen &&
+      !!workspaceId &&
+      !!baseAmount &&
+      ((paymentMethod === "momo" && !!network) || paymentMethod === "card"),
     retry: false,
     staleTime: 60000,
   });
@@ -287,10 +301,12 @@ export function PaymentModal({
                     <div
                       className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-muted-foreground/30"}`}
                     >
-                      {paymentMethod === "card" && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
+                      {paymentMethod === "card" && (
+                        <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                      )}
                     </div>
                   </button>
-                  
+
                   {paymentMethod === "card" && (
                     <div className="pt-2 pb-1 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200">
                       <div className="space-y-1.5 text-left">
@@ -501,7 +517,8 @@ export function PaymentModal({
                       <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
                         <span>Base Ticket</span>
                         <span>
-                          {simulation.convertedBasePrice?.toLocaleString() || baseAmount} {targetCurrency}
+                          {simulation.convertedBasePrice?.toLocaleString() || baseAmount}{" "}
+                          {targetCurrency}
                         </span>
                       </div>
                       <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
@@ -586,8 +603,7 @@ export function PaymentModal({
                   isGenerating ||
                   isSimulating ||
                   isBlocked ||
-                  (paymentMethod === "momo" &&
-                    (!isMomoComplete || availableNetworks.length === 0))
+                  (paymentMethod === "momo" && (!isMomoComplete || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-lg shadow-orange-500/20 font-bold tracking-wide bg-orange-500 text-white hover:bg-orange-600 block md:hidden"
               >
@@ -606,8 +622,7 @@ export function PaymentModal({
                   isGenerating ||
                   isSimulating ||
                   isBlocked ||
-                  (paymentMethod === "momo" &&
-                    (!isMomoComplete || availableNetworks.length === 0))
+                  (paymentMethod === "momo" && (!isMomoComplete || availableNetworks.length === 0))
                 }
                 className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide hover:opacity-90 md:shadow-xl hidden md:block"
                 style={{ backgroundColor: "#ffffff", color: themeColor || "var(--primary)" }}

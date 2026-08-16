@@ -252,7 +252,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
       const mergedUsers: any[] = [];
 
       // App users (all registered users on the platform)
-      for (const u of (data.app_users || [])) {
+      for (const u of data.app_users || []) {
         const key = u.email || u.id;
         if (!seenEmails.has(key)) {
           seenEmails.add(key);
@@ -271,7 +271,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
       }
 
       // Workspace users (organizer team members)
-      for (const u of (data.workspace_users || [])) {
+      for (const u of data.workspace_users || []) {
         const key = u.email || u.id;
         if (!seenEmails.has(key)) {
           seenEmails.add(key);

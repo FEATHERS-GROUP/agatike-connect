@@ -260,7 +260,9 @@ export function VenueCheckoutSheet({
       const totalAttendees = 1 + attendees.length;
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
-        total > 0 && ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) || paymentMethod === "card");
+        total > 0 &&
+        ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) ||
+          paymentMethod === "card");
 
       const payload = {
         workspace_id: venue.workspace_id,
@@ -309,7 +311,12 @@ export function VenueCheckoutSheet({
             shortfall: paymentDetails?.shortfall || 0,
           },
         } as any);
-        return { res, isPawaPay: true, depositId: pawaRes.depositId, redirectUrl: (pawaRes as any).redirectUrl };
+        return {
+          res,
+          isPawaPay: true,
+          depositId: pawaRes.depositId,
+          redirectUrl: (pawaRes as any).redirectUrl,
+        };
       }
 
       return { res, isPawaPay: false };

@@ -288,7 +288,9 @@ function GlobalMoviesCatalog() {
                           id={`row-${movie.id}`}
                           className={[
                             "group relative flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-md transition-all duration-300",
-                            isHighlighted ? "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse" : "",
+                            isHighlighted
+                              ? "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse"
+                              : "",
                           ].join(" ")}
                           style={{
                             outline: selectedIds.has(movie.id)
@@ -296,105 +298,105 @@ function GlobalMoviesCatalog() {
                               : undefined,
                           }}
                         >
-                        {/* Checkbox */}
-                        <div
-                          className="absolute top-2 left-2 z-20"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <RadixCheckbox
-                            checked={selectedIds.has(movie.id)}
-                            onCheckedChange={(c) => handleSelect(movie.id, c as boolean)}
-                            className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
-                          />
-                        </div>
-                        {/* Poster */}
-                        <div className="relative aspect-[2/3] w-full bg-secondary">
-                          {movie.cover_url ? (
-                            <img
-                              src={movie.cover_url}
-                              alt={movie.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          {/* Checkbox */}
+                          <div
+                            className="absolute top-2 left-2 z-20"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <RadixCheckbox
+                              checked={selectedIds.has(movie.id)}
+                              onCheckedChange={(c) => handleSelect(movie.id, c as boolean)}
+                              className="bg-background/80 backdrop-blur-sm data-[state=checked]:bg-primary"
                             />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                              <Film className="h-12 w-12 text-primary/30" />
+                          </div>
+                          {/* Poster */}
+                          <div className="relative aspect-[2/3] w-full bg-secondary">
+                            {movie.cover_url ? (
+                              <img
+                                src={movie.cover_url}
+                                alt={movie.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                                <Film className="h-12 w-12 text-primary/30" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                            {/* Tags */}
+                            <div className="absolute top-2 left-8 flex gap-1 flex-wrap max-w-[80%]">
+                              {movie.is_imax && (
+                                <span className="bg-white text-black px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
+                                  IMAX
+                                </span>
+                              )}
+                              {movie.is_3d && (
+                                <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
+                                  3D
+                                </span>
+                              )}
                             </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                          {/* Tags */}
-                          <div className="absolute top-2 left-8 flex gap-1 flex-wrap max-w-[80%]">
-                            {movie.is_imax && (
-                              <span className="bg-white text-black px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
-                                IMAX
-                              </span>
-                            )}
-                            {movie.is_3d && (
-                              <span className="bg-primary text-primary-foreground px-1.5 py-0.5 rounded text-[10px] font-black uppercase shadow-sm">
-                                3D
-                              </span>
-                            )}
+                            {/* Actions overlay */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="secondary"
+                                    className="h-8 w-8 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="rounded-xl">
+                                  <DropdownMenuItem
+                                    onClick={() => handleOpenEdit(movie)}
+                                    className="gap-2"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" /> Edit Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive gap-2"
+                                    onClick={() => handleDelete(movie.id, movie.title)}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" /> Delete Movie
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </div>
 
-                          {/* Actions overlay */}
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="secondary"
-                                  className="h-8 w-8 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/10 hover:bg-black/70"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="rounded-xl">
-                                <DropdownMenuItem
-                                  onClick={() => handleOpenEdit(movie)}
-                                  className="gap-2"
-                                >
-                                  <Edit2 className="h-3.5 w-3.5" /> Edit Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive gap-2"
-                                  onClick={() => handleDelete(movie.id, movie.title)}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" /> Delete Movie
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
-
-                        {/* Details */}
-                        <div className="p-4 flex flex-col gap-2">
-                          <div>
-                            <h3
-                              className="font-bold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors"
-                              title={movie.title}
-                            >
-                              {movie.title}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                              <span
-                                className={`px-1.5 py-0.5 rounded font-semibold border ${RATING_COLORS[movie.rating] || RATING_COLORS["PG-13"]}`}
+                          {/* Details */}
+                          <div className="p-4 flex flex-col gap-2">
+                            <div>
+                              <h3
+                                className="font-bold text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors"
+                                title={movie.title}
                               >
-                                {movie.rating}
-                              </span>
-                              <span>•</span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" /> {movie.duration_minutes}m
-                              </span>
+                                {movie.title}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                <span
+                                  className={`px-1.5 py-0.5 rounded font-semibold border ${RATING_COLORS[movie.rating] || RATING_COLORS["PG-13"]}`}
+                                >
+                                  {movie.rating}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" /> {movie.duration_minutes}m
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground line-clamp-1">
+                              {movie.genre || "Uncategorized"}
                             </div>
                           </div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">
-                            {movie.genre || "Uncategorized"}
-                          </div>
                         </div>
-                      </div>
-                    </ItemMenu>
-                  );
-                })}
+                      </ItemMenu>
+                    );
+                  })}
                 </div>
               );
             }}

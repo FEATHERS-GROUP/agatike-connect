@@ -1460,11 +1460,12 @@ export const getAdminWithdrawals = createServerFn({ method: "POST" }).handler(as
 // WALLET TRANSACTIONS
 // ----------------------------------------------------
 
-export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await getAdminSession();
-  if (!session) throw new Error("unauthenticated");
+export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const session = await getAdminSession();
+    if (!session) throw new Error("unauthenticated");
 
-  const query = `
+    const query = `
       query GetAllPlatformWalletTransactions {
         wallet_transactions(
           order_by: { created_at: desc }
@@ -1483,18 +1484,18 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
       }
     `;
 
-  try {
-    const data = await hasuraRequest<any>(query, {});
-    const transactions = data.wallet_transactions || [];
-    if (transactions.length === 0) return [];
+    try {
+      const data = await hasuraRequest<any>(query, {});
+      const transactions = data.wallet_transactions || [];
+      if (transactions.length === 0) return [];
 
-    const wsIds = [...new Set(transactions.map((t: any) => t.workspace_id).filter(Boolean))];
-    let wsOrgMap = new Map<string, string>(); // workspace_id -> organizer_id
-    let wsNameMap = new Map<string, string>(); // workspace_id -> workspace name
-    let orgMap = new Map<string, any>(); // organizer_id -> organizer
+      const wsIds = [...new Set(transactions.map((t: any) => t.workspace_id).filter(Boolean))];
+      let wsOrgMap = new Map<string, string>(); // workspace_id -> organizer_id
+      let wsNameMap = new Map<string, string>(); // workspace_id -> workspace name
+      let orgMap = new Map<string, any>(); // organizer_id -> organizer
 
-    if (wsIds.length > 0) {
-      const wsQuery = `
+      if (wsIds.length > 0) {
+        const wsQuery = `
           query GetWorkspacesForWallet($ids: [uuid!]!) {
             workspaces(where: { id: { _in: $ids } }) {
               id
@@ -1503,16 +1504,16 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
             }
           }
         `;
-      const wsData = await hasuraRequest<any>(wsQuery, { ids: wsIds });
-      const workspaces: any[] = wsData.workspaces || [];
-      workspaces.forEach((w: any) => {
-        wsOrgMap.set(w.id, w.orgnizer_id);
-        wsNameMap.set(w.id, w.name);
-      });
+        const wsData = await hasuraRequest<any>(wsQuery, { ids: wsIds });
+        const workspaces: any[] = wsData.workspaces || [];
+        workspaces.forEach((w: any) => {
+          wsOrgMap.set(w.id, w.orgnizer_id);
+          wsNameMap.set(w.id, w.name);
+        });
 
-      const orgIds = [...new Set(workspaces.map((w: any) => w.orgnizer_id).filter(Boolean))];
-      if (orgIds.length > 0) {
-        const orgQuery = `
+        const orgIds = [...new Set(workspaces.map((w: any) => w.orgnizer_id).filter(Boolean))];
+        if (orgIds.length > 0) {
+          const orgQuery = `
             query GetOrgsForWallet($ids: [uuid!]!) {
               organizers(where: { id: { _in: $ids } }) {
                 id
@@ -1523,27 +1524,27 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
               }
             }
           `;
-        const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
-        const orgs: any[] = orgData.organizers || [];
-        orgs.forEach((o: any) => orgMap.set(o.id, o));
+          const orgData = await hasuraRequest<any>(orgQuery, { ids: orgIds });
+          const orgs: any[] = orgData.organizers || [];
+          orgs.forEach((o: any) => orgMap.set(o.id, o));
+        }
       }
+
+      return transactions.map((tx: any) => {
+        const orgId = wsOrgMap.get(tx.workspace_id);
+        const org = orgId ? orgMap.get(orgId) : null;
+        return {
+          ...tx,
+          organizer: org || null,
+          workspaceName: wsNameMap.get(tx.workspace_id) || "—",
+        };
+      });
+    } catch (e) {
+      console.error("Failed to fetch platform wallet transactions:", e);
+      return [];
     }
-
-    return transactions.map((tx: any) => {
-      const orgId = wsOrgMap.get(tx.workspace_id);
-      const org = orgId ? orgMap.get(orgId) : null;
-      return {
-        ...tx,
-        organizer: org || null,
-        workspaceName: wsNameMap.get(tx.workspace_id) || "—",
-      };
-    });
-  } catch (e) {
-    console.error("Failed to fetch platform wallet transactions:", e);
-    return [];
-  }
-});
-
+  },
+);
 
 export const sendAdminWithdrawalOtp = createServerFn({ method: "POST" })
   .validator((d: { transactionId: string }) => d)

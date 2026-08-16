@@ -359,7 +359,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     }) => {
       const booking_ref = Math.random().toString(36).substring(2, 12).toUpperCase();
       const isPawaPay =
-        total > 0 && ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) || paymentMethod === "card");
+        total > 0 &&
+        ((paymentMethod === "momo" && paymentDetails?.phone && paymentDetails?.network) ||
+          paymentMethod === "card");
 
       // Map attendees to Hasura table payload
       const attendeesPayload = attendees.map((a, idx) => {
