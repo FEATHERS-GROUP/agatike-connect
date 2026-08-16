@@ -548,6 +548,34 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
 
     const { ticketId, status } = ctx.data;
 
+    let ticketSubject = "Support Ticket";
+    let orgEmail = "";
+    let orgName = "";
+    if (status === "resolved" || status === "closed") {
+      try {
+        const ticketCheck = await hasuraRequest<{
+          support_tickets_by_pk: { organizer_id: string; subject: string } | null;
+        }>(`query Check($id: uuid!) { support_tickets_by_pk(id: $id) { organizer_id subject } }`, {
+          id: ticketId,
+        });
+        
+        if (ticketCheck.support_tickets_by_pk) {
+          ticketSubject = ticketCheck.support_tickets_by_pk.subject;
+          const orgRes = await hasuraRequest<{
+            organizers_by_pk: { id: string; name: string; email: string } | null;
+          }>(`query GetOrg($id: uuid!) { organizers_by_pk(id: $id) { id name email } }`, {
+            id: ticketCheck.support_tickets_by_pk.organizer_id,
+          });
+          if (orgRes.organizers_by_pk) {
+            orgEmail = orgRes.organizers_by_pk.email;
+            orgName = orgRes.organizers_by_pk.name;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch ticket details for email notification", err);
+      }
+    }
+
     const res = await hasuraRequest<{
       update_support_tickets_by_pk: { id: string; status: string };
     }>(
@@ -559,6 +587,22 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
       }`,
       { id: ticketId, status, now: new Date().toISOString() },
     );
+
+    if ((status === "resolved" || status === "closed") && orgEmail) {
+      try {
+        const { sendSupportTicketResolvedEmail } = await import("./email");
+        await sendSupportTicketResolvedEmail({
+          data: {
+            to: orgEmail,
+            organizerName: orgName,
+            ticketId,
+            subject: ticketSubject,
+          }
+        });
+      } catch (err) {
+        console.error("Failed to send support ticket resolved email", err);
+      }
+    }
 
     return res.update_support_tickets_by_pk;
   });

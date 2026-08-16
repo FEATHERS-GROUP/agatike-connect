@@ -100,7 +100,7 @@ export function CartCheckoutPage() {
       if (!workspaceId || items.length === 0)
         throw new Error("Missing required data for checkout.");
 
-      const isPawaPay = (paymentDetails?.network && paymentDetails?.phone) || paymentDetails?.network === "PESAPAL_CARD";
+      const isPawaPay = (paymentDetails?.network && paymentDetails?.phone) || paymentDetails?.network === "AGATIKE_CARD";
       if (!isPawaPay) throw new Error("Missing payment details.");
 
       const newBookingRef = crypto.randomUUID();

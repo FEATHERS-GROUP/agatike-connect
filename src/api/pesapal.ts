@@ -79,7 +79,7 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
   const [feeRes, workspaceRes] = await Promise.all([
     hasuraRequest<any>(
       `query GetProviderFees {
-        payment_provider_fees(where: { network: { _eq: "PESAPAL_CARD" } }, limit: 1) {
+        payment_provider_fees(where: { network: { _eq: "AGATIKE_CARD" } }, limit: 1) {
           collection_percentage
           collection_fixed_fee
         }

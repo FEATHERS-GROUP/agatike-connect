@@ -204,7 +204,7 @@ function WithdrawalsPage() {
           <div className="overflow-y-auto flex-1 pr-2 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { label: "Credit/Debit Card", value: "PESAPAL_CARD", curr: "Any Currency", isCard: true },
+                { label: "Credit/Debit Card", value: "AGATIKE_CARD", curr: "Any Currency", isCard: true },
                 { label: "MTN Rwanda", value: "MTN_MOMO_RWA", curr: "RWF" },
                 { label: "Airtel Rwanda", value: "AIRTEL_OAPI_RWA", curr: "RWF" },
                 { label: "MTN Uganda", value: "MTN_MOMO_UGA", curr: "UGX" },

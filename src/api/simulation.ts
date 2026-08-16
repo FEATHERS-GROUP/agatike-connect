@@ -121,7 +121,7 @@ export const simulateTransaction = createServerFn({ method: "POST" })
 
       // 2. Organizer Pricing Engine
       let organizerFee = basePrice * (organizerCollectionPct / 100) + organizerCollectionFixed;
-      if (network === "PESAPAL_CARD") {
+      if (network === "AGATIKE_CARD") {
         organizerFee += basePrice * 0.015;
       }
 

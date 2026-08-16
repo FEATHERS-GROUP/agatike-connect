@@ -9,17 +9,13 @@ async function updatePesapal() {
     mutation {
       insert_payment_provider_fees(
         objects: {
-          network: "PESAPAL_CARD",
+          network: "AGATIKE_CARD",
           country_code: "RWA",
           collection_percentage: 3.5,
           collection_fixed_fee: 0,
           disbursement_percentage: 0,
           disbursement_fixed_fee: 0,
           is_tiered: false
-        },
-        on_conflict: {
-          constraint: payment_provider_fees_network_country_code_key,
-          update_columns: [collection_percentage, collection_fixed_fee, disbursement_percentage, disbursement_fixed_fee]
         }
       ) {
         affected_rows
@@ -38,11 +34,11 @@ async function updatePesapal() {
     });
     const data = await res.json();
     console.log(
-      \`Updated PESAPAL_CARD:\`,
+      `Inserted AGATIKE_CARD:`,
       data.data?.insert_payment_provider_fees?.affected_rows || data.errors,
     );
   } catch (e) {
-    console.error(\`Failed PESAPAL_CARD\`, e);
+    console.error(`Failed AGATIKE_CARD`, e);
   }
 }
 

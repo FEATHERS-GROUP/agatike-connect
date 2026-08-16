@@ -196,7 +196,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       const grossAmount = baseAmount + customerFee;
       
       let organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
-      if (network === "PESAPAL_CARD") {
+      if (network === "AGATIKE_CARD") {
         organizerFee += baseAmount * 0.015; // Extra 1.5% for card payments
       }
 
@@ -255,7 +255,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       pageSlug,
     } = ctx.data as any;
 
-    if (network === "PESAPAL_CARD") {
+    if (network === "AGATIKE_CARD") {
       const { initiatePesapalPayment } = await import("./pesapal");
       return initiatePesapalPayment({ data: ctx.data } as any);
     }
@@ -925,9 +925,7 @@ export const sendRefundPayout = createServerFn({ method: "POST" })
     ) {
       network = "AIRTEL_O_RWA";
     }
-
-    const { v4: uuidv4 } = await import("uuid");
-    const payoutId = uuidv4();
+    const payoutId = crypto.randomUUID();
 
     const payload = {
       payoutId,

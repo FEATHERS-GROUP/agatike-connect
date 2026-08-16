@@ -1392,3 +1392,69 @@ export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" }
     }
     return data;
   });
+
+export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { to, organizerName, ticketId, subject } = ctx.data as any;
+
+    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "https://agatike.rw";
+
+    const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+    const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+    const ticketShortId = `#${String(ticketId).slice(-6).toUpperCase()}`;
+
+    const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: #10b981; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Issue Resolved!</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi ${organizerName || "Organizer"},</p>
+        <p>We are writing to let you know that your support ticket <strong>${ticketShortId}</strong> has been resolved and closed.</p>
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid #e2e8f0;">
+          <h3 style="margin: 0 0 16px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Ticket Details</h3>
+          <p style="margin: 8px 0;"><strong>Ticket ID:</strong> ${ticketShortId}</p>
+          <p style="margin: 8px 0;"><strong>Subject:</strong> ${subject}</p>
+        </div>
+        <p>If you still experience issues or have any further questions, please feel free to open a new ticket or reply to your existing one.</p>
+        <div style="margin-top: 32px; text-align: center;">
+          <a href="${baseUrl}/dashboard/support" style="background-color: #10b981; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block;">View Ticket</a>
+        </div>
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
+      </div>
+    </div>
+  `;
+
+    const emailPayload: any = {
+      from: "Agatike Connect <hello@agatike.rw>",
+      to: [to],
+      subject: `Ticket Resolved: ${subject}`,
+      html: html,
+    };
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + process.env.RESEND_API_KEY,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn("Failed to send support ticket resolved email:", data);
+    }
+    return data;
+  });

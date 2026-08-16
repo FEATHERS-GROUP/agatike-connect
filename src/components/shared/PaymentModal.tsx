@@ -80,7 +80,7 @@ const ALL_NETWORKS = [
   { label: "Orange Sierra Leone", value: "ORANGE_SLE", curr: "SLE", code: "232", maxLen: 8 },
   { label: "Moov Benin", value: "MOOV_BEN", curr: "XOF", code: "229", maxLen: 8 },
   { label: "MTN Benin", value: "MTN_MOMO_BEN", curr: "XOF", code: "229", maxLen: 8 },
-  { label: "Credit/Debit Card", value: "PESAPAL_CARD", curr: "ALL", code: "", maxLen: 0 },
+  { label: "Credit/Debit Card", value: "AGATIKE_CARD", curr: "ALL", code: "", maxLen: 0 },
 ];
 
 export function PaymentModal({
@@ -159,7 +159,7 @@ export function PaymentModal({
     : "RWA";
 
   // Simulation Engine (Pre-flight check)
-  const activeNetwork = paymentMethod === "card" ? "PESAPAL_CARD" : network;
+  const activeNetwork = paymentMethod === "card" ? "AGATIKE_CARD" : network;
   const { data: simulation, isLoading: isSimulating } = useQuery({
     queryKey: ["simulate", baseAmount, workspaceId, activeNetwork, countryCode, baseCurrency, targetCurrency],
     queryFn: () =>
@@ -208,7 +208,7 @@ export function PaymentModal({
       });
     } else if (paymentMethod === "card") {
       onProceed({
-        network: "PESAPAL_CARD",
+        network: "AGATIKE_CARD",
         currency: targetCurrency,
         convertedAmount,
         shortfall: simulation?.shortfall || 0,
@@ -265,7 +265,7 @@ export function PaymentModal({
               </button>
               */}
 
-              {supportedNetworks.includes("PESAPAL_CARD") && (
+              {supportedNetworks.includes("AGATIKE_CARD") && (
                 <div
                   className={`w-full flex flex-col gap-4 p-4 rounded-2xl border transition-all ${
                     paymentMethod === "card"
