@@ -139,7 +139,10 @@ function WithdrawalsPage() {
               size="lg"
               className="rounded-full bg-white text-primary hover:bg-white/90 font-bold px-8 shadow-lg"
             >
-              <Link to={`/dashboard/${activeWorkspace?.slug}/withdrawals/request`}>
+              <Link
+                to="/dashboard/$workspaceSlug/withdrawals/request"
+                params={{ workspaceSlug: activeWorkspace?.slug as string }}
+              >
                 <Banknote className="mr-2 h-5 w-5" /> Request Withdrawal
               </Link>
             </Button>
