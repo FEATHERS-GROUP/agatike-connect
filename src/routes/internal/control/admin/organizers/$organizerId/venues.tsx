@@ -93,15 +93,26 @@ function OrganizerVenuesAndSpaces() {
   useEffect(() => {
     if (!highlightId) return;
     setHighlightedId(highlightId);
-    // Switch to bookings tab since highlights mostly come from bookings search
-    setActiveTab("bookings");
+
+    // Auto-detect which tab the highlighted item belongs to
+    if (venues?.some((v: any) => v.id === highlightId)) {
+      setActiveTab("venues");
+    } else if (spaces?.some((s: any) => s.id === highlightId)) {
+      setActiveTab("spaces");
+    } else if (bookings?.some((b: any) => b.id === highlightId)) {
+      setActiveTab("bookings");
+    }
+
     const timer = setTimeout(() => {
       const el = document.getElementById(`row-${highlightId}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       setTimeout(() => setHighlightedId(null), 3000);
-    }, 400);
+    }, 800); // Increased timeout to ensure React has fully rendered the tab switch
+
     return () => clearTimeout(timer);
-  }, [highlightId]);
+  }, [highlightId, venues, spaces, bookings]);
 
   const tabs: { key: Tab; label: string; icon: any; count: number; color: string }[] = [
     {
