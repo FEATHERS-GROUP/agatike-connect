@@ -156,7 +156,7 @@ const CATEGORY_CONFIG = [
     bg: "bg-emerald-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.events?.workspaces?.id ? `/internal/control/admin/organizers/${r.events.workspaces.id}/attendees?highlight=${r.id}` : `/internal/control/admin`,
+      r.events?.workspaces?.orgnizer_id ? `/internal/control/admin/organizers/${r.events.workspaces.orgnizer_id}/attendees?highlight=${r.id}` : `/internal/control/admin`,
     getTitle: (r: any) => r.names || r.email || "—",
     getSub: (r: any) =>
       [r.qrcode_number, r.ticket_type, r.status, r.events?.title].filter(Boolean).join(" · "),
@@ -169,7 +169,7 @@ const CATEGORY_CONFIG = [
     bg: "bg-teal-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.workspace?.id ? `/internal/control/admin/organizers/${r.workspace.id}/venues?highlight=${r.id}` : `/internal/control/admin`,
+      r.workspace?.orgnizer_id ? `/internal/control/admin/organizers/${r.workspace.orgnizer_id}/venues?highlight=${r.id}` : `/internal/control/admin`,
     getTitle: (r: any) => r.customer_name || r.customer_email || "—",
     getSub: (r: any) =>
       [r.rentable_venue?.name, r.status, r.payment_status].filter(Boolean).join(" · "),
@@ -182,7 +182,7 @@ const CATEGORY_CONFIG = [
     bg: "bg-fuchsia-500/10",
     detailPage: false,
     getHref: (r: any) =>
-      r.space?.workspaces?.id ? `/internal/control/admin/organizers/${r.space.workspaces.id}/memberships?highlight=${r.id}` : `/internal/control/admin`,
+      r.space?.workspace?.orgnizer_id ? `/internal/control/admin/organizers/${r.space.workspace.orgnizer_id}/memberships?highlight=${r.id}` : `/internal/control/admin`,
     getTitle: (r: any) => r.customer_name || r.customer_email || "—",
     getSub: (r: any) =>
       [r.space?.name, r.plan_name, r.status].filter(Boolean).join(" · "),

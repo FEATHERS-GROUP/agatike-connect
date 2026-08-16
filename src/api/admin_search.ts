@@ -163,7 +163,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           qrcode_number
           ticket_type
           status
-          events { id title workspaces { id name } }
+          events { id title workspaces { id name orgnizer_id } }
         }
 
         venue_bookings(
@@ -189,7 +189,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           total_amount
           tickets_data
           rentable_venue { name }
-          workspace { id name }
+          workspace { id name orgnizer_id }
         }
 
         space_subscriptions(
@@ -214,7 +214,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           price
           start_date
           team_members
-          space { id name workspace { id name } }
+          space { id name workspace { id name orgnizer_id } }
         }
 
         cinema_bookings(
