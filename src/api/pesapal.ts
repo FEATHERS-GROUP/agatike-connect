@@ -9,9 +9,11 @@ export async function getPesapalToken() {
   const isLive = process.env.NODE_ENV === "production";
   const baseUrl = isLive ? "https://pay.pesapal.com/v3" : "https://cybqa.pesapal.com/pesapalv3";
 
-  const res = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
-    signal: AbortSignal.timeout(15000),
-    method: "POST",
+  console.log(`[PESAPAL] Attempting to authenticate with ${baseUrl}...`);
+  try {
+    const res = await fetch(`${baseUrl}/api/Auth/RequestToken`, {
+      signal: AbortSignal.timeout(15000),
+      method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -19,11 +21,17 @@ export async function getPesapalToken() {
     body: JSON.stringify({ consumer_key: key, consumer_secret: secret }),
   });
 
-  const data = await res.json();
-  if (data.status !== "200") {
-    throw new Error(`Pesapal Auth Error: ${data.message}`);
+    const data = await res.json();
+    if (data.status !== "200") {
+      console.error(`[PESAPAL] Auth Error: ${data.message}`);
+      throw new Error(`Pesapal Auth Error: ${data.message}`);
+    }
+    console.log(`[PESAPAL] Successfully authenticated! Token received.`);
+    return { token: data.token, baseUrl };
+  } catch (err: any) {
+    console.error(`[PESAPAL] Authentication failed or timed out:`, err.message);
+    throw err;
   }
-  return { token: data.token, baseUrl };
 }
 
 export const initiatePesapalPayment = createServerFn({ method: "POST" })
@@ -157,23 +165,36 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
     }
   };
 
-  const orderRes = await fetch(`${baseUrl}/api/Transactions/SubmitOrderRequest`, {
-    signal: AbortSignal.timeout(15000),
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, Accept: "application/json" },
-    body: JSON.stringify(payload)
-  });
+  let redirectUrl = "";
+  let orderTrackingId = "";
 
-  const orderData = await orderRes.json();
-  if (orderData.status === "500" || orderData.error) {
-    throw new Error(`Pesapal Error: ${orderData.error?.message || orderData.message || JSON.stringify(orderData)}`);
-  }
+  console.log(`[PESAPAL] Submitting payment order for amount: ${grossAmount} ${currency || "RWF"}...`);
+  try {
+    const orderRes = await fetch(`${baseUrl}/api/Transactions/SubmitOrderRequest`, {
+      signal: AbortSignal.timeout(15000),
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, Accept: "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  const redirectUrl = orderData.redirect_url;
-  if (!redirectUrl) {
-    throw new Error(`Pesapal Error: Missing redirect_url in response. ${JSON.stringify(orderData)}`);
+    const orderData = await orderRes.json();
+    if (orderData.status === "500" || orderData.error) {
+      console.error(`[PESAPAL] Order Submission Error:`, orderData);
+      throw new Error(`Pesapal Error: ${orderData.error?.message || orderData.message || JSON.stringify(orderData)}`);
+    }
+
+    redirectUrl = orderData.redirect_url;
+    if (!redirectUrl) {
+      console.error(`[PESAPAL] Missing redirect_url. Response:`, orderData);
+      throw new Error(`Pesapal Error: Missing redirect_url in response. ${JSON.stringify(orderData)}`);
+    }
+    orderTrackingId = orderData.order_tracking_id;
+    console.log(`[PESAPAL] Order submitted successfully! Redirect URL generated.`);
+
+  } catch (err: any) {
+    console.error(`[PESAPAL] Order Submission failed or timed out:`, err.message);
+    throw err;
   }
-  const orderTrackingId = orderData.order_tracking_id;
 
   // Insert Transaction
   const txRes = await hasuraRequest<any>(
