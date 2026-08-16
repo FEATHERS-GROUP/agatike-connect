@@ -29,7 +29,6 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           handle
           country
           active
-      handle
           banned
         }
 
@@ -40,7 +39,6 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           id
           name
           email
-          role
           role
         }
 

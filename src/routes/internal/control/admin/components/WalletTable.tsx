@@ -1,6 +1,6 @@
 import * as LucideIcons from "lucide-react";
 
-export function WalletTable({ paginated, searchQuery }: { paginated: any[]; searchQuery: string }) {
+export function WalletTable({ paginated, searchQuery, highlightedId }: { paginated: any[]; searchQuery: string; highlightedId?: string | null }) {
   return (
     <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
               <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
@@ -27,11 +27,18 @@ export function WalletTable({ paginated, searchQuery }: { paginated: any[]; sear
                 ) : (
                   paginated.map((tx: any) => {
                     const org = tx.organizer || {};
-                    return (
-                      <tr
-                        key={tx.id}
-                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                      >
+                    const isHighlighted = highlightedId === tx.id;
+                      return (
+                        <tr
+                          key={tx.id}
+                          id={`row-${tx.id}`}
+                          className={[
+                            "transition-colors",
+                            isHighlighted
+                              ? "bg-[#f97316]/15 ring-2 ring-inset ring-[#f97316]/50 animate-pulse"
+                              : "hover:bg-gray-100 dark:hover:bg-[#252526]",
+                          ].join(" ")}
+                        >
                         <td className="px-4 py-3">
                           <div className="font-mono text-[11px] text-gray-500 dark:text-[#888888]" title={`ID: ${tx.id}\nProvider: ${tx.provider_reference || 'N/A'}`}>
                             {tx.provider_reference || (tx.id ? `${tx.id.substring(0, 8)}...` : "—")}

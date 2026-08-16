@@ -1,6 +1,6 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
 import * as LucideIcons from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { WithdrawalsTable } from "./components/WithdrawalsTable";
 import { InvoicesTable } from "./components/InvoicesTable";
@@ -23,6 +23,11 @@ export const Route = createFileRoute("/internal/control/admin/transactions")({
     ]);
     return { invoices, withdrawals, walletTransactions };
   },
+  validateSearch: (search: Record<string, unknown>) => ({
+    highlight: search.highlight as string | undefined,
+    type: search.type as string | undefined,
+    ref: search.ref as string | undefined,
+  }),
   component: TransactionsPage,
 });
 
@@ -352,12 +357,38 @@ function ApprovalModal({
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 function TransactionsPage() {
   const { invoices, withdrawals, walletTransactions } = Route.useLoaderData();
+  const search = useSearch({ from: "/internal/control/admin/transactions" });
+  const highlightId = search.highlight;
+  const highlightType = search.type;
+  const highlightRef = search.ref;
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"invoices" | "withdrawals" | "wallet">("withdrawals");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTx, setSelectedTx] = useState<any>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightRowRef = useRef<HTMLTableRowElement | HTMLDivElement | null>(null);
   const ITEMS_PER_PAGE = 50;
+
+  // When navigated from search with ?highlight=ID, switch tab and flash the row
+  useEffect(() => {
+    if (!highlightId) return;
+    // Switch to correct tab based on type param
+    if (highlightType === "withdrawal") setActiveTab("withdrawals");
+    else if (highlightType === "wallet") setActiveTab("wallet");
+    else setActiveTab("wallet"); // default for wallet_transactions
+    setHighlightedId(highlightId);
+    // Scroll to row after a brief delay to let render settle
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`row-${highlightId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      // Clear highlight after 3 seconds
+      setTimeout(() => setHighlightedId(null), 3000);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [highlightId, highlightType]);
 
   const pendingCount = (withdrawals as any[]).filter((w) => w.status === "pending").length;
 
@@ -539,11 +570,11 @@ function TransactionsPage() {
       <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {activeTab === "withdrawals" ? (
-            <WithdrawalsTable paginated={paginated} searchQuery={searchQuery} setSelectedTx={setSelectedTx} />
+            <WithdrawalsTable paginated={paginated} searchQuery={searchQuery} setSelectedTx={setSelectedTx} highlightedId={highlightedId} />
           ) : activeTab === "invoices" ? (
             <InvoicesTable paginated={paginated} searchQuery={searchQuery} />
           ) : (
-            <WalletTable paginated={paginated} searchQuery={searchQuery} />
+            <WalletTable paginated={paginated} searchQuery={searchQuery} highlightedId={highlightedId} />
           )}
         </div>
       </div>
