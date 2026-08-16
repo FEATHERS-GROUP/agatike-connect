@@ -214,7 +214,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           price
           start_date
           team_members
-          space { id name workspaces { id name } }
+          space { id name workspace { id name } }
         }
 
         cinema_bookings(
