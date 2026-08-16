@@ -1,6 +1,10 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import * as LucideIcons from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { WithdrawalsTable } from "./components/WithdrawalsTable";
+import { InvoicesTable } from "./components/InvoicesTable";
+import { WalletTable } from "./components/WalletTable";
 import {
   getAllPlatformTransactions,
   getAdminWithdrawals,
@@ -52,7 +56,7 @@ function ApprovalModal({
       setSentToEmail(res.email || "");
       setOtpSent(true);
     } catch (err: any) {
-      alert(err.message || "Failed to send OTP");
+      toast.error(err.message || "Failed to send OTP");
     } finally {
       setIsSendingOtp(false);
     }
@@ -60,7 +64,7 @@ function ApprovalModal({
 
   const handleApprove = async () => {
     if (!otp || otp.length < 6) {
-      alert("Please enter the full OTP code");
+      toast.error("Please enter the full OTP code");
       return;
     }
     setIsApproving(true);
@@ -68,10 +72,10 @@ function ApprovalModal({
       await approveAdminPayout({
         data: { transactionId: tx.id, otpToken, otp, overrideNetworkId },
       } as any);
-      alert("Payout approved and submitted to PawaPay successfully!");
+      toast.success("Payout approved and submitted to PawaPay successfully!");
       onDone();
     } catch (err: any) {
-      alert(err.message || "Failed to approve payout");
+      toast.error(err.message || "Failed to approve payout");
     } finally {
       setIsApproving(false);
     }
@@ -79,16 +83,16 @@ function ApprovalModal({
 
   const handleReject = async () => {
     if (!reason.trim()) {
-      alert("Please provide a rejection reason");
+      toast.error("Please provide a rejection reason");
       return;
     }
     setIsRejecting(true);
     try {
       await rejectAdminPayout({ data: { transactionId: tx.id, reason } } as any);
-      alert("Withdrawal rejected. Organizer's wallet has been refunded.");
+      toast.success("Withdrawal rejected. Organizer's wallet has been refunded.");
       onDone();
     } catch (err: any) {
-      alert(err.message || "Failed to reject payout");
+      toast.error(err.message || "Failed to reject payout");
     } finally {
       setIsRejecting(false);
     }
@@ -535,351 +539,11 @@ function TransactionsPage() {
       <div className="bg-gray-50 dark:bg-[#1b1b1c] border border-gray-200 dark:border-[#333333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {activeTab === "withdrawals" ? (
-            <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
-              <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Ref ID</th>
-                  <th className="px-4 py-3 font-medium">Organizer</th>
-                  <th className="px-4 py-3 font-medium">Payout Details</th>
-                  <th className="px-4 py-3 font-medium">Amount Requested</th>
-                  <th className="px-4 py-3 font-medium">Net Payout</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
-                {paginated.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
-                    >
-                      {searchQuery
-                        ? "No withdrawals match your search."
-                        : "No withdrawal requests found."}
-                    </td>
-                  </tr>
-                ) : (
-                  paginated.map((tx: any) => {
-                    const org = tx.organizer || {};
-                    const isAdminApproval = tx.raw_callback_data?.requires_admin_approval;
-                    return (
-                      <tr
-                        key={tx.id}
-                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="font-mono text-xs text-gray-500 dark:text-[#888888]" title={tx.id}>
-                            {tx.id ? `${tx.id.substring(0, 8)}...` : "—"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? (
-                                <img
-                                  src={org.image}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white text-sm">
-                                {org.name || "Unknown"}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-[#888888]">
-                                {org.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-gray-900 dark:text-white text-sm font-medium">
-                            {tx.payout_method?.toUpperCase()}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-[#888888] font-mono">
-                            {tx.payout_account}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">
-                          {tx.currency} {Number(tx.amount).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-green-400">
-                          {tx.currency} {Number(tx.net_amount).toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col gap-1">
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs font-medium uppercase w-fit ${
-                                tx.status === "completed"
-                                  ? "bg-green-500/10 text-green-500"
-                                  : tx.status === "pending"
-                                    ? "bg-yellow-500/10 text-yellow-400"
-                                    : tx.status === "rejected"
-                                      ? "bg-red-500/10 text-red-500"
-                                      : "bg-gray-500/10 text-gray-400"
-                              }`}
-                            >
-                              {tx.status}
-                            </span>
-                            {isAdminApproval && tx.status === "pending" && (
-                              <span className="text-[10px] text-orange-400 flex items-center gap-1">
-                                <LucideIcons.AlertCircle className="w-3 h-3" />
-                                Admin approval needed
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-gray-500 dark:text-[#888888]">
-                          {new Date(tx.created_at).toLocaleDateString("en-GB", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {tx.status === "pending" ? (
-                            <button
-                              onClick={() => setSelectedTx(tx)}
-                              className="px-3 py-1.5 bg-[#f97316] hover:bg-[#ea6c0a] text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1 ml-auto"
-                            >
-                              <LucideIcons.ShieldCheck className="w-3 h-3" />
-                              Review
-                            </button>
-                          ) : (
-                            <span className="text-xs text-gray-500 dark:text-[#555555]">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+            <WithdrawalsTable paginated={paginated} searchQuery={searchQuery} setSelectedTx={setSelectedTx} />
           ) : activeTab === "invoices" ? (
-            <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
-              <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Ref ID</th>
-                  <th className="px-4 py-3 font-medium">Organizer</th>
-                  <th className="px-4 py-3 font-medium">Plan</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Next Billing</th>
-                  <th className="px-4 py-3 font-medium">Invoice Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
-                {paginated.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
-                    >
-                      {searchQuery ? "No invoices match your search." : "No invoices found."}
-                    </td>
-                  </tr>
-                ) : (
-                  paginated.map((tx: any) => {
-                    const org = tx.organizer || {};
-                    const sub = tx.subscription || {};
-                    const plan = sub.pricing_plan || {};
-                    return (
-                      <tr
-                        key={tx.id}
-                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="font-mono text-[11px] text-gray-500 dark:text-[#888888]" title={tx.id}>
-                            {tx.id ? `${tx.id.substring(0, 8)}...` : "—"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? (
-                                <img
-                                  src={org.image}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {org.name || "Unknown"}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-[#888888]">
-                                {org.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {plan.name || "Custom Plan"}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-[#888888]">
-                            Subscription
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">
-                          {tx.amount === 0 ? "Free" : `${plan.currency || "USD"} ${tx.amount}`}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
-                              tx.status === "paid"
-                                ? "bg-green-500/10 text-green-500"
-                                : tx.status === "pending"
-                                  ? "bg-yellow-500/10 text-yellow-400"
-                                  : "bg-red-500/10 text-red-500"
-                            }`}
-                          >
-                            {tx.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
-                          {sub.next_billing_date
-                            ? new Date(sub.next_billing_date).toLocaleDateString("en-GB", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })
-                            : "—"}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
-                          {tx.created_at
-                            ? new Date(tx.created_at).toLocaleDateString("en-GB", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })
-                            : "—"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+            <InvoicesTable paginated={paginated} searchQuery={searchQuery} />
           ) : (
-            <table className="w-full text-left text-sm text-gray-700 dark:text-[#cccccc]">
-              <thead className="bg-gray-50 dark:bg-[#252526] text-gray-500 dark:text-[#888888] border-b border-gray-200 dark:border-[#333333]">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Ref ID</th>
-                  <th className="px-4 py-3 font-medium">Organizer / Workspace</th>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Description</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
-                {paginated.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
-                    >
-                      {searchQuery ? "No wallet transactions match your search." : "No wallet transactions found."}
-                    </td>
-                  </tr>
-                ) : (
-                  paginated.map((tx: any) => {
-                    const org = tx.organizer || {};
-                    return (
-                      <tr
-                        key={tx.id}
-                        className="hover:bg-gray-100 dark:hover:bg-[#252526] transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="font-mono text-[11px] text-gray-500 dark:text-[#888888]" title={`ID: ${tx.id}\nProvider: ${tx.provider_reference || 'N/A'}`}>
-                            {tx.provider_reference || (tx.id ? `${tx.id.substring(0, 8)}...` : "—")}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#333333] border border-gray-300 dark:border-[#444] overflow-hidden shrink-0 flex items-center justify-center">
-                              {org.image ? (
-                                <img
-                                  src={org.image}
-                                  alt=""
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <LucideIcons.Building2 className="w-4 h-4 text-gray-500 dark:text-[#888]" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">
-                                {org.name || "Unknown"}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-[#888888]">
-                                {tx.workspaceName || "Unknown Workspace"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900 dark:text-white uppercase">
-                            {tx.type}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">
-                          <div className="flex flex-col gap-0.5">
-                            <span>
-                              {tx.currency} {Number(tx.amount).toLocaleString()}
-                            </span>
-                            {tx.amount !== tx.net_amount && (
-                              <span className="text-[10px] text-green-500 font-medium">
-                                Net: {tx.currency} {Number(tx.net_amount).toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
-                              tx.status === "completed"
-                                ? "bg-green-500/10 text-green-500"
-                                : tx.status === "pending"
-                                  ? "bg-yellow-500/10 text-yellow-400"
-                                  : tx.status === "failed" || tx.status === "rejected"
-                                    ? "bg-red-500/10 text-red-500"
-                                    : "bg-gray-500/10 text-gray-400"
-                            }`}
-                          >
-                            {tx.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
-                          {tx.description || "—"}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-[#888888]">
-                          {tx.created_at
-                            ? new Date(tx.created_at).toLocaleDateString("en-GB", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit"
-                              })
-                            : "—"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+            <WalletTable paginated={paginated} searchQuery={searchQuery} />
           )}
         </div>
       </div>
