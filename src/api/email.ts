@@ -161,7 +161,7 @@ export const sendAttendeeEmailRaw = async (ctx: any) => {
       throw new Error(data.message || "Failed to send email via Resend");
     }
     return data;
-  });
+};
 
 export const sendTicketsEmailRaw = async (ctx: any) => {
     const {
@@ -417,7 +417,7 @@ export const sendTicketsEmailRaw = async (ctx: any) => {
       throw new Error(data.message || "Failed to send tickets via Resend");
     }
     return data;
-  });
+};
 
 export const sendProfileUpdateOTPRaw = async (ctx: any) => {
     const { to, otp } = ctx.data as any;
@@ -475,7 +475,7 @@ export const sendProfileUpdateOTPRaw = async (ctx: any) => {
       throw new Error(data.message || "Failed to send OTP via Resend");
     }
     return data;
-  });
+};
 
 export const sendSubscriptionConfirmationEmailRaw = async (ctx: any) => {
     const {
@@ -564,7 +564,7 @@ export const sendSubscriptionConfirmationEmailRaw = async (ctx: any) => {
       throw new Error(data.message || "Failed to send confirmation email");
     }
     return data;
-  });
+};
 
 export const sendSubscriptionInvoiceEmailRaw = async (ctx: any) => {
     const {
@@ -668,7 +668,7 @@ export const sendSubscriptionInvoiceEmailRaw = async (ctx: any) => {
       throw new Error(data.message || "Failed to send invoice email");
     }
     return data;
-  });
+};
 
 // Sends the company email with invoice PDF + member roster PDF attached
 export const sendCompanyRosterEmailRaw = async (ctx: any) => {
@@ -802,7 +802,7 @@ export const sendCompanyRosterEmailRaw = async (ctx: any) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Failed to send company roster email");
     return data;
-  });
+};
 
 // Sends a personal welcome email to each individual team member
 export const sendMemberWelcomeEmailRaw = async (ctx: any) => {
@@ -870,7 +870,7 @@ export const sendMemberWelcomeEmailRaw = async (ctx: any) => {
     console.log("Resend Member Welcome API Response:", { status: res.status, ok: res.ok, data });
     if (!res.ok) throw new Error(data.message || "Failed to send member welcome email");
     return data;
-  });
+};
 
 export const sendVisitorPassEmailRaw = async (ctx: any) => {
     const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } =
@@ -945,7 +945,7 @@ export const sendVisitorPassEmailRaw = async (ctx: any) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Failed to send visitor pass email");
     return data;
-  });
+};
 
 export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
   const { to, userName, initialPassword, organizerName } = data;
@@ -1012,7 +1012,7 @@ export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
 
 export const sendWorkspaceUserInviteEmailRaw = async (ctx: any) => {
     return await executeSendWorkspaceUserInviteEmail(ctx.data);
-  });
+};
 
 export const executeSendProjectAccessEmail = async (data: any) => {
   const { to, userName, organizerName, projectName, projectLink } = data;
@@ -1135,7 +1135,7 @@ export const sendVenueBookingEmailRaw = async (ctx: any) => {
     const resData = await res.json();
     if (!res.ok) throw new Error(resData.message || "Failed to send venue booking email");
     return resData;
-  });
+};
 
 export const sendTrialExtensionEmailRaw = async (ctx: any) => {
     const { to, organizerName, daysExtended, totalAllowedDays } = ctx.data as any;
@@ -1198,7 +1198,7 @@ export const sendTrialExtensionEmailRaw = async (ctx: any) => {
       console.warn("Failed to send trial extension email:", data);
     }
     return data;
-  });
+};
 
 export const sendEmail = async ({
   to,
@@ -1361,7 +1361,7 @@ export const sendDigitalProductDeliveryEmailRaw = async (ctx: any) => {
       throw new Error(data.message || "Failed to send digital product delivery email");
     }
     return data;
-  });
+};
 
 export const sendSupportTicketResolvedEmailRaw = async (ctx: any) => {
     const { to, organizerName, ticketId, subject } = ctx.data as any;
@@ -1425,7 +1425,7 @@ export const sendSupportTicketResolvedEmailRaw = async (ctx: any) => {
       console.warn("Failed to send support ticket resolved email:", data);
     }
     return data;
-  });
+};
 
 
 // --- Server Function Wrappers ---
