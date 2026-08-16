@@ -431,8 +431,8 @@ export const sendProfileUpdateOTP = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { to, otp } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NODE_ENV === "production"
@@ -501,8 +501,8 @@ export const sendSubscriptionConfirmationEmail = createServerFn({ method: "POST"
       invoiceNumber,
     } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -703,8 +703,8 @@ export const sendCompanyRosterEmail = createServerFn({ method: "POST" })
       pdfBase64,
     } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -827,8 +827,8 @@ export const sendMemberWelcomeEmail = createServerFn({ method: "POST" })
     const { to, memberName, companyName, spaceName, planName, startDate, membershipId } =
       ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -896,8 +896,8 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
     const { to, visitorName, spaceName, visitDate, hostedBy, visitorId, pdfBase64 } =
       ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -970,8 +970,8 @@ export const sendVisitorPassEmail = createServerFn({ method: "POST" })
 export const executeSendWorkspaceUserInviteEmail = async (data: any) => {
   const { to, userName, initialPassword, organizerName } = data;
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NODE_ENV === "production"
@@ -1039,8 +1039,8 @@ export const sendWorkspaceUserInviteEmail = createServerFn({ method: "POST" })
 export const executeSendProjectAccessEmail = async (data: any) => {
   const { to, userName, organizerName, projectName, projectLink } = data;
 
-  const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.NODE_ENV === "production"
@@ -1166,8 +1166,8 @@ export const sendTrialExtensionEmail = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { to, organizerName, daysExtended, totalAllowedDays } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
@@ -1398,8 +1398,8 @@ export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { to, organizerName, ticketId, subject } = ctx.data as any;
 
-    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    const baseUrl = process.env.PROJECT_PRODUCTION_URL
+      ? `https://${process.env.PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : "https://agatike.rw";
