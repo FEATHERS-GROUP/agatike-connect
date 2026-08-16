@@ -35,7 +35,17 @@ const CATEGORY_CONFIG = [
     color: "text-blue-500",
     getHref: (r: any) => `/internal/control/admin/agatike-users/${r.id}`,
     getTitle: (r: any) => r.name || "—",
-    getSub: (r: any) => r.email || r.phone || "",
+    getSub: (r: any) => {
+      const parts: string[] = [];
+      if (r.email) parts.push(r.email);
+      if (r.phone) parts.push(r.phone);
+      if (r.handle) parts.push(`@${r.handle}`);
+      if (r.country) parts.push(r.country);
+      if (r.role) parts.push(r.role);
+      if (r.banned) parts.push("⛔ banned");
+      else if (r.active === false) parts.push("inactive");
+      return parts.join(" · ");
+    },
   },
   {
     key: "organizers" as const,

@@ -12,14 +12,36 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
 
     const gql = `
       query AdminGlobalSearch($q: String!) {
-        users: workspace_users(
-          where: { _or: [{ name: { _ilike: $q } }, { email: { _ilike: $q } }, { phone: { _ilike: $q } }] }
+        app_users: users(
+          where: { _or: [
+            { email: { _ilike: $q } },
+            { phone: { _ilike: $q } },
+            { username: { _ilike: $q } },
+            { handle: { _ilike: $q } }
+          ]}
+          limit: 8
+          order_by: { created_at: desc }
+        ) {
+          id
+          email
+          phone
+          username
+          handle
+          country
+          active
+      handle
+          banned
+        }
+
+        workspace_users: workspace_users(
+          where: { _or: [{ name: { _ilike: $q } }, { email: { _ilike: $q } }, { role: { _ilike: $q } }] }
           limit: 5
         ) {
           id
           name
           email
-          phone
+          role
+          role
         }
 
         organizers(
@@ -54,7 +76,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           walletNumber
           amount
           currency
-          workspace { name }
+          workspaces { name }
         }
 
         ticket_projects(
@@ -103,7 +125,7 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           currency
           created_at
           workspace_id
-          wallets { workspace { name } }
+          wallets { workspaces { name } }
         }
 
         withdrawal_requests(
@@ -125,13 +147,54 @@ export const adminGlobalSearch = createServerFn({ method: "POST" })
           workspace { name }
         }
       }
+      
+      
     `;
 
     try {
       const data = await hasuraRequest<any>(gql, { q });
 
+      // Merge all app users + workspace users into one list, deduped by email
+      const seenEmails = new Set<string>();
+      const mergedUsers: any[] = [];
+
+      // App users (all registered users on the platform)
+      for (const u of (data.app_users || [])) {
+        const key = u.email || u.id;
+        if (!seenEmails.has(key)) {
+          seenEmails.add(key);
+          mergedUsers.push({
+            id: u.id,
+            name: u.username || u.handle || u.email?.split("@")[0] || "—",
+            email: u.email,
+            phone: u.phone,
+            country: u.country,
+            active: u.active,
+            banned: u.banned,
+            handle: u.handle,
+            _type: "app_user",
+          });
+        }
+      }
+
+      // Workspace users (organizer team members)
+      for (const u of (data.workspace_users || [])) {
+        const key = u.email || u.id;
+        if (!seenEmails.has(key)) {
+          seenEmails.add(key);
+          mergedUsers.push({
+            id: u.id,
+            name: u.name || u.email?.split("@")[0] || "—",
+            email: u.email,
+            phone: u.phone,
+            role: u.role,
+            _type: "workspace_user",
+          });
+        }
+      }
+
       return {
-        users: (data.users || []) as any[],
+        users: mergedUsers,
         organizers: (data.organizers || []) as any[],
         support_tickets: (data.support_tickets || []) as any[],
         wallets: (data.wallets || []) as any[],
