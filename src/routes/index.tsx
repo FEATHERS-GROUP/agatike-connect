@@ -14,16 +14,16 @@ const HomeDesktop = lazy(() =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Agatike — The premium social event platform" },
+      { title: "Agatike | Discover & Book Events, Activities, Venues & Experiences" },
       {
         name: "description",
         content:
-          "Discover music, nightlife, sports, festivals and experiences worldwide. Buy tickets, share moments, follow organizers.",
+          "Discover and book events, venues, activities, tours, travel, sports, wellness, and experiences on Agatike. Find something to do, somewhere to go, or an experience to enjoy.",
       },
-      { property: "og:title", content: "Agatike — The premium social event platform" },
+      { property: "og:title", content: "Agatike | Discover & Book Events, Activities, Venues & Experiences" },
       {
         property: "og:description",
-        content: "Discover and live the moments that matter, worldwide.",
+        content: "Discover and book events, venues, activities, tours, travel, sports, wellness, and experiences on Agatike. Find something to do, somewhere to go, or an experience to enjoy.",
       },
     ],
   }),
