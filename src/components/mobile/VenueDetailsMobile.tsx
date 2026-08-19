@@ -42,7 +42,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
       if (savedCart) {
         try {
           setCart(JSON.parse(savedCart));
-        } catch (e) { }
+        } catch (e) {}
       }
     }
   }, [venue?.id]);
@@ -195,25 +195,15 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                     <div className="text-sm font-medium space-y-1 mb-4">
                       {facility.pricing?.per_session_rate && (
                         <p>
-                          Session:{" "}
-                          {formatCurrency(
-                            facility.pricing.per_session_rate,
-                            currency,
-                          )}
+                          Session: {formatCurrency(facility.pricing.per_session_rate, currency)}
                           {facility.duration_minutes && ` (${facility.duration_minutes} mins)`}
                         </p>
                       )}
                       {facility.pricing?.hourly_rate && (
-                        <p>
-                          Hourly:{" "}
-                          {formatCurrency(facility.pricing.hourly_rate, currency)}
-                        </p>
+                        <p>Hourly: {formatCurrency(facility.pricing.hourly_rate, currency)}</p>
                       )}
                       {facility.pricing?.daily_rate && (
-                        <p>
-                          Daily:{" "}
-                          {formatCurrency(facility.pricing.daily_rate, currency)}
-                        </p>
+                        <p>Daily: {formatCurrency(facility.pricing.daily_rate, currency)}</p>
                       )}
                       {facility.type === "shared_access" && facility.max_capacity && (
                         <p>Max Capacity: {facility.max_capacity} people</p>
@@ -317,9 +307,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
               <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
                 <span className="text-muted-foreground text-sm font-medium">Standard Entrance</span>
                 <span className="font-bold text-primary">
-                  {venue.entrance_fee > 0
-                    ? formatCurrency(venue.entrance_fee, currency)
-                    : "Free"}
+                  {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, currency) : "Free"}
                 </span>
               </div>
             </div>
@@ -465,9 +453,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                 <div className="flex items-center justify-between py-1 text-sm animate-in fade-in duration-150">
                   <span className="text-muted-foreground font-medium">Standard Entrance</span>
                   <span className="font-bold text-foreground">
-                    {venue.entrance_fee > 0
-                      ? formatCurrency(venue.entrance_fee, currency)
-                      : "Free"}
+                    {venue.entrance_fee > 0 ? formatCurrency(venue.entrance_fee, currency) : "Free"}
                   </span>
                 </div>
                 {venue.pricing_tiers &&

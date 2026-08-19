@@ -10,7 +10,13 @@ import {
   updateSpacePromotion,
   deleteSpacePromotion,
 } from "@/api/space_promotions";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -157,13 +163,17 @@ function SpacePromotionsPage() {
       </div>
 
       {isLoading ? (
-        <div className="p-8 text-center text-muted-foreground animate-pulse">Loading promotions...</div>
+        <div className="p-8 text-center text-muted-foreground animate-pulse">
+          Loading promotions...
+        </div>
       ) : promotions.length === 0 ? (
         <div className="rounded-3xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#111111] p-12 text-center text-muted-foreground shadow-sm flex flex-col items-center">
           <div className="w-16 h-16 bg-gray-50 dark:bg-[#1b1b1c] rounded-2xl flex items-center justify-center mb-4 border border-gray-100 dark:border-[#333333]">
             <Tag className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No promotions yet</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            No promotions yet
+          </h3>
           <p className="text-sm max-w-md mx-auto mb-6">
             Create a discount code to offer specialized pricing to your members or event attendees.
           </p>
@@ -259,7 +269,9 @@ function SpacePromotionsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (confirm(`Are you sure you want to delete promo code ${promo.code}?`)) {
+                            if (
+                              confirm(`Are you sure you want to delete promo code ${promo.code}?`)
+                            ) {
                               deleteMutation.mutate({ data: { id: promo.id } });
                             }
                           }}
@@ -273,7 +285,10 @@ function SpacePromotionsPage() {
                 ))}
                 {filteredPromos.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]">
+                    <td
+                      colSpan={6}
+                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
+                    >
                       <div className="flex flex-col items-center">
                         <Tag className="w-8 h-8 mb-3 text-gray-300 dark:text-[#444444]" />
                         <p>No promotional codes found matching "{searchQuery}".</p>
@@ -311,7 +326,7 @@ function SpacePromotionsPage() {
                 className="font-mono uppercase"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="discount">Discount (%)</Label>
@@ -322,7 +337,9 @@ function SpacePromotionsPage() {
                   min="0"
                   max="100"
                   value={form.discount_percentage}
-                  onChange={(e) => setForm({ ...form, discount_percentage: e.target.value, flat_amount: "" })}
+                  onChange={(e) =>
+                    setForm({ ...form, discount_percentage: e.target.value, flat_amount: "" })
+                  }
                   disabled={!!form.flat_amount}
                 />
               </div>
@@ -334,7 +351,9 @@ function SpacePromotionsPage() {
                   placeholder="e.g. 5000"
                   min="0"
                   value={form.flat_amount}
-                  onChange={(e) => setForm({ ...form, flat_amount: e.target.value, discount_percentage: "" })}
+                  onChange={(e) =>
+                    setForm({ ...form, flat_amount: e.target.value, discount_percentage: "" })
+                  }
                   disabled={!!form.discount_percentage}
                 />
               </div>
@@ -391,4 +410,3 @@ function SpacePromotionsPage() {
     </div>
   );
 }
-

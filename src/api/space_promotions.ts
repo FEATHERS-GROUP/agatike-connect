@@ -22,7 +22,9 @@ export const getSpacePromotions = createServerFn({ method: "POST" })
   .validator((d: { space_id: string }) => d)
   .handler(async (ctx) => {
     const { space_id } = ctx.data;
-    const res = await hasuraRequest<{ space_promotions: any[] }>(GET_SPACE_PROMOTIONS, { space_id });
+    const res = await hasuraRequest<{ space_promotions: any[] }>(GET_SPACE_PROMOTIONS, {
+      space_id,
+    });
     return res.space_promotions || [];
   });
 
@@ -40,7 +42,7 @@ export const createSpacePromotion = createServerFn({ method: "POST" })
     const object = ctx.data;
     const res = await hasuraRequest<{ insert_space_promotions_one: { id: string } }>(
       CREATE_SPACE_PROMOTION,
-      { object }
+      { object },
     );
     return res.insert_space_promotions_one;
   });
@@ -59,7 +61,7 @@ export const updateSpacePromotion = createServerFn({ method: "POST" })
     const { id, object } = ctx.data;
     const res = await hasuraRequest<{ update_space_promotions_by_pk: { id: string } }>(
       UPDATE_SPACE_PROMOTION,
-      { id, object }
+      { id, object },
     );
     return res.update_space_promotions_by_pk;
   });
@@ -78,7 +80,7 @@ export const deleteSpacePromotion = createServerFn({ method: "POST" })
     const { id } = ctx.data;
     const res = await hasuraRequest<{ delete_space_promotions_by_pk: { id: string } }>(
       DELETE_SPACE_PROMOTION,
-      { id }
+      { id },
     );
     return res.delete_space_promotions_by_pk;
   });
@@ -141,9 +143,8 @@ export const incrementPromoUses = createServerFn({ method: "POST" })
   .validator((d: { id: string }) => d)
   .handler(async (ctx) => {
     const { id } = ctx.data;
-    const res = await hasuraRequest<{ update_space_promotions_by_pk: { id: string; uses: number } }>(
-      INCREMENT_USES,
-      { id }
-    );
+    const res = await hasuraRequest<{
+      update_space_promotions_by_pk: { id: string; uses: number };
+    }>(INCREMENT_USES, { id });
     return res.update_space_promotions_by_pk;
   });

@@ -227,7 +227,7 @@ flowchart TD
 
 - **Logic:** Built directly into the custom Staff Portal (`/staff/workspace/$workspaceUserId`), this scanner acts as an all-in-one verification tool.
 - **Unified Scanning Modes:** Staff members can seamlessly toggle between scanning **Event Tickets**, **Venue Passes**, or **Space Subscriptions** (Gym/Coworking memberships) within a single beautiful UI.
-- **Multi-Location Role Constraints:** 
+- **Multi-Location Role Constraints:**
   - Sub-businesses (like physical Gym branches) use the `spaces` and `space_managers` tables.
   - When a staff member logs into the Staff Portal, the app dynamically fetches their assigned branches (`space_managers`).
   - The Scanner automatically restricts the "Location Context" dropdown so a staff member can only log check-ins for the specific physical branches they are authorized to manage, ensuring strict data isolation across multi-location businesses.

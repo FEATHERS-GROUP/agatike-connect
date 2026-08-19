@@ -178,8 +178,8 @@ export const recordSpaceCheckIn = createServerFn({ method: "POST" })
         space_id,
         user_id,
         space_subscription_id,
-        method: method || "qrcode_scan"
-      }
+        method: method || "qrcode_scan",
+      },
     });
     return res.insert_space_check_ins_one;
   });
@@ -206,13 +206,13 @@ export const getSpaceAnalytics = createServerFn({ method: "POST" })
   .handler(async (ctx) => {
     const { space_id, days = 30 } = ctx.data;
     if (!space_id) throw new Error("space_id is required");
-    
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    
+
     const res = await hasuraRequest<any>(GET_SPACE_ANALYTICS, {
       space_id,
-      startDate: startDate.toISOString()
+      startDate: startDate.toISOString(),
     });
     return res;
   });
@@ -261,7 +261,9 @@ export const getSpaceManagersByUser = createServerFn({ method: "POST" })
   .validator((d: { workspace_user_id: string }) => d)
   .handler(async (ctx) => {
     const { workspace_user_id } = ctx.data;
-    const res = await hasuraRequest<{ space_managers: any[] }>(GET_SPACE_MANAGERS_BY_USER, { workspace_user_id });
+    const res = await hasuraRequest<{ space_managers: any[] }>(GET_SPACE_MANAGERS_BY_USER, {
+      workspace_user_id,
+    });
     return res.space_managers;
   });
 

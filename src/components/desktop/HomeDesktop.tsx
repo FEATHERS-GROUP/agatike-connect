@@ -257,7 +257,8 @@ export function HomeDesktop() {
               </span>
             </h1>
             <p className="mt-4 max-w-xl text-muted-foreground md:text-lg">
-              Discover events, places, activities, and experiences across Africa. Find something to do, somewhere to go, and moments worth experiencing.
+              Discover events, places, activities, and experiences across Africa. Find something to
+              do, somewhere to go, and moments worth experiencing.
             </p>
 
             <HeroSearch />
@@ -384,7 +385,9 @@ export function HomeDesktop() {
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h2 className="text-xl font-semibold">Popular creators & venues</h2>
-            <p className="text-sm text-muted-foreground">Discover the people and places behind your next experience.</p>
+            <p className="text-sm text-muted-foreground">
+              Discover the people and places behind your next experience.
+            </p>
           </div>
           <Link to="/organizers" className="text-sm text-primary hover:underline">
             See all →
@@ -507,11 +510,10 @@ export function HomeDesktop() {
           style={{ background: "var(--gradient-warm)" }}
         >
           <div className="relative max-w-2xl text-primary-foreground">
-            <h3 className="text-3xl font-semibold md:text-4xl">
-              Have something people can book?
-            </h3>
+            <h3 className="text-3xl font-semibold md:text-4xl">Have something people can book?</h3>
             <p className="mt-3 opacity-90">
-              List your event, venue, activity, service, or experience on Agatike. Reach new customers and manage your bookings in one place.
+              List your event, venue, activity, service, or experience on Agatike. Reach new
+              customers and manage your bookings in one place.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/dashboard">

@@ -16,7 +16,7 @@ export function ScannerDesktop() {
 
   const handleSimulateScan = async (type: Result) => {
     setResult(type);
-    
+
     if (mode === "space" && (type === "success" || type === "vip")) {
       try {
         // In a real app, these UUIDs would come from the decoded QR code and current context
@@ -24,8 +24,8 @@ export function ScannerDesktop() {
           data: {
             space_id: "00000000-0000-0000-0000-000000000000", // dummy space ID
             user_id: "00000000-0000-0000-0000-000000000000", // dummy user ID
-            method: "qrcode_scan"
-          }
+            method: "qrcode_scan",
+          },
         });
         toast.success("Check-in recorded to database!");
       } catch (err) {
@@ -125,7 +125,7 @@ export function ScannerDesktop() {
               <div className="min-w-0">
                 <p className="font-semibold">Amaka Okafor</p>
                 <p className="text-xs text-white/60">
-                  {mode === "event" 
+                  {mode === "event"
                     ? `Order #AG-48211 · ${result === "vip" ? "VIP Lounge" : "General Admission"} x1`
                     : `Member #1249 · Premium Gym Access`}
                 </p>
@@ -143,17 +143,21 @@ export function ScannerDesktop() {
             </div>
 
             {result === "fail" && mode === "space" && (
-                <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm text-red-200">
-                    <p>Membership Frozen.</p>
-                </div>
+              <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm text-red-200">
+                <p>Membership Frozen.</p>
+              </div>
             )}
 
             <p
               className={`mt-4 rounded-2xl px-3 py-2 text-sm ${result === "fail" ? "bg-red-500/10 text-red-200" : "bg-emerald-500/10 text-emerald-200"}`}
             >
-              {result === "fail" 
-                ? (mode === "event" ? "Ticket already used at 21:14" : "Access Denied — Membership frozen")
-                : (mode === "event" ? "Welcome — entry confirmed" : "Welcome — gym check-in logged")}
+              {result === "fail"
+                ? mode === "event"
+                  ? "Ticket already used at 21:14"
+                  : "Access Denied — Membership frozen"
+                : mode === "event"
+                  ? "Welcome — entry confirmed"
+                  : "Welcome — gym check-in logged"}
             </p>
           </div>
         )}

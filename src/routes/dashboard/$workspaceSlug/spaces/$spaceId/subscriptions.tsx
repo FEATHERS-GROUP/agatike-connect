@@ -191,7 +191,11 @@ function SpaceSubscriptionsPage() {
       const updated = await freezeSpaceSubscription({ data: { id: selectedSub.id, frozen_until } });
       toast.success(isCurrentlyFrozen ? "Membership unfrozen." : "Membership frozen for 30 days.");
       await queryClient.invalidateQueries({ queryKey: ["space_subscriptions", spaceId] });
-      setSelectedSub((prev: any) => ({ ...prev, status: updated.status, frozen_until: updated.frozen_until }));
+      setSelectedSub((prev: any) => ({
+        ...prev,
+        status: updated.status,
+        frozen_until: updated.frozen_until,
+      }));
     } catch (err: any) {
       toast.error(err?.message || "Failed to update freeze status.");
     } finally {
@@ -541,11 +545,13 @@ function SpaceSubscriptionsPage() {
                           <Snowflake className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                              {selectedSub.status === "frozen" ? "Membership Frozen" : "Freeze Membership"}
+                              {selectedSub.status === "frozen"
+                                ? "Membership Frozen"
+                                : "Freeze Membership"}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {selectedSub.status === "frozen" 
-                                ? `Frozen until ${new Date(selectedSub.frozen_until).toLocaleDateString()}` 
+                              {selectedSub.status === "frozen"
+                                ? `Frozen until ${new Date(selectedSub.frozen_until).toLocaleDateString()}`
                                 : "Pause this membership for 30 days. Billing will be suspended."}
                             </p>
                           </div>
@@ -561,7 +567,11 @@ function SpaceSubscriptionsPage() {
                           ) : (
                             <Snowflake className="h-4 w-4" />
                           )}
-                          {isFreezing ? "Updating…" : selectedSub.status === "frozen" ? "Unfreeze" : "Freeze (30 Days)"}
+                          {isFreezing
+                            ? "Updating…"
+                            : selectedSub.status === "frozen"
+                              ? "Unfreeze"
+                              : "Freeze (30 Days)"}
                         </Button>
                       </div>
                     )}

@@ -206,7 +206,7 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
               </select>
             </div>
           </div>
-          
+
           {/* Multi-Location Add-on */}
           <div className="space-y-1.5">
             <Label htmlFor="plan-multi">Multi-Location Access Add-on Price ({currency})</Label>
