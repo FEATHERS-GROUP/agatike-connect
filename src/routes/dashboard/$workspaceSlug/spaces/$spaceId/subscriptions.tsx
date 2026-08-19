@@ -5,6 +5,7 @@ import {
   getSpaceSubscriptionsBySpaceId,
   renewSpaceSubscription,
   cancelSpaceSubscription,
+  freezeSpaceSubscription,
 } from "@/api/space_subscriptions";
 import {
   RefreshCw,
@@ -18,6 +19,7 @@ import {
   XCircle,
   Loader2,
   CheckCircle2,
+  Snowflake,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
@@ -102,6 +104,7 @@ function SpaceSubscriptionsPage() {
   const [isRenewing, setIsRenewing] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isFreezing, setIsFreezing] = useState(false);
 
   const { data: space, isLoading: isSpaceLoading } = useQuery({
     queryKey: ["space", spaceId],
@@ -170,6 +173,29 @@ function SpaceSubscriptionsPage() {
       toast.error(err?.message || "Failed to cancel subscription. Please try again.");
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleFreeze = async () => {
+    if (!selectedSub) return;
+    setIsFreezing(true);
+    try {
+      const isCurrentlyFrozen = selectedSub.status === "frozen";
+      // If frozen, unfreeze by setting frozen_until to null. If active, freeze for 30 days.
+      let frozen_until = null;
+      if (!isCurrentlyFrozen) {
+        const date = new Date();
+        date.setDate(date.getDate() + 30); // Freeze for 30 days by default
+        frozen_until = date.toISOString();
+      }
+      const updated = await freezeSpaceSubscription({ data: { id: selectedSub.id, frozen_until } });
+      toast.success(isCurrentlyFrozen ? "Membership unfrozen." : "Membership frozen for 30 days.");
+      await queryClient.invalidateQueries({ queryKey: ["space_subscriptions", spaceId] });
+      setSelectedSub((prev: any) => ({ ...prev, status: updated.status, frozen_until: updated.frozen_until }));
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update freeze status.");
+    } finally {
+      setIsFreezing(false);
     }
   };
 
@@ -506,6 +532,37 @@ function SpaceSubscriptionsPage() {
                             {isCancelling ? "Cancelling…" : "Cancel"}
                           </Button>
                         </div>
+                      </div>
+                    )}
+
+                    {(renewalState === "normal" || selectedSub.status === "frozen") && (
+                      <div className="rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4 mt-4">
+                        <div className="flex items-start gap-3">
+                          <Snowflake className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                              {selectedSub.status === "frozen" ? "Membership Frozen" : "Freeze Membership"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {selectedSub.status === "frozen" 
+                                ? `Frozen until ${new Date(selectedSub.frozen_until).toLocaleDateString()}` 
+                                : "Pause this membership for 30 days. Billing will be suspended."}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="mt-3 w-full h-10 gap-2 text-sm font-semibold rounded-xl border-blue-500/40 text-blue-500 hover:bg-blue-500/10"
+                          disabled={isFreezing}
+                          onClick={handleFreeze}
+                        >
+                          {isFreezing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Snowflake className="h-4 w-4" />
+                          )}
+                          {isFreezing ? "Updating…" : selectedSub.status === "frozen" ? "Unfreeze" : "Freeze (30 Days)"}
+                        </Button>
                       </div>
                     )}
 

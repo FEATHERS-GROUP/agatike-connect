@@ -1,13 +1,38 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { ScanLine, Check, X, Wifi, WifiOff, Crown, ArrowLeft } from "lucide-react";
+import { ScanLine, Check, X, Wifi, WifiOff, Crown, ArrowLeft, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { recordSpaceCheckIn } from "@/api/spaces";
+import { toast } from "sonner";
 
 type Result = "idle" | "success" | "fail" | "vip";
+type ScannerMode = "event" | "space";
 
 export function ScannerDesktop() {
   const [result, setResult] = useState<Result>("idle");
   const [online, setOnline] = useState(true);
+  const [mode, setMode] = useState<ScannerMode>("event");
+  const { workspaceSlug } = useParams({ strict: false }) as any;
+
+  const handleSimulateScan = async (type: Result) => {
+    setResult(type);
+    
+    if (mode === "space" && (type === "success" || type === "vip")) {
+      try {
+        // In a real app, these UUIDs would come from the decoded QR code and current context
+        await recordSpaceCheckIn({
+          data: {
+            space_id: "00000000-0000-0000-0000-000000000000", // dummy space ID
+            user_id: "00000000-0000-0000-0000-000000000000", // dummy user ID
+            method: "qrcode_scan"
+          }
+        });
+        toast.success("Check-in recorded to database!");
+      } catch (err) {
+        console.error("Mock DB insert failed (expected if dummy UUIDs)", err);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[oklch(0.1_0.01_50)] text-white">
@@ -19,19 +44,30 @@ export function ScannerDesktop() {
           >
             <ArrowLeft className="h-4 w-4" /> Dashboard
           </Link>
-          <button
-            onClick={() => setOnline(!online)}
-            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs ${online ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"}`}
-          >
-            {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-            {online ? "Online" : "Offline mode"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setMode(mode === "event" ? "space" : "event")}
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs bg-blue-500/15 text-blue-300"
+            >
+              {mode === "event" ? "Event Mode" : "Space Mode"}
+            </button>
+            <button
+              onClick={() => setOnline(!online)}
+              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs ${online ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"}`}
+            >
+              {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+            </button>
+          </div>
         </header>
 
         <div className="mt-6">
           <p className="text-xs uppercase tracking-widest text-white/50">Now scanning</p>
-          <h1 className="text-xl font-semibold">Afrobeats Night Live</h1>
-          <p className="text-xs text-white/60">Eko Convention Centre · Door 2</p>
+          <h1 className="text-xl font-semibold">
+            {mode === "event" ? "Afrobeats Night Live" : "Downtown Gym & Coworking"}
+          </h1>
+          <p className="text-xs text-white/60">
+            {mode === "event" ? "Eko Convention Centre · Door 2" : "Main Reception"}
+          </p>
         </div>
 
         {/* Scanner viewport */}
@@ -89,63 +125,56 @@ export function ScannerDesktop() {
               <div className="min-w-0">
                 <p className="font-semibold">Amaka Okafor</p>
                 <p className="text-xs text-white/60">
-                  Order #AG-48211 · {result === "vip" ? "VIP Lounge" : "General Admission"} x1
+                  {mode === "event" 
+                    ? `Order #AG-48211 · ${result === "vip" ? "VIP Lounge" : "General Admission"} x1`
+                    : `Member #1249 · Premium Gym Access`}
                 </p>
               </div>
-              {result === "vip" && (
+              {result === "vip" && mode === "event" && (
                 <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-1 text-xs text-amber-300">
                   <Crown className="h-3 w-3" /> VIP
                 </span>
               )}
+              {result === "success" && mode === "space" && (
+                <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-blue-400/15 px-2 py-1 text-xs text-blue-300">
+                  <Dumbbell className="h-3 w-3" /> Active
+                </span>
+              )}
             </div>
 
-            {result === "vip" && (
-              <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                <p className="text-xs uppercase tracking-widest text-white/50 mb-2">
-                  VIP Privileges
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/70">Parking Access</span>
-                  <span className="font-semibold text-emerald-300">Yes</span>
+            {result === "fail" && mode === "space" && (
+                <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm text-red-200">
+                    <p>Membership Frozen.</p>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/70">License Plate</span>
-                  <span className="font-mono bg-white/10 px-2 py-0.5 rounded text-amber-300">
-                    RAA 123 A
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/70">Backstage Pass</span>
-                  <span className="font-semibold text-emerald-300">Yes</span>
-                </div>
-              </div>
             )}
 
             <p
               className={`mt-4 rounded-2xl px-3 py-2 text-sm ${result === "fail" ? "bg-red-500/10 text-red-200" : "bg-emerald-500/10 text-emerald-200"}`}
             >
-              {result === "fail" ? "Ticket already used at 21:14" : "Welcome — entry confirmed"}
+              {result === "fail" 
+                ? (mode === "event" ? "Ticket already used at 21:14" : "Access Denied — Membership frozen")
+                : (mode === "event" ? "Welcome — entry confirmed" : "Welcome — gym check-in logged")}
             </p>
           </div>
         )}
 
         <div className="mt-auto grid grid-cols-3 gap-2 pt-6">
           <Button
-            onClick={() => setResult("success")}
+            onClick={() => handleSimulateScan("success")}
             className="h-14 rounded-2xl"
             style={{ background: "var(--gradient-primary)" }}
           >
             Valid
           </Button>
           <Button
-            onClick={() => setResult("vip")}
+            onClick={() => handleSimulateScan("vip")}
             variant="outline"
             className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10"
           >
-            VIP
+            {mode === "event" ? "VIP" : "Class"}
           </Button>
           <Button
-            onClick={() => setResult("fail")}
+            onClick={() => handleSimulateScan("fail")}
             variant="outline"
             className="h-14 rounded-2xl border-white/20 bg-transparent text-white hover:bg-white/10"
           >

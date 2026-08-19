@@ -157,3 +157,121 @@ export const updateSpace = createServerFn({ method: "POST" })
     });
     return res.update_spaces_by_pk;
   });
+
+// --- ANALYTICS & CHECK-INS ---
+
+const RECORD_CHECK_IN = `
+  mutation RecordCheckIn($object: space_check_ins_insert_input!) {
+    insert_space_check_ins_one(object: $object) {
+      id
+      check_in_time
+    }
+  }
+`;
+
+export const recordSpaceCheckIn = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => {
+    const { space_id, user_id, space_subscription_id, method } = ctx.data;
+    const res = await hasuraRequest<any>(RECORD_CHECK_IN, {
+      object: {
+        space_id,
+        user_id,
+        space_subscription_id,
+        method: method || "qrcode_scan"
+      }
+    });
+    return res.insert_space_check_ins_one;
+  });
+
+const GET_SPACE_ANALYTICS = `
+  query GetSpaceAnalytics($space_id: uuid!, $startDate: timestamptz!) {
+    space_check_ins(where: { space_id: { _eq: $space_id }, check_in_time: { _gte: $startDate } }) {
+      check_in_time
+    }
+    invoices(where: { space_id: { _eq: $space_id }, created_at: { _gte: $startDate } }) {
+      amount
+      created_at
+      status
+    }
+    space_subscriptions(where: { space_id: { _eq: $space_id }, created_at: { _gte: $startDate } }) {
+      created_at
+      status
+    }
+  }
+`;
+
+export const getSpaceAnalytics = createServerFn({ method: "POST" })
+  .validator((d: { space_id: string; days?: number }) => d)
+  .handler(async (ctx) => {
+    const { space_id, days = 30 } = ctx.data;
+    if (!space_id) throw new Error("space_id is required");
+    
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    const res = await hasuraRequest<any>(GET_SPACE_ANALYTICS, {
+      space_id,
+      startDate: startDate.toISOString()
+    });
+    return res;
+  });
+
+// --- STAFF MANAGERS ---
+
+const GET_SPACE_MANAGERS = `
+  query GetSpaceManagers($space_id: uuid!) {
+    space_managers(where: { space_id: { _eq: $space_id } }, order_by: { created_at: desc }) {
+      id
+      workspace_user_id
+      role
+      created_at
+      workspace_user {
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const getSpaceManagers = createServerFn({ method: "POST" })
+  .validator((d: { space_id: string }) => d)
+  .handler(async (ctx) => {
+    const { space_id } = ctx.data;
+    const res = await hasuraRequest<{ space_managers: any[] }>(GET_SPACE_MANAGERS, { space_id });
+    return res.space_managers;
+  });
+
+const ADD_SPACE_MANAGER = `
+  mutation AddSpaceManager($object: space_managers_insert_input!) {
+    insert_space_managers_one(object: $object) {
+      id
+    }
+  }
+`;
+
+export const addSpaceManager = createServerFn({ method: "POST" })
+  .validator((d: { space_id: string; workspace_user_id: string; role: string }) => d)
+  .handler(async (ctx) => {
+    const res = await hasuraRequest<{ insert_space_managers_one: any }>(ADD_SPACE_MANAGER, {
+      object: ctx.data,
+    });
+    return res.insert_space_managers_one;
+  });
+
+const REMOVE_SPACE_MANAGER = `
+  mutation RemoveSpaceManager($id: uuid!) {
+    delete_space_managers_by_pk(id: $id) {
+      id
+    }
+  }
+`;
+
+export const removeSpaceManager = createServerFn({ method: "POST" })
+  .validator((d: { id: string }) => d)
+  .handler(async (ctx) => {
+    const res = await hasuraRequest<{ delete_space_managers_by_pk: any }>(REMOVE_SPACE_MANAGER, {
+      id: ctx.data.id,
+    });
+    return res.delete_space_managers_by_pk;
+  });

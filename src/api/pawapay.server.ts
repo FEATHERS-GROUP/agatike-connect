@@ -376,7 +376,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             }
 
             if (firstAtt) {
-              const { sendAttendeeEmailRaw } = await import("./email");
+              const { sendAttendeeEmailRaw } = await import("./email.server");
 
               const emailAddresses = [
                 ...new Set(confirmedAttendees.map((a: any) => a.email).filter(Boolean)),
@@ -520,7 +520,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               }
             } else if (confirmedOrders.length > 0 && guestEmail) {
               // Product-only purchase email receipt
-              const { sendAttendeeEmailRaw } = await import("./email");
+              const { sendAttendeeEmailRaw } = await import("./email.server");
 
               const attachments: any[] = [];
               let productPdfBase64: string | undefined = undefined;

@@ -82,7 +82,7 @@ function DashboardLayout() {
   const isEventWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/events\/[^/]+/);
   const isExperienceWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/experiences\/[^/]+/);
   const isVenueWorkspace = location.pathname.match(/^\/dashboard\/[^/]+\/venues\/[^/]+/);
-  const isSpaceWorkspace = activeWorkspace?.type === "space";
+  const isSpaceWorkspace = activeWorkspace?.type === "space" || location.pathname.match(/^\/dashboard\/[^/]+\/spaces\/[^/]+/);
   const isTransportWorkspace = activeWorkspace?.type === "transport";
   const isCinemaWorkspace = activeWorkspace?.type === "cinema";
   const isGenericDesigner = !!location.pathname.match(/^\/dashboard\/[^/]+\/designer$/);

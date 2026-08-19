@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { executeSendWorkspaceUserInviteEmail, executeSendProjectAccessEmail } from "./email";
+import { executeSendWorkspaceUserInviteEmail } from "./email.server";
+import { executeSendProjectAccessEmail } from "./email.server";
 import * as bcrypt from "bcryptjs";
 import { hasuraRequest } from "./graphql.server";
 import { getSession } from "./auth";

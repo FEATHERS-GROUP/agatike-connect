@@ -17,6 +17,7 @@ const GET_SPACE_CLASSES = `
       allowed_plan_names
       cover_url
       status
+      instructor_id
       created_at
     }
   }
@@ -33,7 +34,7 @@ export const getSpaceClasses = createServerFn({ method: "POST" })
 const CREATE_SPACE_CLASS = `
   mutation CreateSpaceClass($object: space_classes_insert_input!) {
     insert_space_classes_one(object: $object) {
-      id name description duration_minutes max_capacity price is_free_with_subscription status
+      id name description duration_minutes max_capacity price is_free_with_subscription status instructor_id
     }
   }
 `;
@@ -50,7 +51,7 @@ export const createSpaceClass = createServerFn({ method: "POST" })
 const UPDATE_SPACE_CLASS = `
   mutation UpdateSpaceClass($id: uuid!, $object: space_classes_set_input!) {
     update_space_classes_by_pk(pk_columns: { id: $id }, _set: $object) {
-      id name status
+      id name status instructor_id
     }
   }
 `;
