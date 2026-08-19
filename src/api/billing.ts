@@ -621,6 +621,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         products: res.products_aggregate?.aggregate?.count || 0,
         campaigns: res.campaigns_aggregate?.aggregate?.count || 0,
         gift_cards: res.gift_cards_aggregate?.aggregate?.count || 0,
+        custom_apps: res.workspace_apps_aggregate?.aggregate?.count || 0,
         punch_cards: res.punch_cards_aggregate?.aggregate?.count || 0,
         movies: res.cinema_movies_aggregate?.aggregate?.count || 0,
         venue_designs: res.venue_projects_aggregate?.aggregate?.count || 0,
@@ -636,7 +637,6 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         comments: 0,
         membership_plans: 0,
         locations: 0,
-        custom_apps: res.workspace_apps_aggregate?.aggregate?.count || 0,
       };
     } catch (e) {
       console.error("Failed to fetch workspace usage stats", e);
@@ -653,6 +653,7 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         products: 0,
         campaigns: 0,
         gift_cards: 0,
+        custom_apps: 0,
         punch_cards: 0,
         movies: 0,
         venue_designs: 0,
@@ -666,7 +667,6 @@ export const getWorkspaceUsageStats = createServerFn({ method: "POST" })
         comments: 0,
         membership_plans: 0,
         locations: 0,
-        custom_apps: 0,
       };
     }
   });
