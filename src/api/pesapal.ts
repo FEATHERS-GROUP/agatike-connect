@@ -51,6 +51,7 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
       reason,
       shortfall = 0,
       pageSlug,
+      promoId,
     } = ctx.data;
 
     const depositId = crypto.randomUUID();
@@ -260,7 +261,7 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-        description: pageSlug ? `Agatike::${pageSlug}` : "Agatike",
+        description: `Agatike${pageSlug ? `::${pageSlug}` : ""}${promoId ? `::PROMO::${promoId}` : ""}`,
       },
     );
 

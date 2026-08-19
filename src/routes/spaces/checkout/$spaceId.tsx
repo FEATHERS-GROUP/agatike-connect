@@ -216,17 +216,13 @@ function CheckoutPage() {
         },
       } as any);
 
-      // If promo was applied, increment uses NOW before redirecting/polling
-      if (appliedPromo) {
-        await incrementPromoUses({ data: { id: appliedPromo.id } } as any).catch(console.error);
-      }
-
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
           data: {
             amount: paymentDetails?.convertedAmount || finalPriceNum,
             baseAmount: finalPriceNum,
             baseCurrency: currency,
+            promoId: appliedPromo?.id,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,

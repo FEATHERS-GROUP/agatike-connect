@@ -45,6 +45,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               currency
               payout_method
               payout_account
+              description
             }
           }
         }
@@ -75,6 +76,19 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
       }
 
       const tx = res.update_wallet_transactions?.returning?.[0];
+
+      // --- Promo Code Extraction ---
+      if (tx?.status === "completed" && tx?.description) {
+        const promoMatch = tx.description.match(/::PROMO::([a-zA-Z0-9-]+)/);
+        if (promoMatch && promoMatch[1]) {
+          try {
+            const { incrementPromoUses } = await import("./space_promotions");
+            await incrementPromoUses({ data: { id: promoMatch[1] } } as any);
+          } catch (e) {
+            console.error("Failed to increment promo use from webhook", e);
+          }
+        }
+      }
 
       let wsSlug = "";
       let wsName = "";
