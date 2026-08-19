@@ -242,6 +242,29 @@ export const getSpaceManagers = createServerFn({ method: "POST" })
     return res.space_managers;
   });
 
+const GET_SPACE_MANAGERS_BY_USER = `
+  query GetSpaceManagersByUser($workspace_user_id: uuid!) {
+    space_managers(where: { workspace_user_id: { _eq: $workspace_user_id } }) {
+      id
+      role
+      space {
+        id
+        name
+        type
+        cover_url
+      }
+    }
+  }
+`;
+
+export const getSpaceManagersByUser = createServerFn({ method: "POST" })
+  .validator((d: { workspace_user_id: string }) => d)
+  .handler(async (ctx) => {
+    const { workspace_user_id } = ctx.data;
+    const res = await hasuraRequest<{ space_managers: any[] }>(GET_SPACE_MANAGERS_BY_USER, { workspace_user_id });
+    return res.space_managers;
+  });
+
 const ADD_SPACE_MANAGER = `
   mutation AddSpaceManager($object: space_managers_insert_input!) {
     insert_space_managers_one(object: $object) {

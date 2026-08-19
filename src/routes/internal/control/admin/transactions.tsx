@@ -2,9 +2,9 @@ import { createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
 import * as LucideIcons from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { WithdrawalsTable } from "./components/WithdrawalsTable";
-import { InvoicesTable } from "./components/InvoicesTable";
-import { WalletTable } from "./components/WalletTable";
+import { WithdrawalsTable } from "./components/-WithdrawalsTable";
+import { InvoicesTable } from "./components/-InvoicesTable";
+import { WalletTable } from "./components/-WalletTable";
 import {
   getAllPlatformTransactions,
   getAdminWithdrawals,

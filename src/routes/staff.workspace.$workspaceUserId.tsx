@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspacesForStaffUser } from "@/api/staff_portal_workspaces";
 import { getWorkspaceApps } from "@/api/app-studio";
+import { getSpaceManagersByUser } from "@/api/spaces";
 import {
   ArrowLeft,
   Wallet,
@@ -12,8 +13,10 @@ import {
   UserCheck,
   Shield,
   ChevronDown,
+  ScanLine,
 } from "lucide-react";
 import { ModuleModalWrapper } from "@/components/staff-portal/ModuleModalWrapper";
+import { StaffScanner } from "@/components/staff-portal/StaffScanner";
 import { useSubscriptionLimits } from "@/hooks/useSubscriptionLimits";
 
 export const Route = createFileRoute("/staff/workspace/$workspaceUserId")({
@@ -55,6 +58,12 @@ function StaffWorkspaceDashboard() {
   const { data: workspaces = [] } = useQuery({
     queryKey: ["staff-workspaces", workspaceUserId],
     queryFn: () => getWorkspacesForStaffUser({ data: { user_id: workspaceUserId } } as any),
+    enabled: !!authState,
+  });
+
+  const { data: spaceManagers = [] } = useQuery({
+    queryKey: ["space-managers", workspaceUserId],
+    queryFn: () => getSpaceManagersByUser({ data: { workspace_user_id: workspaceUserId } }),
     enabled: !!authState,
   });
 
@@ -269,6 +278,7 @@ function StaffWorkspaceDashboard() {
               CalendarCheck,
             )}
             {renderModuleButton("members", "Team Members", "Workspace staff directory", UserCheck)}
+            {renderModuleButton("scanner", "Scanner", "Scan tickets & passes", ScanLine)}
           </div>
         )}
       </main>
@@ -321,6 +331,11 @@ function StaffWorkspaceDashboard() {
             <h3 className="text-lg font-bold">Staff Directory</h3>
             <p className="text-muted-foreground text-sm">Directory loading coming soon...</p>
           </div>
+        </ModuleModalWrapper>
+      )}
+      {activeModal === "scanner" && (
+        <ModuleModalWrapper title="Scanning System" onClose={() => setActiveModal(null)}>
+          <StaffScanner spaceManagers={spaceManagers} />
         </ModuleModalWrapper>
       )}
     </div>
