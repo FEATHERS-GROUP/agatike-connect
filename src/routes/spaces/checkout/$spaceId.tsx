@@ -216,6 +216,11 @@ function CheckoutPage() {
         },
       } as any);
 
+      // If promo was applied, increment uses NOW before redirecting/polling
+      if (appliedPromo) {
+        await incrementPromoUses({ data: { id: appliedPromo.id } } as any).catch(console.error);
+      }
+
       if (isPawaPay) {
         const pawaRes = await initiatePawaPayDeposit({
           data: {
@@ -244,13 +249,6 @@ function CheckoutPage() {
         return; // Don't send emails or redirect yet
       }
 
-      // Members now have membership_ids assigned by the server
-      const savedMembers: any[] = subscription?.team_members || [];
-
-      // If promo was applied, increment uses
-      if (appliedPromo) {
-        await incrementPromoUses({ data: { id: appliedPromo.id } } as any).catch(console.error);
-      }
       const invoiceDate = new Date().toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "long",
@@ -284,6 +282,8 @@ function CheckoutPage() {
             year: "numeric",
           })
         : formData.startDate;
+
+      const savedMembers = subscription?.team_members || teamMembers;
 
       if (bookingType === "group") {
         // Send one company email with details
@@ -358,9 +358,6 @@ function CheckoutPage() {
           } as any);
           if (status?.status === "completed") {
             setIsPollingPawaPay(false);
-            if (appliedPromo) {
-              await incrementPromoUses({ data: { id: appliedPromo.id } } as any).catch(console.error);
-            }
             navigate({ to: `/spaces/success/${spaceId}`, search: { email: formData.email } });
           } else if (status?.status === "failed") {
             setIsPollingPawaPay(false);

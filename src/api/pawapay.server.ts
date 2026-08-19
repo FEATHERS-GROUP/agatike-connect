@@ -653,7 +653,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 sendSubscriptionInvoiceEmailRaw,
                 sendCompanyRosterEmailRaw,
                 sendMemberWelcomeEmailRaw,
-              } = await import("./email");
+              } = await import("./email.server");
 
               const currency =
                 sub.space?.workspace?.currency ||
