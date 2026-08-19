@@ -157,7 +157,7 @@ function SpaceSettingsPage() {
   }
 
   return (
-    <div className="space-y-8 pb-10 max-w-4xl">
+    <div className="space-y-8 pb-10 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Space Settings</h2>
