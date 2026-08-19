@@ -108,6 +108,7 @@ function BillingOverview() {
     },
     { label: "Products", limitKey: "max_products", statVal: workspaceStats?.products },
     { label: "Campaigns", limitKey: "max_campaigns", statVal: workspaceStats?.campaigns },
+    { label: "App Builders", limitKey: "max_custom_apps", statVal: workspaceStats?.custom_apps },
     { label: "Gift Cards", limitKey: "max_gift_cards", statVal: workspaceStats?.gift_cards },
     { label: "Punch Cards", limitKey: "max_punch_cards", statVal: workspaceStats?.punch_cards },
     { label: "Movies", limitKey: "max_movies", statVal: workspaceStats?.movies },

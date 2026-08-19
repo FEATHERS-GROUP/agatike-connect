@@ -42,7 +42,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
       if (savedCart) {
         try {
           setCart(JSON.parse(savedCart));
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   }, [venue?.id]);
@@ -77,6 +77,8 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
   const avgRating = feedbackData?.aggregate?.avg?.rating
     ? parseFloat(feedbackData.aggregate.avg.rating).toFixed(1)
     : "N/A";
+
+  const currency = venue.workspace?.currency;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -196,7 +198,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                           Session:{" "}
                           {formatCurrency(
                             facility.pricing.per_session_rate,
-                            venue.currency || "RWF",
+                            currency,
                           )}
                           {facility.duration_minutes && ` (${facility.duration_minutes} mins)`}
                         </p>
@@ -204,13 +206,13 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                       {facility.pricing?.hourly_rate && (
                         <p>
                           Hourly:{" "}
-                          {formatCurrency(facility.pricing.hourly_rate, venue.currency || "RWF")}
+                          {formatCurrency(facility.pricing.hourly_rate, currency)}
                         </p>
                       )}
                       {facility.pricing?.daily_rate && (
                         <p>
                           Daily:{" "}
-                          {formatCurrency(facility.pricing.daily_rate, venue.currency || "RWF")}
+                          {formatCurrency(facility.pricing.daily_rate, currency)}
                         </p>
                       )}
                       {facility.type === "shared_access" && facility.max_capacity && (
@@ -304,7 +306,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
             {venue.rental_model === "ENTIRE_VENUE"
               ? `Rent this venue for your exclusive use.`
               : venue.entrance_type === "consumable"
-                ? `Includes a ${formatCurrency(venue.consumable_value || 0, venue.currency || "RWF")} consumable voucher.`
+                ? `Includes a ${formatCurrency(venue.consumable_value || 0, currency)} consumable voucher.`
                 : venue.entrance_type === "free"
                   ? "General admission is free."
                   : "Book your access in advance"}
@@ -316,7 +318,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                 <span className="text-muted-foreground text-sm font-medium">Standard Entrance</span>
                 <span className="font-bold text-primary">
                   {venue.entrance_fee > 0
-                    ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                    ? formatCurrency(venue.entrance_fee, currency)
                     : "Free"}
                 </span>
               </div>
@@ -330,7 +332,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                 <div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-secondary/30">
                   <span className="text-muted-foreground text-sm font-medium">Starting from</span>
                   <span className="font-bold text-primary">
-                    {formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")}
+                    {formatCurrency(venue.pricing_tiers[0].amount, currency)}
                   </span>
                 </div>
               </div>
@@ -431,7 +433,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
 
         <EventMerch
           activeMerch={activeProducts}
-          currencyCode={venue.currency || "RWF"}
+          currencyCode={currency}
           cart={cart}
           setCart={setCart}
         />
@@ -464,7 +466,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                   <span className="text-muted-foreground font-medium">Standard Entrance</span>
                   <span className="font-bold text-foreground">
                     {venue.entrance_fee > 0
-                      ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                      ? formatCurrency(venue.entrance_fee, currency)
                       : "Free"}
                   </span>
                 </div>
@@ -477,7 +479,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                     >
                       <span className="text-muted-foreground font-medium">{tier.name}</span>
                       <span className="font-bold text-foreground">
-                        {formatCurrency(tier.amount, venue.currency || "RWF")}
+                        {formatCurrency(tier.amount, currency)}
                       </span>
                     </div>
                   ))}
@@ -496,7 +498,7 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                   >
                     <span className="text-muted-foreground font-medium">{tier.name}</span>
                     <span className="font-bold text-foreground">
-                      {formatCurrency(tier.amount, venue.currency || "RWF")}
+                      {formatCurrency(tier.amount, currency)}
                     </span>
                   </div>
                 ))}
@@ -512,10 +514,10 @@ export function VenueDetailsMobile({ venue }: { venue: any }) {
                 <span className="text-xl font-bold text-foreground">
                   {venue.rental_model === "ENTIRE_VENUE"
                     ? venue.pricing_tiers && venue.pricing_tiers.length > 0
-                      ? formatCurrency(venue.pricing_tiers[0].amount, venue.currency || "RWF")
+                      ? formatCurrency(venue.pricing_tiers[0].amount, currency)
                       : "Free"
                     : venue.entrance_fee > 0
-                      ? formatCurrency(venue.entrance_fee, venue.currency || "RWF")
+                      ? formatCurrency(venue.entrance_fee, currency)
                       : "Free"}
                 </span>
               </div>

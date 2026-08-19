@@ -6,6 +6,7 @@ import {
   updateSpaceClass,
   deleteSpaceClass,
 } from "@/api/space_classes";
+import { getWorkspaceUsers } from "@/api/workspace_users";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,6 +42,7 @@ const EMPTY_FORM = {
   price: 0,
   is_free_with_subscription: true,
   status: "active",
+  instructor_id: "",
 };
 
 function ClassesPage() {
@@ -51,6 +53,11 @@ function ClassesPage() {
     queryKey: ["space_classes", spaceId],
     queryFn: () => getSpaceClasses({ data: { space_id: spaceId } }),
     enabled: !!spaceId,
+  });
+
+  const { data: staff = [] } = useQuery({
+    queryKey: ["workspace_users"],
+    queryFn: () => getWorkspaceUsers(),
   });
 
   const [showDialog, setShowDialog] = useState(false);
@@ -101,16 +108,21 @@ function ClassesPage() {
       price: cls.price,
       is_free_with_subscription: cls.is_free_with_subscription,
       status: cls.status,
+      instructor_id: cls.instructor_id || "",
     });
     setShowDialog(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = {
+      ...form,
+      instructor_id: form.instructor_id === "" ? null : form.instructor_id,
+    };
     if (editTarget) {
-      updateMutation.mutate({ data: { id: editTarget.id, object: form } });
+      updateMutation.mutate({ data: { id: editTarget.id, object: payload } });
     } else {
-      createMutation.mutate({ data: { object: { ...form, space_id: spaceId } } });
+      createMutation.mutate({ data: { object: { ...payload, space_id: spaceId } } });
     }
   };
 
@@ -304,6 +316,21 @@ function ClassesPage() {
                   <option value="archived">Archived</option>
                 </select>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Instructor (Optional)</label>
+              <select
+                value={form.instructor_id}
+                onChange={(e) => setForm((f) => ({ ...f, instructor_id: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">-- No Instructor Assigned --</option>
+                {staff.map((u: any) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name || u.email}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg border border-border/50">
               <input

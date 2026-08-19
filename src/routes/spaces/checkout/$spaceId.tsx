@@ -10,6 +10,7 @@ import {
   sendMemberWelcomeEmail,
 } from "@/api/email";
 import { createInvoiceRecord } from "@/api/invoices";
+import { validateSpacePromotion, incrementPromoUses } from "@/api/space_promotions";
 import { Navbar } from "@/components/site/Navbar";
 import { Button } from "@/components/ui/button";
 import { PaymentModal } from "@/components/shared/PaymentModal";
@@ -31,6 +32,7 @@ import {
   Trash2,
   Users,
   ChevronUp,
+  Tag,
 } from "lucide-react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
@@ -101,17 +103,58 @@ function CheckoutPage() {
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
 
+  // Promo Code State
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoError, setPromoError] = useState("");
+
   const planName = search.plan || "Custom Plan";
   const planPrice = search.price || "Contact for price";
   const billingCycle = search.cycle || "Monthly";
-  const currency = space?.currency || "RWF";
+  const currency = space?.workspace?.currency;
 
   // Calculate price dynamically based on group size
   const parsedPrice = parseInt(planPrice.replace(/[^0-9]/g, "")) || 0;
   const numMembers = bookingType === "group" ? Math.max(1, teamMembers.length) : 1;
-  const finalPriceNum = parsedPrice * numMembers;
+  const basePriceNum = parsedPrice * numMembers;
+
+  let discountAmount = 0;
+  if (appliedPromo && basePriceNum > 0) {
+    if (appliedPromo.flat_amount) {
+      discountAmount = appliedPromo.flat_amount;
+    } else if (appliedPromo.discount_percentage) {
+      discountAmount = basePriceNum * (appliedPromo.discount_percentage / 100);
+    }
+  }
+
+  const finalPriceNum = Math.max(0, basePriceNum - discountAmount);
   const finalPriceString =
-    finalPriceNum > 0 ? `${currency} ${finalPriceNum.toLocaleString()}` : planPrice;
+    finalPriceNum > 0 ? `${currency} ${finalPriceNum.toLocaleString()}` : (discountAmount > 0 ? "FREE" : planPrice);
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim()) return;
+    setIsApplyingPromo(true);
+    setPromoError("");
+    try {
+      const promo = await validateSpacePromotion({
+        data: { code: promoCodeInput.trim().toUpperCase(), space_id: spaceId },
+      } as any);
+      setAppliedPromo(promo);
+      setPromoCodeInput("");
+    } catch (e: any) {
+      setPromoError(e.message || "Invalid promo code");
+      setAppliedPromo(null);
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoCodeInput("");
+    setPromoError("");
+  };
 
   const handleAddMember = () => {
     setTeamMembers([...teamMembers, { name: "", email: "", phone: "", gender: "", handle: "" }]);
@@ -179,6 +222,7 @@ function CheckoutPage() {
             amount: paymentDetails?.convertedAmount || finalPriceNum,
             baseAmount: finalPriceNum,
             baseCurrency: currency,
+            promoId: appliedPromo?.id,
             phone: paymentDetails!.phone,
             network: paymentDetails!.network,
             currency: paymentDetails?.currency || currency,
@@ -201,8 +245,6 @@ function CheckoutPage() {
         return; // Don't send emails or redirect yet
       }
 
-      // Members now have membership_ids assigned by the server
-      const savedMembers: any[] = subscription?.team_members || [];
       const invoiceDate = new Date().toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "long",
@@ -231,11 +273,13 @@ function CheckoutPage() {
 
       const formattedStart = formData.startDate
         ? new Date(formData.startDate).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          })
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
         : formData.startDate;
+
+      const savedMembers = subscription?.team_members || teamMembers;
 
       if (bookingType === "group") {
         // Send one company email with details
@@ -448,9 +492,57 @@ function CheckoutPage() {
           <span className="font-medium">{formData.startDate || "Not selected"}</span>
         </div>
 
+        {discountAmount > 0 && (
+          <div className="flex justify-between items-center text-sm text-emerald-500 font-medium">
+            <span>Discount ({appliedPromo?.code})</span>
+            <span>-{currency} {discountAmount.toLocaleString()}</span>
+          </div>
+        )}
         <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
           <span className="font-semibold">Total Due Today</span>
           <span className="text-xl font-bold text-primary">{finalPriceString}</span>
+        </div>
+
+        {/* Promo Code Input */}
+        <div className="mt-4">
+          {appliedPromo ? (
+            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  Code <span className="font-bold">{appliedPromo.code}</span> applied!
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={removePromo}
+                className="text-xs text-muted-foreground hover:text-destructive"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Promo Code"
+                  value={promoCodeInput}
+                  onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                  className="bg-background h-10"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 px-4 shrink-0"
+                  onClick={handleApplyPromo}
+                  disabled={!promoCodeInput.trim() || isApplyingPromo}
+                >
+                  {isApplyingPromo ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                </Button>
+              </div>
+              {promoError && <p className="text-xs text-destructive">{promoError}</p>}
+            </div>
+          )}
         </div>
       </div>
 

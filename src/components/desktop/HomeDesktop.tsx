@@ -242,10 +242,10 @@ export function HomeDesktop() {
 
           <div className="relative mx-auto flex h-full max-w-7xl flex-col justify-end px-6 pb-14">
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> Trending across Africa this week
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> What's happening on Agatike
             </span>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight md:text-6xl">
-              Live the moments that{" "}
+              Discover. Book.{" "}
               <span
                 style={{
                   background: "var(--gradient-primary)",
@@ -253,13 +253,11 @@ export function HomeDesktop() {
                   color: "transparent",
                 }}
               >
-                move the culture.
+                Experience.
               </span>
             </h1>
             <p className="mt-4 max-w-xl text-muted-foreground md:text-lg">
-              Discover the pulse of Africa. Grab tickets to vibrant festivals, unforgettable
-              nightlife, and thrilling sports, then relive every magical moment through exclusive
-              stories and event highlights.
+              Discover events, places, activities, and experiences across Africa. Find something to do, somewhere to go, and moments worth experiencing.
             </p>
 
             <HeroSearch />
@@ -271,9 +269,9 @@ export function HomeDesktop() {
       <section className="mx-auto max-w-7xl px-6 pt-10">
         <div className="mb-4 flex items-end justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Stories from recent events</h2>
+            <h2 className="text-xl font-semibold">Moments from the community</h2>
             <p className="text-sm text-muted-foreground">
-              Live moments from organizers you'll love.
+              Discover moments, stories, photos, and experiences shared by the Agatike community.
             </p>
           </div>
           <Link to="/feed" className="text-sm text-primary hover:underline">
@@ -300,7 +298,7 @@ export function HomeDesktop() {
       </section>
 
       {/* Trending */}
-      <Section title="Trending events" subtitle="What everyone's talking about right now">
+      <Section title="Trending experiences" subtitle="What people are discovering right now">
         {trending.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/40 bg-card rounded-3xl text-center shadow-[var(--shadow-card)]">
             <span className="text-base font-semibold text-foreground">
@@ -320,7 +318,7 @@ export function HomeDesktop() {
       </Section>
 
       {/* Weekend */}
-      <Section title="Upcoming this weekend" subtitle="Lock your plans in for the next 48 hours">
+      <Section title="This weekend on Agatike" subtitle="Find something to do this weekend.">
         {weekend.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/40 bg-card rounded-3xl text-center shadow-[var(--shadow-card)]">
             <span className="text-base font-semibold text-foreground">
@@ -385,8 +383,8 @@ export function HomeDesktop() {
       <section className="mx-auto mt-20 max-w-7xl px-6">
         <div className="mb-6 flex items-end justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Popular organizers</h2>
-            <p className="text-sm text-muted-foreground">Africa's most loved creators and venues</p>
+            <h2 className="text-xl font-semibold">Popular creators & venues</h2>
+            <p className="text-sm text-muted-foreground">Discover the people and places behind your next experience.</p>
           </div>
           <Link to="/organizers" className="text-sm text-primary hover:underline">
             See all →
@@ -459,7 +457,7 @@ export function HomeDesktop() {
           <div>
             <h2 className="text-xl font-semibold">Moments from the community</h2>
             <p className="text-sm text-muted-foreground">
-              Photos, videos and reviews from real attendees
+              Photos, videos and reviews from the Agatike community.
             </p>
           </div>
           <Link to="/feed" className="text-sm text-primary hover:underline">
@@ -510,16 +508,15 @@ export function HomeDesktop() {
         >
           <div className="relative max-w-2xl text-primary-foreground">
             <h3 className="text-3xl font-semibold md:text-4xl">
-              Selling tickets? Agatike pays out the same week.
+              Have something people can book?
             </h3>
             <p className="mt-3 opacity-90">
-              Build a branded event page, sell tickets and merch, scan attendees and pull analytics
-              — all in one place.
+              List your event, venue, activity, service, or experience on Agatike. Reach new customers and manage your bookings in one place.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/dashboard">
                 <Button className="rounded-full bg-background text-foreground hover:bg-background/90">
-                  Open organizer dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                  List on Agatike <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/pricing">

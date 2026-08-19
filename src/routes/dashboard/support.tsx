@@ -878,7 +878,7 @@ function TicketDetailView({ ticketId }: { ticketId: string }) {
   const cat = CATEGORIES.find((c) => c.value === ticket.category);
 
   return (
-    <div className="flex flex-col gap-5 max-w-6xl mx-auto">
+    <div className="flex flex-col gap-5 w-full">
       {/* ── CRM HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 md:p-6 rounded-xl border border-border/60 bg-card shadow-sm relative overflow-hidden">
         {/* Subtle decorative background matching category */}

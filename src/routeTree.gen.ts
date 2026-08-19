@@ -170,9 +170,11 @@ import { Route as DashboardWorkspaceSlugVenuesVenueIdFacilitiesRouteImport } fro
 import { Route as DashboardWorkspaceSlugVenuesVenueIdBookingsRouteImport } from './routes/dashboard/$workspaceSlug/venues/$venueId/bookings'
 import { Route as DashboardWorkspaceSlugUsersUserIdEditRouteImport } from './routes/dashboard/$workspaceSlug/users/$userId.edit'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
+import { Route as DashboardWorkspaceSlugSpacesSpaceIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/staff'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdSettingsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/settings'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdSessionsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/sessions'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdResourcesRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/resources'
+import { Route as DashboardWorkspaceSlugSpacesSpaceIdPromotionsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/promotions'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdPlansRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/plans'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdOverviewRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/overview'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdLocationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/locations'
@@ -180,6 +182,7 @@ import { Route as DashboardWorkspaceSlugSpacesSpaceIdLeasesRouteImport } from '.
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdClassesRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/classes'
 import { Route as DashboardWorkspaceSlugSpacesSpaceIdCalendarRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/calendar'
+import { Route as DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRouteImport } from './routes/dashboard/$workspaceSlug/spaces/$spaceId/analytics'
 import { Route as DashboardWorkspaceSlugRsvpsEditFormIdRouteImport } from './routes/dashboard/$workspaceSlug/rsvps/edit.$formId'
 import { Route as DashboardWorkspaceSlugProductsEditProductIdRouteImport } from './routes/dashboard/$workspaceSlug/products/edit/$productId'
 import { Route as DashboardWorkspaceSlugExperiencesExperienceIdStaffRouteImport } from './routes/dashboard/$workspaceSlug/experiences/$experienceId/staff'
@@ -1139,6 +1142,12 @@ const DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
   } as any)
+const DashboardWorkspaceSlugSpacesSpaceIdStaffRoute =
+  DashboardWorkspaceSlugSpacesSpaceIdStaffRouteImport.update({
+    id: '/staff',
+    path: '/staff',
+    getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
+  } as any)
 const DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute =
   DashboardWorkspaceSlugSpacesSpaceIdSettingsRouteImport.update({
     id: '/settings',
@@ -1155,6 +1164,12 @@ const DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute =
   DashboardWorkspaceSlugSpacesSpaceIdResourcesRouteImport.update({
     id: '/resources',
     path: '/resources',
+    getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
+  } as any)
+const DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute =
+  DashboardWorkspaceSlugSpacesSpaceIdPromotionsRouteImport.update({
+    id: '/promotions',
+    path: '/promotions',
     getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
   } as any)
 const DashboardWorkspaceSlugSpacesSpaceIdPlansRoute =
@@ -1197,6 +1212,12 @@ const DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute =
   DashboardWorkspaceSlugSpacesSpaceIdCalendarRouteImport.update({
     id: '/calendar',
     path: '/calendar',
+    getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
+  } as any)
+const DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute =
+  DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
     getParentRoute: () => DashboardWorkspaceSlugSpacesSpaceIdRoute,
   } as any)
 const DashboardWorkspaceSlugRsvpsEditFormIdRoute =
@@ -1716,6 +1737,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/analytics': typeof DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/calendar': typeof DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/classes': typeof DashboardWorkspaceSlugSpacesSpaceIdClassesRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
@@ -1723,9 +1745,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/plans': typeof DashboardWorkspaceSlugSpacesSpaceIdPlansRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/promotions': typeof DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/resources': typeof DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/sessions': typeof DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/settings': typeof DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/staff': typeof DashboardWorkspaceSlugSpacesSpaceIdStaffRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions': typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   '/dashboard/$workspaceSlug/users/$userId/edit': typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
@@ -1943,6 +1967,7 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/analytics': typeof DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/calendar': typeof DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/classes': typeof DashboardWorkspaceSlugSpacesSpaceIdClassesRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
@@ -1950,9 +1975,11 @@ export interface FileRoutesByTo {
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/plans': typeof DashboardWorkspaceSlugSpacesSpaceIdPlansRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/promotions': typeof DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/resources': typeof DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/sessions': typeof DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/settings': typeof DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/staff': typeof DashboardWorkspaceSlugSpacesSpaceIdStaffRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions': typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   '/dashboard/$workspaceSlug/users/$userId/edit': typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
@@ -2173,6 +2200,7 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/experiences/$experienceId/staff': typeof DashboardWorkspaceSlugExperiencesExperienceIdStaffRoute
   '/dashboard/$workspaceSlug/products/edit/$productId': typeof DashboardWorkspaceSlugProductsEditProductIdRoute
   '/dashboard/$workspaceSlug/rsvps/edit/$formId': typeof DashboardWorkspaceSlugRsvpsEditFormIdRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/analytics': typeof DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/calendar': typeof DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/classes': typeof DashboardWorkspaceSlugSpacesSpaceIdClassesRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/integrations': typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
@@ -2180,9 +2208,11 @@ export interface FileRoutesById {
   '/dashboard/$workspaceSlug/spaces/$spaceId/locations': typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/overview': typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/plans': typeof DashboardWorkspaceSlugSpacesSpaceIdPlansRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/promotions': typeof DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/resources': typeof DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/sessions': typeof DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/settings': typeof DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute
+  '/dashboard/$workspaceSlug/spaces/$spaceId/staff': typeof DashboardWorkspaceSlugSpacesSpaceIdStaffRoute
   '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions': typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   '/dashboard/$workspaceSlug/users/$userId/edit': typeof DashboardWorkspaceSlugUsersUserIdEditRoute
   '/dashboard/$workspaceSlug/venues/$venueId/bookings': typeof DashboardWorkspaceSlugVenuesVenueIdBookingsRoute
@@ -2405,6 +2435,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
     | '/dashboard/$workspaceSlug/products/edit/$productId'
     | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/analytics'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/calendar'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/classes'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
@@ -2412,9 +2443,11 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/plans'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/promotions'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/resources'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/sessions'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/settings'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/staff'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
     | '/dashboard/$workspaceSlug/users/$userId/edit'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
@@ -2632,6 +2665,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
     | '/dashboard/$workspaceSlug/products/edit/$productId'
     | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/analytics'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/calendar'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/classes'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
@@ -2639,9 +2673,11 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/plans'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/promotions'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/resources'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/sessions'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/settings'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/staff'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
     | '/dashboard/$workspaceSlug/users/$userId/edit'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
@@ -2861,6 +2897,7 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/experiences/$experienceId/staff'
     | '/dashboard/$workspaceSlug/products/edit/$productId'
     | '/dashboard/$workspaceSlug/rsvps/edit/$formId'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/analytics'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/calendar'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/classes'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/integrations'
@@ -2868,9 +2905,11 @@ export interface FileRouteTypes {
     | '/dashboard/$workspaceSlug/spaces/$spaceId/locations'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/overview'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/plans'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/promotions'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/resources'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/sessions'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/settings'
+    | '/dashboard/$workspaceSlug/spaces/$spaceId/staff'
     | '/dashboard/$workspaceSlug/spaces/$spaceId/subscriptions'
     | '/dashboard/$workspaceSlug/users/$userId/edit'
     | '/dashboard/$workspaceSlug/venues/$venueId/bookings'
@@ -4115,6 +4154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
     }
+    '/dashboard/$workspaceSlug/spaces/$spaceId/staff': {
+      id: '/dashboard/$workspaceSlug/spaces/$spaceId/staff'
+      path: '/staff'
+      fullPath: '/dashboard/$workspaceSlug/spaces/$spaceId/staff'
+      preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdStaffRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
+    }
     '/dashboard/$workspaceSlug/spaces/$spaceId/settings': {
       id: '/dashboard/$workspaceSlug/spaces/$spaceId/settings'
       path: '/settings'
@@ -4134,6 +4180,13 @@ declare module '@tanstack/react-router' {
       path: '/resources'
       fullPath: '/dashboard/$workspaceSlug/spaces/$spaceId/resources'
       preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdResourcesRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
+    }
+    '/dashboard/$workspaceSlug/spaces/$spaceId/promotions': {
+      id: '/dashboard/$workspaceSlug/spaces/$spaceId/promotions'
+      path: '/promotions'
+      fullPath: '/dashboard/$workspaceSlug/spaces/$spaceId/promotions'
+      preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdPromotionsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
     }
     '/dashboard/$workspaceSlug/spaces/$spaceId/plans': {
@@ -4183,6 +4236,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/dashboard/$workspaceSlug/spaces/$spaceId/calendar'
       preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdCalendarRouteImport
+      parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
+    }
+    '/dashboard/$workspaceSlug/spaces/$spaceId/analytics': {
+      id: '/dashboard/$workspaceSlug/spaces/$spaceId/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/$workspaceSlug/spaces/$spaceId/analytics'
+      preLoaderRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRouteImport
       parentRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdRoute
     }
     '/dashboard/$workspaceSlug/rsvps/edit/$formId': {
@@ -4639,6 +4699,7 @@ const DashboardWorkspaceSlugCinemaCinemaIdRouteWithChildren =
   )
 
 interface DashboardWorkspaceSlugSpacesSpaceIdRouteChildren {
+  DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute
   DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute
   DashboardWorkspaceSlugSpacesSpaceIdClassesRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdClassesRoute
   DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdIntegrationsRoute
@@ -4646,15 +4707,19 @@ interface DashboardWorkspaceSlugSpacesSpaceIdRouteChildren {
   DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdLocationsRoute
   DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute
   DashboardWorkspaceSlugSpacesSpaceIdPlansRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdPlansRoute
+  DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute
   DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute
   DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute
   DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute
+  DashboardWorkspaceSlugSpacesSpaceIdStaffRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdStaffRoute
   DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute
   DashboardWorkspaceSlugSpacesSpaceIdIndexRoute: typeof DashboardWorkspaceSlugSpacesSpaceIdIndexRoute
 }
 
 const DashboardWorkspaceSlugSpacesSpaceIdRouteChildren: DashboardWorkspaceSlugSpacesSpaceIdRouteChildren =
   {
+    DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute:
+      DashboardWorkspaceSlugSpacesSpaceIdAnalyticsRoute,
     DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute:
       DashboardWorkspaceSlugSpacesSpaceIdCalendarRoute,
     DashboardWorkspaceSlugSpacesSpaceIdClassesRoute:
@@ -4669,12 +4734,16 @@ const DashboardWorkspaceSlugSpacesSpaceIdRouteChildren: DashboardWorkspaceSlugSp
       DashboardWorkspaceSlugSpacesSpaceIdOverviewRoute,
     DashboardWorkspaceSlugSpacesSpaceIdPlansRoute:
       DashboardWorkspaceSlugSpacesSpaceIdPlansRoute,
+    DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute:
+      DashboardWorkspaceSlugSpacesSpaceIdPromotionsRoute,
     DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute:
       DashboardWorkspaceSlugSpacesSpaceIdResourcesRoute,
     DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute:
       DashboardWorkspaceSlugSpacesSpaceIdSessionsRoute,
     DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute:
       DashboardWorkspaceSlugSpacesSpaceIdSettingsRoute,
+    DashboardWorkspaceSlugSpacesSpaceIdStaffRoute:
+      DashboardWorkspaceSlugSpacesSpaceIdStaffRoute,
     DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute:
       DashboardWorkspaceSlugSpacesSpaceIdSubscriptionsRoute,
     DashboardWorkspaceSlugSpacesSpaceIdIndexRoute:

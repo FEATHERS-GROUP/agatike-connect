@@ -472,7 +472,7 @@ export function PaymentModal({
                     Base Price
                   </span>
                   <span className="font-semibold">
-                    {targetCurrency} {Math.ceil(baseAmount * markupRate).toLocaleString()}
+                    {baseCurrency} {baseAmount.toLocaleString()}
                   </span>
                 </div>
 

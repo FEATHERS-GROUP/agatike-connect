@@ -50,6 +50,7 @@ interface Plan {
   billing_cycle: string;
   description: string;
   features: string[];
+  multi_location_add_on_price?: number | string;
 }
 
 const BILLING_CYCLES = ["Monthly", "Annually", "Weekly", "Daily", "One-time"];
@@ -60,6 +61,7 @@ const EMPTY_PLAN: Plan = {
   billing_cycle: "Monthly",
   description: "",
   features: [""],
+  multi_location_add_on_price: "",
 };
 
 // ── Accent colours cycling for plan cards ─────────────────────────────────────
@@ -129,6 +131,9 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
       price: Number(form.price),
       features: form.features.filter((f) => f.trim()),
     };
+    if (form.multi_location_add_on_price) {
+      cleaned.multi_location_add_on_price = Number(form.multi_location_add_on_price);
+    }
 
     setIsSaving(true);
     try {
@@ -200,6 +205,20 @@ function PlanModal({ open, onOpenChange, initial, currency, onSave }: PlanModalP
                 ))}
               </select>
             </div>
+          </div>
+          
+          {/* Multi-Location Add-on */}
+          <div className="space-y-1.5">
+            <Label htmlFor="plan-multi">Multi-Location Access Add-on Price ({currency})</Label>
+            <Input
+              id="plan-multi"
+              type="number"
+              min="0"
+              placeholder="Leave blank if not applicable"
+              value={form.multi_location_add_on_price || ""}
+              onChange={(e) => setField("multi_location_add_on_price", e.target.value)}
+              className="rounded-xl h-10"
+            />
           </div>
 
           {/* Description */}

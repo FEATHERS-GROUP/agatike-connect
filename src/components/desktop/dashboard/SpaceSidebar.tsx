@@ -40,6 +40,11 @@ export function SpaceSidebar() {
       icon: LayoutDashboard,
     },
     {
+      label: "Analytics",
+      href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/analytics`,
+      icon: LayoutDashboard,
+    },
+    {
       label: "Subscriptions",
       href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/subscriptions`,
       icon: ListChecks,
@@ -58,6 +63,16 @@ export function SpaceSidebar() {
       label: "Integrations",
       href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/integrations`,
       icon: LinkIcon,
+    },
+    {
+      label: "Promotions",
+      href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/promotions`,
+      icon: LayoutDashboard, // Will fix icon later
+    },
+    {
+      label: "Staff Managers",
+      href: `/dashboard/${workspaceSlug}/spaces/${spaceId}/staff`,
+      icon: Users,
     },
     {
       label: "Settings",
@@ -155,7 +170,8 @@ export function SpaceSidebar() {
           Workspace
         </p>
         <Link
-          to={`/dashboard/${workspaceSlug}/memberships`}
+          to="/dashboard/$workspaceSlug/memberships"
+          params={{ workspaceSlug: workspaceSlug || "" }}
           className={cn(
             "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
             location.pathname.includes(`/${workspaceSlug}/memberships`)

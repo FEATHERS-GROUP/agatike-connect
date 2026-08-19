@@ -13,8 +13,7 @@ export function Footer() {
             <img src="/agatike-logo.png" alt="Agatike" className="h-8 w-auto object-contain" />
           </div>
           <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-            Africa's premium social event platform. Discover, share and live the moments that
-            matter.
+            Discover and book events, venues, activities, and experiences across Africa.
           </p>
           <div className="mt-5 flex gap-3 text-sm">
             <a

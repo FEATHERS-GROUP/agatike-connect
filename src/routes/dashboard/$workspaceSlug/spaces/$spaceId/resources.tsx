@@ -90,7 +90,7 @@ function StructureBuilderPage() {
         </p>
       </div>
 
-      <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm max-w-2xl">
+      <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm w-full">
         <h3 className="font-bold text-lg mb-4">Add New Resource</h3>
         <form onSubmit={handleAdd} className="space-y-4">
           <div className="flex flex-wrap gap-3 items-end">
@@ -196,7 +196,7 @@ function StructureBuilderPage() {
         </form>
       </div>
 
-      <div className="max-w-2xl">
+      <div className="w-full">
         <h3 className="font-bold text-lg mb-4">Existing Resources</h3>
         {isLoading ? (
           <p className="text-muted-foreground">Loading resources...</p>

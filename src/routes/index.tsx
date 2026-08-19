@@ -12,21 +12,79 @@ const HomeDesktop = lazy(() =>
 );
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Agatike — The premium social event platform" },
-      {
-        name: "description",
-        content:
-          "Discover music, nightlife, sports, festivals and experiences worldwide. Buy tickets, share moments, follow organizers.",
-      },
-      { property: "og:title", content: "Agatike — The premium social event platform" },
-      {
-        property: "og:description",
-        content: "Discover and live the moments that matter, worldwide.",
-      },
-    ],
-  }),
+  head: () => {
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://agatike.com";
+    return {
+      meta: [
+        { title: "Agatike | Discover & Book Events, Activities, Venues & Experiences" },
+        {
+          name: "description",
+          content:
+            "Discover and book events, venues, activities, tours, travel, sports, wellness, and experiences on Agatike. Find something to do, somewhere to go, or an experience to enjoy.",
+        },
+        { property: "og:title", content: "Agatike | Discover & Book Events, Activities, Venues & Experiences" },
+        {
+          property: "og:description",
+          content: "Discover and book events, venues, activities, tours, travel, sports, wellness, and experiences on Agatike. Find something to do, somewhere to go, or an experience to enjoy.",
+        },
+      ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Agatike",
+            url: baseUrl,
+            potentialAction: {
+              "@type": "SearchAction",
+              target: `${baseUrl}/search?q={search_term_string}`,
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        },
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: [
+              {
+                "@type": "SiteNavigationElement",
+                position: 1,
+                name: "Sign In",
+                url: `${baseUrl}/signin`,
+              },
+              {
+                "@type": "SiteNavigationElement",
+                position: 2,
+                name: "Host on Agatike",
+                url: `${baseUrl}/dashboard`,
+              },
+              {
+                "@type": "SiteNavigationElement",
+                position: 3,
+                name: "Events",
+                url: `${baseUrl}/events`,
+              },
+              {
+                "@type": "SiteNavigationElement",
+                position: 4,
+                name: "About Us",
+                url: `${baseUrl}/about`,
+              },
+              {
+                "@type": "SiteNavigationElement",
+                position: 5,
+                name: "Pricing",
+                url: `${baseUrl}/pricing`,
+              },
+            ],
+          }),
+        },
+      ],
+    };
+  },
   component: Home,
 });
 

@@ -253,6 +253,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
       reason,
       shortfall = 0,
       pageSlug,
+      promoId,
     } = ctx.data as any;
 
     if (network === "AGATIKE_CARD") {
@@ -477,7 +478,7 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
         cust_fee: customerFee,
         org_fee: organizerFee,
         platform_fee: organizerFee,
-        description: pageSlug ? `Agatike Deposit::${pageSlug}` : "Agatike Deposit",
+        description: `Agatike Deposit${pageSlug ? `::${pageSlug}` : ""}${promoId ? `::PROMO::${promoId}` : ""}`,
       },
     );
 

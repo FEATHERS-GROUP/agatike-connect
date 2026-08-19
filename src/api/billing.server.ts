@@ -1,5 +1,5 @@
 import { hasuraRequest } from "./graphql.server";
-import { sendEmail } from "./email";
+import { sendEmail } from "./email.server";
 import { sendSMS } from "./pindo.server";
 
 const GET_DUE_SUBSCRIPTIONS = `

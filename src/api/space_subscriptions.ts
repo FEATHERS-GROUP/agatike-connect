@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setCookie, getCookie } from "@tanstack/react-start/server";
 import { hasuraRequest } from "./graphql.server";
-import { sendEmail } from "./email";
+import { sendEmail } from "./email.server";
 
 // Generate a unique membership ID: YYYYMM + 6 random uppercase alphanumeric (no O, 0, I, 1)
 function generateMembershipId(): string {
@@ -1232,3 +1232,44 @@ export const markOverdueSubscriptionsOnHold = createServerFn({ method: "POST" })
     return { success: true, affected_rows: data.update_space_subscriptions?.affected_rows ?? 0 };
   },
 );
+
+export const freezeSpaceSubscription = createServerFn({ method: "POST" })
+  .validator((d: { id: string; frozen_until?: string | null }) => d)
+  .handler(async (ctx) => {
+    const { id, frozen_until } = ctx.data;
+    const mutation = `
+      mutation FreezeSpaceSubscription($id: uuid!, $frozen_until: timestamptz, $status: String!) {
+        update_space_subscriptions_by_pk(
+          pk_columns: { id: $id }
+          _set: { frozen_until: $frozen_until, status: $status }
+        ) {
+          id
+          status
+          frozen_until
+        }
+      }
+    `;
+    const status = frozen_until ? "frozen" : "active";
+    const data = await hasuraRequest<any>(mutation, { id, frozen_until, status });
+    return data.update_space_subscriptions_by_pk;
+  });
+
+export const updateSpaceSubscriptionLocation = createServerFn({ method: "POST" })
+  .validator((d: { id: string; space_id: string; allowed_space_ids?: string[] }) => d)
+  .handler(async (ctx) => {
+    const { id, space_id, allowed_space_ids } = ctx.data;
+    const mutation = `
+      mutation UpdateLocation($id: uuid!, $space_id: uuid!, $allowed_space_ids: jsonb) {
+        update_space_subscriptions_by_pk(
+          pk_columns: { id: $id }
+          _set: { space_id: $space_id, allowed_space_ids: $allowed_space_ids }
+        ) {
+          id
+          space_id
+          allowed_space_ids
+        }
+      }
+    `;
+    const data = await hasuraRequest<any>(mutation, { id, space_id, allowed_space_ids });
+    return data.update_space_subscriptions_by_pk;
+  });
