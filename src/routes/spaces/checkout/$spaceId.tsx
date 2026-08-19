@@ -112,7 +112,7 @@ function CheckoutPage() {
   const planName = search.plan || "Custom Plan";
   const planPrice = search.price || "Contact for price";
   const billingCycle = search.cycle || "Monthly";
-  const currency = space?.currency || "RWF";
+  const currency = space?.workspace?.currency;
 
   // Calculate price dynamically based on group size
   const parsedPrice = parseInt(planPrice.replace(/[^0-9]/g, "")) || 0;
@@ -277,10 +277,10 @@ function CheckoutPage() {
 
       const formattedStart = formData.startDate
         ? new Date(formData.startDate).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          })
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        })
         : formData.startDate;
 
       const savedMembers = subscription?.team_members || teamMembers;
