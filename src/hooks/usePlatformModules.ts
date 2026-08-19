@@ -84,18 +84,7 @@ export function usePlatformModules() {
         });
       }
 
-      // Inject App Builder module if it doesn't exist
-      if (!mapped.find((m) => m.label === "App Builder")) {
-        mapped.push({
-          id: "app-builder",
-          label: "App Builder",
-          desc: "Build custom mobile apps for your event",
-          href: "app-builder",
-          icon: LucideIcons.Smartphone,
-          category: "SHARED",
-          mandatory: false,
-        });
-      }
+      // Only Community is injected now, as App Builder is defined in the DB.
 
       return mapped;
     },
