@@ -1,5 +1,5 @@
 const { hasuraRequest } = require("./src/api/graphql.server.js");
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 
 const HASURA_URL = "https://open-languages.hasura.app";
 const HASURA_SECRET = "tbK6HLeobyLxHpgiwuMNUlKNSl4r7yrF3XOnSYWza9ocZQ57NKghx5xFFq7YNn9e";
@@ -9,16 +9,16 @@ const runSql = async (sql) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-hasura-admin-secret": HASURA_SECRET
+      "x-hasura-admin-secret": HASURA_SECRET,
     },
     body: JSON.stringify({
       type: "run_sql",
       args: {
         sql: sql,
         cascade: false,
-        check_metadata_consistency: false
-      }
-    })
+        check_metadata_consistency: false,
+      },
+    }),
   });
   const data = await response.json();
   if (data.error) {
@@ -33,15 +33,15 @@ const trackTable = async (tableName) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-hasura-admin-secret": HASURA_SECRET
+      "x-hasura-admin-secret": HASURA_SECRET,
     },
     body: JSON.stringify({
       type: "pg_track_table",
       args: {
         schema: "public",
-        name: tableName
-      }
-    })
+        name: tableName,
+      },
+    }),
   });
   const data = await response.json();
   console.log(`Tracked table ${tableName}:`, data);
@@ -99,15 +99,22 @@ const run = async () => {
     await trackTable("space_check_ins");
     await trackTable("space_promotions");
     await trackTable("space_managers");
-    
+
     // Track newly added columns automatically by reloading metadata
     const reloadResp = await fetch(`${HASURA_URL}/v1/metadata`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-hasura-admin-secret": HASURA_SECRET
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-hasura-admin-secret": HASURA_SECRET,
+      },
+      body: JSON.stringify({
+        type: "reload_metadata",
+        args: {
+          reload_remote_schemas: true,
+          reload_sources: false,
+          recreate_event_triggers: false,
         },
-        body: JSON.stringify({ type: "reload_metadata", args: { reload_remote_schemas: true, reload_sources: false, recreate_event_triggers: false } })
+      }),
     });
     console.log("Reload metadata:", await reloadResp.json());
 

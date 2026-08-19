@@ -464,10 +464,11 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedP
                       <button
                         key={loc.id || idx}
                         onClick={() => setSelectedLocationIdx(idx)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedLocationIdx === idx
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          selectedLocationIdx === idx
                             ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]"
                             : "bg-secondary/50 text-muted-foreground hover:bg-secondary border border-border/40 hover:border-border"
-                          }`}
+                        }`}
                       >
                         {loc.name || `Location ${idx + 1}`}
                       </button>
@@ -706,8 +707,9 @@ export function SpaceDetailsDesktop({ space, linkedPage }: { space: any; linkedP
                     className="p-1 transition-transform hover:scale-110 active:scale-95"
                   >
                     <Star
-                      className={`h-7 w-7 ${i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
-                        }`}
+                      className={`h-7 w-7 ${
+                        i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
+                      }`}
                     />
                   </button>
                 ))}

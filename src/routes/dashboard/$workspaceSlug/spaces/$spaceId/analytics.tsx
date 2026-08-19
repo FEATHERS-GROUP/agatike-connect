@@ -45,7 +45,9 @@ function SpaceAnalyticsPage() {
   if (isLoading)
     return <div className="p-8 text-center text-muted-foreground">Loading analytics...</div>;
   if (!analytics)
-    return <div className="p-8 text-center text-red-500 font-semibold">Failed to load analytics</div>;
+    return (
+      <div className="p-8 text-center text-red-500 font-semibold">Failed to load analytics</div>
+    );
 
   // Process data for charts
   const { space_check_ins = [], invoices = [], space_subscriptions = [] } = analytics;
@@ -57,7 +59,7 @@ function SpaceAnalyticsPage() {
     hourCounts[d.getHours()]++;
   });
   const peakHoursData = hourCounts.map((count, i) => ({
-    time: `${i === 0 ? 12 : i > 12 ? i - 12 : i}${i >= 12 ? 'PM' : 'AM'}`,
+    time: `${i === 0 ? 12 : i > 12 ? i - 12 : i}${i >= 12 ? "PM" : "AM"}`,
     checkins: count,
   }));
 
@@ -67,7 +69,7 @@ function SpaceAnalyticsPage() {
     d.setDate(d.getDate() - (29 - i));
     return d.toISOString().split("T")[0];
   });
-  
+
   const revenueByDay = invoices.reduce((acc: any, inv: any) => {
     if (inv.status !== "paid") return acc;
     const date = inv.created_at.split("T")[0];
@@ -75,9 +77,9 @@ function SpaceAnalyticsPage() {
     return acc;
   }, {});
 
-  const revenueData = last30Days.map(date => ({
-    date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    revenue: revenueByDay[date] || 0
+  const revenueData = last30Days.map((date) => ({
+    date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    revenue: revenueByDay[date] || 0,
   }));
 
   // 3. Subscriptions Growth
@@ -88,11 +90,11 @@ function SpaceAnalyticsPage() {
   }, {});
 
   let cumulativeSubs = 0;
-  const growthData = last30Days.map(date => {
-    cumulativeSubs += (subsByDay[date] || 0);
+  const growthData = last30Days.map((date) => {
+    cumulativeSubs += subsByDay[date] || 0;
     return {
-      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      total: cumulativeSubs
+      date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      total: cumulativeSubs,
     };
   });
 
@@ -116,19 +118,23 @@ function SpaceAnalyticsPage() {
             <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
               <DollarSign className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-[#a3a3a6]">30-Day Revenue</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-[#a3a3a6]">
+              30-Day Revenue
+            </h3>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {totalRevenue.toLocaleString()}
           </p>
         </div>
-        
+
         <div className="rounded-2xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#252526] p-5 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
               <Activity className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-[#a3a3a6]">Total Check-ins</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-[#a3a3a6]">
+              Total Check-ins
+            </h3>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {totalCheckins.toLocaleString()}
@@ -140,7 +146,9 @@ function SpaceAnalyticsPage() {
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
               <Users className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-[#a3a3a6]">New Memberships</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-[#a3a3a6]">
+              New Memberships
+            </h3>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {newSubs.toLocaleString()}
@@ -150,7 +158,6 @@ function SpaceAnalyticsPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
         {/* Peak Hours Chart */}
         <div className="rounded-2xl border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#252526] p-6 shadow-sm">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
@@ -160,10 +167,26 @@ function SpaceAnalyticsPage() {
           <div className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={peakHoursData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dx={-10} />
-                <RechartsTooltip {...tooltipStyle as any} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--border)"
+                  opacity={0.4}
+                />
+                <XAxis
+                  dataKey="time"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  dx={-10}
+                />
+                <RechartsTooltip {...(tooltipStyle as any)} />
                 <Bar dataKey="checkins" fill={ORANGE} radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
             </ResponsiveContainer>
@@ -185,11 +208,34 @@ function SpaceAnalyticsPage() {
                     <stop offset="95%" stopColor={ORANGE} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dx={-10} />
-                <RechartsTooltip {...tooltipStyle as any} />
-                <Area type="monotone" dataKey="revenue" stroke={ORANGE} strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--border)"
+                  opacity={0.4}
+                />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  dx={-10}
+                />
+                <RechartsTooltip {...(tooltipStyle as any)} />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke={ORANGE}
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorRev)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -210,16 +256,38 @@ function SpaceAnalyticsPage() {
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.4} />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#888" }} dx={-10} />
-                <RechartsTooltip {...tooltipStyle as any} />
-                <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorSubs)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--border)"
+                  opacity={0.4}
+                />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#888" }}
+                  dx={-10}
+                />
+                <RechartsTooltip {...(tooltipStyle as any)} />
+                <Area
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorSubs)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
-
       </div>
     </div>
   );

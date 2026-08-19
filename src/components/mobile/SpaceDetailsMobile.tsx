@@ -669,8 +669,9 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPa
                     className="p-1 transition-transform hover:scale-110 active:scale-95"
                   >
                     <Star
-                      className={`h-7 w-7 ${i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
-                        }`}
+                      className={`h-7 w-7 ${
+                        i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
+                      }`}
                     />
                   </button>
                 ))}

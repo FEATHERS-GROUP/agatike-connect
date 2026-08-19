@@ -103,7 +103,9 @@ export function StaffScanner({ spaceManagers }: StaffScannerProps) {
                 : selectedSpace?.name || "No Branch Selected"}
           </h1>
           <p className="text-xs text-white/60">
-            {mode === "space" && selectedSpace ? "Ready for member check-in" : "Scan any valid QR code"}
+            {mode === "space" && selectedSpace
+              ? "Ready for member check-in"
+              : "Scan any valid QR code"}
           </p>
         </div>
 
@@ -157,7 +159,10 @@ export function StaffScanner({ spaceManagers }: StaffScannerProps) {
         {result !== "idle" && (
           <div className="mt-5 animate-in slide-in-from-bottom-4 duration-300 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur shadow-xl">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full" style={{ background: "var(--color-primary)" }} />
+              <div
+                className="h-12 w-12 rounded-full"
+                style={{ background: "var(--color-primary)" }}
+              />
               <div className="min-w-0">
                 <p className="font-semibold">Amaka Okafor</p>
                 <p className="text-xs text-white/60">
@@ -193,7 +198,9 @@ export function StaffScanner({ spaceManagers }: StaffScannerProps) {
 
             <p
               className={`mt-4 rounded-2xl px-3 py-2 text-sm ${
-                result === "fail" ? "bg-red-500/10 text-red-200" : "bg-emerald-500/10 text-emerald-200"
+                result === "fail"
+                  ? "bg-red-500/10 text-red-200"
+                  : "bg-emerald-500/10 text-emerald-200"
               }`}
             >
               {result === "fail"

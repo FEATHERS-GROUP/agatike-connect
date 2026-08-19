@@ -90,4 +90,3 @@ export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
     const { sendSupportTicketResolvedEmailRaw } = await import("./email.server");
     return sendSupportTicketResolvedEmailRaw(ctx);
   });
-

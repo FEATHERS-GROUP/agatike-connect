@@ -6,7 +6,13 @@ import { getSpaceManagers, addSpaceManager, removeSpaceManager } from "@/api/spa
 import { getWorkspaceUsers } from "@/api/workspace_users";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/dashboard/$workspaceSlug/spaces/$spaceId/staff")({
   component: SpaceStaffPage,
@@ -62,7 +68,7 @@ function SpaceStaffPage() {
 
   // Filter out users who are already managers
   const availableUsers = workspaceUsers.filter(
-    (wu: any) => !managers.find((m: any) => m.workspace_user_id === wu.id)
+    (wu: any) => !managers.find((m: any) => m.workspace_user_id === wu.id),
   );
 
   const filteredManagers = managers.filter((m: any) => {
@@ -95,9 +101,17 @@ function SpaceStaffPage() {
           <div className="w-16 h-16 bg-gray-50 dark:bg-[#1b1b1c] rounded-2xl flex items-center justify-center mb-4 border border-gray-100 dark:border-[#333333]">
             <Users className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No staff added yet</h3>
-          <p className="text-sm max-w-md mx-auto mb-6">Workspace admins automatically have access. Add local managers here to give them access specifically to this branch.</p>
-          <Button onClick={() => setShowAddModal(true)} className="rounded-xl bg-[#f97316] hover:bg-[#ea6c0a] text-white">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            No staff added yet
+          </h3>
+          <p className="text-sm max-w-md mx-auto mb-6">
+            Workspace admins automatically have access. Add local managers here to give them access
+            specifically to this branch.
+          </p>
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="rounded-xl bg-[#f97316] hover:bg-[#ea6c0a] text-white"
+          >
             <Plus className="w-4 h-4 mr-2" /> Add your first staff member
           </Button>
         </div>
@@ -126,7 +140,10 @@ function SpaceStaffPage() {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-[#333333]">
                 {filteredManagers.map((manager: any) => (
-                  <tr key={manager.id} className="hover:bg-gray-50 dark:hover:bg-[#1b1b1c]/50 transition-colors">
+                  <tr
+                    key={manager.id}
+                    className="hover:bg-gray-50 dark:hover:bg-[#1b1b1c]/50 transition-colors"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#f97316]/20 to-[#f97316]/10 border border-[#f97316]/20 flex items-center justify-center shrink-0">
@@ -146,7 +163,7 @@ function SpaceStaffPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 capitalize">
-                        {manager.role?.replace('_', ' ') || "Manager"}
+                        {manager.role?.replace("_", " ") || "Manager"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -154,7 +171,11 @@ function SpaceStaffPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          if (confirm(`Remove ${manager.workspace_user?.name || 'this staff member'}?`)) {
+                          if (
+                            confirm(
+                              `Remove ${manager.workspace_user?.name || "this staff member"}?`,
+                            )
+                          ) {
                             removeMutation.mutate({ data: { id: manager.id } });
                           }
                         }}
@@ -168,12 +189,15 @@ function SpaceStaffPage() {
                 ))}
                 {filteredManagers.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]">
+                    <td
+                      colSpan={3}
+                      className="px-6 py-12 text-center text-gray-500 dark:text-[#888888]"
+                    >
                       <div className="flex flex-col items-center">
                         <Search className="w-8 h-8 mb-3 text-gray-300 dark:text-[#444444]" />
                         <p>No staff members found matching "{searchQuery}".</p>
-                        <Button 
-                          variant="link" 
+                        <Button
+                          variant="link"
                           onClick={() => setSearchQuery("")}
                           className="text-[#f97316] mt-2 h-auto p-0"
                         >

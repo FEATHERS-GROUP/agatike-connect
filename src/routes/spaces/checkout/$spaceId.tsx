@@ -130,7 +130,11 @@ function CheckoutPage() {
 
   const finalPriceNum = Math.max(0, basePriceNum - discountAmount);
   const finalPriceString =
-    finalPriceNum > 0 ? `${currency} ${finalPriceNum.toLocaleString()}` : (discountAmount > 0 ? "FREE" : planPrice);
+    finalPriceNum > 0
+      ? `${currency} ${finalPriceNum.toLocaleString()}`
+      : discountAmount > 0
+        ? "FREE"
+        : planPrice;
 
   const handleApplyPromo = async () => {
     if (!promoCodeInput.trim()) return;
@@ -273,10 +277,10 @@ function CheckoutPage() {
 
       const formattedStart = formData.startDate
         ? new Date(formData.startDate).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })
         : formData.startDate;
 
       const savedMembers = subscription?.team_members || teamMembers;
@@ -495,7 +499,9 @@ function CheckoutPage() {
         {discountAmount > 0 && (
           <div className="flex justify-between items-center text-sm text-emerald-500 font-medium">
             <span>Discount ({appliedPromo?.code})</span>
-            <span>-{currency} {discountAmount.toLocaleString()}</span>
+            <span>
+              -{currency} {discountAmount.toLocaleString()}
+            </span>
           </div>
         )}
         <div className="pt-3 mt-3 border-t border-border flex justify-between items-center">
