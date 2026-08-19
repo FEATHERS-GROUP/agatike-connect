@@ -119,7 +119,7 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPa
   const locations: any[] = Array.isArray(space.locations) ? space.locations : [];
   const plans: any[] = Array.isArray(space.plans) ? space.plans : [];
   const socials: any = space.socials || {};
-  const currency: string = space.currency || "RWF";
+  const currency: string = space.workspace?.currency;
   const typeLabel = SPACE_TYPE_LABELS[space.type] ?? space.type ?? "Space";
 
   const firstLocation = locations.length > 0 ? locations[0] : null;
@@ -669,9 +669,8 @@ export function SpaceDetailsMobile({ space, linkedPage }: { space: any; linkedPa
                     className="p-1 transition-transform hover:scale-110 active:scale-95"
                   >
                     <Star
-                      className={`h-7 w-7 ${
-                        i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
-                      }`}
+                      className={`h-7 w-7 ${i < reviewRating ? "fill-primary text-primary" : "text-muted-foreground/30"
+                        }`}
                     />
                   </button>
                 ))}

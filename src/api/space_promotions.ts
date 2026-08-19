@@ -82,3 +82,68 @@ export const deleteSpacePromotion = createServerFn({ method: "POST" })
     );
     return res.delete_space_promotions_by_pk;
   });
+
+const VALIDATE_PROMO = `
+  query ValidatePromo($code: String!, $space_id: uuid!) {
+    space_promotions(
+      where: { code: { _eq: $code }, space_id: { _eq: $space_id }, is_active: { _eq: true } }
+    ) {
+      id
+      code
+      discount_percentage
+      flat_amount
+      max_uses
+      uses
+      expires_at
+      is_active
+    }
+  }
+`;
+
+export const validateSpacePromotion = createServerFn({ method: "POST" })
+  .validator((d: { code: string; space_id: string }) => d)
+  .handler(async (ctx) => {
+    const { code, space_id } = ctx.data;
+    const res = await hasuraRequest<{ space_promotions: any[] }>(VALIDATE_PROMO, {
+      code,
+      space_id,
+    });
+
+    const promo = res.space_promotions?.[0];
+    if (!promo) {
+      throw new Error("Invalid promo code");
+    }
+
+    if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
+      throw new Error("Promo code has expired");
+    }
+
+    if (promo.max_uses !== null && promo.uses >= promo.max_uses) {
+      throw new Error("Promo code usage limit reached");
+    }
+
+    return promo;
+  });
+
+const INCREMENT_USES = `
+  mutation IncrementPromoUses($id: uuid!) {
+    update_space_promotions_by_pk(
+      pk_columns: { id: $id },
+      _inc: { uses: 1 }
+    ) {
+      id
+      uses
+    }
+  }
+`;
+
+export const incrementPromoUses = createServerFn({ method: "POST" })
+  .validator((d: { id: string }) => d)
+  .handler(async (ctx) => {
+    const { id } = ctx.data;
+    const res = await hasuraRequest<{ update_space_promotions_by_pk: { id: string; uses: number } }>(
+      INCREMENT_USES,
+      { id }
+    );
+    return res.update_space_promotions_by_pk;
+  });
