@@ -104,6 +104,18 @@ export const updateWorkspaceApp = createServerFn({ method: "POST" }).handler(asy
 
 const DELETE_WORKSPACE_APP = `
   mutation DeleteWorkspaceApp($id: uuid!) {
+    delete_app_permissions(where: { app_id: { _eq: $id } }) {
+      affected_rows
+    }
+    delete_app_modules(where: { app_id: { _eq: $id } }) {
+      affected_rows
+    }
+    update_events(where: { app_id: { _eq: $id } }, _set: { app_id: null }) {
+      affected_rows
+    }
+    update_workspace_users(where: { app_id: { _eq: $id } }, _set: { app_id: null }) {
+      affected_rows
+    }
     delete_workspace_apps_by_pk(id: $id) {
       id
     }
