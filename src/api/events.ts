@@ -383,6 +383,8 @@ const GET_EVENT_BY_ID = `
 
 export const getEventById = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const { id } = ctx.data as unknown as { id: string };
+  const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || "");
+  if (!id || !isValidUUID) return null;
   const data = await hasuraRequest<{ events_by_pk: any }>(GET_EVENT_BY_ID, { id });
   return data.events_by_pk || null;
 });
@@ -704,6 +706,8 @@ const GET_TICKET_PROJECT_BY_ID = `
 export const getTicketProjectById = createServerFn({ method: "POST" }).handler(async (ctx) => {
   try {
     const { id } = ctx.data as unknown as { id: string };
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || "");
+    if (!id || !isValidUUID) return null;
     const data = await hasuraRequest<{ ticket_projects_by_pk: any }>(GET_TICKET_PROJECT_BY_ID, {
       id,
     });
