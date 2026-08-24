@@ -10,6 +10,7 @@ import {
   Repeat,
   X,
   Building2,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserAuth } from "@/contexts/UserAuthContext";
@@ -41,12 +42,14 @@ export function MobileNav() {
 
   const moreMenuLinks = isLoggedIn
     ? [
+        { name: "Create & Host", href: "/dashboard", icon: Plus },
         { name: "Trips", href: "/buses/mobile", icon: Bus },
         { name: "Movies & Cinemas", href: "/movies", icon: Film },
         { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
         { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
       ]
     : [
+        { name: "Create & Host", href: "/dashboard", icon: Plus },
         { name: "Subscriptions", href: "/subscriptions", icon: Repeat, requiresAuth: true },
         { name: "Profile Settings", href: "/settings", icon: User, requiresAuth: true },
       ];
@@ -77,6 +80,12 @@ export function MobileNav() {
       dashboardHref = `/staff/workspace/${workspaceUser.id}`;
     } else if (!workspaceUser && activeAssignments.length > 0) {
       dashboardHref = `/staff/event/${activeAssignments[0].event_id}`;
+    }
+
+    // Remove the generic "Create & Host" if they have specific dashboard access
+    const index = moreMenuLinks.findIndex((l) => l.name === "Create & Host");
+    if (index !== -1) {
+      moreMenuLinks.splice(index, 1);
     }
 
     moreMenuLinks.unshift({

@@ -305,7 +305,6 @@ function AuthRedirect() {
         "/profile",
         "/settings",
         "/community",
-        "/dashboard",
         "/ticket",
         "/wallet",
       ];
