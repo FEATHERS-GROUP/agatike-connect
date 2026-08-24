@@ -3,19 +3,19 @@ import {
   Plus,
   ArrowRight,
   LogOut,
-  User,
   Settings,
   LayoutDashboard,
   RefreshCw,
   BarChart2,
   LayoutGrid,
   List,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { useNavigate } from "@tanstack/react-router";
 import { logout } from "@/api/auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { WorkspaceModulesModal } from "./WorkspaceModulesModal";
 import { Workspace } from "@/contexts/WorkspaceContext";
 import { types } from "./constants";
@@ -81,21 +81,28 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             Each venue, cinema or organizer brand gets its own workspace with separate analytics and
             payouts.
           </p>
+          <div className="md:hidden mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-xl flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
+            <p className="text-[13px] text-yellow-800 dark:text-yellow-200 leading-tight">
+              <strong>Note:</strong> You need to use a computer to fully access and manage your
+              workspaces.
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto justify-start sm:justify-end mt-4 sm:mt-0">
           {currentUser?.role === "organizer" && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate({ to: "/dashboard/analytics" })}
-              className="rounded-full flex-1 sm:flex-none border-primary/20 hover:bg-primary/5 text-[13px]"
+              className="hidden sm:flex rounded-full flex-none border-primary/20 hover:bg-primary/5 text-[13px]"
             >
               <BarChart2 className="h-3.5 w-3.5 mr-1.5 text-primary" />
-              Analytics
+              <span>Analytics</span>
             </Button>
           )}
 
-          <div className="flex bg-card border border-border/40 rounded-full p-0.5 ml-2 mr-2">
+          <div className="hidden sm:flex bg-card border border-border/40 rounded-full p-0.5 mx-1">
             <button
               className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
                 viewMode === "grid"
@@ -124,16 +131,16 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing || isLoading}
-            className="rounded-full flex-1 sm:flex-none text-[13px]"
+            className="rounded-full flex-[0.5] sm:flex-none text-[13px] px-2 sm:px-3"
           >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isRefreshing ? "animate-spin" : ""}`} />
-            Refresh
+            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline ml-1.5">Refresh</span>
           </Button>
           {currentUser?.role === "organizer" && (
             <Button
               size="sm"
               onClick={handleCreateClick}
-              className="rounded-full shadow-[var(--shadow-glow)] gap-1.5 flex-1 sm:flex-none text-[13px]"
+              className="rounded-full shadow-[var(--shadow-glow)] gap-1.5 flex-[2] sm:flex-none text-[13px]"
               style={{ background: "var(--gradient-primary)" }}
             >
               <Plus className="h-3.5 w-3.5" /> New Workspace
@@ -173,7 +180,7 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
               : "flex flex-col gap-4 mx-auto w-full"
           }
         >
-          {workspaces.map((w) => {
+          {workspaces.map((w: Workspace) => {
             const t = types.find((x) => x.id === w.type) || types[0];
             const isActive = activeWorkspace?.id === w.id;
 
@@ -285,12 +292,12 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
         </div>
       )}
 
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-xl p-2 border border-border/40 shadow-xl shadow-black/5 rounded-full z-10 flex items-center gap-2 max-w-[90vw] overflow-x-auto hide-scrollbar">
+      <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur-xl p-2 border border-border/40 shadow-xl shadow-black/10 rounded-[1.5rem] sm:rounded-full z-10 flex items-center justify-between sm:justify-center gap-2 w-[92vw] sm:w-auto max-w-lg">
         {currentUser?.role === "organizer" && (
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-full gap-2.5 h-10 px-4 text-[14px] font-medium hover:bg-card transition-all flex items-center shrink-0"
+            className="rounded-full gap-2.5 h-10 px-3 sm:px-4 text-[14px] font-medium hover:bg-card transition-all flex items-center shrink-0"
             onClick={() => navigate({ to: "/dashboard/settings" })}
           >
             {currentUser?.profile?.image || currentUser?.image ? (
@@ -304,18 +311,20 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                 {(currentUser?.name || currentUser?.username || "O").charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="truncate max-w-[150px]">
+            <span className="truncate max-w-[120px] sm:max-w-[150px]">
               {currentUser?.name || currentUser?.username || "Organizer Profile"}
             </span>
           </Button>
         )}
 
-        {currentUser?.role === "organizer" && <div className="w-px h-6 bg-border/40 shrink-0" />}
+        {currentUser?.role === "organizer" && (
+          <div className="hidden sm:block w-px h-6 bg-border/40 shrink-0" />
+        )}
 
         <Button
           variant="ghost"
           size="sm"
-          className="rounded-full gap-1.5 h-10 px-4 text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-[14px] shrink-0"
+          className="rounded-full gap-1.5 h-10 px-3 sm:px-4 text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-[14px] shrink-0"
           onClick={async () => {
             await logout();
             window.location.href = "/dashboard/login";

@@ -375,31 +375,42 @@ function DashboardLayout() {
     return () => unsubscribe();
   }, [activeWorkspace?.orgnizer_id, navigate]);
 
+  const isMobileAllowedPage =
+    location.pathname === "/dashboard/login" ||
+    location.pathname === "/dashboard/create-organizer" ||
+    location.pathname === "/dashboard/forgot-password" ||
+    location.pathname === "/dashboard/workspaces" ||
+    location.pathname === "/dashboard/settings";
+
   return (
     <>
-      <div className="md:hidden print:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
-        <div className="bg-primary/10 p-4 rounded-full mb-4">
-          <svg
-            className="w-8 h-8 text-primary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
+      {!isMobileAllowedPage && (
+        <div className="md:hidden print:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
+          <div className="bg-primary/10 p-4 rounded-full mb-4">
+            <svg
+              className="w-8 h-8 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold mb-2">Desktop Only</h2>
+          <p className="text-muted-foreground text-sm">
+            The dashboard is optimized for desktop viewing. Please access it from a computer for the
+            best experience.
+          </p>
         </div>
-        <h2 className="text-xl font-bold mb-2">Desktop Only</h2>
-        <p className="text-muted-foreground text-sm">
-          The dashboard is optimized for desktop viewing. Please access it from a computer for the
-          best experience.
-        </p>
-      </div>
-      <div className="hidden md:block print:block min-h-screen print:min-h-0 bg-secondary/30">
+      )}
+      <div
+        className={`${!isMobileAllowedPage ? "hidden md:block" : "block"} print:block min-h-screen print:min-h-0 bg-secondary/30`}
+      >
         <div className="flex">
           {/* Sidebar */}
           {!hideSidebar &&
@@ -425,7 +436,16 @@ function DashboardLayout() {
           <ContextMenu>
             <ContextMenuTrigger asChild>
               <main
-                className={`flex-1 min-w-0 relative ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
+                className={`flex-1 min-w-0 relative ${
+                  isDesigner ||
+                  location.pathname === "/dashboard/login" ||
+                  location.pathname === "/dashboard/create-organizer"
+                    ? ""
+                    : location.pathname === "/dashboard/settings" ||
+                        location.pathname === "/dashboard/workspaces"
+                      ? "p-0 md:p-6 lg:p-10 print:p-0"
+                      : "p-6 lg:p-10 print:p-0"
+                }`}
               >
                 <Outlet />
               </main>

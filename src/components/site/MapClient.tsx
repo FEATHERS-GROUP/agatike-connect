@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   User,
   Settings2,
+  LocateFixed,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@tanstack/react-router";
@@ -105,6 +106,22 @@ function MapEvents({ onMapClick }: { onMapClick: () => void }) {
   return null;
 }
 
+function LocationSyncController({
+  userLocation,
+  syncTrigger,
+}: {
+  userLocation: { lat: number; lng: number } | null;
+  syncTrigger: number;
+}) {
+  const map = useMap();
+  useEffect(() => {
+    if (userLocation && syncTrigger > 0) {
+      map.flyTo([userLocation.lat, userLocation.lng], 14, { duration: 0.5 });
+    }
+  }, [userLocation, syncTrigger, map]);
+  return null;
+}
+
 export default function MapClient() {
   const router = useRouter();
   const { theme } = useTheme();
@@ -113,6 +130,9 @@ export default function MapClient() {
 
   const [showCityModal, setShowCityModal] = useState(true);
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
+
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [syncTrigger, setSyncTrigger] = useState(0);
 
   useEffect(() => {
     if (theme === "dark") setIsDark(true);
@@ -245,6 +265,7 @@ export default function MapClient() {
           (position) => {
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
+            setUserLocation({ lat: userLat, lng: userLng });
 
             let closestCity: string | null = null;
             let minDistance = Infinity;
@@ -344,6 +365,23 @@ export default function MapClient() {
           />
           <MapController selectedCity={selectedCityObj} selectedMarker={selectedMarker} />
           <MapEvents onMapClick={() => setSelectedMarker(null)} />
+          <LocationSyncController userLocation={userLocation} syncTrigger={syncTrigger} />
+
+          {userLocation && (
+            <Marker
+              position={[userLocation.lat, userLocation.lng]}
+              icon={L.divIcon({
+                className: "bg-transparent border-none",
+                html: `
+                  <div class="relative flex items-center justify-center w-8 h-8">
+                    <div class="w-5 h-5 bg-blue-500 rounded-full border-2 border-white shadow-[0_0_15px_rgba(59,130,246,0.8)] z-50"></div>
+                  </div>
+                `,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+              })}
+            />
+          )}
 
           {mapMarkers
             .filter((m) => !selectedCityName || m.city === selectedCityName)
@@ -533,11 +571,33 @@ export default function MapClient() {
         )}
       </div>
 
-      {/* FAB FOR LOCATION (List View Equivalent in design) */}
-      <div className="absolute bottom-28 right-4 z-[10] pointer-events-auto">
+      {/* FAB FOR LOCATION & SYNC */}
+      <div className="absolute bottom-28 right-4 z-[10] pointer-events-auto flex flex-col gap-3">
         <Button
           variant="outline"
-          className="w-12 h-12 rounded-full shadow-lg bg-background border-border/40 p-0"
+          className="w-12 h-12 rounded-full shadow-lg bg-background border-border/40 p-0 flex items-center justify-center"
+          onClick={() => {
+            if ("geolocation" in navigator) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const lat = position.coords.latitude;
+                  const lng = position.coords.longitude;
+                  setUserLocation({ lat, lng });
+                  setSyncTrigger((prev) => prev + 1);
+                },
+                (error) => {
+                  console.error("Geolocation error:", error);
+                },
+                { timeout: 15000, maximumAge: 300000 },
+              );
+            }
+          }}
+        >
+          <LocateFixed className="h-5 w-5 text-primary" />
+        </Button>
+        <Button
+          variant="outline"
+          className="w-12 h-12 rounded-full shadow-lg bg-background border-border/40 p-0 flex items-center justify-center"
           onClick={() => setShowCityModal(true)}
         >
           <List className="h-5 w-5 text-primary" />
