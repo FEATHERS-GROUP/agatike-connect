@@ -3,7 +3,6 @@ import {
   Plus,
   ArrowRight,
   LogOut,
-  User,
   Settings,
   LayoutDashboard,
   RefreshCw,
