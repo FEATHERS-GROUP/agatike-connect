@@ -375,14 +375,16 @@ function DashboardLayout() {
     return () => unsubscribe();
   }, [activeWorkspace?.orgnizer_id, navigate]);
 
-  const isAuthPage =
+  const isMobileAllowedPage =
     location.pathname === "/dashboard/login" ||
     location.pathname === "/dashboard/create-organizer" ||
-    location.pathname === "/dashboard/forgot-password";
+    location.pathname === "/dashboard/forgot-password" ||
+    location.pathname === "/dashboard/workspaces" ||
+    location.pathname === "/dashboard/settings";
 
   return (
     <>
-      {!isAuthPage && (
+      {!isMobileAllowedPage && (
         <div className="md:hidden print:hidden flex flex-col items-center justify-center min-h-screen p-6 text-center bg-background">
           <div className="bg-primary/10 p-4 rounded-full mb-4">
             <svg
@@ -406,7 +408,7 @@ function DashboardLayout() {
           </p>
         </div>
       )}
-      <div className={`${!isAuthPage ? "hidden md:block" : "block"} print:block min-h-screen print:min-h-0 bg-secondary/30`}>
+      <div className={`${!isMobileAllowedPage ? "hidden md:block" : "block"} print:block min-h-screen print:min-h-0 bg-secondary/30`}>
         <div className="flex">
           {/* Sidebar */}
           {!hideSidebar &&
