@@ -434,7 +434,15 @@ function DashboardLayout() {
           <ContextMenu>
             <ContextMenuTrigger asChild>
               <main
-                className={`flex-1 min-w-0 relative ${isDesigner || location.pathname === "/dashboard/login" || location.pathname === "/dashboard/create-organizer" ? "" : "p-6 lg:p-10 print:p-0"}`}
+                className={`flex-1 min-w-0 relative ${
+                  isDesigner ||
+                  location.pathname === "/dashboard/login" ||
+                  location.pathname === "/dashboard/create-organizer"
+                    ? ""
+                    : location.pathname === "/dashboard/settings" || location.pathname === "/dashboard/workspaces"
+                      ? "p-0 md:p-6 lg:p-10 print:p-0"
+                      : "p-6 lg:p-10 print:p-0"
+                }`}
               >
                 <Outlet />
               </main>
