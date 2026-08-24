@@ -26,32 +26,39 @@ export function SettingsMobile(props: SettingsViewProps) {
     CATEGORIES,
   } = props;
 
-  const [activeMobileView, setActiveMobileView] = useState<"menu" | "profile" | "social" | "security" | "account">("menu");
+  const [activeMobileView, setActiveMobileView] = useState<
+    "menu" | "profile" | "social" | "security" | "account"
+  >("menu");
 
   const renderContent = () => {
     switch (activeMobileView) {
       case "profile":
         return (
           <div className="bg-background px-4 py-8 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
-            <SettingsProfileSidebar avatar={avatar} setIsAvatarModalOpen={setIsAvatarModalOpen} register={register} errors={errors} />
+            <SettingsProfileSidebar
+              avatar={avatar}
+              setIsAvatarModalOpen={setIsAvatarModalOpen}
+              register={register}
+              errors={errors}
+            />
           </div>
         );
       case "social":
         return (
           <div className="bg-background px-4 py-8 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
-             <SettingsSocialTab register={register} />
+            <SettingsSocialTab register={register} />
           </div>
         );
       case "security":
         return (
           <div className="bg-background px-4 py-8 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
-             <SettingsSecurityTab passwordForm={passwordForm} />
+            <SettingsSecurityTab passwordForm={passwordForm} />
           </div>
         );
       case "account":
         return (
           <div className="bg-background px-4 py-8 flex-1 animate-in fade-in slide-in-from-right-4 duration-300">
-             <SettingsAccountTypeTab profile={profile} />
+            <SettingsAccountTypeTab profile={profile} />
           </div>
         );
       default:
@@ -64,26 +71,45 @@ export function SettingsMobile(props: SettingsViewProps) {
       {/* Header */}
       <div className="bg-[#F4F4F5] dark:bg-background pt-4 pb-2 px-2 sticky top-0 z-20 flex flex-col shadow-sm">
         <div className="flex justify-center w-full mb-3">
-          <img src="/agatike-logo.svg" alt="Agatike" className="h-6 w-auto object-contain opacity-90" />
+          <img
+            src="/agatike-logo.svg"
+            alt="Agatike"
+            className="h-6 w-auto object-contain opacity-90"
+          />
         </div>
         <div className="flex items-center justify-between">
           {activeMobileView === "menu" ? (
-            <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="h-10 w-10 rounded-full bg-background border border-border/40 shadow-sm">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.history.back()}
+              className="h-10 w-10 rounded-full bg-background border border-border/40 shadow-sm"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           ) : (
-            <Button variant="ghost" size="icon" onClick={() => setActiveMobileView("menu")} className="h-10 w-10 rounded-full bg-background border border-border/40 shadow-sm">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setActiveMobileView("menu")}
+              className="h-10 w-10 rounded-full bg-background border border-border/40 shadow-sm"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          
+
           <h1 className="font-bold text-[20px] tracking-tight">
-            {activeMobileView === "menu" ? "My Settings" : 
-             activeMobileView === "profile" ? "Profile Details" :
-             activeMobileView === "social" ? "Social Links" :
-             activeMobileView === "security" ? "Security" : "Account Type"}
+            {activeMobileView === "menu"
+              ? "My Settings"
+              : activeMobileView === "profile"
+                ? "Profile Details"
+                : activeMobileView === "social"
+                  ? "Social Links"
+                  : activeMobileView === "security"
+                    ? "Security"
+                    : "Account Type"}
           </h1>
-          
+
           {activeMobileView === "menu" ? (
             <div className="w-10" />
           ) : (
@@ -103,7 +129,7 @@ export function SettingsMobile(props: SettingsViewProps) {
       {activeMobileView === "menu" ? (
         <div className="py-6 space-y-8 animate-in fade-in slide-in-from-left-4 duration-300">
           {/* Profile Card */}
-          <div 
+          <div
             className="bg-background p-4 flex items-center justify-between cursor-pointer active:bg-muted/30 transition-colors"
             onClick={() => setActiveMobileView("profile")}
           >
@@ -118,8 +144,12 @@ export function SettingsMobile(props: SettingsViewProps) {
                 )}
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold text-base leading-tight mb-1">{profile?.name || "Organizer Name"}</span>
-                <span className="text-sm text-muted-foreground leading-tight">{profile?.email || `@${profile?.handle || "handle"}`}</span>
+                <span className="font-semibold text-base leading-tight mb-1">
+                  {profile?.name || "Organizer Name"}
+                </span>
+                <span className="text-sm text-muted-foreground leading-tight">
+                  {profile?.email || `@${profile?.handle || "handle"}`}
+                </span>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground/60" />
@@ -127,9 +157,11 @@ export function SettingsMobile(props: SettingsViewProps) {
 
           {/* General Settings */}
           <div>
-            <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">General Settings</h3>
+            <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-4">
+              General Settings
+            </h3>
             <div className="bg-background overflow-hidden flex flex-col">
-              <div 
+              <div
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 active:bg-muted/50"
                 onClick={() => setActiveMobileView("social")}
               >
@@ -139,8 +171,8 @@ export function SettingsMobile(props: SettingsViewProps) {
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
               </div>
-              
-              <div 
+
+              <div
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 active:bg-muted/50"
                 onClick={() => setActiveMobileView("security")}
               >
@@ -151,7 +183,7 @@ export function SettingsMobile(props: SettingsViewProps) {
                 <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
               </div>
 
-              <div 
+              <div
                 className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 active:bg-muted/50"
                 onClick={() => setActiveMobileView("account")}
               >
@@ -213,7 +245,11 @@ export function SettingsMobile(props: SettingsViewProps) {
             </div>
           </div>
           <div className="p-4 border-t border-border flex justify-end gap-3 bg-background">
-            <Button variant="ghost" className="rounded-full" onClick={() => setIsAvatarModalOpen(false)}>
+            <Button
+              variant="ghost"
+              className="rounded-full"
+              onClick={() => setIsAvatarModalOpen(false)}
+            >
               Cancel
             </Button>
             <Button

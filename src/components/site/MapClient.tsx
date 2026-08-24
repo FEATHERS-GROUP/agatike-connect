@@ -588,7 +588,7 @@ export default function MapClient() {
                 (error) => {
                   console.error("Geolocation error:", error);
                 },
-                { timeout: 15000, maximumAge: 300000 }
+                { timeout: 15000, maximumAge: 300000 },
               );
             }
           }}

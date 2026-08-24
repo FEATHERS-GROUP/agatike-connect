@@ -84,7 +84,8 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           <div className="md:hidden mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 p-3 rounded-xl flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
             <p className="text-[13px] text-yellow-800 dark:text-yellow-200 leading-tight">
-              <strong>Note:</strong> You need to use a computer to fully access and manage your workspaces.
+              <strong>Note:</strong> You need to use a computer to fully access and manage your
+              workspaces.
             </p>
           </div>
         </div>
@@ -103,20 +104,22 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
 
           <div className="hidden sm:flex bg-card border border-border/40 rounded-full p-0.5 mx-1">
             <button
-              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${viewMode === "grid"
-                ? "bg-primary/10 text-primary shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
+              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
+                viewMode === "grid"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
               onClick={() => setViewMode("grid")}
               title="Grid View"
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
-              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${viewMode === "list"
-                ? "bg-primary/10 text-primary shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-                }`}
+              className={`p-1.5 rounded-full transition-all flex items-center justify-center ${
+                viewMode === "list"
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
               onClick={() => setViewMode("list")}
               title="List View"
             >
@@ -213,10 +216,11 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
             return (
               <div
                 key={w.id}
-                className={`flex ${viewMode === "grid" ? "flex-col" : "flex-col sm:flex-row sm:items-center"} rounded-2xl border bg-card/60 backdrop-blur-sm p-4 hover:shadow-md transition-all relative group ${isActive
-                  ? "border-primary/50 shadow-[0_4px_24px_rgba(var(--primary),0.08)] bg-primary/[0.02]"
-                  : "border-border/40 hover:border-border"
-                  }`}
+                className={`flex ${viewMode === "grid" ? "flex-col" : "flex-col sm:flex-row sm:items-center"} rounded-2xl border bg-card/60 backdrop-blur-sm p-4 hover:shadow-md transition-all relative group ${
+                  isActive
+                    ? "border-primary/50 shadow-[0_4px_24px_rgba(var(--primary),0.08)] bg-primary/[0.02]"
+                    : "border-border/40 hover:border-border"
+                }`}
               >
                 {viewMode === "grid" && (
                   <div className="absolute top-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -267,10 +271,11 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
                   <Button
                     size="sm"
                     variant={isActive ? "default" : "outline"}
-                    className={`${viewMode === "grid" ? "w-full" : "w-auto px-4"} rounded-xl gap-1.5 h-8 text-xs font-medium transition-all ${isActive
-                      ? "shadow-[var(--shadow-glow)] opacity-100"
-                      : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
-                      }`}
+                    className={`${viewMode === "grid" ? "w-full" : "w-auto px-4"} rounded-xl gap-1.5 h-8 text-xs font-medium transition-all ${
+                      isActive
+                        ? "shadow-[var(--shadow-glow)] opacity-100"
+                        : "opacity-90 hover:opacity-100 bg-background/50 border-border/50"
+                    }`}
                     style={isActive ? { background: "var(--gradient-primary)" } : undefined}
                     onClick={() => {
                       setActiveWorkspace(w);
@@ -312,7 +317,9 @@ export function WorkspaceList({ onOpenWizard }: WorkspaceListProps) {
           </Button>
         )}
 
-        {currentUser?.role === "organizer" && <div className="hidden sm:block w-px h-6 bg-border/40 shrink-0" />}
+        {currentUser?.role === "organizer" && (
+          <div className="hidden sm:block w-px h-6 bg-border/40 shrink-0" />
+        )}
 
         <Button
           variant="ghost"

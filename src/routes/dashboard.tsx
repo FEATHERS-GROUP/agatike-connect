@@ -408,7 +408,9 @@ function DashboardLayout() {
           </p>
         </div>
       )}
-      <div className={`${!isMobileAllowedPage ? "hidden md:block" : "block"} print:block min-h-screen print:min-h-0 bg-secondary/30`}>
+      <div
+        className={`${!isMobileAllowedPage ? "hidden md:block" : "block"} print:block min-h-screen print:min-h-0 bg-secondary/30`}
+      >
         <div className="flex">
           {/* Sidebar */}
           {!hideSidebar &&
@@ -439,7 +441,8 @@ function DashboardLayout() {
                   location.pathname === "/dashboard/login" ||
                   location.pathname === "/dashboard/create-organizer"
                     ? ""
-                    : location.pathname === "/dashboard/settings" || location.pathname === "/dashboard/workspaces"
+                    : location.pathname === "/dashboard/settings" ||
+                        location.pathname === "/dashboard/workspaces"
                       ? "p-0 md:p-6 lg:p-10 print:p-0"
                       : "p-6 lg:p-10 print:p-0"
                 }`}
