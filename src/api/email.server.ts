@@ -1483,3 +1483,63 @@ export const sendDigitalProductDeliveryEmail = createServerFn({ method: "POST" }
 export const sendSupportTicketResolvedEmail = createServerFn({ method: "POST" })
   .validator((d: any) => d)
   .handler(async (ctx) => sendSupportTicketResolvedEmailRaw(ctx));
+
+export const sendOrganizerStatusEmailRaw = async (ctx: any) => {
+  const { to, name, active } = ctx.data as any;
+
+  const baseUrl = process.env.PROJECT_PRODUCTION_URL
+    ? `https://${process.env.PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://agatike.rw";
+
+  const agatikeHeaderIconUrl = `${baseUrl}/agatike-icon-new.png`;
+  const agatikeFooterIconUrl = "https://www.agatike.rw/agatike-logo.png";
+  const statusStr = active ? "Activated" : "Deactivated";
+
+  const html = `
+    <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+      <div style="background-color: ${active ? '#10b981' : '#f43f5e'}; padding: 40px 24px; text-align: center;">
+        <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
+          <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Account ${statusStr}</h2>
+      </div>
+      <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+        <p>Hi ${name},</p>
+        <p>Your Agatike Connect organizer account has been <strong>${statusStr.toLowerCase()}</strong> by the administrator.</p>
+        ${active ? '<p>You can now log in and continue managing your workspaces and events.</p>' : '<p>If you have any questions or believe this is a mistake, please contact our support team.</p>'}
+      </div>
+      <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
+        <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>
+        <img src="${agatikeFooterIconUrl}" alt="Agatike Icon" style="width: 150px; height: auto; margin: 0 auto; display: block;" />
+      </div>
+    </div>
+  `;
+
+  const emailPayload: any = {
+    from: "Agatike Connect <hello@agatike.rw>",
+    to: [to],
+    subject: `Your Account has been ${statusStr}`,
+    html: html,
+  };
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + process.env.RESEND_API_KEY,
+    },
+    body: JSON.stringify(emailPayload),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    console.warn("Failed to send organizer status email:", data);
+  }
+  return data;
+};
+
+export const sendOrganizerStatusEmail = createServerFn({ method: "POST" })
+  .validator((d: any) => d)
+  .handler(async (ctx) => sendOrganizerStatusEmailRaw(ctx));
