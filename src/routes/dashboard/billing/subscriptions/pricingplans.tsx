@@ -95,8 +95,8 @@ function PricingPlansPage() {
           getAllPaymentProviderFees(),
         ]);
 
-        // Hide the Basic plan (price 0) as it is given by default
-        setPlans(fetchedPlans.filter((p) => p.price > 0));
+        // Hide the Basic plan (price 0) as it is given by default, and hide Founding Partner
+        setPlans(fetchedPlans.filter((p) => p.price > 0 && p.name !== "Founding Partner"));
         setRules(fetchedRules);
         setOrganizerProfile(fetchedOrganizer);
         setActiveSub(fetchedActiveSub);

@@ -539,6 +539,9 @@ export const setAdminOrganizerStatus = createServerFn({ method: "POST" })
         update_organizers_by_pk(pk_columns: { id: $id }, _set: { active: $active }) {
           id
           active
+          name
+          email
+          phone
         }
       }
     `;
@@ -546,7 +549,34 @@ export const setAdminOrganizerStatus = createServerFn({ method: "POST" })
       id: ctx.data.organizerId,
       active: ctx.data.active,
     });
-    return data.update_organizers_by_pk;
+    const updated = data.update_organizers_by_pk;
+
+    if (updated) {
+      try {
+        const { sendSMS } = await import("./pindo.server");
+        const { sendOrganizerStatusEmailRaw } = await import("./email.server");
+        
+        if (updated.phone) {
+          const smsText = updated.active 
+            ? `Hello ${updated.name}, your Agatike Connect organizer account has been activated.`
+            : `Hello ${updated.name}, your Agatike Connect organizer account has been deactivated.`;
+          await sendSMS(updated.phone, smsText);
+        }
+        if (updated.email) {
+          await sendOrganizerStatusEmailRaw({
+            data: {
+              to: updated.email,
+              name: updated.name || "Organizer",
+              active: updated.active,
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send status notification:", err);
+      }
+    }
+
+    return updated;
   });
 
 // ----------------------------------------------------

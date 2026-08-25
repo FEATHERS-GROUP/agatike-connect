@@ -20,7 +20,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { SettingsDesktop } from "@/components/dashboard/settings/SettingsDesktop";
 import { SettingsMobile } from "@/components/dashboard/settings/SettingsMobile";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/dashboard/settings")({
   component: SettingsPage,
@@ -118,7 +117,7 @@ function SettingsPage() {
       });
       setAvatar(
         profile.image ||
-          `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
+        `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
       );
     }
   }, [profile, reset]);
