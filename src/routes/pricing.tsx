@@ -70,8 +70,8 @@ function PublicPricingPage() {
           getSession().catch(() => null),
         ]);
 
-        // Keep all plans including Basic/Free (price = 0)
-        setPlans(fetchedPlans);
+        // Keep all plans including Basic/Free (price = 0), but hide Founding Partner
+        setPlans(fetchedPlans.filter(p => p.name !== "Founding Partner"));
         setRules(fetchedRules);
 
         if (session) {
