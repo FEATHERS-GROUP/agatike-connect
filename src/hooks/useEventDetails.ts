@@ -285,22 +285,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     });
   };
 
-  const total = Object.entries(cart).reduce((sum, [key, qty]) => {
-    if (qty <= 0) return sum;
-    if (key.startsWith("merch_")) {
-      const id = key.split("_")[1];
-      const merch = activeMerch.find((m: any) => String(m.id) === id);
-      return sum + (merch ? Number(merch.price || 0) * qty : 0);
-    }
-    const [, tierId] = key.split("_");
-    const tier = allTicketTiers.find((t: any) => t.id === tierId);
-    return sum + (tier ? Number(tier.price || 0) * qty : 0);
-  }, 0);
-
-  const totalTickets = Object.entries(cart).reduce((sum, [key, qty]) => {
-    if (key.startsWith("merch_")) return sum; // don't count merch as tickets
-    return sum + qty;
-  }, 0);
 
   const { data: feedbackData } = useQuery({
     queryKey: ["public-feedback", eventId],
@@ -408,6 +392,23 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
       return rightStop && isNotExpired;
     });
   }, [allTicketTiers, isExperience, selectedStopIdx, tourStops]);
+
+  const total = Object.entries(cart).reduce((sum, [key, qty]) => {
+    if (qty <= 0) return sum;
+    if (key.startsWith("merch_")) {
+      const id = key.split("_")[1];
+      const merch = activeMerch.find((m: any) => String(m.id) === id);
+      return sum + (merch ? Number(merch.price || 0) * qty : 0);
+    }
+    const [, tierId] = key.split("_");
+    const tier = allTicketTiers.find((t: any) => t.id === tierId);
+    return sum + (tier ? Number(tier.price || 0) * qty : 0);
+  }, 0);
+
+  const totalTickets = Object.entries(cart).reduce((sum, [key, qty]) => {
+    if (key.startsWith("merch_")) return sum; // don't count merch as tickets
+    return sum + qty;
+  }, 0);
 
   const attendeesList = useMemo(() => {
     const seen = new Set<string>();
