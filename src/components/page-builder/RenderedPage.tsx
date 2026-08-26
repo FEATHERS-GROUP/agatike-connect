@@ -608,9 +608,6 @@ export function RenderedPage({
                 {logoPosition === "hero" && logo_url && (
                   <img src={logo_url} alt="Logo" className="h-20 w-auto object-contain rounded" />
                 )}
-                {logoPosition === "hero" && siteTitle && !logo_url && (
-                  <h1 className="text-4xl font-black text-white tracking-tight">{siteTitle}</h1>
-                )}
                 {title && (
                   <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight">
                     {title}
