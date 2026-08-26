@@ -217,39 +217,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     ];
   }
 
-  const allTicketTiers = isMock
-    ? ticketTiers
-    : (ev.event_tickets?.length
-        ? ev.event_tickets
-        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
-      ).map((t: any) => {
-        const sold = parseInt(t.sold) || 0;
-        const capacity = parseInt(t.remaining) || 0;
-        const ticketsLeft = Math.max(0, capacity - sold);
-        return {
-          id: t.id,
-          name: t.name || t.type,
-          price: parseFloat(t.cost) || 0,
-          perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
-          remaining: ticketsLeft,
-          sold,
-          sale_ends_at: t.sale_ends_at,
-          tour_stop_idx: t.tour_stop_idx || 0,
-        };
-      });
 
-  const activeTicketTiers = allTicketTiers.filter((t: any) => {
-    // Filter by tour stop
-    const rightStop = isExperience
-      ? true
-      : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
-    // Keep sold-out tiers so the UI can show the 'SOLD OUT' stamp
-    // const hasInventory = t.remaining > 0;
-    // Hide expired tiers
-    const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
-
-    return rightStop && isNotExpired;
-  });
 
   const isPastEvent = useMemo(() => {
     const targetDateStr = ev.end_date || date;
@@ -394,6 +362,52 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     if (!ev.vip_privilege_ids || !Array.isArray(ev.vip_privilege_ids)) return [];
     return workspaceVipPrivileges.filter((p: any) => ev.vip_privilege_ids.includes(p.id));
   }, [ev.vip_privilege_ids, workspaceVipPrivileges]);
+
+  const allTicketTiers = useMemo(() => {
+    return isMock
+      ? ticketTiers
+      : (ev.event_tickets?.length
+          ? ev.event_tickets
+          : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
+        ).map((t: any) => {
+          const sold = parseInt(t.sold) || 0;
+          const capacity = parseInt(t.remaining) || 0;
+          const ticketsLeft = Math.max(0, capacity - sold);
+          
+          let perks: string[] = [];
+          if (t.vip_privilege_ids && t.vip_privilege_ids.length > 0) {
+            perks = t.vip_privilege_ids
+              .map((pid: string) => workspaceVipPrivileges.find((p: any) => p.id === pid)?.description)
+              .filter(Boolean);
+          }
+          
+          return {
+            id: t.id,
+            name: t.name || t.type,
+            price: parseFloat(t.cost) || 0,
+            perks,
+            remaining: ticketsLeft,
+            sold,
+            sale_ends_at: t.sale_ends_at,
+            tour_stop_idx: t.tour_stop_idx || 0,
+          };
+        });
+  }, [isMock, ev.event_tickets, workspaceVipPrivileges]);
+
+  const activeTicketTiers = useMemo(() => {
+    return allTicketTiers.filter((t: any) => {
+      // Filter by tour stop
+      const rightStop = isExperience
+        ? true
+        : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
+      // Keep sold-out tiers so the UI can show the 'SOLD OUT' stamp
+      // const hasInventory = t.remaining > 0;
+      // Hide expired tiers
+      const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
+
+      return rightStop && isNotExpired;
+    });
+  }, [allTicketTiers, isExperience, selectedStopIdx, tourStops]);
 
   const attendeesList = useMemo(() => {
     const seen = new Set<string>();

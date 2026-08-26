@@ -188,7 +188,7 @@ const GET_PUBLIC_EVENTS = `
         form_id
         vip_privilege_ids
       }
-      event_attendees_aggregate {
+      event_attendees_aggregate(where: { _and: [{ status: { _neq: "Cancelled" } }, { status: { _neq: "Pending Payment" } }] }) {
         aggregate {
           count(columns: email, distinct: true)
         }
@@ -332,7 +332,7 @@ const GET_EVENT_BY_ID = `
         form_id
         vip_privilege_ids
       }
-      event_attendees_aggregate {
+      event_attendees_aggregate(where: { _and: [{ status: { _neq: "Cancelled" } }, { status: { _neq: "Pending Payment" } }] }) {
         aggregate {
           count(columns: email, distinct: true)
         }

@@ -358,11 +358,13 @@ export function EventCheckoutDrawer({
                             {formatCurrency(t.price, currencyCode)}
                           </p>
                         </div>
-                        <p
-                          className={`text-[11px] leading-snug ${isSoldOut ? "text-white opacity-20" : "text-muted-foreground"}`}
-                        >
-                          {t.perks.join(" · ")}
-                        </p>
+                        {t.perks && t.perks.length > 0 && (
+                          <p
+                            className={`text-[11px] leading-snug ${isSoldOut ? "text-white opacity-20" : "text-muted-foreground"}`}
+                          >
+                            {t.perks.join(" · ")}
+                          </p>
+                        )}
                         {!isSoldOut && (
                           <p className="text-[11px] font-medium text-primary mt-1 mb-3">
                             {t.remaining} left
@@ -473,11 +475,13 @@ export function EventCheckoutDrawer({
                               {formatCurrency(t.price, currencyCode)}
                             </p>
                           </div>
-                          <p
-                            className={`text-[11px] text-muted-foreground leading-snug ${isSoldOut ? "opacity-40" : ""}`}
-                          >
-                            {t.perks.join(" · ")}
-                          </p>
+                          {t.perks && t.perks.length > 0 && (
+                            <p
+                              className={`text-[11px] text-muted-foreground leading-snug ${isSoldOut ? "opacity-40" : ""}`}
+                            >
+                              {t.perks.join(" · ")}
+                            </p>
+                          )}
                           {!isSoldOut && (
                             <p className="text-[11px] font-medium text-primary mt-1 mb-3">
                               {t.remaining} left
