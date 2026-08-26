@@ -397,6 +397,13 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
+          if (pawapayDepositId) {
+            try {
+              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+            } catch (e) {
+              console.error("Cancel cleanup failed:", e);
+            }
+          }
           toast.error("Mobile Money payment failed or was cancelled.");
         }
       } catch (err) {

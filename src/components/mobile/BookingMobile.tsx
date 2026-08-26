@@ -548,6 +548,13 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             }
           } else if (status?.status === "failed") {
             setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
+            }
             setPawapayError("Payment failed or was cancelled.");
             toast.error("Payment failed. Please try again.");
           }
