@@ -1509,9 +1509,16 @@ function PublishReview({
               </span>
             )}
           </div>
-          <p className="mt-4 text-sm whitespace-pre-wrap">
-            {data.description || "No description yet."}
-          </p>
+          {data.description && data.description.includes("<") ? (
+            <div 
+              className="mt-4 text-sm whitespace-pre-wrap prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: data.description }}
+            />
+          ) : (
+            <p className="mt-4 text-sm whitespace-pre-wrap">
+              {data.description || "No description yet."}
+            </p>
+          )}
         </div>
       </div>
 
