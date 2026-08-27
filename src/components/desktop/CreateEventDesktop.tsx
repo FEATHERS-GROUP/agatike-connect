@@ -233,7 +233,7 @@ export function CreateEventDesktop() {
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
-  const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
+  const currencySymbol = getCurrencySymbol(activeWorkspace?.currency || activeWorkspace?.wallet?.currency);
   const {
     canCreateTicketTier,
     canCreateEvent,
