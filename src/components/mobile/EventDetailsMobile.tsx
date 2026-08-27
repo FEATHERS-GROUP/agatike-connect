@@ -132,10 +132,16 @@ export function EventDetailsMobile({
 
         <div>
           <h2 className="text-xl font-bold mb-3">About</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {d.description} Expect curated sound, immersive lighting and a crowd that brings the
-            energy. Doors open one hour before showtime — bring an ID and your good vibes.
-          </p>
+          {d.description && d.description.includes("<") ? (
+            <div 
+              className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: d.description }}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {d.description || "Expect curated sound, immersive lighting and a crowd that brings the energy. Doors open one hour before showtime — bring an ID and your good vibes."}
+            </p>
+          )}
         </div>
 
         <EventMerch

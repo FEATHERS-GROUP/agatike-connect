@@ -74,10 +74,16 @@ export function EventDetailsDesktop({
 
           <div>
             <h2 className="text-xl font-semibold">About this event</h2>
-            <p className="mt-3 text-muted-foreground leading-relaxed">
-              {d.description} Expect curated sound, immersive lighting and a crowd that brings the
-              energy. Doors open one hour before showtime — bring an ID and your good vibes.
-            </p>
+            {d.description && d.description.includes("<") ? (
+              <div 
+                className="mt-3 text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: d.description }}
+              />
+            ) : (
+              <p className="mt-3 text-muted-foreground leading-relaxed">
+                {d.description || "Expect curated sound, immersive lighting and a crowd that brings the energy. Doors open one hour before showtime — bring an ID and your good vibes."}
+              </p>
+            )}
           </div>
 
           <EventAttendees attendeesList={d.attendeesList} attendeesCount={d.attendeesCount} />
