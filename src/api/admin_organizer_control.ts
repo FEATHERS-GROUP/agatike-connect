@@ -453,11 +453,33 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
           updated_at
         }
         workspace_apps(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
-          id
-          name
-          workspace_id
-          is_active
+          app_type
           created_at
+          id
+          description
+          is_active
+          logo_url
+          name
+          theme_color
+          updated_at
+          workspace_id
+          app_modules {
+            app_id
+            config
+            created_at
+            icon
+            id
+            order
+            title
+            type
+          }
+          app_permissions {
+            app_id
+            created_at
+            id
+            role
+            workspace_user_id
+          }
         }
       }
     `;

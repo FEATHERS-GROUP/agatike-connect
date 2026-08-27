@@ -13,6 +13,12 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/projects")({
   loader: async ({ params }) => {
@@ -57,6 +63,7 @@ function OrganizerProjects() {
   const { tickets, badges, venues, pages, apps } = Route.useLoaderData() as any;
   const [activeTab, setActiveTab] = useState<Tab>("tickets");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedApp, setSelectedApp] = useState<any>(null);
 
   const tabs: { key: Tab; label: string; icon: any; count: number; color: string }[] = [
     {
@@ -473,7 +480,8 @@ function OrganizerProjects() {
                   filteredApps.map((a: any) => (
                     <tr
                       key={a.id}
-                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                      onClick={() => setSelectedApp(a)}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors cursor-pointer"
                     >
                       <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
                         {String(a.id).substring(0, 8)}...
@@ -509,6 +517,81 @@ function OrganizerProjects() {
           )}
         </div>
       </div>
+
+      {/* App Details Modal */}
+      <Dialog open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>
+        <DialogContent className="max-w-2xl bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+              <LayoutGrid className="h-5 w-5 text-[#d7ba7d]" />
+              {selectedApp?.name || "Untitled App"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4 text-sm text-gray-700 dark:text-[#cccccc]">
+            <div className="grid grid-cols-2 gap-4 border-b border-gray-200 dark:border-[#333333] pb-4">
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">ID</p>
+                <p className="font-mono text-xs">{selectedApp?.id}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Status</p>
+                <p>
+                  {selectedApp?.is_active ? (
+                    <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e]">Active</span>
+                  ) : (
+                    <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">Inactive</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Type</p>
+                <p className="capitalize">{selectedApp?.app_type?.replace(/_/g, " ") || "Custom"}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Theme</p>
+                {selectedApp?.theme_color ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-4 h-4 rounded-full border border-gray-200 dark:border-[#333333]" style={{ backgroundColor: selectedApp.theme_color }}></span>
+                    <span className="font-mono text-xs">{selectedApp.theme_color}</span>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-[#797775] italic">—</p>
+                )}
+              </div>
+            </div>
+            
+            {selectedApp?.description && (
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Description</p>
+                <p className="text-[13px]">{selectedApp.description}</p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Modules ({selectedApp?.app_modules?.length || 0})</p>
+                <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 max-h-[300px] overflow-y-auto border border-gray-200 dark:border-[#333333] font-mono text-[11px] leading-relaxed">
+                  {selectedApp?.app_modules?.length > 0 ? (
+                    <pre>{JSON.stringify(selectedApp.app_modules, null, 2)}</pre>
+                  ) : (
+                    <span className="text-gray-500 dark:text-[#797775] italic">No modules configured.</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Permissions ({selectedApp?.app_permissions?.length || 0})</p>
+                <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 max-h-[300px] overflow-y-auto border border-gray-200 dark:border-[#333333] font-mono text-[11px] leading-relaxed">
+                  {selectedApp?.app_permissions?.length > 0 ? (
+                    <pre>{JSON.stringify(selectedApp.app_permissions, null, 2)}</pre>
+                  ) : (
+                    <span className="text-gray-500 dark:text-[#797775] italic">No permissions configured.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
