@@ -5,6 +5,29 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function getPaymentFailureMessage(statusRes: any): string {
+  if (!statusRes) return "Payment failed or was cancelled.";
+  let callbackData = statusRes.raw_callback_data;
+  try {
+    if (typeof callbackData === "string") callbackData = JSON.parse(callbackData);
+  } catch (e) {}
+
+  if (callbackData?.failureReason) {
+    const reason = String(callbackData.failureReason).toUpperCase();
+    if (reason.includes("INSUFFICIENT_FUNDS") || reason.includes("INSUFFICIENT_BALANCE") || reason.includes("BALANCE")) {
+      return "Insufficient funds in your mobile money account. Please top up and try again.";
+    }
+    if (reason.includes("CANCELLED") || reason.includes("ABORTED")) {
+      return "Payment was cancelled on the phone.";
+    }
+    if (reason.includes("TIMEOUT")) {
+      return "Payment request timed out. Please try again.";
+    }
+    return `Payment failed: ${callbackData.failureReason}`;
+  }
+  return "Payment failed or was cancelled.";
+}
+
 export function timeAgo(dateParam: string | Date | number): string {
   if (!dateParam) return "";
 

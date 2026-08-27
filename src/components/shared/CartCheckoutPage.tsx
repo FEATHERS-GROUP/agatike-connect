@@ -214,7 +214,8 @@ export function CartCheckoutPage() {
 
         if (pawaRes?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          toast.error(getPaymentFailureMessage(pawaRes));
         } else if (orderStatus && orderStatus !== "Pending Payment") {
           setIsPollingPawaPay(false);
           setPaymentSuccess(true);

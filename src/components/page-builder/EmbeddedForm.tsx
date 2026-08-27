@@ -196,7 +196,8 @@ export function EmbeddedForm({
           done = true;
           clearInterval(intervalId);
           setIsPollingPawaPay(false);
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          toast.error(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);

@@ -572,8 +572,10 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 console.error("Cancel cleanup failed:", e);
               }
             }
-            setPawapayError("Payment failed or was cancelled.");
-            toast.error("Payment failed. Please try again.");
+            const { getPaymentFailureMessage } = await import("@/lib/utils");
+            const failMessage = getPaymentFailureMessage(status);
+            setPawapayError(failMessage);
+            toast.error(failMessage);
           }
         } catch (e) {
           console.error("Polling error:", e);
