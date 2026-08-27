@@ -251,7 +251,7 @@ export function EmbeddedForm({
     return (
       <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
         <CheckYourPhone
-          status={pawapayError ? "error" : isProcessingPayment ? "processing" : isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isProcessingPayment ? "processing" : "payment"}
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {
