@@ -1050,7 +1050,7 @@ function CheckoutPage() {
 
       {(isPollingPawaPay || !!pawapayError) && (
         <CheckYourPhone
-          status={pawapayError ? "error" : isProcessing ? "processing" : isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isProcessing ? "processing" : "payment"}
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {

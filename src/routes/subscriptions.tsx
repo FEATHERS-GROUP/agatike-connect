@@ -554,7 +554,7 @@ function SubscriptionCard({
         <CheckYourPhone
           amount={paymentAmount}
           currency={paymentCurrency}
-          status={pawapayError ? "error" : isRenewing ? "processing" : isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isRenewing ? "processing" : "payment"}
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={() => {
