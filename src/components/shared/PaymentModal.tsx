@@ -847,8 +847,7 @@ export function PaymentModal({
               <Button
                 onClick={handleProceed}
                 disabled={isProcessing || isGenerating || isSimulating || isBlocked || (paymentMethod === "momo" && (!isMomoComplete || availableNetworks.length === 0))}
-                className="w-full h-[52px] rounded-full text-[17px] font-bold tracking-wide text-primary-foreground hover:opacity-90 shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
-                style={{ backgroundColor: themeColor || "hsl(var(--primary))" }}
+                className="w-full h-[52px] rounded-full text-[17px] font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
               >
                 {isGenerating ? "Generating..." : isProcessing ? "Processing..." : `Pay ${targetCurrency} ${convertedAmount.toLocaleString()}`}
               </Button>
