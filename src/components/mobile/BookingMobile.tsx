@@ -625,7 +625,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       const generatePDFs = async () => {
         const { paymentDetails, bookingRef } = checkoutContext;
         try {
-          await new Promise((r) => setTimeout(r, 500)); // Wait for DOM to render
+          // Wait longer for DOM to render and external images to fetch on mobile
+          await new Promise((r) => setTimeout(r, 1500)); 
           const attachments: any[] = [];
           if (eventProject) {
             const chunkSize = 5;
@@ -638,15 +639,23 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                   return null;
                 }
                 try {
-                  const imgData = await htmlToImage.toJpeg(el, {
+                  const options = {
                     pixelRatio: 1.5,
                     quality: 0.8,
                     backgroundColor: "#ffffff",
                     width: 720,
                     height: 260,
+                    useCORS: true,
+                    allowTaint: true,
                     imagePlaceholder:
                       "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-                  });
+                  };
+                  
+                  // Mobile/Safari hack: First pass primes images & canvas without yielding final data
+                  await htmlToImage.toJpeg(el, options).catch(() => {});
+                  
+                  // Second pass actually captures the full DOM accurately
+                  const imgData = await htmlToImage.toJpeg(el, options);
                   if (!imgData || imgData === "data:,") {
                     throw new Error("htmlToImage returned an empty image.");
                   }
