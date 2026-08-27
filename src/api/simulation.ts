@@ -112,19 +112,21 @@ export const simulateTransaction = createServerFn({ method: "POST" })
         data: { organizer_id: organizerId },
       } as any);
 
-      const customerCollectionPct = planFees.customer_collection_fee_percentage ?? 0;
+      const customerCollectionPct = planFees.customer_collection_fee_percentage;
       const customerCollectionFixed = planFees.customer_collection_fee_fixed ?? 0;
       const customerServicePct = planFees.customer_service_fee_percentage ?? 0;
+
+      const finalCustPct =
+        customerCollectionPct !== null && customerCollectionPct !== undefined
+          ? customerCollectionPct
+          : customerServicePct;
 
       const organizerCollectionPct = planFees.organizer_collection_fee_percentage ?? 0;
       const organizerCollectionFixed = planFees.organizer_collection_fee_fixed ?? 0;
 
       // --- CORE SYSTEM EQUATION & COST HIERARCHY ---
       // 1. Customer Fee Engine
-      const customerFee =
-        basePrice * (customerCollectionPct / 100) +
-        customerCollectionFixed +
-        basePrice * (customerServicePct / 100);
+      const customerFee = basePrice * (finalCustPct / 100) + customerCollectionFixed;
       const totalCustomerCharge = basePrice + customerFee;
 
       // 2. Organizer Pricing Engine

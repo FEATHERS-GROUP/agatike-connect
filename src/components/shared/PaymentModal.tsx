@@ -2,7 +2,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wallet, CreditCard, Smartphone, ArrowRightLeft, Loader2, ChevronLeft, MoreVertical, Shield } from "lucide-react";
+import {
+  Wallet,
+  CreditCard,
+  Smartphone,
+  ArrowRightLeft,
+  Loader2,
+  ChevronLeft,
+  MoreVertical,
+  Shield,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -522,12 +531,14 @@ export function PaymentModal({
                           {targetCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
-                        <span>Service Fee</span>
-                        <span>
-                          {simulation.serviceFee.toFixed(2)} {targetCurrency}
-                        </span>
-                      </div>
+                      {simulation.serviceFee > 0 && (
+                        <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
+                          <span>Service Fee</span>
+                          <span>
+                            {simulation.serviceFee.toFixed(2)} {targetCurrency}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-end font-medium text-foreground md:text-primary-foreground border-t border-border/40 md:border-primary-foreground/20 pt-1">
                         <span>
                           {simulation.totalCustomerCharge.toLocaleString()} {targetCurrency}
@@ -640,218 +651,287 @@ export function PaymentModal({
 
         {/* Mobile View */}
         <div className="flex md:hidden flex-col h-full bg-[#f4f5f7] dark:bg-background overflow-hidden relative font-sans">
-           {/* Mobile Header */}
-           <div className="px-5 py-4 flex items-center justify-between sticky top-0 bg-[#f4f5f7] dark:bg-background z-30 pt-safe-top">
-              <button onClick={() => onOpenChange(false)} className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground">
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <h1 className="font-bold text-[17px] tracking-tight">Payment Method</h1>
-              <button className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground">
-                <MoreVertical className="h-5 w-5" />
-              </button>
-           </div>
-           
-           <div className="flex-1 overflow-y-auto px-5 py-2 pb-32 space-y-6">
-               {/* Premium Top Card */}
-               <div className="bg-primary text-primary-foreground p-6 rounded-3xl relative overflow-hidden shadow-xl shadow-primary/20">
-                  <div className="absolute -top-4 -right-4 p-4 opacity-[0.08]">
-                     <Wallet className="h-32 w-32" />
+          {/* Mobile Header */}
+          <div className="px-5 py-4 flex items-center justify-between sticky top-0 bg-[#f4f5f7] dark:bg-background z-30 pt-safe-top">
+            <button
+              onClick={() => onOpenChange(false)}
+              className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <h1 className="font-bold text-[17px] tracking-tight">Payment Method</h1>
+            <button className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground">
+              <MoreVertical className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-5 py-2 pb-32 space-y-6">
+            {/* Premium Top Card */}
+            <div className="bg-primary text-primary-foreground p-6 rounded-3xl relative overflow-hidden shadow-xl shadow-primary/20">
+              <div className="absolute -top-4 -right-4 p-4 opacity-[0.08]">
+                <Wallet className="h-32 w-32" />
+              </div>
+              <div className="relative z-10">
+                <p className="text-primary-foreground/80 text-[13px] font-medium mb-1 tracking-wide uppercase">
+                  Total to Pay
+                </p>
+                <h2 className="text-3xl font-bold tracking-tight">
+                  {convertedAmount.toLocaleString()}{" "}
+                  <span className="text-xl font-medium text-primary-foreground/80">
+                    {targetCurrency}
+                  </span>
+                </h2>
+
+                {isSimulating ? (
+                  <div className="mt-5 flex items-center gap-2 text-xs text-primary-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating precise fees...
                   </div>
-                  <div className="relative z-10">
-                     <p className="text-primary-foreground/80 text-[13px] font-medium mb-1 tracking-wide uppercase">Total to Pay</p>
-                     <h2 className="text-3xl font-bold tracking-tight">{convertedAmount.toLocaleString()} <span className="text-xl font-medium text-primary-foreground/80">{targetCurrency}</span></h2>
-                     
-                     {isSimulating ? (
-                        <div className="mt-5 flex items-center gap-2 text-xs text-primary-foreground">
-                           <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating precise fees...
-                        </div>
-                     ) : (
-                         <div className="mt-5 flex items-center gap-1.5 text-[11px] text-primary bg-background font-bold tracking-wider uppercase w-fit px-3 py-1.5 rounded-full shadow-sm">
-                           <Shield className="h-3.5 w-3.5" /> 100% Secure Payment
-                         </div>
-                     )}
-                     
-                     {!isSimulating && simulation && (paymentMethod === "momo" || paymentMethod === "card") && (
-                        <div className="mt-4 pt-4 border-t border-primary-foreground/20 space-y-2 text-sm text-primary-foreground/90">
-                           <div className="flex justify-between">
-                              <span>Base Ticket</span>
-                              <span>{simulation.convertedBasePrice?.toLocaleString() || baseAmount} {targetCurrency}</span>
-                           </div>
-                           <div className="flex justify-between">
-                              <span>Service Fee</span>
-                              <span>{simulation.serviceFee.toFixed(2)} {targetCurrency}</span>
-                           </div>
-                           {baseCurrency !== targetCurrency && (
-                              <div className="flex justify-between pt-2 border-t border-primary-foreground/20 text-xs text-primary-foreground/80">
-                                 <span>Live Rate</span>
-                                 <span className="font-mono">
-                                    1 {baseCurrency} = {markupRate.toFixed(4)} {targetCurrency}
-                                 </span>
-                              </div>
-                           )}
-                        </div>
-                     )}
-                     
-                     {isBlocked && (
-                         <div className="mt-3 p-2 bg-red-500/20 text-red-400 text-[11px] rounded-lg border border-red-500/30">
-                           Transaction blocked due to high network fees.
-                         </div>
-                     )}
+                ) : (
+                  <div className="mt-5 flex items-center gap-1.5 text-[11px] text-primary bg-background font-bold tracking-wider uppercase w-fit px-3 py-1.5 rounded-full shadow-sm">
+                    <Shield className="h-3.5 w-3.5" /> 100% Secure Payment
                   </div>
-               </div>
+                )}
 
-               {/* Payment Options */}
-               <div className="space-y-4">
-                 {/* Mobile Money */}
-                 <div className={`bg-white dark:bg-card p-4 rounded-3xl shadow-sm border-[2px] transition-colors ${paymentMethod === 'momo' ? 'border-primary' : 'border-transparent'}`}>
-                    <button onClick={() => setPaymentMethod("momo")} className="w-full flex items-center justify-between">
-                       <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 bg-secondary/50 rounded-2xl flex items-center justify-center">
-                            <Smartphone className="h-6 w-6 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-bold text-[15px]">Mobile Money</p>
-                            <p className="text-xs text-muted-foreground mt-0.5 font-medium">Pay with Phone</p>
-                          </div>
-                       </div>
-                       <div className={`h-[22px] w-[22px] rounded-full border-[2px] flex items-center justify-center ${paymentMethod === 'momo' ? 'border-primary' : 'border-border/60'}`}>
-                          {paymentMethod === 'momo' && <div className="h-3 w-3 rounded-full bg-primary" />}
-                       </div>
-                    </button>
-                    {paymentMethod === "momo" && (
-                        <div className="mt-4 pt-4 border-t border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2">
-                           <div className="space-y-1.5 text-left">
-                              <Label className="text-[11px] text-muted-foreground px-1">Network Provider</Label>
-                              {isWalletLoading || isProfitableLoading ? (
-                                <div className="h-11 w-full animate-pulse bg-secondary rounded-xl" />
-                              ) : availableNetworks.length === 0 ? (
-                                <div className="p-3 bg-red-50 text-red-600 border border-red-200 rounded-xl text-xs font-medium">
-                                  No networks configured.
-                                </div>
-                              ) : (
-                                <Select value={network} onValueChange={setNetwork}>
-                                  <SelectTrigger className="bg-secondary/30 border-0 h-11 rounded-xl focus:ring-1 focus:ring-amber-500/50 font-medium text-sm">
-                                    <SelectValue placeholder="Select Network" />
-                                  </SelectTrigger>
-                                  <SelectContent className="max-h-64 rounded-xl">
-                                    {availableNetworks.map((net) => (
-                                      <SelectItem key={net.value} value={net.value} className="rounded-lg">
-                                        {net.label} ({net.curr})
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            </div>
-                            
-                            {availableNetworks.length > 0 && (
-                              <div className="space-y-1.5 text-left">
-                                <div className="flex items-center justify-between px-1">
-                                  <Label className="text-[11px] text-muted-foreground">Phone Number</Label>
-                                  {userPhone && phone !== userPhone && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        const cleanPhone = userPhone.replace(/\D/g, "");
-                                        const max = selectedNetworkObj?.maxLen || 15;
-                                        let val = cleanPhone;
-                                        if (selectedNetworkObj && val.startsWith(selectedNetworkObj.code)) {
-                                          val = val.slice(selectedNetworkObj.code.length);
-                                        }
-                                        if (val.startsWith("0")) {
-                                          val = val.slice(1);
-                                        }
-                                        if (val.length > max) {
-                                          val = val.slice(-max);
-                                        }
-                                        setPhone(val);
-                                      }}
-                                      className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
-                                    >
-                                      Use my saved number
-                                    </button>
-                                  )}
-                                </div>
-                                <div className="flex h-11 bg-secondary/30 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-amber-500/50 transition-all">
-                                  {selectedNetworkObj && (
-                                    <div className="flex items-center px-4 bg-black/5 dark:bg-white/5 text-[15px] font-medium border-r border-border/40">
-                                      +{selectedNetworkObj.code}
-                                    </div>
-                                  )}
-                                  <Input
-                                    type="tel"
-                                    placeholder={selectedNetworkObj ? `e.g. ${"7".padEnd(selectedNetworkObj.maxLen, "0")}` : "e.g. 788123456"}
-                                    value={phone}
-                                    onChange={(e) => {
-                                      let val = e.target.value.replace(/\D/g, "");
-                                      const max = selectedNetworkObj?.maxLen || 15;
-                                      if (val.startsWith("0") && val.length > 1) {
-                                        val = val.slice(1);
-                                      }
-                                      if (val.length <= max) setPhone(val);
-                                    }}
-                                    className="flex-1 border-0 h-full focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent rounded-none text-[15px] font-medium"
-                                  />
-                                </div>
-                              </div>
-                            )}
+                {!isSimulating &&
+                  simulation &&
+                  (paymentMethod === "momo" || paymentMethod === "card") && (
+                    <div className="mt-4 pt-4 border-t border-primary-foreground/20 space-y-2 text-sm text-primary-foreground/90">
+                      <div className="flex justify-between">
+                        <span>Base Ticket</span>
+                        <span>
+                          {simulation.convertedBasePrice?.toLocaleString() || baseAmount}{" "}
+                          {targetCurrency}
+                        </span>
+                      </div>
+                      {simulation.serviceFee > 0 && (
+                        <div className="flex justify-between">
+                          <span>Service Fee</span>
+                          <span>
+                            {simulation.serviceFee.toFixed(2)} {targetCurrency}
+                          </span>
                         </div>
-                    )}
-                 </div>
-
-                 {/* Credit Card */}
-                 {supportedNetworks.includes("AGATIKE_CARD") && (
-                 <div className={`bg-white dark:bg-card p-4 rounded-3xl shadow-sm border-[2px] transition-colors ${paymentMethod === 'card' ? 'border-primary' : 'border-transparent'}`}>
-                    <button onClick={() => setPaymentMethod("card")} className="w-full flex items-center justify-between">
-                       <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 bg-secondary/50 rounded-2xl flex items-center justify-center">
-                            <CreditCard className="h-6 w-6 text-indigo-600 dark:text-indigo-400" strokeWidth={2.5} />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-bold text-[15px]">Credit Card</p>
-                            <p className="text-xs text-muted-foreground mt-0.5 font-medium">Visa, Mastercard</p>
-                          </div>
-                       </div>
-                       <div className={`h-[22px] w-[22px] rounded-full border-[2px] flex items-center justify-center ${paymentMethod === 'card' ? 'border-primary' : 'border-border/60'}`}>
-                          {paymentMethod === 'card' && <div className="h-3 w-3 rounded-full bg-primary" />}
-                       </div>
-                    </button>
-                    {paymentMethod === "card" && (
-                        <div className="mt-4 pt-4 border-t border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2">
-                           <div className="space-y-1.5 text-left">
-                              <Label className="text-[11px] text-muted-foreground px-1">Billing Currency</Label>
-                              <Select value={cardCurrency} onValueChange={setCardCurrency}>
-                                <SelectTrigger className="bg-secondary/30 border-0 h-11 rounded-xl focus:ring-1 focus:ring-amber-500/50 font-medium text-sm">
-                                  <SelectValue placeholder="Select Currency" />
-                                </SelectTrigger>
-                                <SelectContent className="max-h-64 rounded-xl">
-                                  {CARD_CURRENCIES.map((curr) => (
-                                    <SelectItem key={curr.value} value={curr.value} className="rounded-lg">
-                                      {curr.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                      )}
+                      {baseCurrency !== targetCurrency && (
+                        <div className="flex justify-between pt-2 border-t border-primary-foreground/20 text-xs text-primary-foreground/80">
+                          <span>Live Rate</span>
+                          <span className="font-mono">
+                            1 {baseCurrency} = {markupRate.toFixed(4)} {targetCurrency}
+                          </span>
                         </div>
-                    )}
-                 </div>
-                 )}
-               </div>
-           </div>
+                      )}
+                    </div>
+                  )}
 
-           {/* Mobile Footer */}
-           <div className="fixed bottom-0 left-0 right-0 px-5 py-4 pb-safe bg-[#f4f5f7]/90 dark:bg-background/90 backdrop-blur-md z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
-              <Button
-                onClick={handleProceed}
-                disabled={isProcessing || isGenerating || isSimulating || isBlocked || (paymentMethod === "momo" && (!isMomoComplete || availableNetworks.length === 0))}
-                className="w-full h-[52px] rounded-full text-[17px] font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
+                {isBlocked && (
+                  <div className="mt-3 p-2 bg-red-500/20 text-red-400 text-[11px] rounded-lg border border-red-500/30">
+                    Transaction blocked due to high network fees.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Payment Options */}
+            <div className="space-y-4">
+              {/* Mobile Money */}
+              <div
+                className={`bg-white dark:bg-card p-4 rounded-3xl shadow-sm border-[2px] transition-colors ${paymentMethod === "momo" ? "border-primary" : "border-transparent"}`}
               >
-                {isGenerating ? "Generating..." : isProcessing ? "Processing..." : `Pay ${targetCurrency} ${convertedAmount.toLocaleString()}`}
-              </Button>
-           </div>
+                <button
+                  onClick={() => setPaymentMethod("momo")}
+                  className="w-full flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 bg-secondary/50 rounded-2xl flex items-center justify-center">
+                      <Smartphone
+                        className="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+                        strokeWidth={2.5}
+                      />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-[15px]">Mobile Money</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                        Pay with Phone
+                      </p>
+                    </div>
+                  </div>
+                  <div
+                    className={`h-[22px] w-[22px] rounded-full border-[2px] flex items-center justify-center ${paymentMethod === "momo" ? "border-primary" : "border-border/60"}`}
+                  >
+                    {paymentMethod === "momo" && (
+                      <div className="h-3 w-3 rounded-full bg-primary" />
+                    )}
+                  </div>
+                </button>
+                {paymentMethod === "momo" && (
+                  <div className="mt-4 pt-4 border-t border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2">
+                    <div className="space-y-1.5 text-left">
+                      <Label className="text-[11px] text-muted-foreground px-1">
+                        Network Provider
+                      </Label>
+                      {isWalletLoading || isProfitableLoading ? (
+                        <div className="h-11 w-full animate-pulse bg-secondary rounded-xl" />
+                      ) : availableNetworks.length === 0 ? (
+                        <div className="p-3 bg-red-50 text-red-600 border border-red-200 rounded-xl text-xs font-medium">
+                          No networks configured.
+                        </div>
+                      ) : (
+                        <Select value={network} onValueChange={setNetwork}>
+                          <SelectTrigger className="bg-secondary/30 border-0 h-11 rounded-xl focus:ring-1 focus:ring-amber-500/50 font-medium text-sm">
+                            <SelectValue placeholder="Select Network" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64 rounded-xl">
+                            {availableNetworks.map((net) => (
+                              <SelectItem key={net.value} value={net.value} className="rounded-lg">
+                                {net.label} ({net.curr})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+
+                    {availableNetworks.length > 0 && (
+                      <div className="space-y-1.5 text-left">
+                        <div className="flex items-center justify-between px-1">
+                          <Label className="text-[11px] text-muted-foreground">Phone Number</Label>
+                          {userPhone && phone !== userPhone && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const cleanPhone = userPhone.replace(/\D/g, "");
+                                const max = selectedNetworkObj?.maxLen || 15;
+                                let val = cleanPhone;
+                                if (selectedNetworkObj && val.startsWith(selectedNetworkObj.code)) {
+                                  val = val.slice(selectedNetworkObj.code.length);
+                                }
+                                if (val.startsWith("0")) {
+                                  val = val.slice(1);
+                                }
+                                if (val.length > max) {
+                                  val = val.slice(-max);
+                                }
+                                setPhone(val);
+                              }}
+                              className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
+                            >
+                              Use my saved number
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex h-11 bg-secondary/30 rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-amber-500/50 transition-all">
+                          {selectedNetworkObj && (
+                            <div className="flex items-center px-4 bg-black/5 dark:bg-white/5 text-[15px] font-medium border-r border-border/40">
+                              +{selectedNetworkObj.code}
+                            </div>
+                          )}
+                          <Input
+                            type="tel"
+                            placeholder={
+                              selectedNetworkObj
+                                ? `e.g. ${"7".padEnd(selectedNetworkObj.maxLen, "0")}`
+                                : "e.g. 788123456"
+                            }
+                            value={phone}
+                            onChange={(e) => {
+                              let val = e.target.value.replace(/\D/g, "");
+                              const max = selectedNetworkObj?.maxLen || 15;
+                              if (val.startsWith("0") && val.length > 1) {
+                                val = val.slice(1);
+                              }
+                              if (val.length <= max) setPhone(val);
+                            }}
+                            className="flex-1 border-0 h-full focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent rounded-none text-[15px] font-medium"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Credit Card */}
+              {supportedNetworks.includes("AGATIKE_CARD") && (
+                <div
+                  className={`bg-white dark:bg-card p-4 rounded-3xl shadow-sm border-[2px] transition-colors ${paymentMethod === "card" ? "border-primary" : "border-transparent"}`}
+                >
+                  <button
+                    onClick={() => setPaymentMethod("card")}
+                    className="w-full flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 bg-secondary/50 rounded-2xl flex items-center justify-center">
+                        <CreditCard
+                          className="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+                          strokeWidth={2.5}
+                        />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-[15px]">Credit Card</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                          Visa, Mastercard
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`h-[22px] w-[22px] rounded-full border-[2px] flex items-center justify-center ${paymentMethod === "card" ? "border-primary" : "border-border/60"}`}
+                    >
+                      {paymentMethod === "card" && (
+                        <div className="h-3 w-3 rounded-full bg-primary" />
+                      )}
+                    </div>
+                  </button>
+                  {paymentMethod === "card" && (
+                    <div className="mt-4 pt-4 border-t border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2">
+                      <div className="space-y-1.5 text-left">
+                        <Label className="text-[11px] text-muted-foreground px-1">
+                          Billing Currency
+                        </Label>
+                        <Select value={cardCurrency} onValueChange={setCardCurrency}>
+                          <SelectTrigger className="bg-secondary/30 border-0 h-11 rounded-xl focus:ring-1 focus:ring-amber-500/50 font-medium text-sm">
+                            <SelectValue placeholder="Select Currency" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64 rounded-xl">
+                            {CARD_CURRENCIES.map((curr) => (
+                              <SelectItem
+                                key={curr.value}
+                                value={curr.value}
+                                className="rounded-lg"
+                              >
+                                {curr.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Footer */}
+          <div className="fixed bottom-0 left-0 right-0 px-5 py-4 pb-safe bg-[#f4f5f7]/90 dark:bg-background/90 backdrop-blur-md z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+            <Button
+              onClick={handleProceed}
+              disabled={
+                isProcessing ||
+                isGenerating ||
+                isSimulating ||
+                isBlocked ||
+                (paymentMethod === "momo" && (!isMomoComplete || availableNetworks.length === 0))
+              }
+              className="w-full h-[52px] rounded-full text-[17px] font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
+            >
+              {isGenerating
+                ? "Generating..."
+                : isProcessing
+                  ? "Processing..."
+                  : `Pay ${targetCurrency} ${convertedAmount.toLocaleString()}`}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

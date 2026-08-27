@@ -798,6 +798,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             if (subPhone) {
               const currency = body?.currency || "";
               const localAmount = body?.requestedAmount || body?.depositedAmount || tx.amount;
+
               const spaceName = sub.space?.name || "the space";
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date

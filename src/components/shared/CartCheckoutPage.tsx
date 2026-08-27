@@ -367,12 +367,14 @@ export function CartCheckoutPage() {
                 {workspaceCurrency} {cartTotal.toLocaleString()}
               </span>
             </div>
-            <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
-              <span className="text-sm">Taxes (Service Fee)</span>
-              <span className="font-medium text-white">
-                {workspaceCurrency} {taxAmount.toLocaleString()}
-              </span>
-            </div>
+            {taxAmount > 0 && (
+              <div className="flex justify-between items-center text-white/80 pb-4 border-b border-white/10">
+                <span className="text-sm">Taxes (Service Fee)</span>
+                <span className="font-medium text-white">
+                  {workspaceCurrency} {taxAmount.toLocaleString()}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between items-center pt-2">
               <span className="font-semibold text-base">Total due today</span>
               <span className="text-xl font-bold">

@@ -394,7 +394,7 @@ export const rollbackFailedCheckout = createServerFn({ method: "POST" })
         `mutation CancelAttendees($booking_ref: String!) {
           update_event_attendees(
             where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
-            _set: { status: "Cancelled" }
+            _set: { status: "Failed" }
           ) { affected_rows }
         }`,
         { booking_ref },
