@@ -883,28 +883,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
           </div>
         </div>
 
-        {/* Payment Method */}
-        <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-bold text-foreground text-[15px]">Payment Method</h2>
-            <button onClick={() => setIsPaymentModalOpen(true)} className="text-primary text-[13px] font-medium tracking-wide">Change</button>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-               <div className="h-10 w-12 bg-secondary/50 rounded-lg flex items-center justify-center">
-                  {paymentMethod === 'momo' ? <Smartphone className="h-5 w-5 text-indigo-700 dark:text-indigo-400" /> : <CreditCard className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />}
-               </div>
-               <div>
-                 <p className="font-bold text-sm">{paymentMethod === 'momo' ? 'Mobile Money' : 'Credit Card'}</p>
-                 <p className="text-[11px] text-muted-foreground mt-0.5">{paymentMethod === 'momo' ? 'Pay with Phone' : 'Secure payment'}</p>
-               </div>
-            </div>
-            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
-              <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
-            </div>
-          </div>
-        </div>
-
         {/* Trip Details (Event Details) */}
         <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
            <div className="flex justify-between items-center mb-5">
@@ -1016,7 +994,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             disabled={!isFormValid || isCheckingOut || isGenerating}
             className="w-full h-[52px] rounded-full text-[17px] font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
           >
-            Pay Now
+            Next
           </Button>
         )}
       </div>
