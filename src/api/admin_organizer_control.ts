@@ -452,6 +452,13 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
           is_published
           updated_at
         }
+        workspace_apps(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          id
+          name
+          workspace_id
+          is_active
+          created_at
+        }
       }
     `;
 
@@ -499,6 +506,10 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
       pages: (data.workspace_pages || []).map((p: any) => ({
         ...p,
         workspaceName: wsNameMap[p.workspace_id] || "—",
+      })),
+      apps: (data.workspace_apps || []).map((a: any) => ({
+        ...a,
+        workspaceName: wsNameMap[a.workspace_id] || "—",
       })),
     };
   });

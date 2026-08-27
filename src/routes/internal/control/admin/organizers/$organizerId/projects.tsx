@@ -10,6 +10,7 @@ import {
   Globe,
   Lock,
   ExternalLink,
+  LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
   component: OrganizerProjects,
 });
 
-type Tab = "tickets" | "badges" | "venues" | "pages";
+type Tab = "tickets" | "badges" | "venues" | "pages" | "apps";
 
 function EmptyRow({ cols, label }: { cols: number; label: string }) {
   return (
@@ -53,7 +54,7 @@ function WorkspaceCell({ name }: { name: string }) {
 }
 
 function OrganizerProjects() {
-  const { tickets, badges, venues, pages } = Route.useLoaderData() as any;
+  const { tickets, badges, venues, pages, apps } = Route.useLoaderData() as any;
   const [activeTab, setActiveTab] = useState<Tab>("tickets");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -86,6 +87,13 @@ function OrganizerProjects() {
       count: pages?.length || 0,
       color: "text-[#84c87e]",
     },
+    {
+      key: "apps",
+      label: "Custom Apps",
+      icon: LayoutGrid,
+      count: apps?.length || 0,
+      color: "text-[#d7ba7d]",
+    },
   ];
 
   const q = searchQuery.toLowerCase();
@@ -109,6 +117,11 @@ function OrganizerProjects() {
       (p.title || "").toLowerCase().includes(q) ||
       (p.slug || "").toLowerCase().includes(q) ||
       (p.workspaceName || "").toLowerCase().includes(q),
+  );
+  const filteredApps = (apps || []).filter(
+    (a: any) =>
+      (a.name || "").toLowerCase().includes(q) ||
+      (a.workspaceName || "").toLowerCase().includes(q),
   );
 
   return (
@@ -423,6 +436,70 @@ function OrganizerProjects() {
                       </td>
                       <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
                         {p.updated_at ? new Date(p.updated_at).toLocaleDateString("en-US") : "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {/* Custom Apps */}
+          {activeTab === "apps" && (
+            <table className="w-full text-left text-[13px] whitespace-nowrap">
+              <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
+                <tr>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    App Name
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Created At
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
+                {filteredApps.length === 0 ? (
+                  <EmptyRow cols={5} label="No custom apps found." />
+                ) : (
+                  filteredApps.map((a: any) => (
+                    <tr
+                      key={a.id}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors"
+                    >
+                      <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
+                        {String(a.id).substring(0, 8)}...
+                      </td>
+                      <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <LayoutGrid className="h-3.5 w-3.5 text-[#d7ba7d] shrink-0" />
+                          {a.name || "Untitled App"}
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        <WorkspaceCell name={a.workspaceName} />
+                      </td>
+                      <td className="py-2 px-4">
+                        {a.is_active ? (
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e]">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
+                        {a.created_at ? new Date(a.created_at).toLocaleDateString("en-US") : "—"}
                       </td>
                     </tr>
                   ))
