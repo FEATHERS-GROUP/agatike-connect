@@ -122,6 +122,7 @@ export function FacilityCheckoutSheet({
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [bookingRef, setBookingRef] = useState<string>("");
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
@@ -570,7 +571,8 @@ export function FacilityCheckoutSheet({
           }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -1262,7 +1264,17 @@ export function FacilityCheckoutSheet({
           isGenerating) && (
           <CheckYourPhone
             themeColor={themeColor || "var(--primary)"}
-            status={isGenerating ? "generating" : "payment"}
+            status={
+              pawapayError
+                ? "error"
+                : bookingMutation.isPending
+                  ? "processing"
+                  : isGenerating
+                    ? "generating"
+                    : "payment"
+            }
+            errorMessage={pawapayError || undefined}
+            onClose={() => setPawapayError(null)}
             onCancel={async () => {
               setIsPollingPawaPay(false);
               if (pawapayDepositId) {

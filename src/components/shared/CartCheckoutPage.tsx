@@ -44,6 +44,7 @@ export function CartCheckoutPage() {
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [bookingRef, setBookingRef] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [actualCharge, setActualCharge] = useState<number | null>(null);
 
@@ -197,7 +198,7 @@ export function CartCheckoutPage() {
       }
     },
     onError: (e: any) => {
-      toast.error(e.message || "Failed to initiate payment.");
+      setPawapayError(e.message || "Failed to initiate payment.");
     },
   });
 
@@ -214,7 +215,8 @@ export function CartCheckoutPage() {
 
         if (pawaRes?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          setPawapayError(getPaymentFailureMessage(pawaRes));
         } else if (orderStatus && orderStatus !== "Pending Payment") {
           setIsPollingPawaPay(false);
           setPaymentSuccess(true);
@@ -275,6 +277,9 @@ export function CartCheckoutPage() {
       <CheckYourPhone
         amount={actualCharge || cartTotal}
         themeColor={themeColor}
+        status={pawapayError ? "error" : checkoutMutation.isPending ? "processing" : "payment"}
+        errorMessage={pawapayError || undefined}
+        onClose={() => setPawapayError(null)}
         onCancel={async () => {
           setIsPollingPawaPay(false);
           if (pawapayDepositId) {

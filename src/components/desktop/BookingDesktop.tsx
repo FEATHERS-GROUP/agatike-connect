@@ -537,7 +537,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       }
     },
     onError: (e: any) => {
-      toast.error(e.message || "Checkout failed");
+      setPawapayError(e.message || "Checkout failed");
     },
   });
 
@@ -572,8 +572,9 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
                 console.error("Cancel cleanup failed:", e);
               }
             }
-            setPawapayError("Payment failed or was cancelled.");
-            toast.error("Payment failed. Please try again.");
+            const { getPaymentFailureMessage } = await import("@/lib/utils");
+            const failMessage = getPaymentFailureMessage(status);
+            setPawapayError(failMessage);
           }
         } catch (e) {
           console.error("Polling error:", e);
@@ -818,7 +819,17 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       <div className="min-h-screen bg-background text-foreground">
         {!isSubdomain && <Navbar />}
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status={
+            pawapayError
+              ? "error"
+              : isCheckingOut
+                ? "processing"
+                : isGenerating
+                  ? "generating"
+                  : "payment"
+          }
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

@@ -103,6 +103,7 @@ function SubscriptionCard({
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [paymentCurrency, setPaymentCurrency] = useState<string>("");
 
@@ -549,10 +550,13 @@ function SubscriptionCard({
       )}
 
       {/* Processing overlay for PawaPay */}
-      {isPollingPawaPay && (
+      {(isPollingPawaPay || !!pawapayError) && (
         <CheckYourPhone
           amount={paymentAmount}
           currency={paymentCurrency}
+          status={pawapayError ? "error" : isRenewing ? "processing" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={() => {
             setIsPollingPawaPay(false);
             setIsRenewing(false);

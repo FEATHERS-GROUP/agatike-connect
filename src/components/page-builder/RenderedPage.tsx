@@ -63,6 +63,7 @@ export function RenderedPage({
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
 
   const [productCheckoutSheetOpen, setProductCheckoutSheetOpen] = useState(false);
   const [selectedProductForCheckout, setSelectedProductForCheckout] = useState<any>(null);
@@ -208,7 +209,8 @@ export function RenderedPage({
           done = true;
           clearInterval(intervalId);
           setIsPollingPawaPay(false);
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);

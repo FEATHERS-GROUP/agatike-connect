@@ -56,6 +56,7 @@ function PublicFormPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [pendingFormData, setPendingFormData] = useState<Record<string, any> | null>(null);
 
   const { data: form, isLoading } = useQuery({
@@ -320,6 +321,9 @@ function PublicFormPage() {
         <CheckYourPhone
           amount={Number(paymentAmount) || undefined}
           themeColor={themeColor}
+          status={pawapayError ? "error" : isProcessingPayment ? "processing" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             setIsProcessingPayment(false);

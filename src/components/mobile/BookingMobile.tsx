@@ -526,7 +526,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       }
     },
     onError: (e: any) => {
-      toast.error(e.message || "Checkout failed");
+      setPawapayError(e.message || "Checkout failed");
     },
   });
 
@@ -558,8 +558,9 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                 console.error("Cancel cleanup failed:", e);
               }
             }
-            setPawapayError("Payment failed or was cancelled.");
-            toast.error("Payment failed. Please try again.");
+            const { getPaymentFailureMessage } = await import("@/lib/utils");
+            const failMessage = getPaymentFailureMessage(status);
+            setPawapayError(failMessage);
           }
         } catch (e) {
           console.error("Polling error:", e);
@@ -843,11 +844,25 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     </div>
   );
 
-  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+  if (
+    pawapayError ||
+    isPollingPawaPay ||
+    ((isCheckingOut || isGenerating) && paymentMethod === "momo")
+  ) {
     return (
       <>
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status={
+            pawapayError
+              ? "error"
+              : isCheckingOut
+                ? "processing"
+                : isGenerating
+                  ? "generating"
+                  : "payment"
+          }
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

@@ -60,6 +60,7 @@ export function EmbeddedForm({
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
 
   const isPreview = formId === "preview-id";
 
@@ -196,7 +197,8 @@ export function EmbeddedForm({
           done = true;
           clearInterval(intervalId);
           setIsPollingPawaPay(false);
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -249,7 +251,9 @@ export function EmbeddedForm({
     return (
       <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
         <CheckYourPhone
-          status="payment"
+          status={pawapayError ? "error" : isProcessingPayment ? "processing" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             setIsProcessingPayment(false);

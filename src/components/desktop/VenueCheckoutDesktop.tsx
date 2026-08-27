@@ -76,6 +76,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
   // Fetch Ticket Projects for PDF generation
@@ -388,7 +389,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       }
     },
     onError: (e: any) => {
-      toast.error(e.message || "Checkout failed");
+      setPawapayError(e.message || "Checkout failed");
     },
   });
 
@@ -419,7 +420,8 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
               console.error("Cancel cleanup failed:", e);
             }
           }
-          toast.error("Mobile Money payment failed or was cancelled.");
+          const { getPaymentFailureMessage } = await import("@/lib/utils");
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -620,12 +622,26 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
     </div>
   );
 
-  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+  if (
+    pawapayError ||
+    isPollingPawaPay ||
+    ((isCheckingOut || isGenerating) && paymentMethod === "momo")
+  ) {
     return (
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
         <Navbar />
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status={
+            pawapayError
+              ? "error"
+              : isCheckingOut
+                ? "processing"
+                : isGenerating
+                  ? "generating"
+                  : "payment"
+          }
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {
