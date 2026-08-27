@@ -58,8 +58,8 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           providerStatus === "COMPLETED"
             ? "completed"
             : providerStatus === "FAILED" ||
-                providerStatus === "REJECTED" ||
-                providerStatus === "REVERSED"
+              providerStatus === "REJECTED" ||
+              providerStatus === "REVERSED"
               ? "failed"
               : "pending",
         raw_callback_data: body,
@@ -482,9 +482,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                     customerDetails,
                     parseFloat(totalPaidStr || "0"),
                     firstAtt?.events?.workspaces?.currency ||
-                      firstAtt?.events?.workspaces?.wallet?.currency ||
-                      body?.baseCurrency ||
-                      "RWF",
+                    firstAtt?.events?.workspaces?.wallet?.currency ||
+                    body?.baseCurrency ||
+                    "RWF",
                     body?.currency || "RWF",
                   );
                   productPdfBase64 = pdfBuffer.toString("base64");
@@ -502,9 +502,9 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                         order,
                         orgDetails,
                         firstAtt?.events?.workspaces?.currency ||
-                          firstAtt?.events?.workspaces?.wallet?.currency ||
-                          body?.baseCurrency ||
-                          "RWF",
+                        firstAtt?.events?.workspaces?.wallet?.currency ||
+                        body?.baseCurrency ||
+                        "RWF",
                       );
                       attachments.push({
                         filename: `Voucher-${order.qr_code_string || "GiftCard"}.pdf`,
@@ -705,10 +705,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
 
               const formattedStart = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
                 : sub.start_date;
 
               if (sub.booking_type === "group" && sub.team_members && sub.team_members.length > 0) {
@@ -777,10 +777,10 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
               const planName = sub.plan_name || "your plan";
               const startDate = sub.start_date
                 ? new Date(sub.start_date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
                 : "today";
 
               const smsText =
