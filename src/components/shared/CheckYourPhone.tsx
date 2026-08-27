@@ -7,7 +7,7 @@ interface CheckYourPhoneProps {
   amount?: number;
   currency?: string;
   themeColor?: string;
-  status?: "payment" | "generating" | "finalizing" | "error";
+  status?: "payment" | "generating" | "finalizing" | "error" | "processing";
   errorMessage?: string;
   onCancel: () => void;
   onClose?: () => void;
@@ -29,7 +29,7 @@ export const CheckYourPhone = ({
     try {
       await onCancel();
     } finally {
-      // If the component is still mounted, reset state
+      setIsCancelling(false);
     }
   };
 
@@ -45,7 +45,9 @@ export const CheckYourPhone = ({
           ? "Payment Failed"
           : status === "generating"
             ? "Generating Tickets"
-            : "Check Your Phone"}
+            : status === "processing"
+              ? "Initiating Payment"
+              : "Check Your Phone"}
       </h1>
 
       <p
@@ -55,7 +57,9 @@ export const CheckYourPhone = ({
           ? errorMessage || "Your payment failed or was cancelled."
           : status === "generating"
             ? "Your payment was successful! Please wait while we prepare and issue your tickets."
-            : `We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment${amount ? ` of ${currency} ${amount.toLocaleString()}` : ""}.`}
+            : status === "processing"
+              ? "Initiating payment with your mobile money provider. Please wait..."
+              : `We've sent a payment request to your mobile number. Please enter your PIN to confirm the payment${amount ? ` of ${currency} ${amount.toLocaleString()}` : ""}.`}
       </p>
 
       {!isError && (

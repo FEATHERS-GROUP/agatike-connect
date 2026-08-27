@@ -819,7 +819,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       <div className="min-h-screen bg-background text-foreground">
         {!isSubdomain && <Navbar />}
         <CheckYourPhone
-          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isCheckingOut ? "processing" : isGenerating ? "generating" : "payment"}
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {

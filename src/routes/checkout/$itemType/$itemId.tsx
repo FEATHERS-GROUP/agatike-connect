@@ -240,7 +240,7 @@ function CheckoutPage() {
       <CheckYourPhone
         amount={actualCharge || total}
         themeColor={themeColor}
-        status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+        status={pawapayError ? "error" : paymentMutation.isPending ? "processing" : isGenerating ? "generating" : "payment"}
         errorMessage={pawapayError || undefined}
         onClose={() => setPawapayError(null)}
         onCancel={async () => {

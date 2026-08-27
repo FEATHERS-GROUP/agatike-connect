@@ -321,7 +321,7 @@ function PublicFormPage() {
         <CheckYourPhone
           amount={Number(paymentAmount) || undefined}
           themeColor={themeColor}
-          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isProcessingPayment ? "processing" : isGenerating ? "generating" : "payment"}
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {
