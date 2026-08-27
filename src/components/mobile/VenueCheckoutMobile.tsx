@@ -29,7 +29,7 @@ import {
   getPawaPayDepositStatus,
   cancelPendingPayment,
 } from "@/api/pawapay";
-import { getWorkspaceTicketProjects } from "@/api/events";
+import { getTicketProjectPublic } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import * as htmlToImage from "html-to-image";
@@ -77,11 +77,12 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
   const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
-  const { data: ticketProjects } = useQuery({
-    queryKey: ["workspace-ticket-projects", venue?.workspace_id],
+  // Fetch Ticket Projects for PDF generation
+  const { data: venueProject } = useQuery({
+    queryKey: ["venue-ticket-project", venue?.id],
     queryFn: () =>
-      getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
-    enabled: !!venue?.workspace_id,
+      getTicketProjectPublic({ data: { venueId: venue?.id } } as any),
+    enabled: !!venue?.id,
   });
 
   const { data: bookings } = useQuery({
@@ -111,7 +112,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
     return bookedDates.includes(format(d, "yyyy-MM-dd"));
   };
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
+
 
   useEffect(() => {
     try {

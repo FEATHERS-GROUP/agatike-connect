@@ -21,6 +21,17 @@ export function HiddenPDFGenerator({
   formatSeatDisplay,
   getTierDetails,
 }: HiddenPDFGeneratorProps) {
+  const appendCors = (url?: string) => {
+    if (!url) return "";
+    try {
+      const u = new URL(url);
+      u.searchParams.set("cors", "1");
+      return u.toString();
+    } catch {
+      return url;
+    }
+  };
+
   return (
     <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((ticket: any) => {
@@ -58,13 +69,13 @@ export function HiddenPDFGenerator({
                 "0"
               }
               currency={currency === "FRWS" ? "RWF" : currency}
-              cover={mergedProject.coverImage || event.cover || ""}
+              cover={appendCors(mergedProject.coverImage || event.cover || "")}
               logoText={
                 mergedProject.logoText !== undefined && mergedProject.logoText !== null
                   ? mergedProject.logoText
                   : event.organizer || "Agatike"
               }
-              logoImage={mergedProject.logoImage}
+              logoImage={appendCors(mergedProject.logoImage)}
               logoScale={Number(mergedProject.logoScale || 24)}
               logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
               logoColorMode={mergedProject.logoColorMode || "original"}

@@ -25,8 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getEventById, getTicketProjectPublic } from "@/api/events";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { addEventAttendees, getEventAttendees } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
@@ -63,6 +63,7 @@ import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 
 export function BookingMobile({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
@@ -108,14 +109,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
   const currency = event?.workspaces?.currency || "RWF";
 
   // Fetch Ticket Projects for PDF generation
-  const { data: ticketProjects } = useQuery({
-    queryKey: ["workspace-ticket-projects", event?.workspace_id],
+  const { data: eventProject } = useQuery({
+    queryKey: ["event-ticket-project", eventId],
     queryFn: () =>
-      getWorkspaceTicketProjects({ data: { workspaceId: event?.workspace_id! } } as any),
-    enabled: !!event?.workspace_id,
+      getTicketProjectPublic({ data: { eventId } } as any),
+    enabled: !!eventId,
   });
-
-  const eventProject = ticketProjects?.find((p: any) => p.eventId === event.id);
 
   // Fetch venue projects and booked attendees
   const { data: venueProjects } = useQuery({
@@ -577,29 +576,41 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     const tierOverride = overrides.tiers?.[tierId] || {};
     const combinationOverride = overrides.combinations?.[`${stopIdx}_${tierId}`] || {};
 
+    const safeParse = (val: any) => {
+      if (typeof val === "string") {
+        try { return JSON.parse(val); } catch { return val; }
+      }
+      return val;
+    };
+
     return {
       ...baseProject,
       ...stopOverride,
       ...tierOverride,
       ...combinationOverride,
-      palette:
+      palette: safeParse(
         combinationOverride.palette ||
         tierOverride.palette ||
         stopOverride.palette ||
-        baseProject.palette,
-      font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
-      layout:
+        baseProject.palette
+      ),
+      font: safeParse(
+        combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font
+      ),
+      layout: safeParse(
         combinationOverride.layout ||
         tierOverride.layout ||
         stopOverride.layout ||
         baseProject.design_overrides?.layout ||
-        baseProject.layout,
-      back:
+        baseProject.layout
+      ),
+      back: safeParse(
         combinationOverride.back ||
         tierOverride.back ||
         stopOverride.back ||
         baseProject.design_overrides?.back ||
-        baseProject.back,
+        baseProject.back
+      ),
     };
   };
 

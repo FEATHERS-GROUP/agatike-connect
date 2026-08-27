@@ -754,6 +754,57 @@ export const deleteTicketProject = createServerFn({ method: "POST" }).handler(as
   return hasuraRequest(q, { id });
 });
 
+export const getTicketProjectPublic = createServerFn({ method: "POST" }).handler(
+  async (ctx) => {
+    const { eventId, venueId, cinemaId } = ctx.data as unknown as { eventId?: string, venueId?: string, cinemaId?: string };
+    
+    let whereClause = "";
+    if (eventId) {
+      whereClause = `eventId: {_eq: "${eventId}"}`;
+    } else if (venueId) {
+      whereClause = `venueId: {_eq: "${venueId}"}`;
+    } else if (cinemaId) {
+      whereClause = `cinemaId: {_eq: "${cinemaId}"}`;
+    } else {
+      return null;
+    }
+
+    const query = `
+      query GetTicketProjectPublic {
+        ticket_projects(where: {${whereClause}, deleted: {_eq: false}}, order_by: {updated_on: desc}, limit: 1) {
+      id
+      folder_id
+      name
+      eventId
+      venueId
+      cinemaId
+      template
+      coverImage
+      design_overrides
+      font
+      palette
+      seat
+      tier
+      logoText
+      logoScale
+      logoImage
+      logoColorMode
+      logoOpacity
+      workspaceId
+        }
+      }
+    `;
+
+    try {
+      const res = await hasuraRequest<{ ticket_projects: any[] }>(query, {});
+      return res?.ticket_projects?.[0] || null;
+    } catch (e) {
+      console.error("Failed to fetch public ticket project:", e);
+      return null;
+    }
+  },
+);
+
 export const updateTicketProject = createServerFn({ method: "POST" }).handler(async (ctx) => {
   const variables = ctx.data as any;
   return hasuraRequest(UPDATE_TICKET_PROJECT, variables);

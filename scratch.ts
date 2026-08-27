@@ -1,33 +1,20 @@
-import { getServerConfig } from "./src/lib/config.server.ts";
+import { hasuraRequest } from "./src/api/graphql.server";
 
-async function main() {
-  const config = getServerConfig();
-  console.log("Config loaded");
-
-  if (!config.hasuraAdminApi) throw new Error("Missing HASURA_ADMIN_API");
-  if (!config.hasuraAdminSecret) throw new Error("Missing HASURA_ADMIN_SECRETE");
-
-  const fetchPromise = await fetch(config.hasuraAdminApi, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-hasura-admin-secret": config.hasuraAdminSecret,
-    },
-    body: JSON.stringify({
-      query: `
-        query {
-          product_orders(limit: 5, order_by: { created_at: desc }) {
-            id
-            picked
-            status
-          }
-        }
-      `,
-    }),
-  });
-
-  const json = await fetchPromise.json();
-  console.log(JSON.stringify(json, null, 2));
+async function run() {
+  const query = `
+    query {
+      ticket_projects(order_by: {updated_on: desc}, limit: 5) {
+        id
+        name
+        eventId
+        palette
+        font
+        coverImage
+        logoText
+      }
+    }
+  `;
+  const res = await hasuraRequest(query, {});
+  console.dir(res, { depth: null });
 }
-
-main().catch(console.error);
+run();
