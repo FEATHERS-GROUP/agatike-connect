@@ -30,7 +30,16 @@ import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { useState, useRef, useEffect } from "react";
 import { adminGlobalSearch } from "@/api/admin_search";
 import { db } from "@/lib/firebase";
-import { collection, query as firestoreQuery, where, onSnapshot, orderBy, limit, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  query as firestoreQuery,
+  where,
+  onSnapshot,
+  orderBy,
+  limit,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 
 type SearchResults = Awaited<ReturnType<typeof adminGlobalSearch>>;
@@ -254,7 +263,7 @@ export function AdminHeader() {
       collection(db, "agatike_notifications"),
       where("organizerId", "==", "admin"),
       orderBy("createdAt", "desc"),
-      limit(5)
+      limit(5),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -646,13 +655,17 @@ export function AdminHeader() {
                       <div className="flex justify-between items-start mb-1">
                         <span
                           className={`text-xs font-semibold ${
-                            !n.read ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
+                            !n.read
+                              ? "text-gray-900 dark:text-white"
+                              : "text-gray-700 dark:text-gray-300"
                           }`}
                         >
                           {n.title}
                         </span>
                         <span className="text-[10px] text-gray-400 shrink-0 ml-2">
-                          {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : ""}
+                          {n.createdAt
+                            ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })
+                            : ""}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 dark:text-[#888] line-clamp-2 leading-relaxed">

@@ -1604,7 +1604,8 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
         if (!tx.reference_id) return;
         const type = tx.type || "";
         if (type.includes("event_ticket")) eventBookingRefs.push(tx.reference_id);
-        else if (type.includes("venue_booking")) venueBookingIds.push(...tx.reference_id.split(","));
+        else if (type.includes("venue_booking"))
+          venueBookingIds.push(...tx.reference_id.split(","));
         else if (type.includes("movie_ticket")) movieBookingIds.push(...tx.reference_id.split(","));
         else if (type.includes("space_subscription")) spaceSubscriptionIds.push(tx.reference_id);
       });
@@ -1614,17 +1615,20 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
       if (eventBookingRefs.length > 0) {
         try {
           const uniqueRefs = [...new Set(eventBookingRefs)];
-          const orConditions = uniqueRefs.map(ref => ({
-            custom_fields: { _contains: { booking_ref: ref } }
+          const orConditions = uniqueRefs.map((ref) => ({
+            custom_fields: { _contains: { booking_ref: ref } },
           }));
-          const res = await hasuraRequest<any>(`
+          const res = await hasuraRequest<any>(
+            `
             query GetEventNames($orConditions: [event_attendees_bool_exp!]) {
               event_attendees(where: { _or: $orConditions }) {
                 custom_fields
                 events { title }
               }
             }
-          `, { orConditions });
+          `,
+            { orConditions },
+          );
           res.event_attendees?.forEach((a: any) => {
             const bRef = a.custom_fields?.booking_ref;
             if (bRef && a.events?.title) targetNames.set(bRef, a.events.title);
@@ -1636,14 +1640,17 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
 
       if (venueBookingIds.length > 0) {
         try {
-          const res = await hasuraRequest<any>(`
+          const res = await hasuraRequest<any>(
+            `
             query GetVenueNames($ids: [uuid!]!) {
               venue_bookings(where: { id: { _in: $ids } }) {
                 id
                 rentable_venue { name }
               }
             }
-          `, { ids: [...new Set(venueBookingIds)] });
+          `,
+            { ids: [...new Set(venueBookingIds)] },
+          );
           res.venue_bookings?.forEach((b: any) => {
             if (b.rentable_venue?.name) targetNames.set(b.id, b.rentable_venue.name);
           });
@@ -1652,14 +1659,17 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
 
       if (movieBookingIds.length > 0) {
         try {
-          const res = await hasuraRequest<any>(`
+          const res = await hasuraRequest<any>(
+            `
             query GetMovieNames($ids: [uuid!]!) {
               movie_bookings(where: { id: { _in: $ids } }) {
                 id
                 movie_schedule { movie { title } }
               }
             }
-          `, { ids: [...new Set(movieBookingIds)] });
+          `,
+            { ids: [...new Set(movieBookingIds)] },
+          );
           res.movie_bookings?.forEach((b: any) => {
             if (b.movie_schedule?.movie?.title) targetNames.set(b.id, b.movie_schedule.movie.title);
           });
@@ -1668,14 +1678,17 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
 
       if (spaceSubscriptionIds.length > 0) {
         try {
-          const res = await hasuraRequest<any>(`
+          const res = await hasuraRequest<any>(
+            `
             query GetSpaceNames($ids: [uuid!]!) {
               space_subscriptions(where: { id: { _in: $ids } }) {
                 id
                 space { name }
               }
             }
-          `, { ids: [...new Set(spaceSubscriptionIds)] });
+          `,
+            { ids: [...new Set(spaceSubscriptionIds)] },
+          );
           res.space_subscriptions?.forEach((s: any) => {
             if (s.space?.name) targetNames.set(s.id, s.space.name);
           });
@@ -1685,11 +1698,11 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
       return transactions.map((tx: any) => {
         const orgId = wsOrgMap.get(tx.workspace_id);
         const org = orgId ? orgMap.get(orgId) : null;
-        
+
         let targetName = null;
         if (tx.reference_id) {
-           const firstRef = tx.reference_id.split(",")[0];
-           targetName = targetNames.get(firstRef) || targetNames.get(tx.reference_id);
+          const firstRef = tx.reference_id.split(",")[0];
+          targetName = targetNames.get(firstRef) || targetNames.get(tx.reference_id);
         }
 
         return {

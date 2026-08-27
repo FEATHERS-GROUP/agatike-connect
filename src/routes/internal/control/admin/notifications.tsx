@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, writeBatch, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  doc,
+  updateDoc,
+  writeBatch,
+  getDocs,
+} from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { Bell, Trash2, CheckCircle2, Loader2 } from "lucide-react";
 
@@ -23,7 +33,7 @@ function AdminNotificationsPage() {
     const q = query(
       collection(db, "agatike_notifications"),
       where("organizerId", "==", "admin"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -50,7 +60,7 @@ function AdminNotificationsPage() {
   const handleClearAll = async () => {
     if (!db || notifications.length === 0) return;
     const confirmed = window.confirm(
-      "Are you sure you want to permanently delete all admin notifications? This action cannot be undone."
+      "Are you sure you want to permanently delete all admin notifications? This action cannot be undone.",
     );
     if (!confirmed) return;
 
@@ -59,14 +69,14 @@ function AdminNotificationsPage() {
       // Firebase limits batches to 500 operations
       const q = query(collection(db, "agatike_notifications"), where("organizerId", "==", "admin"));
       const querySnapshot = await getDocs(q);
-      
+
       const batch = writeBatch(db);
       let count = 0;
-      
+
       querySnapshot.forEach((document) => {
         batch.delete(document.ref);
         count++;
-        // If we hit 500, we should ideally commit and start a new batch. 
+        // If we hit 500, we should ideally commit and start a new batch.
         // Assuming admin notifications won't exceed 500 at a time for this simple implementation.
       });
 
@@ -132,7 +142,9 @@ function AdminNotificationsPage() {
               <div
                 key={notif.id}
                 className={`flex gap-4 p-5 transition-colors ${
-                  !notif.read ? "bg-gray-50/50 dark:bg-[#1f1f1f]" : "hover:bg-gray-50 dark:hover:bg-[#222]"
+                  !notif.read
+                    ? "bg-gray-50/50 dark:bg-[#1f1f1f]"
+                    : "hover:bg-gray-50 dark:hover:bg-[#222]"
                 }`}
               >
                 <div className="shrink-0 mt-1">
@@ -142,25 +154,29 @@ function AdminNotificationsPage() {
                     <CheckCircle2 className="h-5 w-5 text-gray-400 dark:text-[#555]" />
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
                     <h4
                       className={`text-sm font-semibold ${
-                        !notif.read ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
+                        !notif.read
+                          ? "text-gray-900 dark:text-white"
+                          : "text-gray-700 dark:text-gray-300"
                       }`}
                     >
                       {notif.title}
                     </h4>
                     <span className="text-xs text-gray-500 dark:text-[#888] whitespace-nowrap">
-                      {notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true }) : ""}
+                      {notif.createdAt
+                        ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })
+                        : ""}
                     </span>
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 dark:text-[#aaa] leading-relaxed">
                     {notif.message}
                   </p>
-                  
+
                   {!notif.read && (
                     <button
                       onClick={() => handleMarkAsRead(notif.id)}

@@ -13,12 +13,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/projects")({
   loader: async ({ params }) => {
@@ -127,8 +122,7 @@ function OrganizerProjects() {
   );
   const filteredApps = (apps || []).filter(
     (a: any) =>
-      (a.name || "").toLowerCase().includes(q) ||
-      (a.workspaceName || "").toLowerCase().includes(q),
+      (a.name || "").toLowerCase().includes(q) || (a.workspaceName || "").toLowerCase().includes(q),
   );
 
   return (
@@ -530,28 +524,45 @@ function OrganizerProjects() {
           <div className="py-2 space-y-4 text-sm text-gray-700 dark:text-[#cccccc]">
             <div className="grid grid-cols-2 gap-4 border-b border-gray-200 dark:border-[#333333] pb-4">
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">ID</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">
+                  ID
+                </p>
                 <p className="font-mono text-xs">{selectedApp?.id}</p>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Status</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">
+                  Status
+                </p>
                 <p>
                   {selectedApp?.is_active ? (
-                    <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e]">Active</span>
+                    <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e]">
+                      Active
+                    </span>
                   ) : (
-                    <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">Inactive</span>
+                    <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">
+                      Inactive
+                    </span>
                   )}
                 </p>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Type</p>
-                <p className="capitalize">{selectedApp?.app_type?.replace(/_/g, " ") || "Custom"}</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">
+                  Type
+                </p>
+                <p className="capitalize">
+                  {selectedApp?.app_type?.replace(/_/g, " ") || "Custom"}
+                </p>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Theme</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">
+                  Theme
+                </p>
                 {selectedApp?.theme_color ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-4 h-4 rounded-full border border-gray-200 dark:border-[#333333]" style={{ backgroundColor: selectedApp.theme_color }}></span>
+                    <span
+                      className="inline-block w-4 h-4 rounded-full border border-gray-200 dark:border-[#333333]"
+                      style={{ backgroundColor: selectedApp.theme_color }}
+                    ></span>
                     <span className="font-mono text-xs">{selectedApp.theme_color}</span>
                   </div>
                 ) : (
@@ -559,27 +570,42 @@ function OrganizerProjects() {
                 )}
               </div>
             </div>
-            
+
             {selectedApp?.description && (
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Description</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">
+                  Description
+                </p>
                 <p className="text-[13px]">{selectedApp.description}</p>
               </div>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Modules ({selectedApp?.app_modules?.length || 0})</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">
+                  Modules ({selectedApp?.app_modules?.length || 0})
+                </p>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                   {selectedApp?.app_modules?.length > 0 ? (
                     selectedApp.app_modules.map((mod: any) => (
-                      <div key={mod.id} className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-md p-3">
+                      <div
+                        key={mod.id}
+                        className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-md p-3"
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            {mod.icon && <span className="text-[10px] bg-gray-200 dark:bg-[#333333] px-1.5 py-0.5 rounded text-gray-700 dark:text-[#cccccc] font-medium">{mod.icon}</span>}
-                            <span className="font-semibold text-sm text-gray-900 dark:text-white">{mod.title || "Untitled"}</span>
+                            {mod.icon && (
+                              <span className="text-[10px] bg-gray-200 dark:bg-[#333333] px-1.5 py-0.5 rounded text-gray-700 dark:text-[#cccccc] font-medium">
+                                {mod.icon}
+                              </span>
+                            )}
+                            <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                              {mod.title || "Untitled"}
+                            </span>
                           </div>
-                          <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-[#797775]">{mod.type?.replace(/_/g, " ")}</span>
+                          <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-[#797775]">
+                            {mod.type?.replace(/_/g, " ")}
+                          </span>
                         </div>
                         <div className="bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#333333] rounded p-2 overflow-x-auto text-[10px] font-mono text-gray-600 dark:text-[#aaaaaa]">
                           {mod.config ? (
@@ -592,18 +618,24 @@ function OrganizerProjects() {
                     ))
                   ) : (
                     <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 border border-gray-200 dark:border-[#333333]">
-                      <span className="text-gray-500 dark:text-[#797775] italic text-xs">No modules configured.</span>
+                      <span className="text-gray-500 dark:text-[#797775] italic text-xs">
+                        No modules configured.
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
               <div>
-                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Permissions ({selectedApp?.app_permissions?.length || 0})</p>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">
+                  Permissions ({selectedApp?.app_permissions?.length || 0})
+                </p>
                 <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 max-h-[300px] overflow-y-auto border border-gray-200 dark:border-[#333333] font-mono text-[11px] leading-relaxed">
                   {selectedApp?.app_permissions?.length > 0 ? (
                     <pre>{JSON.stringify(selectedApp.app_permissions, null, 2)}</pre>
                   ) : (
-                    <span className="text-gray-500 dark:text-[#797775] italic">No permissions configured.</span>
+                    <span className="text-gray-500 dark:text-[#797775] italic">
+                      No permissions configured.
+                    </span>
                   )}
                 </div>
               </div>
