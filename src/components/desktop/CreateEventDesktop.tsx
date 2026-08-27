@@ -276,7 +276,7 @@ export function CreateEventDesktop() {
       },
     ],
     coverPreview: "",
-    vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
+    vipPerks: "",
     vip_privilege_ids: [] as string[],
     published: false,
     allowedPublic: false,
