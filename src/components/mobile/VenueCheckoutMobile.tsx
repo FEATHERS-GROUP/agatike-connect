@@ -616,7 +616,15 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     return (
       <>
         <CheckYourPhone
-          status={pawapayError ? "error" : isCheckingOut ? "processing" : isGenerating ? "generating" : "payment"}
+          status={
+            pawapayError
+              ? "error"
+              : isCheckingOut
+                ? "processing"
+                : isGenerating
+                  ? "generating"
+                  : "payment"
+          }
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {

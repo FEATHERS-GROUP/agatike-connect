@@ -601,7 +601,15 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     return (
       <>
         <CheckYourPhone
-          status={pawapayError ? "error" : isCheckingOut ? "processing" : isGenerating ? "generating" : "payment"}
+          status={
+            pawapayError
+              ? "error"
+              : isCheckingOut
+                ? "processing"
+                : isGenerating
+                  ? "generating"
+                  : "payment"
+          }
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {

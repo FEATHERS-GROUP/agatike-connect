@@ -506,7 +506,7 @@ Before processing, the server queries the database to see if the transaction is 
 To prevent inventory (tickets, seats, sports spots, and products/merchandise) from getting locked in a "Pending Payment" state due to failed or abandoned payments, Agatike employs a universal rollback mechanism (`cancelPendingPaymentByReference`).
 
 - **Asynchronous Rollback:** If the user fails to pay or the transaction times out, the `REJECTED` or `FAILED` webhook triggers the rollback function to instantly release the inventory back to the public pool.
-- **Synchronous Rollback:** If the mobile money provider's API rejects the payment instantly during the initial `POST /v1/deposits` request (e.g., the user has insufficient funds before the USSD prompt is even sent), the server intercepts the `REJECTED` status and triggers the rollback synchronously *before* returning the error to the UI. This ensures the frontend doesn't hang and the inventory is freed immediately.
+- **Synchronous Rollback:** If the mobile money provider's API rejects the payment instantly during the initial `POST /v1/deposits` request (e.g., the user has insufficient funds before the USSD prompt is even sent), the server intercepts the `REJECTED` status and triggers the rollback synchronously _before_ returning the error to the UI. This ensures the frontend doesn't hang and the inventory is freed immediately.
 
 This rollback covers all transaction types (`event_ticket`, `venue_booking`, `movie_ticket`, `space_subscription`, and `page_builder_checkout`) and guarantees that both core items and associated `product_orders` (merchandise) are cancelled simultaneously.
 

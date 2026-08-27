@@ -14,7 +14,11 @@ export function getPaymentFailureMessage(statusRes: any): string {
 
   if (callbackData?.failureReason) {
     const reason = String(callbackData.failureReason).toUpperCase();
-    if (reason.includes("INSUFFICIENT_FUNDS") || reason.includes("INSUFFICIENT_BALANCE") || reason.includes("BALANCE")) {
+    if (
+      reason.includes("INSUFFICIENT_FUNDS") ||
+      reason.includes("INSUFFICIENT_BALANCE") ||
+      reason.includes("BALANCE")
+    ) {
       return "Insufficient funds in your mobile money account. Please top up and try again.";
     }
     if (reason.includes("CANCELLED") || reason.includes("ABORTED")) {

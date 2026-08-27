@@ -199,7 +199,9 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
       const orderData = await orderRes.json();
       if (orderData.status === "500" || orderData.error) {
         console.error(`[PESAPAL] Order Submission Error:`, orderData);
-        await import("./pawapay").then(m => m.cancelPendingPaymentByReference(referenceId, type)).catch(console.error);
+        await import("./pawapay")
+          .then((m) => m.cancelPendingPaymentByReference(referenceId, type))
+          .catch(console.error);
         throw new Error(
           `Payment Error: ${orderData.error?.message || orderData.message || JSON.stringify(orderData)}`,
         );
@@ -208,7 +210,9 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
       redirectUrl = orderData.redirect_url;
       if (!redirectUrl) {
         console.error(`[PESAPAL] Missing redirect_url. Response:`, orderData);
-        await import("./pawapay").then(m => m.cancelPendingPaymentByReference(referenceId, type)).catch(console.error);
+        await import("./pawapay")
+          .then((m) => m.cancelPendingPaymentByReference(referenceId, type))
+          .catch(console.error);
         throw new Error(
           `Payment Error: Missing redirect_url in response. ${JSON.stringify(orderData)}`,
         );
@@ -217,7 +221,9 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
       console.log(`[PESAPAL] Order submitted successfully! Redirect URL generated.`);
     } catch (err: any) {
       console.error(`[PESAPAL] Order Submission failed or timed out:`, err.message);
-      await import("./pawapay").then(m => m.cancelPendingPaymentByReference(referenceId, type)).catch(console.error);
+      await import("./pawapay")
+        .then((m) => m.cancelPendingPaymentByReference(referenceId, type))
+        .catch(console.error);
       throw err;
     }
 

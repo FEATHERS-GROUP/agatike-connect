@@ -318,10 +318,19 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     if (data.status === "REJECTED" || data.status === "FAILED") {
       await cancelPendingPaymentByReference(referenceId, type).catch(console.error);
-      const reason = (data.rejectionReason?.rejectionMessage || data.failureReason || "Invalid Payment Details").toUpperCase();
+      const reason = (
+        data.rejectionReason?.rejectionMessage ||
+        data.failureReason ||
+        "Invalid Payment Details"
+      ).toUpperCase();
       let errorMessage = `Agatike Rejected: ${reason}`;
-      if (reason.includes("INSUFFICIENT_FUNDS") || reason.includes("INSUFFICIENT_BALANCE") || reason.includes("BALANCE")) {
-        errorMessage = "Insufficient funds in your mobile money account. Please top up and try again.";
+      if (
+        reason.includes("INSUFFICIENT_FUNDS") ||
+        reason.includes("INSUFFICIENT_BALANCE") ||
+        reason.includes("BALANCE")
+      ) {
+        errorMessage =
+          "Insufficient funds in your mobile money account. Please top up and try again.";
       } else if (reason.includes("CANCELLED") || reason.includes("ABORTED")) {
         errorMessage = "Payment was cancelled on the phone.";
       }
@@ -788,10 +797,7 @@ export const cancelPendingPaymentByReference = async (reference_id: string, type
       }`,
       { booking_ref: reference_id },
     ).catch(console.error);
-
-  } else if (
-    type === "venue_booking" || type === "portal_venue_booking"
-  ) {
+  } else if (type === "venue_booking" || type === "portal_venue_booking") {
     const bookingIds = reference_id.split(",");
     await hasuraRequest(
       `mutation CancelVenueBookings($ids: [uuid!]!) {
@@ -802,9 +808,7 @@ export const cancelPendingPaymentByReference = async (reference_id: string, type
       }`,
       { ids: bookingIds },
     );
-  } else if (
-    type === "movie_ticket" || type === "portal_movie_ticket"
-  ) {
+  } else if (type === "movie_ticket" || type === "portal_movie_ticket") {
     const bookingIds = reference_id.split(",");
     // First fetch booking details to know schedule/tier/quantity before cancelling
     const bookingDetails = await hasuraRequest<{ cinema_bookings: any[] }>(

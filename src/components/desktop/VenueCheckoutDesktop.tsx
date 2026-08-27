@@ -631,7 +631,15 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
       <div className="min-h-screen bg-background text-foreground relative flex flex-col">
         <Navbar />
         <CheckYourPhone
-          status={pawapayError ? "error" : isCheckingOut ? "processing" : isGenerating ? "generating" : "payment"}
+          status={
+            pawapayError
+              ? "error"
+              : isCheckingOut
+                ? "processing"
+                : isGenerating
+                  ? "generating"
+                  : "payment"
+          }
           errorMessage={pawapayError || undefined}
           onClose={() => setPawapayError(null)}
           onCancel={async () => {
