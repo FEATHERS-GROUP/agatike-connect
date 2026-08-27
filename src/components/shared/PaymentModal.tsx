@@ -653,26 +653,26 @@ export function PaymentModal({
            
            <div className="flex-1 overflow-y-auto px-5 py-2 pb-32 space-y-6">
                {/* Premium Top Card */}
-               <div className="bg-[#1c1c1e] text-white p-6 rounded-3xl relative overflow-hidden shadow-xl shadow-black/10">
-                  <div className="absolute -top-4 -right-4 p-4 opacity-5">
+               <div className="bg-primary text-primary-foreground p-6 rounded-3xl relative overflow-hidden shadow-xl shadow-primary/20">
+                  <div className="absolute -top-4 -right-4 p-4 opacity-[0.08]">
                      <Wallet className="h-32 w-32" />
                   </div>
                   <div className="relative z-10">
-                     <p className="text-white/70 text-[13px] font-medium mb-1 tracking-wide uppercase">Total to Pay</p>
-                     <h2 className="text-3xl font-bold tracking-tight">{convertedAmount.toLocaleString()} <span className="text-xl font-medium text-white/70">{targetCurrency}</span></h2>
+                     <p className="text-primary-foreground/80 text-[13px] font-medium mb-1 tracking-wide uppercase">Total to Pay</p>
+                     <h2 className="text-3xl font-bold tracking-tight">{convertedAmount.toLocaleString()} <span className="text-xl font-medium text-primary-foreground/80">{targetCurrency}</span></h2>
                      
                      {isSimulating ? (
-                        <div className="mt-5 flex items-center gap-2 text-xs text-primary">
+                        <div className="mt-5 flex items-center gap-2 text-xs text-primary-foreground">
                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating precise fees...
                         </div>
                      ) : (
-                         <div className="mt-5 flex items-center gap-1.5 text-[11px] text-primary font-bold tracking-wider uppercase bg-primary/10 w-fit px-3 py-1.5 rounded-full">
+                         <div className="mt-5 flex items-center gap-1.5 text-[11px] text-primary bg-background font-bold tracking-wider uppercase w-fit px-3 py-1.5 rounded-full shadow-sm">
                            <Shield className="h-3.5 w-3.5" /> 100% Secure Payment
                          </div>
                      )}
                      
                      {!isSimulating && simulation && (paymentMethod === "momo" || paymentMethod === "card") && (
-                        <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm text-white/80">
+                        <div className="mt-4 pt-4 border-t border-primary-foreground/20 space-y-2 text-sm text-primary-foreground/90">
                            <div className="flex justify-between">
                               <span>Base Ticket</span>
                               <span>{simulation.convertedBasePrice?.toLocaleString() || baseAmount} {targetCurrency}</span>
@@ -682,7 +682,7 @@ export function PaymentModal({
                               <span>{simulation.serviceFee.toFixed(2)} {targetCurrency}</span>
                            </div>
                            {baseCurrency !== targetCurrency && (
-                              <div className="flex justify-between pt-2 border-t border-white/10 text-xs text-white/60">
+                              <div className="flex justify-between pt-2 border-t border-primary-foreground/20 text-xs text-primary-foreground/80">
                                  <span>Live Rate</span>
                                  <span className="font-mono">
                                     1 {baseCurrency} = {markupRate.toFixed(4)} {targetCurrency}
