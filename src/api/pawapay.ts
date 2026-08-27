@@ -681,13 +681,18 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
     // 2. Mark wallet transaction as cancelled
     await hasuraRequest(
       `mutation CancelWalletTx($id: uuid!) {
-        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { status: "cancelled", provider_status: "CANCELLED" }) { id }
+        update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { status: "failed", provider_status: "FAILED" }) { id }
       }`,
       { id: tx.id },
     );
 
     // 3. Roll back the dependent entity based on transaction type
-    if (tx.type === "event_ticket" && tx.reference_id) {
+    if (
+      (tx.type === "event_ticket" ||
+        tx.type === "portal_event_ticket" ||
+        tx.type?.startsWith("page_builder_checkout")) &&
+      tx.reference_id
+    ) {
       // reference_id is booking_ref for events
       // Mark attendees with this booking_ref as Cancelled and restore sold counts
       const attendeesQuery = `
@@ -712,7 +717,7 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
           `mutation CancelAttendees($booking_ref: String!) {
             update_event_attendees(
               where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
-              _set: { status: "Cancelled" }
+              _set: { status: "Failed" }
             ) { affected_rows }
           }`,
           { booking_ref: tx.reference_id },
@@ -749,23 +754,29 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
             .catch(console.error);
         }
       }
-    } else if (tx.type === "venue_booking" && tx.reference_id) {
+    } else if (
+      (tx.type === "venue_booking" || tx.type === "portal_venue_booking") &&
+      tx.reference_id
+    ) {
       const bookingIds = tx.reference_id.split(",");
       await hasuraRequest(
         `mutation CancelVenueBookings($ids: [uuid!]!) {
           update_venue_bookings(
-            where: { id: { _in: $ids }, status: { _neq: "Cancelled" } },
-            _set: { status: "Cancelled", payment_status: "Cancelled" }
+            where: { id: { _in: $ids }, status: { _neq: "Failed" } },
+            _set: { status: "Failed", payment_status: "Failed" }
           ) { affected_rows }
         }`,
         { ids: bookingIds },
       );
-    } else if (tx.type === "movie_ticket" && tx.reference_id) {
+    } else if (
+      (tx.type === "movie_ticket" || tx.type === "portal_movie_ticket") &&
+      tx.reference_id
+    ) {
       const bookingIds = tx.reference_id.split(",");
       // First fetch booking details to know schedule/tier/quantity before cancelling
       const bookingDetails = await hasuraRequest<{ cinema_bookings: any[] }>(
         `query GetCinemaBookingsForCancel($ids: [uuid!]!) {
-          cinema_bookings(where: { id: { _in: $ids }, status: { _neq: "Cancelled" } }) {
+          cinema_bookings(where: { id: { _in: $ids }, status: { _neq: "Failed" } }) {
             id
             schedule_id
             ticket_tier_id
@@ -780,8 +791,8 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
       await hasuraRequest(
         `mutation CancelCinemaBookings($ids: [uuid!]!) {
           update_cinema_bookings(
-            where: { id: { _in: $ids }, status: { _neq: "Cancelled" } },
-            _set: { status: "Cancelled" }
+            where: { id: { _in: $ids }, status: { _neq: "Failed" } },
+            _set: { status: "Failed" }
           ) { affected_rows }
         }`,
         { ids: bookingIds },
