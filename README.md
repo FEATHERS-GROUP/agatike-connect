@@ -501,6 +501,15 @@ sequenceDiagram
 Because receipt generation (PDFs) and email sending can occasionally exceed PawaPay's webhook timeout window, PawaPay may aggressively retry sending the `COMPLETED` webhook. To prevent duplicating actions (such as generating multiple receipts, sending looping SMS confirmations, or double-funding workspace wallets), the webhook handler implements a strict **Idempotency Check**.
 Before processing, the server queries the database to see if the transaction is already marked as `completed`. If it is, the server immediately returns a `200 OK` to satisfy PawaPay and completely skips executing the confirmation logic again.
 
+#### Synchronous & Asynchronous Inventory Rollback
+
+To prevent inventory (tickets, seats, sports spots, and products/merchandise) from getting locked in a "Pending Payment" state due to failed or abandoned payments, Agatike employs a universal rollback mechanism (`cancelPendingPaymentByReference`).
+
+- **Asynchronous Rollback:** If the user fails to pay or the transaction times out, the `REJECTED` or `FAILED` webhook triggers the rollback function to instantly release the inventory back to the public pool.
+- **Synchronous Rollback:** If the mobile money provider's API rejects the payment instantly during the initial `POST /v1/deposits` request (e.g., the user has insufficient funds before the USSD prompt is even sent), the server intercepts the `REJECTED` status and triggers the rollback synchronously *before* returning the error to the UI. This ensures the frontend doesn't hang and the inventory is freed immediately.
+
+This rollback covers all transaction types (`event_ticket`, `venue_booking`, `movie_ticket`, `space_subscription`, and `page_builder_checkout`) and guarantees that both core items and associated `product_orders` (merchandise) are cancelled simultaneously.
+
 ### 12.1 Tiered Network Fees & Dynamic Pricing
 
 Because telecom network fees fluctuate heavily based on the size of the transaction, Agatike Connect employs a highly precise **Simulation Engine** (`src/api/simulation.ts`) that runs a pre-flight check on every checkout.
