@@ -74,8 +74,19 @@ export function WalletTable({
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="font-medium text-gray-900 dark:text-white uppercase">
-                    {tx.type}
+                  <div className="text-xs text-gray-600 dark:text-[#aaaaaa]">
+                    {tx.targetName ? (
+                      <div>
+                        <span className="font-medium text-gray-900 dark:text-white mb-0.5 block">{tx.targetName}</span>
+                        <span className="text-[10px] uppercase tracking-wide opacity-70">
+                          {tx.type.toLowerCase().replace(/portal_event_ticket/i, "event ticket").replace(/_/g, " ")}
+                        </span>
+                      </div>
+                    ) : tx.type ? (
+                      tx.type.toLowerCase().replace(/portal_event_ticket/i, "event ticket").replace(/_/g, " ")
+                    ) : (
+                      "—"
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">
