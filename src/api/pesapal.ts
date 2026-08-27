@@ -101,7 +101,10 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
     const rawCustCollection = plan.customer_collection_fee_percentage;
-    const custCollectionPct = rawCustCollection !== null && rawCustCollection !== undefined ? parseFloat(rawCustCollection as any) : null;
+    const custCollectionPct =
+      rawCustCollection !== null && rawCustCollection !== undefined
+        ? parseFloat(rawCustCollection as any)
+        : null;
     const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
     const custServicePct = parseFloat(plan.customer_service_fee_percentage as any) || 0;
 

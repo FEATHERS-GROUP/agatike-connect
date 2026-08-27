@@ -580,7 +580,7 @@ To give administrators precise control over what attendees are charged, the fee 
 - **Customer Collection Fee Percentage** (`customer_collection_fee_percentage`): A dedicated override field. In the admin dashboard, this is labeled as **"Cust. Override (%)"**.
 
 **Behavior:**
-If the **Customer Collection Fee Percentage** is explicitly set (i.e. not `null`), it **completely overrides and replaces** the standard service fee rather than adding to it. 
+If the **Customer Collection Fee Percentage** is explicitly set (i.e. not `null`), it **completely overrides and replaces** the standard service fee rather than adding to it.
 For example, if the Service Fee is 2% and the Override is set to 1%, the engine will exclusively charge the customer 1% (`basePrice * 1%`). This ensures strict, predictable fee ceilings without unexpected compounding.
 
 ### 12.4 Platform Subscriptions & Earnings Architecture

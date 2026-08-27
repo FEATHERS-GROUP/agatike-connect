@@ -626,7 +626,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
         const { paymentDetails, bookingRef } = checkoutContext;
         try {
           // Wait longer for DOM to render and external images to fetch on mobile
-          await new Promise((r) => setTimeout(r, 1500)); 
+          await new Promise((r) => setTimeout(r, 1500));
           const attachments: any[] = [];
           if (eventProject) {
             const chunkSize = 5;
@@ -650,10 +650,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
                     imagePlaceholder:
                       "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
                   };
-                  
+
                   // Mobile/Safari hack: First pass primes images & canvas without yielding final data
                   await htmlToImage.toJpeg(el, options).catch(() => {});
-                  
+
                   // Second pass actually captures the full DOM accurately
                   const imgData = await htmlToImage.toJpeg(el, options);
                   if (!imgData || imgData === "data:,") {
@@ -813,11 +813,19 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               tier={ticket.tier}
               title={event?.title || "Event"}
               subtitle={event?.subtitle || ""}
-              date={event?.tour_stops?.[ticket.attendee.stopIdx]?.date || (event as any)?.date || ""}
-              time={event?.tour_stops?.[ticket.attendee.stopIdx]?.time || (event as any)?.time || ""}
+              date={
+                event?.tour_stops?.[ticket.attendee.stopIdx]?.date || (event as any)?.date || ""
+              }
+              time={
+                event?.tour_stops?.[ticket.attendee.stopIdx]?.time || (event as any)?.time || ""
+              }
               seat={ticket.attendee?.seat || "General"}
               seatLabel={ticket.attendee?.seatName || ""}
-              price={getTierDetails(ticket.attendee.tierId)?.price || getTierDetails(ticket.attendee.tierId)?.cost || "0"}
+              price={
+                getTierDetails(ticket.attendee.tierId)?.price ||
+                getTierDetails(ticket.attendee.tierId)?.cost ||
+                "0"
+              }
               currency={currency}
               cover={event?.cover_url || ""}
               logoText={event?.workspaces?.name || ""}
@@ -870,7 +878,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     <div className="min-h-screen bg-[#f4f5f7] dark:bg-background text-foreground pb-40 relative font-sans">
       {/* Header */}
       <div className="px-5 py-4 flex items-center justify-between sticky top-0 bg-[#f4f5f7] dark:bg-background z-30 pt-safe-top">
-        <Link to="/events/$eventId" params={{ eventId }} className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground">
+        <Link
+          to="/events/$eventId"
+          params={{ eventId }}
+          className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground"
+        >
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <h1 className="font-bold text-[17px] tracking-tight">Booking Confirmation</h1>
@@ -888,11 +900,15 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               if (cartKey.startsWith("merch_")) {
                 const parts = cartKey.split("_");
                 const productId = parts[1];
-                let merch = eventProducts.find((p: any) => String(p.id) === productId) || event?.merchandises?.find((m: any) => String(m.id) === productId);
+                let merch =
+                  eventProducts.find((p: any) => String(p.id) === productId) ||
+                  event?.merchandises?.find((m: any) => String(m.id) === productId);
                 const lineTotal = merch ? parseFloat(merch.price || 0) * qty : 0;
                 return (
                   <div key={cartKey} className="flex justify-between items-center text-[15px]">
-                    <span className="text-muted-foreground">{qty}x {merch?.name || "Merchandise"}</span>
+                    <span className="text-muted-foreground">
+                      {qty}x {merch?.name || "Merchandise"}
+                    </span>
                     <span className="font-medium">{formatCurrency(lineTotal, currency)}</span>
                   </div>
                 );
@@ -902,13 +918,17 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               if (!tier) return null;
               return (
                 <div key={cartKey} className="flex justify-between items-center text-[15px]">
-                  <span className="text-muted-foreground">{qty}x {tier.type}</span>
-                  <span className="font-medium text-foreground">{formatCurrency(parseFloat(tier.cost || tier.price || 0) * qty, currency)}</span>
+                  <span className="text-muted-foreground">
+                    {qty}x {tier.type}
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {formatCurrency(parseFloat(tier.cost || tier.price || 0) * qty, currency)}
+                  </span>
                 </div>
               );
             })}
           </div>
-          
+
           <div className="mt-5 pt-4 border-t border-border/40 flex justify-between items-center text-[17px]">
             <span className="font-bold text-foreground">Total</span>
             <span className="font-bold text-primary">{formatCurrency(total, currency)}</span>
@@ -917,80 +937,130 @@ export function BookingMobile({ eventId }: { eventId: string }) {
 
         {/* Trip Details (Event Details) */}
         <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
-           <div className="flex justify-between items-center mb-5">
-              <h2 className="font-bold text-[15px]">Event Details</h2>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-           </div>
-           <div className="relative pl-6 space-y-6">
-              <div className="absolute left-1.5 top-2 bottom-2 w-[1.5px] border-l-2 border-dashed border-border/60"></div>
-              
-              <div className="relative">
-                 <div className="absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-primary bg-white"></div>
-                 <div className="flex justify-between items-start">
-                    <p className="text-sm font-medium pr-4">{event.title}</p>
-                    <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">{((event as any).time || event.tour_stops?.[0]?.time)}</p>
-                 </div>
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="font-bold text-[15px]">Event Details</h2>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="relative pl-6 space-y-6">
+            <div className="absolute left-1.5 top-2 bottom-2 w-[1.5px] border-l-2 border-dashed border-border/60"></div>
+
+            <div className="relative">
+              <div className="absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-primary bg-white"></div>
+              <div className="flex justify-between items-start">
+                <p className="text-sm font-medium pr-4">{event.title}</p>
+                <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  {(event as any).time || event.tour_stops?.[0]?.time}
+                </p>
               </div>
-              
-              <div className="relative">
-                 <div className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-primary border-[2.5px] border-white shadow-sm ring-1 ring-primary/20"></div>
-                 <div className="flex justify-between items-start">
-                    <p className="text-sm text-muted-foreground pr-4 line-clamp-2">{[ (event as any).venue || event.tour_stops?.[0]?.venue, (event as any).city || event.tour_stops?.[0]?.city].filter(Boolean).join(", ")}</p>
-                    <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">{((event as any).date || event.tour_stops?.[0]?.date)}</p>
-                 </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-primary border-[2.5px] border-white shadow-sm ring-1 ring-primary/20"></div>
+              <div className="flex justify-between items-start">
+                <p className="text-sm text-muted-foreground pr-4 line-clamp-2">
+                  {[
+                    (event as any).venue || event.tour_stops?.[0]?.venue,
+                    (event as any).city || event.tour_stops?.[0]?.city,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
+                <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  {(event as any).date || event.tour_stops?.[0]?.date}
+                </p>
               </div>
-           </div>
-           
-           {(event.duration || event.workspaces?.organizer?.name || event.workspaces?.name) && (
-             <div className="mt-5 pt-4 border-t border-border/40 text-[11px] text-muted-foreground font-medium flex gap-4">
-               {event.duration && <span>{event.duration}</span>}
-               {(event.workspaces?.organizer?.name || event.workspaces?.name) && <span>Hosted by {event.workspaces?.organizer?.name || event.workspaces?.name}</span>}
-             </div>
-           )}
+            </div>
+          </div>
+
+          {(event.duration || event.workspaces?.organizer?.name || event.workspaces?.name) && (
+            <div className="mt-5 pt-4 border-t border-border/40 text-[11px] text-muted-foreground font-medium flex gap-4">
+              {event.duration && <span>{event.duration}</span>}
+              {(event.workspaces?.organizer?.name || event.workspaces?.name) && (
+                <span>Hosted by {event.workspaces?.organizer?.name || event.workspaces?.name}</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Attendee Details Form styled cleanly */}
         <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
           <div className="flex justify-between items-center mb-5">
-              <h2 className="font-bold text-[15px]">Attendee Details</h2>
-              {totalTickets > 1 && (
-                <div className="flex gap-2">
-                   <button onClick={() => setAssignMode("me")} className={`text-[11px] px-2 py-1 rounded-md font-medium ${assignMode === 'me' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Me</button>
-                   <button onClick={() => setAssignMode("others")} className={`text-[11px] px-2 py-1 rounded-md font-medium ${assignMode === 'others' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Others</button>
-                </div>
-              )}
+            <h2 className="font-bold text-[15px]">Attendee Details</h2>
+            {totalTickets > 1 && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAssignMode("me")}
+                  className={`text-[11px] px-2 py-1 rounded-md font-medium ${assignMode === "me" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                >
+                  Me
+                </button>
+                <button
+                  onClick={() => setAssignMode("others")}
+                  className={`text-[11px] px-2 py-1 rounded-md font-medium ${assignMode === "others" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
+                >
+                  Others
+                </button>
+              </div>
+            )}
           </div>
-          
+
           <div className="space-y-6">
             {(assignMode === "me" ? [attendees[0]] : attendees).map((attendee, idx) => {
               if (!attendee) return null;
               const tier = getTierDetails(attendee.tierId);
               return (
                 <div key={idx} className="space-y-4">
-                  {assignMode === 'others' && (
-                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{tier?.type || "Ticket"} {idx + 1}</h3>
+                  {assignMode === "others" && (
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      {tier?.type || "Ticket"} {idx + 1}
+                    </h3>
                   )}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label className="text-[11px] text-muted-foreground px-1">First Name</Label>
-                      <Input value={attendee.firstName || ""} onChange={(e) => updateAttendee(idx, "firstName", e.target.value)} placeholder="Alex" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                      <Input
+                        value={attendee.firstName || ""}
+                        onChange={(e) => updateAttendee(idx, "firstName", e.target.value)}
+                        placeholder="Alex"
+                        className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
+                      />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[11px] text-muted-foreground px-1">Last Name</Label>
-                      <Input value={attendee.lastName || ""} onChange={(e) => updateAttendee(idx, "lastName", e.target.value)} placeholder="Doe" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                      <Input
+                        value={attendee.lastName || ""}
+                        onChange={(e) => updateAttendee(idx, "lastName", e.target.value)}
+                        placeholder="Doe"
+                        className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
+                      />
                     </div>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[11px] text-muted-foreground px-1">Email</Label>
-                    <Input type="email" value={attendee.email || ""} onChange={(e) => updateAttendee(idx, "email", e.target.value)} placeholder="alex@example.com" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                    <Input
+                      type="email"
+                      value={attendee.email || ""}
+                      onChange={(e) => updateAttendee(idx, "email", e.target.value)}
+                      placeholder="alex@example.com"
+                      className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
+                    />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[11px] text-muted-foreground px-1">Phone Number</Label>
-                    <Input type="tel" value={attendee.phone || ""} onChange={(e) => updateAttendee(idx, "phone", e.target.value)} placeholder="+250 788 123 456" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                    <Input
+                      type="tel"
+                      value={attendee.phone || ""}
+                      onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
+                      placeholder="+250 788 123 456"
+                      className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
+                    />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[11px] text-muted-foreground px-1">Country</Label>
-                    <Select value={attendee.country} onValueChange={(val) => updateAttendee(idx, "country", val)}>
+                    <Select
+                      value={attendee.country}
+                      onValueChange={(val) => updateAttendee(idx, "country", val)}
+                    >
                       <SelectTrigger className="h-11 rounded-xl bg-secondary/30 border-0 focus:ring-1 focus:ring-primary/50">
                         <SelectValue placeholder="Select Country" />
                       </SelectTrigger>
@@ -1008,7 +1078,10 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       <div className="fixed bottom-0 left-0 right-0 px-5 py-4 pb-safe bg-[#f4f5f7]/90 dark:bg-background/90 backdrop-blur-md z-40">
         {issuedTickets.length > 0 ? (
           <Button
-            onClick={() => { setIsGenerating(true); setIsPaymentModalOpen(true); }}
+            onClick={() => {
+              setIsGenerating(true);
+              setIsPaymentModalOpen(true);
+            }}
             disabled={isGenerating}
             className="w-full h-14 rounded-full text-lg font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
           >
