@@ -312,13 +312,20 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
 
     const data = await response.json();
     if (!response.ok) {
+      await cancelPendingPaymentByReference(referenceId, type).catch(console.error);
       throw new Error(`PawaPay Error: ${data.errorMessage || JSON.stringify(data)}`);
     }
 
-    if (data.status === "REJECTED") {
-      throw new Error(
-        `Agatike Rejected: ${data.rejectionReason?.rejectionMessage || "Invalid Payment Details"}`,
-      );
+    if (data.status === "REJECTED" || data.status === "FAILED") {
+      await cancelPendingPaymentByReference(referenceId, type).catch(console.error);
+      const reason = (data.rejectionReason?.rejectionMessage || data.failureReason || "Invalid Payment Details").toUpperCase();
+      let errorMessage = `Agatike Rejected: ${reason}`;
+      if (reason.includes("INSUFFICIENT_FUNDS") || reason.includes("INSUFFICIENT_BALANCE") || reason.includes("BALANCE")) {
+        errorMessage = "Insufficient funds in your mobile money account. Please top up and try again.";
+      } else if (reason.includes("CANCELLED") || reason.includes("ABORTED")) {
+        errorMessage = "Payment was cancelled on the phone.";
+      }
+      throw new Error(errorMessage);
     }
 
     const { hasuraRequest } = await import("./graphql.server");
@@ -520,6 +527,7 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
           provider_status
           reference_id
           type
+          raw_callback_data
         }
       }
     `;
@@ -696,151 +704,164 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
       { id: tx.id },
     );
 
-    // 3. Roll back the dependent entity based on transaction type
-    if (
-      (tx.type === "event_ticket" ||
-        tx.type === "portal_event_ticket" ||
-        tx.type?.startsWith("page_builder_checkout")) &&
-      tx.reference_id
-    ) {
-      // reference_id is booking_ref for events
-      // Mark attendees with this booking_ref as Cancelled and restore sold counts
-      const attendeesQuery = `
-        query GetPendingAttendees($booking_ref: String!) {
-          event_attendees(where: {
-            custom_fields: { _contains: { booking_ref: $booking_ref } },
-            status: { _eq: "Pending Payment" }
-          }) {
-            id
-            ticket_id
-          }
-        }
-      `;
-      const attendeesData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, {
-        booking_ref: tx.reference_id,
-      });
-      const attendees = attendeesData.event_attendees || [];
-
-      if (attendees.length > 0) {
-        // Cancel the attendees
-        await hasuraRequest(
-          `mutation CancelAttendees($booking_ref: String!) {
-            update_event_attendees(
-              where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
-              _set: { status: "Cancelled" }
-            ) { affected_rows }
-          }`,
-          { booking_ref: tx.reference_id },
-        );
-
-        // Restore ticket sold counts by ticket_id
-        const soldByTier: Record<string, number> = {};
-        for (const a of attendees) {
-          if (a.ticket_id && a.ticket_id !== "ga") {
-            soldByTier[a.ticket_id] = (soldByTier[a.ticket_id] || 0) + 1;
-          }
-        }
-        for (const [ticketId, qty] of Object.entries(soldByTier)) {
-          // Bug fix 1: use query (not mutation) to fetch the current ticket data
-          await hasuraRequest(
-            `query GetTicketSold($id: uuid!) {
-              ticket: event_tickets_by_pk(id: $id) { id sold remaining }
-            }`,
-            { id: ticketId },
-          )
-            .then(async (r: any) => {
-              const currentSold = parseInt(r?.ticket?.sold || "0");
-              const currentRemaining = parseInt(r?.ticket?.remaining || "0");
-              const newSold = Math.max(0, currentSold - (qty as number));
-              // Bug fix 2: also restore `remaining` so spaces-left is correctly updated
-              const newRemaining = currentRemaining + (qty as number);
-              await hasuraRequest(
-                `mutation RestoreTicketCounts($id: uuid!, $sold: String!, $remaining: String!) {
-                update_event_tickets_by_pk(pk_columns: { id: $id }, _set: { sold: $sold, remaining: $remaining }) { id }
-              }`,
-                { id: ticketId, sold: String(newSold), remaining: String(newRemaining) },
-              );
-            })
-            .catch(console.error);
-        }
-      }
-    } else if (
-      (tx.type === "venue_booking" || tx.type === "portal_venue_booking") &&
-      tx.reference_id
-    ) {
-      const bookingIds = tx.reference_id.split(",");
-      await hasuraRequest(
-        `mutation CancelVenueBookings($ids: [uuid!]!) {
-          update_venue_bookings(
-            where: { id: { _in: $ids }, status: { _neq: "Failed" } },
-            _set: { status: "Failed", payment_status: "Failed" }
-          ) { affected_rows }
-        }`,
-        { ids: bookingIds },
-      );
-    } else if (
-      (tx.type === "movie_ticket" || tx.type === "portal_movie_ticket") &&
-      tx.reference_id
-    ) {
-      const bookingIds = tx.reference_id.split(",");
-      // First fetch booking details to know schedule/tier/quantity before cancelling
-      const bookingDetails = await hasuraRequest<{ cinema_bookings: any[] }>(
-        `query GetCinemaBookingsForCancel($ids: [uuid!]!) {
-          cinema_bookings(where: { id: { _in: $ids }, status: { _neq: "Failed" } }) {
-            id
-            schedule_id
-            ticket_tier_id
-            quantity
-          }
-        }`,
-        { ids: bookingIds },
-      );
-      const activeBookings = bookingDetails.cinema_bookings || [];
-
-      // Cancel the bookings
-      await hasuraRequest(
-        `mutation CancelCinemaBookings($ids: [uuid!]!) {
-          update_cinema_bookings(
-            where: { id: { _in: $ids }, status: { _neq: "Failed" } },
-            _set: { status: "Failed" }
-          ) { affected_rows }
-        }`,
-        { ids: bookingIds },
-      );
-
-      // Decrement booked_seats and sold_seats for each booking (mirrors createCinemaBooking increments)
-      for (const booking of activeBookings) {
-        if (booking.schedule_id && booking.quantity) {
-          await hasuraRequest(
-            `mutation RestoreCinemaSeats($schedule_id: uuid!, $qty: Int!, $ticket_tier_id: uuid) {
-              update_cinema_schedules_by_pk(
-                pk_columns: { id: $schedule_id },
-                _inc: { booked_seats: $qty }
-              ) { id }
-              update_cinema_schedule_ticket_tiers(
-                where: { schedule_id: { _eq: $schedule_id }, ticket_tier_id: { _eq: $ticket_tier_id } },
-                _inc: { sold_seats: $qty }
-              ) { affected_rows }
-            }`,
-            {
-              schedule_id: booking.schedule_id,
-              qty: -booking.quantity, // negative to decrement
-              ticket_tier_id: booking.ticket_tier_id || null,
-            },
-          ).catch(console.error);
-        }
-      }
-    } else if (tx.type === "space_subscription" && tx.reference_id) {
-      await hasuraRequest(
-        `mutation CancelSpaceSubscription($id: uuid!) {
-          update_space_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "cancelled" }) { id }
-        }`,
-        { id: tx.reference_id },
-      );
-    }
+    await cancelPendingPaymentByReference(tx.reference_id, tx.type);
 
     return { success: true };
   });
+
+export const cancelPendingPaymentByReference = async (reference_id: string, type: string) => {
+  if (!reference_id) return;
+  const { hasuraRequest } = await import("./graphql.server");
+
+  if (
+    type === "event_ticket" ||
+    type === "portal_event_ticket" ||
+    type?.startsWith("page_builder_checkout")
+  ) {
+    // reference_id is booking_ref for events
+    // Mark attendees with this booking_ref as Cancelled and restore sold counts
+    const attendeesQuery = `
+      query GetPendingAttendees($booking_ref: String!) {
+        event_attendees(where: {
+          custom_fields: { _contains: { booking_ref: $booking_ref } },
+          status: { _eq: "Pending Payment" }
+        }) {
+          id
+          ticket_id
+        }
+      }
+    `;
+    const attendeesData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, {
+      booking_ref: reference_id,
+    });
+    const attendees = attendeesData.event_attendees || [];
+
+    if (attendees.length > 0) {
+      // Cancel the attendees
+      await hasuraRequest(
+        `mutation CancelAttendees($booking_ref: String!) {
+          update_event_attendees(
+            where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
+            _set: { status: "Cancelled" }
+          ) { affected_rows }
+        }`,
+        { booking_ref: reference_id },
+      );
+
+      // Restore ticket sold counts by ticket_id
+      const soldByTier: Record<string, number> = {};
+      for (const a of attendees) {
+        if (a.ticket_id && a.ticket_id !== "ga") {
+          soldByTier[a.ticket_id] = (soldByTier[a.ticket_id] || 0) + 1;
+        }
+      }
+      for (const [ticketId, qty] of Object.entries(soldByTier)) {
+        await hasuraRequest(
+          `query GetTicketSold($id: uuid!) {
+            ticket: event_tickets_by_pk(id: $id) { id sold remaining }
+          }`,
+          { id: ticketId },
+        )
+          .then(async (r: any) => {
+            const currentSold = parseInt(r?.ticket?.sold || "0");
+            const currentRemaining = parseInt(r?.ticket?.remaining || "0");
+            const newSold = Math.max(0, currentSold - (qty as number));
+            const newRemaining = currentRemaining + (qty as number);
+            await hasuraRequest(
+              `mutation RestoreTicketCounts($id: uuid!, $sold: String!, $remaining: String!) {
+              update_event_tickets_by_pk(pk_columns: { id: $id }, _set: { sold: $sold, remaining: $remaining }) { id }
+            }`,
+              { id: ticketId, sold: String(newSold), remaining: String(newRemaining) },
+            );
+          })
+          .catch(console.error);
+      }
+    }
+
+    // Cancel any pending product orders linked to this booking reference
+    await hasuraRequest(
+      `mutation CancelProductOrders($booking_ref: String!) {
+        update_product_orders(
+          where: { decrptions: { _eq: $booking_ref }, status: { _eq: "Pending Payment" } },
+          _set: { status: "Cancelled" }
+        ) { affected_rows }
+      }`,
+      { booking_ref: reference_id },
+    ).catch(console.error);
+
+  } else if (
+    type === "venue_booking" || type === "portal_venue_booking"
+  ) {
+    const bookingIds = reference_id.split(",");
+    await hasuraRequest(
+      `mutation CancelVenueBookings($ids: [uuid!]!) {
+        update_venue_bookings(
+          where: { id: { _in: $ids }, status: { _neq: "Failed" } },
+          _set: { status: "Failed", payment_status: "Failed" }
+        ) { affected_rows }
+      }`,
+      { ids: bookingIds },
+    );
+  } else if (
+    type === "movie_ticket" || type === "portal_movie_ticket"
+  ) {
+    const bookingIds = reference_id.split(",");
+    // First fetch booking details to know schedule/tier/quantity before cancelling
+    const bookingDetails = await hasuraRequest<{ cinema_bookings: any[] }>(
+      `query GetCinemaBookingsForCancel($ids: [uuid!]!) {
+        cinema_bookings(where: { id: { _in: $ids }, status: { _neq: "Failed" } }) {
+          id
+          schedule_id
+          ticket_tier_id
+          quantity
+        }
+      }`,
+      { ids: bookingIds },
+    );
+    const activeBookings = bookingDetails.cinema_bookings || [];
+
+    // Cancel the bookings
+    await hasuraRequest(
+      `mutation CancelCinemaBookings($ids: [uuid!]!) {
+        update_cinema_bookings(
+          where: { id: { _in: $ids }, status: { _neq: "Failed" } },
+          _set: { status: "Failed" }
+        ) { affected_rows }
+      }`,
+      { ids: bookingIds },
+    );
+
+    // Decrement booked_seats and sold_seats for each booking (mirrors createCinemaBooking increments)
+    for (const booking of activeBookings) {
+      if (booking.schedule_id && booking.quantity) {
+        await hasuraRequest(
+          `mutation RestoreCinemaSeats($schedule_id: uuid!, $qty: Int!, $ticket_tier_id: uuid) {
+            update_cinema_schedules_by_pk(
+              pk_columns: { id: $schedule_id },
+              _inc: { booked_seats: $qty }
+            ) { id }
+            update_cinema_schedule_ticket_tiers(
+              where: { schedule_id: { _eq: $schedule_id }, ticket_tier_id: { _eq: $ticket_tier_id } },
+              _inc: { sold_seats: $qty }
+            ) { affected_rows }
+          }`,
+          {
+            schedule_id: booking.schedule_id,
+            qty: -booking.quantity, // negative to decrement
+            ticket_tier_id: booking.ticket_tier_id || null,
+          },
+        ).catch(console.error);
+      }
+    }
+  } else if (type === "space_subscription") {
+    await hasuraRequest(
+      `mutation CancelSpaceSubscription($id: uuid!) {
+        update_space_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "cancelled" }) { id }
+      }`,
+      { id: reference_id },
+    );
+  }
+};
 
 export const triggerPawaPayPayout = createServerFn({ method: "POST" })
   .validator((d: { transactionId: string }) => d)

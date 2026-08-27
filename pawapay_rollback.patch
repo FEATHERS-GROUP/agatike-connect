@@ -1,0 +1,105 @@
+--- src/api/pawapay.ts
++++ src/api/pawapay.ts
+@@ -699,8 +699,22 @@
+         update_wallet_transactions_by_pk(pk_columns: { id: $id }, _set: { status: "failed", provider_status: "FAILED" }) { id }
+       }`,
+       { id: tx.id },
+     );
+ 
++    await cancelPendingPaymentByReference(tx.reference_id, tx.type);
++    return { success: true };
++  });
++
++export const cancelPendingPaymentByReference = async (reference_id: string, type: string) => {
++  if (!reference_id) return;
++  
++  const { hasuraRequest } = await import("./graphql.server");
++
+     // 3. Roll back the dependent entity based on transaction type
+     if (
+-      (tx.type === "event_ticket" ||
+-        tx.type === "portal_event_ticket" ||
+-        tx.type?.startsWith("page_builder_checkout")) &&
+-      tx.reference_id
++      type === "event_ticket" ||
++      type === "portal_event_ticket" ||
++      type?.startsWith("page_builder_checkout")
+     ) {
+       // reference_id is booking_ref for events
+       // Mark attendees with this booking_ref as Cancelled and restore sold counts
+@@ -722,7 +736,7 @@
+       `;
+       const attendeesData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, {
+-        booking_ref: tx.reference_id,
++        booking_ref: reference_id,
+       });
+       const attendees = attendeesData.event_attendees || [];
+ 
+       if (attendees.length > 0) {
+         // Cancel the attendees
+         await hasuraRequest(
+           `mutation CancelAttendees($booking_ref: String!) {
+             update_event_attendees(
+               where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
+               _set: { status: "Cancelled" }
+             ) { affected_rows }
+           }`,
+-          { booking_ref: tx.reference_id },
++          { booking_ref: reference_id },
+         );
+ 
+         // Restore ticket sold counts by ticket_id
+@@ -769,11 +783,21 @@
+             .catch(console.error);
+         }
+       }
++
++      // Cancel any pending product orders linked to this booking reference
++      await hasuraRequest(
++        `mutation CancelProductOrders($booking_ref: String!) {
++          update_product_orders(
++            where: { decrptions: { _eq: $booking_ref }, status: { _eq: "Pending Payment" } },
++            _set: { status: "Cancelled" }
++          ) { affected_rows }
++        }`,
++        { booking_ref: reference_id },
++      ).catch(console.error);
++
+     } else if (
+-      (tx.type === "venue_booking" || tx.type === "portal_venue_booking") &&
+-      tx.reference_id
++      type === "venue_booking" || type === "portal_venue_booking"
+     ) {
+-      const bookingIds = tx.reference_id.split(",");
++      const bookingIds = reference_id.split(",");
+       await hasuraRequest(
+         `mutation CancelVenueBookings($ids: [uuid!]!) {
+@@ -786,11 +810,10 @@
+       );
+     } else if (
+-      (tx.type === "movie_ticket" || tx.type === "portal_movie_ticket") &&
+-      tx.reference_id
++      type === "movie_ticket" || type === "portal_movie_ticket"
+     ) {
+-      const bookingIds = tx.reference_id.split(",");
++      const bookingIds = reference_id.split(",");
+       // First fetch booking details to know schedule/tier/quantity before cancelling
+       const bookingDetails = await hasuraRequest<{ cinema_bookings: any[] }>(
+@@ -835,14 +858,13 @@
+           ).catch(console.error);
+         }
+       }
+-    } else if (tx.type === "space_subscription" && tx.reference_id) {
++    } else if (type === "space_subscription") {
+       await hasuraRequest(
+         `mutation CancelSpaceSubscription($id: uuid!) {
+           update_space_subscriptions_by_pk(pk_columns: { id: $id }, _set: { status: "cancelled" }) { id }
+         }`,
+-        { id: tx.reference_id },
++        { id: reference_id },
+       );
+     }
+-
+-    return { success: true };
+-  });
++};
