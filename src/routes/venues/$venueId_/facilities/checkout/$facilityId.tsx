@@ -121,6 +121,7 @@ function FacilityCheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [bookingRef, setBookingRef] = useState<string>("");
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
@@ -1235,9 +1236,11 @@ function FacilityCheckoutPage() {
         userPhone={phone}
       />
 
-      {(isPollingPawaPay || isGenerating) && (
+      {(pawapayError || isPollingPawaPay || isGenerating) && (
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

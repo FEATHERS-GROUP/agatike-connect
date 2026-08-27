@@ -54,6 +54,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const [step, setStep] = useState(1);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedTickets, setIssuedTickets] = useState<any[]>([]);
 
@@ -305,7 +306,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
       setIsPaymentModalOpen(false);
     },
     onError: (e: any) => {
-      toast.error(e.message || "Checkout failed");
+      setPawapayError(e.message || "Checkout failed");
     },
   });
 
@@ -340,14 +341,14 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
           if (pawapayDepositId) {
             try {
               await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-              queryClient.invalidateQueries({ queryKey: ["movie-attendees", movie.id] });
-              queryClient.invalidateQueries({ queryKey: ["public-movie", movie.id] });
+              queryClient.invalidateQueries({ queryKey: ["movie-attendees", actualMovieId] });
+              queryClient.invalidateQueries({ queryKey: ["public-movie", actualMovieId] });
             } catch (e) {
               console.error("Cancel cleanup failed:", e);
             }
           }
           const { getPaymentFailureMessage } = await import("@/lib/utils");
-          toast.error(getPaymentFailureMessage(res));
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -592,11 +593,17 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
     </div>
   );
 
-  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+  if (
+    pawapayError ||
+    isPollingPawaPay ||
+    ((isCheckingOut || isGenerating) && paymentMethod === "momo")
+  ) {
     return (
       <>
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

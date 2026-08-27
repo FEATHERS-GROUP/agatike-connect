@@ -75,6 +75,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
   // Fetch Ticket Projects for PDF generation
@@ -374,7 +375,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
       }
     },
     onError: (e: any) => {
-      toast.error(e.message || "Checkout failed");
+      setPawapayError(e.message || "Checkout failed");
     },
   });
 
@@ -406,7 +407,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             }
           }
           const { getPaymentFailureMessage } = await import("@/lib/utils");
-          toast.error(getPaymentFailureMessage(res));
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -607,11 +608,17 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
     </div>
   );
 
-  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+  if (
+    pawapayError ||
+    isPollingPawaPay ||
+    ((isCheckingOut || isGenerating) && paymentMethod === "momo")
+  ) {
     return (
       <>
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             if (pawapayDepositId) {

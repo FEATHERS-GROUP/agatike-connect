@@ -102,6 +102,7 @@ export function VenueCheckoutSheet({
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
 
   const { data: ticketProjects } = useQuery({
     queryKey: ["workspace-ticket-projects", venue?.workspace_id],
@@ -348,7 +349,7 @@ export function VenueCheckoutSheet({
       }
     },
     onError: (e: any) => {
-      toast.error(e.message || "Checkout failed");
+      setPawapayError(e.message || "Checkout failed");
     },
   });
 
@@ -372,7 +373,7 @@ export function VenueCheckoutSheet({
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
           const { getPaymentFailureMessage } = await import("@/lib/utils");
-          toast.error(getPaymentFailureMessage(res));
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -525,7 +526,9 @@ export function VenueCheckoutSheet({
         {isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo") ? (
           <CheckYourPhone
             themeColor={themeColor}
-            status={isGenerating ? "generating" : "payment"}
+            status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+            errorMessage={pawapayError || undefined}
+            onClose={() => setPawapayError(null)}
             onCancel={async () => {
               setIsPollingPawaPay(false);
               if (pawapayDepositId) {

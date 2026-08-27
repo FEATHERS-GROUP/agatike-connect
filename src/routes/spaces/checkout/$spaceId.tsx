@@ -101,6 +101,7 @@ function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
 
   // Promo Code State
@@ -1047,8 +1048,11 @@ function CheckoutPage() {
         userPhone={user?.phone || undefined}
       />
 
-      {isPollingPawaPay && (
+      {(isPollingPawaPay || !!pawapayError) && (
         <CheckYourPhone
+          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             setIsProcessing(false);

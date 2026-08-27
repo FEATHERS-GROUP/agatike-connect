@@ -60,6 +60,7 @@ export function EmbeddedForm({
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
+  const [pawapayError, setPawapayError] = useState<string | null>(null);
 
   const isPreview = formId === "preview-id";
 
@@ -197,7 +198,7 @@ export function EmbeddedForm({
           clearInterval(intervalId);
           setIsPollingPawaPay(false);
           const { getPaymentFailureMessage } = await import("@/lib/utils");
-          toast.error(getPaymentFailureMessage(res));
+          setPawapayError(getPaymentFailureMessage(res));
         }
       } catch (err) {
         console.error("Polling error", err);
@@ -250,7 +251,9 @@ export function EmbeddedForm({
     return (
       <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
         <CheckYourPhone
-          status="payment"
+          status={pawapayError ? "error" : isGenerating ? "generating" : "payment"}
+          errorMessage={pawapayError || undefined}
+          onClose={() => setPawapayError(null)}
           onCancel={async () => {
             setIsPollingPawaPay(false);
             setIsProcessingPayment(false);
