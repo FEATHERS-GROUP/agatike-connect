@@ -547,7 +547,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   phone: orgPhone,
                   city: wsCity,
                   address: wsAddress,
-                  themeColor: wsThemeColor,
+                  themeColor: wsThemeColor === "#000000" ? "#F97316" : wsThemeColor,
                 };
                 let phoneToNotify = body?.payer?.address?.value;
                 if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
