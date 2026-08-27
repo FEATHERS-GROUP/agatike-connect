@@ -9,7 +9,10 @@ export const getScheduledServices = createServerFn({ method: "POST" })
     const query = `
       query GetScheduledServices($startDate: timestamptz!, $endDate: timestamptz!, $dateStart: date!, $dateEnd: date!) {
         events(
-          where: { schedules: { start_date: { _gte: $dateStart, _lte: $dateEnd } } },
+          where: { 
+            schedules: { start_date: { _gte: $dateStart, _lte: $dateEnd } },
+            deleted: { _eq: false }
+          },
           order_by: { created_at: asc }
         ) {
           id
@@ -67,7 +70,10 @@ export const getScheduledServices = createServerFn({ method: "POST" })
 
         
         venue_bookings(
-          where: { start_time: { _gte: $startDate, _lte: $endDate } },
+          where: { 
+            start_time: { _gte: $startDate, _lte: $endDate },
+            status: { _eq: "Confirmed" }
+          },
           order_by: { start_time: asc }
         ) {
           id
