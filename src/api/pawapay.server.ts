@@ -97,6 +97,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
       let wsThemeColor = "";
       let orgEmail = "";
       let orgPhone = "";
+      let wsOrganizerId = "";
 
       if (tx?.workspace_id) {
         try {
@@ -126,6 +127,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
             wsName = wsData.workspaces_by_pk.name;
             wsCity = wsData.workspaces_by_pk.city || "";
             wsAddress = wsData.workspaces_by_pk.address || "";
+            wsOrganizerId = wsData.workspaces_by_pk.orgnizer_id || "";
 
             if (wsData.workspaces_by_pk.orgnizer_id) {
               const orgData = await hasuraRequest<{
@@ -620,6 +622,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 console.error("[Pindo SMS] Failed to send payment confirmation:", e);
               }
             }
+
+            if (wsOrganizerId) {
+              try {
+                const { getFirebaseAdmin } = await import("../lib/firebase.server");
+                const admin = await getFirebaseAdmin();
+                if (admin && admin.db) {
+                  const db = admin.db;
+                  await db.collection("agatike_notifications").add({
+                    actorId: firstAtt?.user_id || null,
+                    actorName: firstAtt?.names || "Customer",
+                    createdAt: new Date().toISOString(),
+                    message: `New payment of ${totalPaidStr} ${body?.currency || ""} received for ${eventName || "Products"}.`,
+                    organizerId: wsOrganizerId,
+                    read: false,
+                    title: "New Payment Received",
+                    type: "payment",
+                    targetId: tx.reference_id || tx.id,
+                  });
+                }
+              } catch (e) {
+                console.error("[Firebase] Failed to send deposit notification:", e);
+              }
+            }
           } // End of Notifications block
         } else if (tx.type === "space_subscription") {
           // Activate the subscription
@@ -796,6 +821,29 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                 console.log(`[Pindo SMS] Space subscription confirmation sent to ${subPhone}`);
               } catch (e) {
                 console.error("[Pindo SMS] Failed to send space subscription SMS:", e);
+              }
+            }
+
+            if (wsOrganizerId) {
+              try {
+                const { getFirebaseAdmin } = await import("../lib/firebase.server");
+                const admin = await getFirebaseAdmin();
+                if (admin && admin.db) {
+                  const db = admin.db;
+                  await db.collection("agatike_notifications").add({
+                    actorId: null,
+                    actorName: sub.customer_name || "Customer",
+                    createdAt: new Date().toISOString(),
+                    message: `New subscription payment of ${body?.depositedAmount || tx.amount} ${body?.currency || ""} received for ${sub.plan_name}.`,
+                    organizerId: wsOrganizerId,
+                    read: false,
+                    title: "New Subscription Payment",
+                    type: "payment",
+                    targetId: tx.reference_id || tx.id,
+                  });
+                }
+              } catch (e) {
+                console.error("[Firebase] Failed to send subscription deposit notification:", e);
               }
             }
           }
