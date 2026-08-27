@@ -10,7 +10,6 @@ export const getScheduledServices = createServerFn({ method: "POST" })
       query GetScheduledServices($startDate: timestamptz!, $endDate: timestamptz!, $dateStart: date!, $dateEnd: date!) {
         events(
           where: { 
-            schedules: { start_date: { _gte: $dateStart, _lte: $dateEnd } },
             deleted: { _eq: false }
           },
           order_by: { created_at: asc }
@@ -19,9 +18,7 @@ export const getScheduledServices = createServerFn({ method: "POST" })
           title
           created_at
           cover
-          schedules(limit: 1, order_by: { start_date: asc }) {
-            start_date
-          }
+          tour_stops
           workspaces {
             organizer {
               name
@@ -112,18 +109,41 @@ export const getScheduledServices = createServerFn({ method: "POST" })
       // Transform into a unified timeline
       const unifiedTimeline: any[] = [];
 
+      const startMs = new Date(startDate).getTime();
+      const endMs = new Date(endDate).getTime();
+
       (data.events || []).forEach((e) => {
-        unifiedTimeline.push({
-          id: e.id,
-          type: "Event",
-          title: e.title,
-          date: e.schedules?.[0]?.start_date || e.created_at,
-          location: "See details",
-          organizer: e.workspaces?.organizer?.name || "Unknown",
-          coverUrl: e.cover,
-          ticketTiers: e.event_tickets?.map((t: any) => ({ name: t.name, price: t.cost })) || [],
-          bookings: e.event_attendees_aggregate?.aggregate?.count || 0,
-        });
+        let validDate: string | null = null;
+        let validLocation = "See details";
+
+        if (Array.isArray(e.tour_stops) && e.tour_stops.length > 0) {
+          for (const stop of e.tour_stops) {
+            if (stop.date) {
+              const stopMs = new Date(stop.date).getTime();
+              if (stopMs >= startMs && stopMs <= endMs) {
+                validDate = stop.date;
+                if (stop.venue || stop.city) {
+                  validLocation = `${stop.venue || ""} ${stop.city || ""}`.trim();
+                }
+                break;
+              }
+            }
+          }
+        }
+
+        if (validDate) {
+          unifiedTimeline.push({
+            id: e.id,
+            type: "Event",
+            title: e.title,
+            date: validDate,
+            location: validLocation || "See details",
+            organizer: e.workspaces?.organizer?.name || "Unknown",
+            coverUrl: e.cover,
+            ticketTiers: e.event_tickets?.map((t: any) => ({ name: t.name, price: t.cost })) || [],
+            bookings: e.event_attendees_aggregate?.aggregate?.count || 0,
+          });
+        }
       });
 
       (data.cinema_schedules || []).forEach((c) => {

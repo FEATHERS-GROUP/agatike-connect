@@ -187,7 +187,29 @@ function DashboardEventDetails() {
           ticketsByStop: [],
         };
       }
-      const tickets = event.event_tickets as any[];
+
+      // Calculate true sold count per ticket from attendees (excluding pending/cancelled)
+      const trueSoldByTicket = attendees.reduce((acc: any, attendee: any) => {
+        const s = attendee.status ? attendee.status.toLowerCase() : "";
+        if (s !== "Pending Payment" && s !== "cancelled" && s !== "refunded" && s !== "pending") {
+          const tId = attendee.ticket_id;
+          if (tId) {
+            acc[tId] = (acc[tId] || 0) + Number(attendee.quanity || 1);
+          }
+        }
+        return acc;
+      }, {});
+
+      const tickets = (event.event_tickets as any[]).map((t) => {
+        const actualSold = trueSoldByTicket[t.id] || 0;
+        const capacity = Number(t.sold || 0) + Number(t.remaining || 0);
+        return {
+          ...t,
+          sold: actualSold,
+          remaining: capacity > actualSold ? capacity - actualSold : 0,
+        };
+      });
+
       const totalSold = tickets.reduce((acc, t) => acc + Number(t.sold || 0), 0);
       const totalRemaining = tickets.reduce((acc, t) => acc + Number(t.remaining || 0), 0);
       const totalCapacity = totalSold + totalRemaining;
@@ -281,15 +303,14 @@ function DashboardEventDetails() {
         soldVsUnsold,
         ticketsByStop,
       };
-    }, [event]);
+    }, [event, attendees]);
 
   // ── Computed: per-stop breakdown ───────────────────────────────────────────
   const stopBreakdown = useMemo(() => {
-    if (!event?.tour_stops || !event?.event_tickets) return [];
+    if (!event?.tour_stops || !chartData) return [];
     const stops = event.tour_stops as any[];
-    const tickets = event.event_tickets as any[];
     return stops.map((stop: any, idx: number) => {
-      const stopTickets = tickets.filter((t: any) => t.tour_stop_idx === idx);
+      const stopTickets = chartData.filter((t: any) => t.tour_stop_idx === idx);
       const sold = stopTickets.reduce((acc: number, t: any) => acc + Number(t.sold || 0), 0);
       const remaining = stopTickets.reduce(
         (acc: number, t: any) => acc + Number(t.remaining || 0),
@@ -312,7 +333,7 @@ function DashboardEventDetails() {
         color: PALETTE[idx % PALETTE.length],
       };
     });
-  }, [event]);
+  }, [event, chartData]);
 
   const hasMultipleStops = stopBreakdown.length > 1;
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Ticket, Zap, Clock, ShieldCheck, ArrowRight } from "lucide-react";
 import { useMediaQuery } from "@mantine/hooks";
+import heroImage from "@/assets/hero-event.jpg";
 
 interface AuthSuggestionModalProps {
   isOpen: boolean;
@@ -67,7 +68,7 @@ export function AuthSuggestionModal({
           <div className="relative h-[55dvh] w-full bg-[#F2571D] rounded-b-[40px] overflow-hidden flex items-center justify-center p-6 shadow-sm">
             <div className="absolute inset-0 opacity-20 pointer-events-none"></div>
             <img
-              src="/assets/hero-event.jpg"
+              src={heroImage}
               alt="Event Culture"
               className="w-full h-full object-cover absolute inset-0 mix-blend-overlay opacity-60"
             />
