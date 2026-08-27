@@ -550,13 +550,15 @@ export const getPawaPayDepositStatus = createServerFn({ method: "POST" })
             });
 
             const { handlePawaPayWebhook } = await import("./pawapay.server");
-            await handlePawaPayWebhook(mockRequest);
+            const response = await handlePawaPayWebhook(mockRequest);
+            const resData = await response.json().catch(() => ({}));
 
-            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
-
-            // Update local object so the frontend sees it immediately
-            tx.status = newStatus;
-            tx.provider_status = providerStatus;
+            if (resData.message !== "Already processed") {
+              const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
+              // Update local object so the frontend sees it immediately
+              tx.status = newStatus;
+              tx.provider_status = providerStatus;
+            }
           }
         }
       } catch (err) {
@@ -628,13 +630,15 @@ export const getPawaPayPayoutStatus = createServerFn({ method: "POST" })
             });
 
             const { handlePawaPayWebhook } = await import("./pawapay.server");
-            await handlePawaPayWebhook(mockRequest);
+            const response = await handlePawaPayWebhook(mockRequest);
+            const resData = await response.json().catch(() => ({}));
 
-            const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
-
-            // Update local object so the frontend sees it immediately
-            tx.status = newStatus;
-            tx.provider_status = providerStatus;
+            if (resData.message !== "Already processed") {
+              const newStatus = providerStatus === "COMPLETED" ? "completed" : "failed";
+              // Update local object so the frontend sees it immediately
+              tx.status = newStatus;
+              tx.provider_status = providerStatus;
+            }
           }
         }
       } catch (err) {
@@ -669,9 +673,9 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
     });
     const tx = txData.wallet_transactions?.[0];
 
-    if (!tx || tx.status !== "pending") {
-      // Already completed/failed/cancelled — nothing to do
-      return { success: false, reason: "no_pending_tx" };
+    if (!tx || (tx.status !== "pending" && tx.status !== "failed")) {
+      // Already completed/cancelled — nothing to do
+      return { success: false, reason: "invalid_status" };
     }
 
     // 2. Mark wallet transaction as cancelled

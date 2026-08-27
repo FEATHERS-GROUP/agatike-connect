@@ -551,6 +551,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["event-attendees", eventId] });
+                queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }
@@ -911,6 +913,8 @@ export function BookingMobile({ eventId }: { eventId: string }) {
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["event-attendees", eventId] });
+                queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }

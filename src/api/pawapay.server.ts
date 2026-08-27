@@ -24,7 +24,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           update_wallet_transactions(
             where: { 
               provider_reference: { _eq: $provider_reference },
-              status: { _nin: ["completed", "failed"] }
+              status: { _nin: ["completed", "failed", "cancelled"] }
             }, 
             _set: { 
               provider_status: $provider_status, 

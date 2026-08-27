@@ -343,6 +343,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           if (pawapayDepositId) {
             try {
               await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              queryClient.invalidateQueries({ queryKey: ["movie-attendees", movie.id] });
+              queryClient.invalidateQueries({ queryKey: ["public-movie", movie.id] });
             } catch (e) {
               console.error("Cancel cleanup failed:", e);
             }
@@ -628,6 +630,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["movie-attendees", movie.id] });
+                queryClient.invalidateQueries({ queryKey: ["public-movie", movie.id] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }

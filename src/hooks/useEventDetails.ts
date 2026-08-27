@@ -334,6 +334,8 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const { data: rawAttendeesList = [] } = useQuery({
     queryKey: ["event-attendees", eventId],
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+    select: (data: any[]) =>
+      data.filter((a: any) => a.status !== "Cancelled" && a.status !== "Failed"),
   });
 
   const { data: workspaceVipPrivileges = [] } = useQuery({
@@ -355,8 +357,7 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
           : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
         ).map((t: any) => {
           const sold = parseInt(t.sold) || 0;
-          const capacity = parseInt(t.remaining) || 0;
-          const ticketsLeft = Math.max(0, capacity - sold);
+          const ticketsLeft = Math.max(0, parseInt(t.remaining) || 0);
           
           let perks: string[] = [];
           if (t.vip_privilege_ids && t.vip_privilege_ids.length > 0) {
