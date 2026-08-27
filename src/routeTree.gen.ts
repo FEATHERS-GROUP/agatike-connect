@@ -105,6 +105,7 @@ import { Route as PSlugCheckoutCartRouteImport } from './routes/p_.$slug.checkou
 import { Route as InternalControlAdminUsersRouteImport } from './routes/internal/control/admin/users'
 import { Route as InternalControlAdminTransactionsRouteImport } from './routes/internal/control/admin/transactions'
 import { Route as InternalControlAdminProvidersRouteImport } from './routes/internal/control/admin/providers'
+import { Route as InternalControlAdminNotificationsRouteImport } from './routes/internal/control/admin/notifications'
 import { Route as InternalControlAdminModulesRouteImport } from './routes/internal/control/admin/modules'
 import { Route as InternalControlAdminModerationRouteImport } from './routes/internal/control/admin/moderation'
 import { Route as InternalControlAdminMasterScheduleRouteImport } from './routes/internal/control/admin/master-schedule'
@@ -750,6 +751,12 @@ const InternalControlAdminProvidersRoute =
   InternalControlAdminProvidersRouteImport.update({
     id: '/providers',
     path: '/providers',
+    getParentRoute: () => InternalControlAdminRoute,
+  } as any)
+const InternalControlAdminNotificationsRoute =
+  InternalControlAdminNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
     getParentRoute: () => InternalControlAdminRoute,
   } as any)
 const InternalControlAdminModulesRoute =
@@ -1685,6 +1692,7 @@ export interface FileRoutesByFullPath {
   '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
   '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/notifications': typeof InternalControlAdminNotificationsRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
@@ -1915,6 +1923,7 @@ export interface FileRoutesByTo {
   '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
   '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/notifications': typeof InternalControlAdminNotificationsRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
@@ -2148,6 +2157,7 @@ export interface FileRoutesById {
   '/internal/control/admin/master-schedule': typeof InternalControlAdminMasterScheduleRoute
   '/internal/control/admin/moderation': typeof InternalControlAdminModerationRoute
   '/internal/control/admin/modules': typeof InternalControlAdminModulesRoute
+  '/internal/control/admin/notifications': typeof InternalControlAdminNotificationsRoute
   '/internal/control/admin/providers': typeof InternalControlAdminProvidersRoute
   '/internal/control/admin/transactions': typeof InternalControlAdminTransactionsRoute
   '/internal/control/admin/users': typeof InternalControlAdminUsersRoute
@@ -2383,6 +2393,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/master-schedule'
     | '/internal/control/admin/moderation'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/notifications'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
@@ -2613,6 +2624,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/master-schedule'
     | '/internal/control/admin/moderation'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/notifications'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
@@ -2845,6 +2857,7 @@ export interface FileRouteTypes {
     | '/internal/control/admin/master-schedule'
     | '/internal/control/admin/moderation'
     | '/internal/control/admin/modules'
+    | '/internal/control/admin/notifications'
     | '/internal/control/admin/providers'
     | '/internal/control/admin/transactions'
     | '/internal/control/admin/users'
@@ -3697,6 +3710,13 @@ declare module '@tanstack/react-router' {
       path: '/providers'
       fullPath: '/internal/control/admin/providers'
       preLoaderRoute: typeof InternalControlAdminProvidersRouteImport
+      parentRoute: typeof InternalControlAdminRoute
+    }
+    '/internal/control/admin/notifications': {
+      id: '/internal/control/admin/notifications'
+      path: '/notifications'
+      fullPath: '/internal/control/admin/notifications'
+      preLoaderRoute: typeof InternalControlAdminNotificationsRouteImport
       parentRoute: typeof InternalControlAdminRoute
     }
     '/internal/control/admin/modules': {
@@ -5137,6 +5157,7 @@ interface InternalControlAdminRouteChildren {
   InternalControlAdminMasterScheduleRoute: typeof InternalControlAdminMasterScheduleRoute
   InternalControlAdminModerationRoute: typeof InternalControlAdminModerationRoute
   InternalControlAdminModulesRoute: typeof InternalControlAdminModulesRoute
+  InternalControlAdminNotificationsRoute: typeof InternalControlAdminNotificationsRoute
   InternalControlAdminProvidersRoute: typeof InternalControlAdminProvidersRoute
   InternalControlAdminTransactionsRoute: typeof InternalControlAdminTransactionsRoute
   InternalControlAdminUsersRoute: typeof InternalControlAdminUsersRoute
@@ -5162,6 +5183,8 @@ const InternalControlAdminRouteChildren: InternalControlAdminRouteChildren = {
     InternalControlAdminMasterScheduleRoute,
   InternalControlAdminModerationRoute: InternalControlAdminModerationRoute,
   InternalControlAdminModulesRoute: InternalControlAdminModulesRoute,
+  InternalControlAdminNotificationsRoute:
+    InternalControlAdminNotificationsRoute,
   InternalControlAdminProvidersRoute: InternalControlAdminProvidersRoute,
   InternalControlAdminTransactionsRoute: InternalControlAdminTransactionsRoute,
   InternalControlAdminUsersRoute: InternalControlAdminUsersRoute,

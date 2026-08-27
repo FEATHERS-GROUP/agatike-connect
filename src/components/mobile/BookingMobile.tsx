@@ -79,7 +79,7 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     }
   }, []);
 
-  const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [assignMode, setAssignMode] = useState<"me" | "others">("me");
   const [isSuccess, setIsSuccess] = useState(false);

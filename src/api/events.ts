@@ -556,6 +556,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
         form_id: t.form_id || null,
         vip_privilege_ids: t.vip_privilege_ids || null,
         tour_stop_idx: t.tour_stop_idx !== undefined ? t.tour_stop_idx : null,
+        sale_ends_at: t.sale_ends_at || null,
       };
       if (t.id && isValidUUID(t.id)) {
         ticketObj.id = t.id;
@@ -572,7 +573,7 @@ export const updateEvent = createServerFn({ method: "POST" }).handler(async (ctx
               objects: $objects,
               on_conflict: {
                 constraint: event_tickets_pkey,
-                update_columns: [name, type, cost, remaining, form_id, vip_privilege_ids, tour_stop_idx]
+                update_columns: [name, type, cost, remaining, form_id, vip_privilege_ids, tour_stop_idx, sale_ends_at]
               }
             ) {
               affected_rows

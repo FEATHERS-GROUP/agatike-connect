@@ -10,8 +10,15 @@ import {
   Globe,
   Lock,
   ExternalLink,
+  LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/internal/control/admin/organizers/$organizerId/projects")({
   loader: async ({ params }) => {
@@ -23,7 +30,7 @@ export const Route = createFileRoute("/internal/control/admin/organizers/$organi
   component: OrganizerProjects,
 });
 
-type Tab = "tickets" | "badges" | "venues" | "pages";
+type Tab = "tickets" | "badges" | "venues" | "pages" | "apps";
 
 function EmptyRow({ cols, label }: { cols: number; label: string }) {
   return (
@@ -53,9 +60,10 @@ function WorkspaceCell({ name }: { name: string }) {
 }
 
 function OrganizerProjects() {
-  const { tickets, badges, venues, pages } = Route.useLoaderData() as any;
+  const { tickets, badges, venues, pages, apps } = Route.useLoaderData() as any;
   const [activeTab, setActiveTab] = useState<Tab>("tickets");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedApp, setSelectedApp] = useState<any>(null);
 
   const tabs: { key: Tab; label: string; icon: any; count: number; color: string }[] = [
     {
@@ -86,6 +94,13 @@ function OrganizerProjects() {
       count: pages?.length || 0,
       color: "text-[#84c87e]",
     },
+    {
+      key: "apps",
+      label: "Custom Apps",
+      icon: LayoutGrid,
+      count: apps?.length || 0,
+      color: "text-[#d7ba7d]",
+    },
   ];
 
   const q = searchQuery.toLowerCase();
@@ -109,6 +124,11 @@ function OrganizerProjects() {
       (p.title || "").toLowerCase().includes(q) ||
       (p.slug || "").toLowerCase().includes(q) ||
       (p.workspaceName || "").toLowerCase().includes(q),
+  );
+  const filteredApps = (apps || []).filter(
+    (a: any) =>
+      (a.name || "").toLowerCase().includes(q) ||
+      (a.workspaceName || "").toLowerCase().includes(q),
   );
 
   return (
@@ -430,8 +450,167 @@ function OrganizerProjects() {
               </tbody>
             </table>
           )}
+
+          {/* Custom Apps */}
+          {activeTab === "apps" && (
+            <table className="w-full text-left text-[13px] whitespace-nowrap">
+              <thead className="bg-gray-100 dark:bg-[#2d2d30] text-gray-700 dark:text-[#cccccc]">
+                <tr>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    ID
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    App Name
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Workspace
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Status
+                  </th>
+                  <th className="font-semibold py-2 px-4 border-b border-gray-200 dark:border-[#333333]">
+                    Created At
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-[#333333] text-gray-700 dark:text-[#cccccc]">
+                {filteredApps.length === 0 ? (
+                  <EmptyRow cols={5} label="No custom apps found." />
+                ) : (
+                  filteredApps.map((a: any) => (
+                    <tr
+                      key={a.id}
+                      onClick={() => setSelectedApp(a)}
+                      className="hover:bg-gray-200 dark:hover:bg-[#2d2d30] transition-colors cursor-pointer"
+                    >
+                      <td className="py-2 px-4 font-mono text-gray-600 dark:text-[#797775] text-xs">
+                        {String(a.id).substring(0, 8)}...
+                      </td>
+                      <td className="py-2 px-4 font-medium text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <LayoutGrid className="h-3.5 w-3.5 text-[#d7ba7d] shrink-0" />
+                          {a.name || "Untitled App"}
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        <WorkspaceCell name={a.workspaceName} />
+                      </td>
+                      <td className="py-2 px-4">
+                        {a.is_active ? (
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e]">
+                            Active
+                          </span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-2 px-4 text-gray-600 dark:text-[#797775]">
+                        {a.created_at ? new Date(a.created_at).toLocaleDateString("en-US") : "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
+
+      {/* App Details Modal */}
+      <Dialog open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>
+        <DialogContent className="max-w-2xl bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#333333]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+              <LayoutGrid className="h-5 w-5 text-[#d7ba7d]" />
+              {selectedApp?.name || "Untitled App"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4 text-sm text-gray-700 dark:text-[#cccccc]">
+            <div className="grid grid-cols-2 gap-4 border-b border-gray-200 dark:border-[#333333] pb-4">
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">ID</p>
+                <p className="font-mono text-xs">{selectedApp?.id}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Status</p>
+                <p>
+                  {selectedApp?.is_active ? (
+                    <span className="text-xs px-2 py-0.5 rounded-sm bg-[#84c87e]/10 text-[#84c87e]">Active</span>
+                  ) : (
+                    <span className="text-xs px-2 py-0.5 rounded-sm bg-gray-200 dark:bg-[#797775]/10 text-gray-600 dark:text-[#797775]">Inactive</span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Type</p>
+                <p className="capitalize">{selectedApp?.app_type?.replace(/_/g, " ") || "Custom"}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Theme</p>
+                {selectedApp?.theme_color ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-4 h-4 rounded-full border border-gray-200 dark:border-[#333333]" style={{ backgroundColor: selectedApp.theme_color }}></span>
+                    <span className="font-mono text-xs">{selectedApp.theme_color}</span>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-[#797775] italic">—</p>
+                )}
+              </div>
+            </div>
+            
+            {selectedApp?.description && (
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-1">Description</p>
+                <p className="text-[13px]">{selectedApp.description}</p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Modules ({selectedApp?.app_modules?.length || 0})</p>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                  {selectedApp?.app_modules?.length > 0 ? (
+                    selectedApp.app_modules.map((mod: any) => (
+                      <div key={mod.id} className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-md p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {mod.icon && <span className="text-[10px] bg-gray-200 dark:bg-[#333333] px-1.5 py-0.5 rounded text-gray-700 dark:text-[#cccccc] font-medium">{mod.icon}</span>}
+                            <span className="font-semibold text-sm text-gray-900 dark:text-white">{mod.title || "Untitled"}</span>
+                          </div>
+                          <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-[#797775]">{mod.type?.replace(/_/g, " ")}</span>
+                        </div>
+                        <div className="bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#333333] rounded p-2 overflow-x-auto text-[10px] font-mono text-gray-600 dark:text-[#aaaaaa]">
+                          {mod.config ? (
+                            <pre>{JSON.stringify(mod.config, null, 2)}</pre>
+                          ) : (
+                            <span className="italic">No config</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 border border-gray-200 dark:border-[#333333]">
+                      <span className="text-gray-500 dark:text-[#797775] italic text-xs">No modules configured.</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Permissions ({selectedApp?.app_permissions?.length || 0})</p>
+                <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 max-h-[300px] overflow-y-auto border border-gray-200 dark:border-[#333333] font-mono text-[11px] leading-relaxed">
+                  {selectedApp?.app_permissions?.length > 0 ? (
+                    <pre>{JSON.stringify(selectedApp.app_permissions, null, 2)}</pre>
+                  ) : (
+                    <span className="text-gray-500 dark:text-[#797775] italic">No permissions configured.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

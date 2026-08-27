@@ -29,6 +29,9 @@ import { useTheme } from "@/contexts/ThemeContext";
 import agatikeIcon from "@/assets/logo/Agatike Icon.png";
 import { useState, useRef, useEffect } from "react";
 import { adminGlobalSearch } from "@/api/admin_search";
+import { db } from "@/lib/firebase";
+import { collection, query as firestoreQuery, where, onSnapshot, orderBy, limit, doc, updateDoc } from "firebase/firestore";
+import { formatDistanceToNow } from "date-fns";
 
 type SearchResults = Awaited<ReturnType<typeof adminGlobalSearch>>;
 
@@ -238,6 +241,36 @@ export function AdminHeader() {
   const [clickedId, setClickedId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  // Notifications Listener
+  useEffect(() => {
+    if (!db) return;
+    const q = firestoreQuery(
+      collection(db, "agatike_notifications"),
+      where("organizerId", "==", "admin"),
+      orderBy("createdAt", "desc"),
+      limit(5)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifs: any[] = [];
+      let unread = 0;
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data.read) unread++;
+        notifs.push({ id: doc.id, ...data });
+      });
+      setNotifications(notifs);
+      setUnreadCount(unread);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const debouncedQuery = useDebounce(query, 280);
 
@@ -272,10 +305,22 @@ export function AdminHeader() {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setIsNotifOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const markAsRead = async (id: string) => {
+    if (!db) return;
+    try {
+      await updateDoc(doc(db, "agatike_notifications", id), { read: true });
+    } catch (e) {
+      console.error("Failed to mark as read", e);
+    }
+  };
 
   // Build flat list of all results for keyboard nav
   const flatResults: { item: any; cat: (typeof CATEGORY_CONFIG)[number] }[] = [];
@@ -556,13 +601,79 @@ export function AdminHeader() {
         >
           <HelpCircle className="h-4 w-4" />
         </button>
-        <button
-          className="relative p-2 hover:bg-gray-200 dark:hover:bg-[#333333] rounded-sm transition-colors"
-          title="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#f97316]" />
-        </button>
+        <div ref={notifRef} className="relative">
+          <button
+            onClick={() => setIsNotifOpen(!isNotifOpen)}
+            className={`relative p-2 rounded-sm transition-colors ${
+              isNotifOpen
+                ? "bg-gray-200 dark:bg-[#333333]"
+                : "hover:bg-gray-200 dark:hover:bg-[#333333]"
+            }`}
+            title="Notifications"
+          >
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#f97316]" />
+            )}
+          </button>
+
+          {isNotifOpen && (
+            <div className="absolute right-0 mt-1 w-80 z-50 rounded-md border border-gray-200 dark:border-[#333333] bg-white dark:bg-[#1b1b1c] shadow-2xl overflow-hidden flex flex-col">
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-[#222] flex justify-between items-center bg-gray-50 dark:bg-[#111]">
+                <h3 className="text-xs font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wide">
+                  Notifications
+                </h3>
+                {unreadCount > 0 && (
+                  <span className="bg-[#f97316]/10 text-[#f97316] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {unreadCount} new
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 overflow-y-auto max-h-[300px]">
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-gray-400 dark:text-[#777] text-xs">
+                    No recent notifications
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className={`px-4 py-3 border-b border-gray-50 dark:border-[#222] last:border-0 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors ${
+                        !n.read ? "bg-gray-50/50 dark:bg-[#1f1f1f]" : ""
+                      }`}
+                      onClick={() => !n.read && markAsRead(n.id)}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <span
+                          className={`text-xs font-semibold ${
+                            !n.read ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {n.title}
+                        </span>
+                        <span className="text-[10px] text-gray-400 shrink-0 ml-2">
+                          {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : ""}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-[#888] line-clamp-2 leading-relaxed">
+                        {n.message}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="border-t border-gray-100 dark:border-[#222] bg-gray-50 dark:bg-[#111] p-1">
+                <Link
+                  to="/internal/control/admin/notifications"
+                  onClick={() => setIsNotifOpen(false)}
+                  className="block w-full text-center px-4 py-2 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-200/50 dark:hover:bg-[#222] rounded transition-colors"
+                >
+                  View All Notifications
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="h-4 w-px bg-gray-200 dark:bg-[#333333] mx-1" />
         <button
           onClick={handleLogout}

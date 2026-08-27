@@ -72,7 +72,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   const [bookingReason, setBookingReason] = useState("");
   const [bookingReasonOther, setBookingReasonOther] = useState("");
 
-  const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pawapayDepositId, setPawapayDepositId] = useState<string | null>(null);
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);

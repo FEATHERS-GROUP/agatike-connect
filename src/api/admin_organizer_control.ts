@@ -452,6 +452,35 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
           is_published
           updated_at
         }
+        workspace_apps(where: { workspace_id: { _in: $wsIds } }, order_by: { created_at: desc }) {
+          app_type
+          created_at
+          id
+          description
+          is_active
+          logo_url
+          name
+          theme_color
+          updated_at
+          workspace_id
+          app_modules {
+            app_id
+            config
+            created_at
+            icon
+            id
+            order
+            title
+            type
+          }
+          app_permissions {
+            app_id
+            created_at
+            id
+            role
+            workspace_user_id
+          }
+        }
       }
     `;
 
@@ -499,6 +528,10 @@ export const getAdminOrganizerProjects = createServerFn({ method: "POST" })
       pages: (data.workspace_pages || []).map((p: any) => ({
         ...p,
         workspaceName: wsNameMap[p.workspace_id] || "—",
+      })),
+      apps: (data.workspace_apps || []).map((a: any) => ({
+        ...a,
+        workspaceName: wsNameMap[a.workspace_id] || "—",
       })),
     };
   });
@@ -1510,6 +1543,7 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
           created_at
           workspace_id
           provider_reference
+          reference_id
         }
       }
     `;
@@ -1560,11 +1594,107 @@ export const getAllPlatformWalletTransactions = createServerFn({ method: "POST" 
         }
       }
 
+      // Fetch target names based on reference_id
+      let eventBookingRefs: string[] = [];
+      let venueBookingIds: string[] = [];
+      let movieBookingIds: string[] = [];
+      let spaceSubscriptionIds: string[] = [];
+
+      transactions.forEach((tx: any) => {
+        if (!tx.reference_id) return;
+        const type = tx.type || "";
+        if (type.includes("event_ticket")) eventBookingRefs.push(tx.reference_id);
+        else if (type.includes("venue_booking")) venueBookingIds.push(...tx.reference_id.split(","));
+        else if (type.includes("movie_ticket")) movieBookingIds.push(...tx.reference_id.split(","));
+        else if (type.includes("space_subscription")) spaceSubscriptionIds.push(tx.reference_id);
+      });
+
+      let targetNames = new Map<string, string>();
+
+      if (eventBookingRefs.length > 0) {
+        try {
+          const uniqueRefs = [...new Set(eventBookingRefs)];
+          const orConditions = uniqueRefs.map(ref => ({
+            custom_fields: { _contains: { booking_ref: ref } }
+          }));
+          const res = await hasuraRequest<any>(`
+            query GetEventNames($orConditions: [event_attendees_bool_exp!]) {
+              event_attendees(where: { _or: $orConditions }) {
+                custom_fields
+                events { title }
+              }
+            }
+          `, { orConditions });
+          res.event_attendees?.forEach((a: any) => {
+            const bRef = a.custom_fields?.booking_ref;
+            if (bRef && a.events?.title) targetNames.set(bRef, a.events.title);
+          });
+        } catch (e) {
+          console.error("Failed to fetch event names", e);
+        }
+      }
+
+      if (venueBookingIds.length > 0) {
+        try {
+          const res = await hasuraRequest<any>(`
+            query GetVenueNames($ids: [uuid!]!) {
+              venue_bookings(where: { id: { _in: $ids } }) {
+                id
+                rentable_venue { name }
+              }
+            }
+          `, { ids: [...new Set(venueBookingIds)] });
+          res.venue_bookings?.forEach((b: any) => {
+            if (b.rentable_venue?.name) targetNames.set(b.id, b.rentable_venue.name);
+          });
+        } catch (e) {}
+      }
+
+      if (movieBookingIds.length > 0) {
+        try {
+          const res = await hasuraRequest<any>(`
+            query GetMovieNames($ids: [uuid!]!) {
+              movie_bookings(where: { id: { _in: $ids } }) {
+                id
+                movie_schedule { movie { title } }
+              }
+            }
+          `, { ids: [...new Set(movieBookingIds)] });
+          res.movie_bookings?.forEach((b: any) => {
+            if (b.movie_schedule?.movie?.title) targetNames.set(b.id, b.movie_schedule.movie.title);
+          });
+        } catch (e) {}
+      }
+
+      if (spaceSubscriptionIds.length > 0) {
+        try {
+          const res = await hasuraRequest<any>(`
+            query GetSpaceNames($ids: [uuid!]!) {
+              space_subscriptions(where: { id: { _in: $ids } }) {
+                id
+                space { name }
+              }
+            }
+          `, { ids: [...new Set(spaceSubscriptionIds)] });
+          res.space_subscriptions?.forEach((s: any) => {
+            if (s.space?.name) targetNames.set(s.id, s.space.name);
+          });
+        } catch (e) {}
+      }
+
       return transactions.map((tx: any) => {
         const orgId = wsOrgMap.get(tx.workspace_id);
         const org = orgId ? orgMap.get(orgId) : null;
+        
+        let targetName = null;
+        if (tx.reference_id) {
+           const firstRef = tx.reference_id.split(",")[0];
+           targetName = targetNames.get(firstRef) || targetNames.get(tx.reference_id);
+        }
+
         return {
           ...tx,
+          targetName,
           organizer: org || null,
           workspaceName: wsNameMap.get(tx.workspace_id) || "—",
         };
