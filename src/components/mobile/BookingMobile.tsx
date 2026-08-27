@@ -826,6 +826,29 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     </div>
   );
 
+  if (isPollingPawaPay || ((isCheckingOut || isGenerating) && paymentMethod === "momo")) {
+    return (
+      <>
+        <CheckYourPhone
+          status={isGenerating ? "generating" : "payment"}
+          onCancel={async () => {
+            setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["event-attendees", eventId] });
+                queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
+            }
+          }}
+        />
+        {hiddenTicketRenderer}
+      </>
+    );
+  }
+
   if (!event || attendees.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
