@@ -299,11 +299,13 @@ export function EventCheckoutSidebar({
                             </div>
                           )}
                         </div>
-                        <p
-                          className={`mt-2 text-xs text-muted-foreground ${isSoldOut ? "opacity-40" : ""}`}
-                        >
-                          {t.perks.join(" · ")}
-                        </p>
+                        {t.perks && t.perks.length > 0 && (
+                          <p
+                            className={`mt-2 text-xs text-muted-foreground ${isSoldOut ? "opacity-40" : ""}`}
+                          >
+                            {t.perks.join(" · ")}
+                          </p>
+                        )}
                         {!isSoldOut && (
                           <p className="mt-1 text-xs text-primary">{t.remaining} left</p>
                         )}

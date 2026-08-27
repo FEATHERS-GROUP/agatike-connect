@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createVenueBooking, getVenueBookings } from "@/api/venue_bookings";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -29,7 +29,7 @@ import {
   getPawaPayDepositStatus,
   cancelPendingPayment,
 } from "@/api/pawapay";
-import { getWorkspaceTicketProjects } from "@/api/events";
+import { getTicketProjectPublic } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import * as htmlToImage from "html-to-image";
@@ -45,6 +45,7 @@ const countries = COUNTRIES.map((c) => c.name).sort();
 
 export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
@@ -76,11 +77,11 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
   const [isPollingPawaPay, setIsPollingPawaPay] = useState(false);
   const [finalTotalPaid, setFinalTotalPaid] = useState<number>(0);
 
-  const { data: ticketProjects } = useQuery({
-    queryKey: ["workspace-ticket-projects", venue?.workspace_id],
-    queryFn: () =>
-      getWorkspaceTicketProjects({ data: { workspaceId: venue?.workspace_id! } } as any),
-    enabled: !!venue?.workspace_id,
+  // Fetch Ticket Projects for PDF generation
+  const { data: venueProject } = useQuery({
+    queryKey: ["venue-ticket-project", venue?.id],
+    queryFn: () => getTicketProjectPublic({ data: { venueId: venue?.id } } as any),
+    enabled: !!venue?.id,
   });
 
   const { data: bookings } = useQuery({
@@ -110,7 +111,6 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
 
     return bookedDates.includes(format(d, "yyyy-MM-dd"));
   };
-  const venueProject = ticketProjects?.find((p: any) => p.venueId === venue.id);
 
   useEffect(() => {
     try {
@@ -397,6 +397,14 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
           }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
+          if (pawapayDepositId) {
+            try {
+              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              queryClient.invalidateQueries({ queryKey: ["venue-details", venue.id] });
+            } catch (e) {
+              console.error("Cancel cleanup failed:", e);
+            }
+          }
           toast.error("Mobile Money payment failed or was cancelled.");
         }
       } catch (err) {
@@ -608,6 +616,7 @@ export function VenueCheckoutMobile({ venue }: { venue: any }) {
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["venue-details", venue.id] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }

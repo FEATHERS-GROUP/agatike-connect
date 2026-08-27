@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getFormDetails, createRSVP } from "@/api/rsvps";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,7 @@ export function EmbeddedForm({
   paymentConfig?: EmbeddedFormPaymentConfig;
   styleConfig?: EmbeddedFormStyleConfig;
 }) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -248,13 +249,14 @@ export function EmbeddedForm({
     return (
       <div className="w-full bg-background rounded-xl overflow-hidden min-h-[400px] relative">
         <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
+          status="payment"
           onCancel={async () => {
             setIsPollingPawaPay(false);
             setIsProcessingPayment(false);
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["public-form", formId] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }

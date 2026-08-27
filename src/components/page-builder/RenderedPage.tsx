@@ -144,14 +144,17 @@ export function RenderedPage({
       if (!isPawaPay || !selectedPaymentBlock) throw new Error("Invalid payment details");
       const baseAmount = Number(selectedPaymentBlock.amount || 0);
 
+      const workspaceCurrency =
+        page?.currency || page?.parent?.currency || page?.workspaces?.currency || "RWF";
+
       const pawaRes = await initiatePawaPayDeposit({
         data: {
           amount: paymentDetails?.convertedAmount || baseAmount,
           baseAmount: baseAmount,
-          baseCurrency: "RWF",
+          baseCurrency: workspaceCurrency,
           phone: paymentDetails!.phone,
           network: paymentDetails!.network,
-          currency: paymentDetails?.currency || "RWF",
+          currency: paymentDetails?.currency || workspaceCurrency,
           type: `page_builder_checkout::${slug}`,
           referenceId: crypto.randomUUID(),
           workspaceId: workspace_id,
@@ -421,23 +424,45 @@ export function RenderedPage({
                       : "flex-1 justify-end"
                 }`}
               >
-                {siteLinks.map((link: any) => (
-                  <a
-                    key={link.url}
-                    href={link.url}
-                    className={`text-sm font-medium transition-colors whitespace-nowrap`}
-                    style={{
-                      color:
-                        navbarStyle !== "transparent" && navbarTextColor
-                          ? navbarTextColor
-                          : navbarStyle === "transparent"
-                            ? "rgba(255,255,255,0.9)"
-                            : "inherit",
-                    }}
-                  >
-                    {link.name}
-                  </a>
-                ))}
+                {siteLinks.map((link: any) => {
+                  const isInternal = link.url?.startsWith("/");
+                  if (isInternal) {
+                    return (
+                      <Link
+                        key={link.url}
+                        to={link.url as any}
+                        className={`text-sm font-medium transition-colors whitespace-nowrap`}
+                        style={{
+                          color:
+                            navbarStyle !== "transparent" && navbarTextColor
+                              ? navbarTextColor
+                              : navbarStyle === "transparent"
+                                ? "rgba(255,255,255,0.9)"
+                                : "inherit",
+                        }}
+                      >
+                        {link.name}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      className={`text-sm font-medium transition-colors whitespace-nowrap`}
+                      style={{
+                        color:
+                          navbarStyle !== "transparent" && navbarTextColor
+                            ? navbarTextColor
+                            : navbarStyle === "transparent"
+                              ? "rgba(255,255,255,0.9)"
+                              : "inherit",
+                      }}
+                    >
+                      {link.name}
+                    </a>
+                  );
+                })}
 
                 {menuLinks.length > 0 && siteLinks.length > 0 && (
                   <div
@@ -497,19 +522,37 @@ export function RenderedPage({
                       {siteTitle || "Menu"}
                     </SheetTitle>
                     <div className="flex flex-col gap-6">
-                      {siteLinks.map((link: any) => (
-                        <a
-                          key={link.url}
-                          href={link.url}
-                          className={`text-lg font-medium transition-colors ${
-                            link.isActive
-                              ? "text-primary"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {link.name}
-                        </a>
-                      ))}
+                      {siteLinks.map((link: any) => {
+                        const isInternal = link.url?.startsWith("/");
+                        if (isInternal) {
+                          return (
+                            <Link
+                              key={link.url}
+                              to={link.url as any}
+                              className={`text-lg font-medium transition-colors ${
+                                link.isActive
+                                  ? "text-primary"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {link.name}
+                            </Link>
+                          );
+                        }
+                        return (
+                          <a
+                            key={link.url}
+                            href={link.url}
+                            className={`text-lg font-medium transition-colors ${
+                              link.isActive
+                                ? "text-primary"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {link.name}
+                          </a>
+                        );
+                      })}
                       {menuLinks.length > 0 && siteLinks.length > 0 && (
                         <div className="h-px w-full bg-border" />
                       )}
@@ -607,9 +650,6 @@ export function RenderedPage({
               >
                 {logoPosition === "hero" && logo_url && (
                   <img src={logo_url} alt="Logo" className="h-20 w-auto object-contain rounded" />
-                )}
-                {logoPosition === "hero" && siteTitle && !logo_url && (
-                  <h1 className="text-4xl font-black text-white tracking-tight">{siteTitle}</h1>
                 )}
                 {title && (
                   <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-white leading-tight">
@@ -1722,6 +1762,41 @@ export function RenderedPage({
                                       )}
                                       <div className="p-5 flex-1 flex flex-col min-w-0">
                                         {wrap(
+                                          "inv_item_price",
+                                          <div className="text-xs font-bold uppercase tracking-wider text-primary mb-2 w-full truncate">
+                                            {(() => {
+                                              if (item.price)
+                                                return `${Number(item.price).toLocaleString()} ${currency}`;
+                                              if (comp.type === "event_list") {
+                                                if (
+                                                  item.event_tickets &&
+                                                  item.event_tickets.length > 0
+                                                ) {
+                                                  const minPrice = Math.min(
+                                                    ...item.event_tickets.map(
+                                                      (t: any) => t.cost || 0,
+                                                    ),
+                                                  );
+                                                  return minPrice === 0
+                                                    ? "Free"
+                                                    : `From ${minPrice.toLocaleString()} ${currency}`;
+                                                }
+                                                return "Free";
+                                              }
+                                              if (
+                                                comp.type === "space_list" ||
+                                                comp.type === "venue_list"
+                                              )
+                                                return "Check Availability";
+                                              return "";
+                                            })()}
+                                          </div>,
+                                          "100%",
+                                          "auto",
+                                          "0px",
+                                          "0px",
+                                        )}
+                                        {wrap(
                                           "inv_item_title",
                                           <h4 className="font-bold text-lg mb-1 line-clamp-1 text-foreground transition-colors m-0 w-full">
                                             {item.name || item.title}
@@ -1765,49 +1840,14 @@ export function RenderedPage({
                                           "0px",
                                           "0px",
                                         )}
-                                        <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/40">
-                                          {wrap(
-                                            "inv_item_price",
-                                            <span className="font-bold text-lg truncate mr-2 w-full text-primary transition-colors">
-                                              {(() => {
-                                                if (item.price)
-                                                  return `${Number(item.price).toLocaleString()} ${currency}`;
-                                                if (comp.type === "event_list") {
-                                                  if (
-                                                    item.event_tickets &&
-                                                    item.event_tickets.length > 0
-                                                  ) {
-                                                    const minPrice = Math.min(
-                                                      ...item.event_tickets.map(
-                                                        (t: any) => t.cost || 0,
-                                                      ),
-                                                    );
-                                                    return minPrice === 0
-                                                      ? "Free"
-                                                      : `From ${minPrice.toLocaleString()} ${currency}`;
-                                                  }
-                                                  return "Free";
-                                                }
-                                                if (
-                                                  comp.type === "space_list" ||
-                                                  comp.type === "venue_list"
-                                                )
-                                                  return "Check Availability";
-                                                return "";
-                                              })()}
-                                            </span>,
-                                            "auto",
-                                            "auto",
-                                            "0px",
-                                            "0px",
-                                          )}
+                                        <div className="mt-auto pt-4 border-t border-border/40">
                                           {comp.allowSelling !== false &&
                                             (isProduct || isVenueType
                                               ? wrap(
                                                   "inv_item_button",
                                                   <Button
                                                     size="sm"
-                                                    className="shrink-0 text-white shadow-md"
+                                                    className="w-full text-white shadow-md"
                                                     style={{ background: theme_color }}
                                                     onClick={(e) => {
                                                       e.preventDefault();
@@ -1842,7 +1882,7 @@ export function RenderedPage({
                                                   "inv_item_button",
                                                   <Button
                                                     size="sm"
-                                                    className="shrink-0 text-white shadow-md pointer-events-none"
+                                                    className="w-full text-white shadow-md pointer-events-none"
                                                     style={{ background: theme_color }}
                                                   >
                                                     {item.is_facility ? "Book Space" : btnLabel}

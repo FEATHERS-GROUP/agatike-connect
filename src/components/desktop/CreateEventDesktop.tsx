@@ -1,5 +1,7 @@
 import { Link, useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+const ReactQuill = lazy(() => import("react-quill-new"));
+import "react-quill-new/dist/quill.snow.css";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getWorkspaceForms } from "@/api/rsvps";
 import {
@@ -231,7 +233,9 @@ export function CreateEventDesktop() {
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
-  const currencySymbol = getCurrencySymbol(activeWorkspace?.wallet?.currency);
+  const currencySymbol = getCurrencySymbol(
+    activeWorkspace?.currency || activeWorkspace?.wallet?.currency,
+  );
   const {
     canCreateTicketTier,
     canCreateEvent,
@@ -274,7 +278,7 @@ export function CreateEventDesktop() {
       },
     ],
     coverPreview: "",
-    vipPerks: "Priority entry, VIP lounge, complimentary welcome drink",
+    vipPerks: "",
     vip_privilege_ids: [] as string[],
     published: false,
     allowedPublic: false,
@@ -717,13 +721,17 @@ export function CreateEventDesktop() {
             )}
             <div>
               <Label>Description</Label>
-              <Textarea
-                rows={5}
-                value={data.description}
-                onChange={(e) => updateField("description", e.target.value)}
-                placeholder="Tell people what makes this night special…"
-                className="mt-1"
-              />
+              <Suspense
+                fallback={<div className="h-32 w-full animate-pulse rounded-md bg-muted mt-1" />}
+              >
+                <ReactQuill
+                  theme="snow"
+                  value={data.description}
+                  onChange={(val) => updateField("description", val)}
+                  className="mt-1 bg-background"
+                  placeholder="Tell people what makes this night special…"
+                />
+              </Suspense>
             </div>
           </div>
         )}
@@ -1501,9 +1509,16 @@ function PublishReview({
               </span>
             )}
           </div>
-          <p className="mt-4 text-sm whitespace-pre-wrap">
-            {data.description || "No description yet."}
-          </p>
+          {data.description && data.description.includes("<") ? (
+            <div
+              className="mt-4 text-sm whitespace-pre-wrap prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden w-full [&_*]:break-words"
+              dangerouslySetInnerHTML={{ __html: data.description.replace(/&nbsp;/g, " ") }}
+            />
+          ) : (
+            <p className="mt-4 text-sm whitespace-pre-wrap">
+              {data.description || "No description yet."}
+            </p>
+          )}
         </div>
       </div>
 

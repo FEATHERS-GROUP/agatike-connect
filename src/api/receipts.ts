@@ -251,7 +251,12 @@ export async function generateVoucherPdf(
 
   // Theme color or default orange
   let primaryColor: [number, number, number] = [242, 127, 33]; // #F27F21
-  if (orgDetails?.themeColor && orgDetails.themeColor.startsWith("#")) {
+  if (
+    orgDetails?.themeColor &&
+    orgDetails.themeColor.startsWith("#") &&
+    orgDetails.themeColor !== "#000000" &&
+    orgDetails.themeColor !== "#000"
+  ) {
     const hex = orgDetails.themeColor.replace("#", "");
     if (hex.length === 6) {
       primaryColor = [

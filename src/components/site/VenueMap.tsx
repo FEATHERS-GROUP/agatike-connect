@@ -178,7 +178,7 @@ export default function VenueMap({
         zoomControl={false}
         attributionControl={false}
       >
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapUpdater center={[activeLat, activeLng]} bounds={mapBounds} />
         {points.map((pt, idx) => {
           const isSelected = validStops.length > 0 && idx === selectedStopIdx;

@@ -71,7 +71,7 @@ function PublicPricingPage() {
         ]);
 
         // Keep all plans including Basic/Free (price = 0), but hide Founding Partner
-        setPlans(fetchedPlans.filter(p => p.name !== "Founding Partner"));
+        setPlans(fetchedPlans.filter((p) => p.name !== "Founding Partner"));
         setRules(fetchedRules);
 
         if (session) {

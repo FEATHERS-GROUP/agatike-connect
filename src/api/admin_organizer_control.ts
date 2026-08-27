@@ -555,9 +555,9 @@ export const setAdminOrganizerStatus = createServerFn({ method: "POST" })
       try {
         const { sendSMS } = await import("./pindo.server");
         const { sendOrganizerStatusEmailRaw } = await import("./email.server");
-        
+
         if (updated.phone) {
-          const smsText = updated.active 
+          const smsText = updated.active
             ? `Hello ${updated.name}, your Agatike Connect organizer account has been activated.`
             : `Hello ${updated.name}, your Agatike Connect organizer account has been deactivated.`;
           await sendSMS(updated.phone, smsText);
@@ -568,7 +568,7 @@ export const setAdminOrganizerStatus = createServerFn({ method: "POST" })
               to: updated.email,
               name: updated.name || "Organizer",
               active: updated.active,
-            }
+            },
           });
         }
       } catch (err) {

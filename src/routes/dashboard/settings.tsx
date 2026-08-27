@@ -117,7 +117,7 @@ function SettingsPage() {
       });
       setAvatar(
         profile.image ||
-        `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
+          `https://api.dicebear.com/7.x/identicon/svg?seed=${profile.id || "org"}&backgroundColor=f3f4f6`,
       );
     }
   }, [profile, reset]);

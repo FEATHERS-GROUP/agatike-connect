@@ -23,7 +23,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMovieSchedulesByMovieId } from "@/api/cinemas";
 import { createCinemaBooking } from "@/api/cinema_bookings";
 import {
@@ -35,7 +35,8 @@ import { toast } from "sonner";
 import { PaymentModal } from "@/components/shared/PaymentModal";
 import { MOCK_MOVIES_MAP } from "@/lib/mock-movies";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getWorkspaceTicketProjects } from "@/api/events";
+import { getWorkspaceVenueProjects } from "@/api/venues";
+import { getTicketProjectPublic } from "@/api/events";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import * as htmlToImage from "html-to-image";
@@ -44,6 +45,7 @@ import { TicketPreview } from "@/components/desktop/dashboard/ticket-designer/Ti
 
 export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
@@ -87,16 +89,14 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   const cinema = schedules.length > 0 ? schedules[0].cinema : null;
   const currency = schedules.length > 0 ? schedules[0].currency : "RWF";
 
-  const { data: ticketProjects } = useQuery({
-    queryKey: ["ticket-projects", cinema?.workspace_id],
-    queryFn: () =>
-      getWorkspaceTicketProjects({ data: { workspaceId: cinema?.workspace_id } } as any),
-    enabled: !!cinema?.workspace_id,
+  // Fetch Ticket Projects for PDF generation
+  const { data: cinemaProject } = useQuery({
+    queryKey: ["cinema-ticket-project", cinema?.id],
+    queryFn: () => getTicketProjectPublic({ data: { cinemaId: cinema?.id } } as any),
+    enabled: !!cinema?.id,
   });
 
-  const movieProject = ticketProjects?.find(
-    (p: any) => p.assigned_entity_id === cinema?.id && p.status === "active",
-  ) || {
+  const movieProject = cinemaProject || {
     template: "movie-1",
     palette: { from: "#1f2937", to: "#0f172a", name: "Slate" },
     font: { css: "sans-serif", name: "Modern" },
@@ -340,6 +340,15 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
           }
         } else if (res?.status?.toLowerCase() === "failed") {
           setIsPollingPawaPay(false);
+          if (pawapayDepositId) {
+            try {
+              await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+              queryClient.invalidateQueries({ queryKey: ["movie-attendees", actualMovieId] });
+              queryClient.invalidateQueries({ queryKey: ["public-movie", actualMovieId] });
+            } catch (e) {
+              console.error("Cancel cleanup failed:", e);
+            }
+          }
           toast.error("Mobile Money payment failed or was cancelled.");
         }
       } catch (err) {
@@ -621,6 +630,8 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["movie-attendees", actualMovieId] });
+                queryClient.invalidateQueries({ queryKey: ["public-movie", actualMovieId] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }

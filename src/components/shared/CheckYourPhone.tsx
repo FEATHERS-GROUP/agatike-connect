@@ -18,6 +18,19 @@ export const CheckYourPhone = ({
   status = "payment",
   onCancel,
 }: CheckYourPhoneProps) => {
+  const [isCancelling, setIsCancelling] = React.useState(false);
+
+  const handleCancel = async () => {
+    setIsCancelling(true);
+    try {
+      await onCancel();
+    } finally {
+      // If the component is still mounted (e.g., waiting for parent to close it),
+      // we could reset the state, but usually the parent will unmount this component.
+      // We wrap it in a try-finally just in case.
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[9999] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
       <img src={agatikeIcon} alt="Agatike" className="h-20 w-20 mb-6" />
@@ -39,8 +52,19 @@ export const CheckYourPhone = ({
         />
       </div>
       {status === "payment" && (
-        <Button variant="outline" className="rounded-xl h-12 px-8" onClick={onCancel}>
-          Cancel Payment
+        <Button
+          variant="outline"
+          className="rounded-xl h-12 px-8"
+          onClick={handleCancel}
+          disabled={isCancelling}
+        >
+          {isCancelling ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cancelling...
+            </>
+          ) : (
+            "Cancel Payment"
+          )}
         </Button>
       )}
     </div>

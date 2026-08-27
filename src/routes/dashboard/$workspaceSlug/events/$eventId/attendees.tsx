@@ -133,6 +133,7 @@ function AttendeesView() {
   });
 
   const filteredAttendees = attendees.filter((a: any) => {
+    if (a.status === "Cancelled" || a.status === "Pending Payment") return false;
     const term = searchTerm.toLowerCase();
     return (
       (a.names && a.names.toLowerCase().includes(term)) ||

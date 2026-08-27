@@ -19,6 +19,7 @@ import {
   Settings,
   Globe,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import { getWorkspacePageUrl } from "@/lib/utils";
 
@@ -42,6 +43,16 @@ export function EditorTopbar({
     <div className="sticky top-0 z-20 bg-card border-b border-border/60 px-4 py-2 flex items-center justify-between gap-4 h-14 shrink-0">
       {/* Left: Logo & Dropdown */}
       <div className="flex items-center gap-2 min-w-0 flex-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground mr-1 shrink-0 hidden sm:inline-flex"
+          asChild
+        >
+          <Link to={`/dashboard/${activeWorkspace?.slug}/app-builder` as any}>
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+        </Button>
         <Link
           to="/"
           className="flex items-center shrink-0 w-8 h-8 rounded-md justify-center p-1 overflow-hidden"
@@ -140,9 +151,12 @@ export function EditorTopbar({
           className="h-8 gap-1.5 ml-2 rounded-full hidden sm:flex"
           asChild
         >
-          <Link to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}>
+          <Link
+            to={`/dashboard/${activeWorkspace?.slug}/page-builder/editor` as any}
+            search={{ parentId: currentMainPageId } as any}
+          >
             <Plus className="w-3.5 h-3.5" />
-            New Page
+            New Subpage
           </Link>
         </Button>
       </div>

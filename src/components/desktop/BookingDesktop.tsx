@@ -7,11 +7,11 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { useUserAuth } from "@/contexts/UserAuthContext";
 import { AuthSuggestionModal } from "@/components/shared/AuthSuggestionModal";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getWorkspaceVenueProjects } from "@/api/venues";
 import { getWorkspaceVipPrivileges } from "@/api/vip";
-import { getEventById, getWorkspaceTicketProjects } from "@/api/events";
-import { addEventAttendees, getEventAttendees } from "@/api/attendees";
+import { getEventById, getTicketProjectPublic } from "@/api/events";
+import { addEventAttendees, getEventAttendees, rollbackFailedCheckout } from "@/api/attendees";
 import { sendTicketsEmail } from "@/api/email";
 import { generateFallbackReceipt } from "@/lib/pdf-receipt";
 import { getEventProducts, createProductOrders } from "@/api/products";
@@ -34,6 +34,7 @@ import { StorefrontFooter } from "@/components/page-builder/StorefrontFooter";
 
 export function BookingDesktop({ eventId }: { eventId: string }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useUserAuth();
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
@@ -79,14 +80,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const currency = event?.workspaces?.currency || "RWF";
 
   // Fetch Ticket Projects for PDF generation
-  const { data: ticketProjects } = useQuery({
-    queryKey: ["workspace-ticket-projects", event?.workspace_id],
-    queryFn: () =>
-      getWorkspaceTicketProjects({ data: { workspaceId: event?.workspace_id! } } as any),
-    enabled: !!event?.workspace_id,
+  const { data: eventProject } = useQuery({
+    queryKey: ["event-ticket-project", eventId],
+    queryFn: () => getTicketProjectPublic({ data: { eventId } } as any),
+    enabled: !!eventId,
   });
-
-  const eventProject = ticketProjects?.find((p: any) => p.eventId === event.id);
 
   // Fetch venue projects and booked attendees
   const { data: venueProjects } = useQuery({
@@ -447,35 +445,41 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
           await createProductOrders({ data: { objects: productOrderObjects } } as any);
         } catch (e: any) {
           console.error("Failed to create product orders:", e);
+          await rollbackFailedCheckout({ data: { booking_ref } } as any).catch(console.error);
           throw new Error("Failed to secure merchandise inventory. Please try again.");
         }
       }
 
       if (isPawaPay) {
-        const pawaRes = await initiatePawaPayDeposit({
-          data: {
-            amount: paymentDetails?.convertedAmount || total,
-            baseAmount: total,
-            baseCurrency: currency,
-            phone: paymentDetails!.phone,
-            network: paymentDetails!.network,
-            currency: paymentDetails?.currency || "RWF",
-            type: "portal_event_ticket",
-            referenceId: booking_ref,
-            workspaceId: event?.workspace_id,
-            reason: event?.title || "Event Ticket",
-            shortfall: paymentDetails?.shortfall || 0,
-          },
-        } as any);
-        return {
-          res,
-          attendeesPayload,
-          isPawaPay: true,
-          depositId: pawaRes.depositId,
-          redirectUrl: (pawaRes as any).redirectUrl,
-          paymentDetails,
-          booking_ref,
-        };
+        try {
+          const pawaRes = await initiatePawaPayDeposit({
+            data: {
+              amount: paymentDetails?.convertedAmount || total,
+              baseAmount: total,
+              baseCurrency: currency,
+              phone: paymentDetails!.phone,
+              network: paymentDetails!.network,
+              currency: paymentDetails?.currency || "RWF",
+              type: "portal_event_ticket",
+              referenceId: booking_ref,
+              workspaceId: event?.workspace_id,
+              reason: event?.title || "Event Ticket",
+              shortfall: paymentDetails?.shortfall || 0,
+            },
+          } as any);
+          return {
+            res,
+            attendeesPayload,
+            isPawaPay: true,
+            depositId: pawaRes.depositId,
+            redirectUrl: (pawaRes as any).redirectUrl,
+            paymentDetails,
+            booking_ref,
+          };
+        } catch (e: any) {
+          await rollbackFailedCheckout({ data: { booking_ref } } as any).catch(console.error);
+          throw e;
+        }
       }
 
       return { res, attendeesPayload, isPawaPay: false, paymentDetails, booking_ref };
@@ -556,6 +560,18 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             }
           } else if (status?.status === "failed") {
             setIsPollingPawaPay(false);
+            if (pawapayDepositId) {
+              try {
+                console.log("Cancelling pending payment with depositId:", pawapayDepositId);
+                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                console.log("Payment cancelled successfully, invalidating queries...");
+                queryClient.invalidateQueries({ queryKey: ["event-attendees", eventId] });
+                queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
+                console.log("Queries invalidated.");
+              } catch (e) {
+                console.error("Cancel cleanup failed:", e);
+              }
+            }
             setPawapayError("Payment failed or was cancelled.");
             toast.error("Payment failed. Please try again.");
           }
@@ -577,29 +593,45 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
     const tierOverride = overrides.tiers?.[tierId] || {};
     const combinationOverride = overrides.combinations?.[`${stopIdx}_${tierId}`] || {};
 
+    const safeParse = (val: any) => {
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch {
+          return val;
+        }
+      }
+      return val;
+    };
+
     return {
       ...baseProject,
       ...stopOverride,
       ...tierOverride,
       ...combinationOverride,
-      palette:
+      palette: safeParse(
         combinationOverride.palette ||
-        tierOverride.palette ||
-        stopOverride.palette ||
-        baseProject.palette,
-      font: combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
-      layout:
+          tierOverride.palette ||
+          stopOverride.palette ||
+          baseProject.palette,
+      ),
+      font: safeParse(
+        combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
+      ),
+      layout: safeParse(
         combinationOverride.layout ||
-        tierOverride.layout ||
-        stopOverride.layout ||
-        baseProject.design_overrides?.layout ||
-        baseProject.layout,
-      back:
+          tierOverride.layout ||
+          stopOverride.layout ||
+          baseProject.design_overrides?.layout ||
+          baseProject.layout,
+      ),
+      back: safeParse(
         combinationOverride.back ||
-        tierOverride.back ||
-        stopOverride.back ||
-        baseProject.design_overrides?.back ||
-        baseProject.back,
+          tierOverride.back ||
+          stopOverride.back ||
+          baseProject.design_overrides?.back ||
+          baseProject.back,
+      ),
     };
   };
 
@@ -792,6 +824,8 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["event-attendees", eventId] });
+                queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }

@@ -217,40 +217,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     ];
   }
 
-  const allTicketTiers = isMock
-    ? ticketTiers
-    : (ev.event_tickets?.length
-        ? ev.event_tickets
-        : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
-      ).map((t: any) => {
-        const sold = parseInt(t.sold) || 0;
-        const capacity = parseInt(t.remaining) || 0;
-        const ticketsLeft = Math.max(0, capacity - sold);
-        return {
-          id: t.id,
-          name: t.name || t.type,
-          price: parseFloat(t.cost) || 0,
-          perks: ev.vipPerks ? ev.vipPerks.split(",") : ["Entry"],
-          remaining: ticketsLeft,
-          sold,
-          sale_ends_at: t.sale_ends_at,
-          tour_stop_idx: t.tour_stop_idx || 0,
-        };
-      });
-
-  const activeTicketTiers = allTicketTiers.filter((t: any) => {
-    // Filter by tour stop
-    const rightStop = isExperience
-      ? true
-      : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
-    // Keep sold-out tiers so the UI can show the 'SOLD OUT' stamp
-    // const hasInventory = t.remaining > 0;
-    // Hide expired tiers
-    const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
-
-    return rightStop && isNotExpired;
-  });
-
   const isPastEvent = useMemo(() => {
     const targetDateStr = ev.end_date || date;
     if (!targetDateStr || targetDateStr === "Upcoming") return false;
@@ -317,23 +283,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     });
   };
 
-  const total = Object.entries(cart).reduce((sum, [key, qty]) => {
-    if (qty <= 0) return sum;
-    if (key.startsWith("merch_")) {
-      const id = key.split("_")[1];
-      const merch = activeMerch.find((m: any) => String(m.id) === id);
-      return sum + (merch ? Number(merch.price || 0) * qty : 0);
-    }
-    const [, tierId] = key.split("_");
-    const tier = allTicketTiers.find((t: any) => t.id === tierId);
-    return sum + (tier ? Number(tier.price || 0) * qty : 0);
-  }, 0);
-
-  const totalTickets = Object.entries(cart).reduce((sum, [key, qty]) => {
-    if (key.startsWith("merch_")) return sum; // don't count merch as tickets
-    return sum + qty;
-  }, 0);
-
   const { data: feedbackData } = useQuery({
     queryKey: ["public-feedback", eventId],
     queryFn: () => getEventFeedbackPublic({ data: { event_id: eventId } } as any),
@@ -382,6 +331,8 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
   const { data: rawAttendeesList = [] } = useQuery({
     queryKey: ["event-attendees", eventId],
     queryFn: () => getEventAttendees({ data: { event_id: eventId } } as any),
+    select: (data: any[]) =>
+      data.filter((a: any) => a.status !== "Cancelled" && a.status !== "Failed"),
   });
 
   const { data: workspaceVipPrivileges = [] } = useQuery({
@@ -394,6 +345,70 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     if (!ev.vip_privilege_ids || !Array.isArray(ev.vip_privilege_ids)) return [];
     return workspaceVipPrivileges.filter((p: any) => ev.vip_privilege_ids.includes(p.id));
   }, [ev.vip_privilege_ids, workspaceVipPrivileges]);
+
+  const allTicketTiers = useMemo(() => {
+    return isMock
+      ? ticketTiers
+      : (ev.event_tickets?.length
+          ? ev.event_tickets
+          : [{ id: "ga", type: "General Admission", cost: 0, remaining: 100, sold: 0 }]
+        ).map((t: any) => {
+          const sold = parseInt(t.sold) || 0;
+          const ticketsLeft = Math.max(0, parseInt(t.remaining) || 0);
+
+          let perks: string[] = [];
+          if (t.vip_privilege_ids && t.vip_privilege_ids.length > 0) {
+            perks = t.vip_privilege_ids
+              .map(
+                (pid: string) => workspaceVipPrivileges.find((p: any) => p.id === pid)?.description,
+              )
+              .filter(Boolean);
+          }
+
+          return {
+            id: t.id,
+            name: t.name || t.type,
+            price: parseFloat(t.cost) || 0,
+            perks,
+            remaining: ticketsLeft,
+            sold,
+            sale_ends_at: t.sale_ends_at,
+            tour_stop_idx: t.tour_stop_idx || 0,
+          };
+        });
+  }, [isMock, ev.event_tickets, workspaceVipPrivileges]);
+
+  const activeTicketTiers = useMemo(() => {
+    return allTicketTiers.filter((t: any) => {
+      // Filter by tour stop
+      const rightStop = isExperience
+        ? true
+        : t.tour_stop_idx === selectedStopIdx || tourStops.length <= 1;
+      // Keep sold-out tiers so the UI can show the 'SOLD OUT' stamp
+      // const hasInventory = t.remaining > 0;
+      // Hide expired tiers
+      const isNotExpired = !t.sale_ends_at || new Date(t.sale_ends_at) > new Date();
+
+      return rightStop && isNotExpired;
+    });
+  }, [allTicketTiers, isExperience, selectedStopIdx, tourStops]);
+
+  const total = Object.entries(cart).reduce((sum, [key, qty]) => {
+    if (qty <= 0) return sum;
+    if (key.startsWith("merch_")) {
+      const id = key.split("_")[1];
+      const merch = activeMerch.find((m: any) => String(m.id) === id);
+      return sum + (merch ? Number(merch.price || 0) * qty : 0);
+    }
+    const [, tierId] = key.split("_");
+    const tier = allTicketTiers.find((t: any) => t.id === tierId);
+    return sum + (tier ? Number(tier.price || 0) * qty : 0);
+  }, 0);
+
+  const totalTickets = Object.entries(cart).reduce((sum, [key, qty]) => {
+    if (key.startsWith("merch_")) return sum; // don't count merch as tickets
+    return sum + qty;
+  }, 0);
 
   const attendeesList = useMemo(() => {
     const seen = new Set<string>();

@@ -364,3 +364,70 @@ export const getUserAttendedEventIds = createServerFn({ method: "GET" }).handler
 
   return [...new Set(data.event_attendees.map((a) => a.event_id))];
 });
+
+export const rollbackFailedCheckout = createServerFn({ method: "POST" })
+  .validator((d: { booking_ref: string }) => d)
+  .handler(async (ctx) => {
+    const { booking_ref } = ctx.data;
+    if (!booking_ref) return { success: false };
+
+    // Mark attendees as Cancelled and restore sold counts
+    const attendeesQuery = `
+      query GetPendingAttendees($booking_ref: String!) {
+        event_attendees(where: {
+          custom_fields: { _contains: { booking_ref: $booking_ref } },
+          status: { _eq: "Pending Payment" }
+        }) {
+          id
+          ticket_id
+        }
+      }
+    `;
+    const attendeesData = await hasuraRequest<{ event_attendees: any[] }>(attendeesQuery, {
+      booking_ref,
+    });
+    const attendees = attendeesData.event_attendees || [];
+
+    if (attendees.length > 0) {
+      // Cancel the attendees
+      await hasuraRequest(
+        `mutation CancelAttendees($booking_ref: String!) {
+          update_event_attendees(
+            where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
+            _set: { status: "Cancelled" }
+          ) { affected_rows }
+        }`,
+        { booking_ref },
+      );
+
+      // Restore ticket sold counts by ticket_id
+      const soldByTier: Record<string, number> = {};
+      for (const a of attendees) {
+        if (a.ticket_id && a.ticket_id !== "ga") {
+          soldByTier[a.ticket_id] = (soldByTier[a.ticket_id] || 0) + 1;
+        }
+      }
+      for (const [ticketId, qty] of Object.entries(soldByTier)) {
+        await hasuraRequest(
+          `query GetTicketSold($id: uuid!) {
+            ticket: event_tickets_by_pk(id: $id) { id sold remaining }
+          }`,
+          { id: ticketId },
+        )
+          .then(async (r: any) => {
+            const currentSold = parseInt(r?.ticket?.sold || "0");
+            const currentRemaining = parseInt(r?.ticket?.remaining || "0");
+            const newSold = Math.max(0, currentSold - (qty as number));
+            const newRemaining = currentRemaining + (qty as number);
+            await hasuraRequest(
+              `mutation RestoreTicketCounts($id: uuid!, $sold: String!, $remaining: String!) {
+              update_event_tickets_by_pk(pk_columns: { id: $id }, _set: { sold: $sold, remaining: $remaining }) { id }
+            }`,
+              { id: ticketId, sold: newSold.toString(), remaining: newRemaining.toString() },
+            );
+          })
+          .catch((err) => console.error("Failed to restore ticket counts for tier", ticketId, err));
+      }
+    }
+    return { success: true };
+  });

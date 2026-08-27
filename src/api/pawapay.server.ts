@@ -24,7 +24,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           update_wallet_transactions(
             where: { 
               provider_reference: { _eq: $provider_reference },
-              status: { _nin: ["completed", "failed"] }
+              status: { _nin: ["completed", "failed", "cancelled"] }
             }, 
             _set: { 
               provider_status: $provider_status, 
@@ -547,7 +547,7 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
                   phone: orgPhone,
                   city: wsCity,
                   address: wsAddress,
-                  themeColor: wsThemeColor,
+                  themeColor: wsThemeColor === "#000000" ? "#F97316" : wsThemeColor,
                 };
                 let phoneToNotify = body?.payer?.address?.value;
                 if (!phoneToNotify && firstAtt?.phone) phoneToNotify = firstAtt.phone;
