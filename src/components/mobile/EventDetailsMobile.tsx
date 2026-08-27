@@ -134,8 +134,8 @@ export function EventDetailsMobile({
           <h2 className="text-xl font-bold mb-3">About</h2>
           {d.description && d.description.includes("<") ? (
             <div 
-              className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: d.description }}
+              className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden w-full [&_*]:break-words"
+              dangerouslySetInnerHTML={{ __html: d.description.replace(/&nbsp;/g, ' ') }}
             />
           ) : (
             <p className="text-sm text-muted-foreground leading-relaxed">

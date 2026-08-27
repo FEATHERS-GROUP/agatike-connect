@@ -62,7 +62,7 @@ export function EventDetailsDesktop({
 
       <div className="relative z-20 mx-auto grid max-w-7xl gap-10 px-6 pb-20 pt-10 lg:grid-cols-[1fr_400px] bg-background rounded-t-[2.5rem] -mt-12 shadow-[0_-8px_40px_rgba(0,0,0,0.12)]">
         {/* Left */}
-        <div className="space-y-10">
+        <div className="space-y-10 min-w-0">
           <EventOrganizerInfo
             organizerName={d.organizerName}
             organizerHandle={d.organizerHandle}
@@ -76,8 +76,8 @@ export function EventDetailsDesktop({
             <h2 className="text-xl font-semibold">About this event</h2>
             {d.description && d.description.includes("<") ? (
               <div 
-                className="mt-3 text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: d.description }}
+                className="mt-3 text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden w-full [&_*]:break-words"
+                dangerouslySetInnerHTML={{ __html: d.description.replace(/&nbsp;/g, ' ') }}
               />
             ) : (
               <p className="mt-3 text-muted-foreground leading-relaxed">

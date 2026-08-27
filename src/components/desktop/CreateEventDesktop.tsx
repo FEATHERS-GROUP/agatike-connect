@@ -1511,8 +1511,8 @@ function PublishReview({
           </div>
           {data.description && data.description.includes("<") ? (
             <div 
-              className="mt-4 text-sm whitespace-pre-wrap prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: data.description }}
+              className="mt-4 text-sm whitespace-pre-wrap prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden w-full [&_*]:break-words"
+              dangerouslySetInnerHTML={{ __html: data.description.replace(/&nbsp;/g, ' ') }}
             />
           ) : (
             <p className="mt-4 text-sm whitespace-pre-wrap">
