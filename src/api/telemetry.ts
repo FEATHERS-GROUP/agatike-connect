@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
 import { jwtVerify } from "jose";
-import { getSession, SECRET } from "./auth"; // to see if there is a logged in user
+import { SECRET } from "./auth"; // to see if there is a logged in user
 
 export const recordHeartbeat = createServerFn({ method: "POST" })
   .validator(
@@ -14,10 +14,15 @@ export const recordHeartbeat = createServerFn({ method: "POST" })
     let userId = "anonymous";
     let userType = "anonymous";
 
-    const session = await getSession().catch(() => null);
-    if (session) {
-      userId = session.sub;
-      userType = session.type;
+    const authCookie = getCookie("agatike_auth");
+    if (authCookie) {
+      try {
+        const { payload } = await jwtVerify(authCookie, SECRET);
+        if (payload) {
+          userId = payload.sub as string;
+          userType = payload.type as string;
+        }
+      } catch (e) {}
     } else {
       const userToken = getCookie("agatike_user_auth");
       if (userToken) {

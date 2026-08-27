@@ -1,6 +1,9 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ChevronLeft,
+  MoreVertical,
+  Check,
+  ChevronDown,
   CreditCard,
   Shield,
   Smartphone,
@@ -778,70 +781,6 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     return () => clearTimeout(tm);
   }, [isSuccess, navigate, eventId]);
 
-  if (!event || attendees.length === 0) {
-    return (
-      <div className="min-h-screen bg-background text-foreground pb-40 relative">
-        <div className="px-4 py-3 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-30 pt-safe-top border-b border-border/40">
-          <Skeleton className="h-6 w-6 rounded-full" />
-          <Skeleton className="h-6 w-24" />
-          <div className="w-10" />
-        </div>
-        <div className="px-4 py-6 space-y-8">
-          <div>
-            <Skeleton className="h-6 w-48 mb-4" />
-            <div className="flex gap-4 bg-card/60 rounded-3xl p-4 border border-border/40 mb-4">
-              <Skeleton className="h-24 w-20 rounded-xl" />
-              <div className="flex flex-col flex-1 py-1 space-y-2">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            </div>
-          </div>
-          <div>
-            <Skeleton className="h-8 w-40 mb-5" />
-            <div className="p-5 rounded-3xl border border-border/60 bg-card/40 space-y-5">
-              <div className="flex items-center gap-3 pb-3 border-b border-border/60">
-                <Skeleton className="h-7 w-7 rounded-full" />
-                <Skeleton className="h-5 w-32" />
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Skeleton className="h-4 w-12" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-1.5">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-1.5">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-          <div className="flex items-center justify-between mb-3 px-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-6 w-20" />
-          </div>
-          <Skeleton className="h-14 w-full rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
-
   const hiddenTicketRenderer = isGenerating && issuedTickets.length > 0 && eventProject && (
     <div className="absolute -z-50 pointer-events-none" style={{ top: "-9999px", left: "-9999px" }}>
       {issuedTickets.map((ticket: any) => {
@@ -860,56 +799,26 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               template={mergedProject.template || "Concert 1"}
               palette={mergedProject.palette || { from: "#000", to: "#000", name: "Black" }}
               font={mergedProject.font || { css: "sans-serif", name: "Modern" }}
+              layout={mergedProject.layout || "Standard"}
+              back={mergedProject.back || { style: "Standard", text: "" }}
               tier={ticket.tier}
-              title={event.title}
-              subtitle={event.venue || ""}
-              date={getStopDetails(ticket.attendee.stopIdx)?.date || ""}
-              time={getStopDetails(ticket.attendee.stopIdx)?.time || "TBA"}
-              seat={
-                ticket.attendee.seat
-                  ? formatSeatDisplay(
-                      ticket.attendee.seatName || ticket.attendee.seat,
-                      ticket.attendee.sectionName,
-                    )
-                  : `${ticket.attendee.firstName} ${ticket.attendee.lastName}`.trim()
-              }
-              price={
-                getTierDetails(ticket.attendee.tierId)?.cost?.toString() ||
-                getTierDetails(ticket.attendee.tierId)?.price?.toString() ||
-                "0"
-              }
-              currency={currency === "FRWS" ? "RWF" : currency}
-              cover={mergedProject.coverImage || event.cover || ""}
-              logoText={
-                mergedProject.logoText !== undefined && mergedProject.logoText !== null
-                  ? mergedProject.logoText
-                  : event.organizer || "Agatike"
-              }
-              logoImage={mergedProject.logoImage}
-              logoScale={Number(mergedProject.logoScale || 24)}
-              logoOpacity={Number(mergedProject.logoOpacity ?? 1)}
-              logoColorMode={mergedProject.logoColorMode || "original"}
+              title={event?.title || "Event"}
+              subtitle={event?.subtitle || ""}
+              date={event?.tour_stops?.[ticket.attendee.stopIdx]?.date || (event as any)?.date || ""}
+              time={event?.tour_stops?.[ticket.attendee.stopIdx]?.time || (event as any)?.time || ""}
+              seat={ticket.attendee?.seat || "General"}
+              seatLabel={ticket.attendee?.seatName || ""}
+              price={getTierDetails(ticket.attendee.tierId)?.price || getTierDetails(ticket.attendee.tierId)?.cost || "0"}
+              currency={currency}
+              cover={event?.cover_url || ""}
+              logoText={event?.workspaces?.name || ""}
+              logoImage={event?.workspaces?.logo_url || ""}
+              logoScale={100}
+              logoOpacity={100}
+              logoColorMode="normal"
               orderId={ticket.otp}
-              qrValue={`${window.location.origin}/v/${ticket.otp}`}
+              qrValue={ticket.otp}
               previewMode="Front"
-              layout={
-                mergedProject.layout || {
-                  titleSize: 30,
-                  subtitleSize: 14,
-                  metaSize: 11,
-                  titleAlign: "left",
-                  titleOffsetY: 0,
-                  subtitleOffsetY: 0,
-                  metaOffsetY: 0,
-                }
-              }
-              back={
-                mergedProject.back || {
-                  backText: "",
-                  backImage: "",
-                  backImageOpacity: 0.3,
-                }
-              }
             />
           </div>
         );
@@ -917,395 +826,166 @@ export function BookingMobile({ eventId }: { eventId: string }) {
     </div>
   );
 
-  if (isPollingPawaPay || (isCheckingOut && paymentMethod === "momo") || isGenerating) {
+  if (!event || attendees.length === 0) {
     return (
-      <>
-        <CheckYourPhone
-          status={isGenerating ? "generating" : "payment"}
-          onCancel={async () => {
-            setIsPollingPawaPay(false);
-            if (pawapayDepositId) {
-              try {
-                await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
-                queryClient.invalidateQueries({ queryKey: ["event-attendees", eventId] });
-                queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
-              } catch (e) {
-                console.error("Cancel cleanup failed:", e);
-              }
-            }
-          }}
-        />
-        {hiddenTicketRenderer}
-      </>
-    );
-  }
-
-  if (isSuccess) {
-    return (
-      <>
-        <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500">
-          <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center mb-8">
-            <CheckCircle2 className="h-12 w-12 text-green-500" />
-          </div>
-          <h1 className="text-3xl font-bold mb-4">Booking Confirmed!</h1>
-          <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
-            Your tickets for {event.title} have been secured. We've sent them to{" "}
-            {attendees[0]?.email}.
-          </p>
-
-          {hasMerchInCart && (
-            <div className="bg-card border border-border/60 rounded-2xl p-6 max-w-md w-full mb-8 text-left shadow-[var(--shadow-card)]">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <svg
-                    className="h-5 w-5 text-primary"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-semibold">Merchandise Order</p>
-                  <p className="text-xs text-muted-foreground">Pickup instructions</p>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Your merchandise can be picked up{" "}
-                <strong className="text-foreground">on the day of the event</strong>. Please collect
-                it at the merchandise desk using either method below:
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
-                  <Smartphone className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">Phone Number Pickup</p>
-                    <p className="text-xs text-muted-foreground">
-                      Show your registered phone number at the merchandise desk.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 bg-secondary/30 rounded-xl p-3 border border-border/50">
-                  <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">Ticket QR Scan Pickup</p>
-                    <p className="text-xs text-muted-foreground">
-                      Show your event ticket QR code — staff will scan it and hand you your order.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="mt-8 space-y-4">
-            <button
-              onClick={() => {
-                setIsSuccess(false);
-                setPawapayDepositId(null);
-                setIssuedTickets([]);
-                setCart({});
-                setSelectedSeats([]);
-                setAttendees([]);
-              }}
-              className="w-full px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
-            >
-              Buy Another Ticket
-            </button>
-            <p className="text-sm text-muted-foreground animate-pulse">
-              Or wait to be redirected...
-            </p>
-          </div>
-        </div>
-        {hiddenTicketRenderer}
-      </>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-40 relative">
+    <div className="min-h-screen bg-[#f4f5f7] dark:bg-background text-foreground pb-40 relative font-sans">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-30 pt-safe-top border-b border-border/40">
-        <Link to="/events/$eventId" params={{ eventId }} className="p-2 -ml-2 text-foreground">
-          <ChevronLeft className="h-6 w-6" />
+      <div className="px-5 py-4 flex items-center justify-between sticky top-0 bg-[#f4f5f7] dark:bg-background z-30 pt-safe-top">
+        <Link to="/events/$eventId" params={{ eventId }} className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground">
+          <ChevronLeft className="h-5 w-5" />
         </Link>
-        <h1 className="font-bold text-lg tracking-tight">Checkout</h1>
-        <div className="w-10" />
+        <h1 className="font-bold text-[17px] tracking-tight">Booking Confirmation</h1>
+        <button className="h-10 w-10 flex items-center justify-center bg-white dark:bg-secondary rounded-full shadow-sm text-foreground">
+          <MoreVertical className="h-5 w-5" />
+        </button>
       </div>
 
-      <div className="px-4 py-6 space-y-8">
+      <div className="px-5 py-2 space-y-5">
         {/* Order Summary */}
-        <div>
-          <h2 className="text-lg font-bold mb-4">Order Summary</h2>
-
-          {/* Event cover banner */}
-          <div className="relative rounded-2xl overflow-hidden mb-4 aspect-[16/7] w-full">
-            <img
-              src={event.cover}
-              alt={event.title}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-3">
-              <h3 className="text-white font-bold text-base leading-tight drop-shadow">
-                {event.title}
-              </h3>
-              {event.category && (
-                <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/70 bg-white/10 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/20">
-                  <Tag className="h-2.5 w-2.5" />
-                  {event.category}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Event meta */}
-          <div className="space-y-2 mb-4 bg-card/60 rounded-2xl p-4 border border-border/40">
-            {((event as any).date || event.tour_stops?.[0]?.date) && (
-              <div className="flex items-center gap-2.5 text-sm">
-                <CalendarDays className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="font-medium">
-                  {(event as any).date || event.tour_stops?.[0]?.date}
-                </span>
-              </div>
-            )}
-            {((event as any).time || event.tour_stops?.[0]?.time) && (
-              <div className="flex items-center gap-2.5 text-sm">
-                <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="font-medium">
-                  {(event as any).time || event.tour_stops?.[0]?.time}
-                </span>
-              </div>
-            )}
-            {((event as any).venue ||
-              (event as any).city ||
-              event.tour_stops?.[0]?.venue ||
-              event.tour_stops?.[0]?.city) && (
-              <div className="flex items-center gap-2.5 text-sm">
-                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="font-medium">
-                  {[
-                    (event as any).venue || event.tour_stops?.[0]?.venue,
-                    (event as any).city || event.tour_stops?.[0]?.city,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}
-                </span>
-              </div>
-            )}
-            {(event.workspaces?.organizer?.name || event.workspaces?.name) && (
-              <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                <User className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span>
-                  Hosted by{" "}
-                  <span className="text-foreground font-medium">
-                    {event.workspaces?.organizer?.name || event.workspaces?.name}
-                  </span>
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-3 bg-secondary/20 p-4 rounded-2xl border border-border/40">
+        <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
+          <div className="space-y-4">
             {Object.entries(cart).map(([cartKey, qty]) => {
               if (qty <= 0) return null;
-
               if (cartKey.startsWith("merch_")) {
                 const parts = cartKey.split("_");
                 const productId = parts[1];
-                const variantInfo = parts.slice(2).join(" · ");
-                let merch = eventProducts.find((p: any) => String(p.id) === productId);
-                if (!merch && event?.merchandises) {
-                  merch = event.merchandises.find((m: any) => String(m.id) === productId);
-                }
+                let merch = eventProducts.find((p: any) => String(p.id) === productId) || event?.merchandises?.find((m: any) => String(m.id) === productId);
                 const lineTotal = merch ? parseFloat(merch.price || 0) * qty : 0;
                 return (
-                  <div key={cartKey} className="flex justify-between items-start text-sm">
-                    <span className="flex flex-col">
-                      <span>
-                        {qty}x {merch?.name || "Merchandise"}
-                      </span>
-                      {variantInfo && (
-                        <span className="text-[11px] text-muted-foreground">{variantInfo}</span>
-                      )}
-                    </span>
+                  <div key={cartKey} className="flex justify-between items-center text-[15px]">
+                    <span className="text-muted-foreground">{qty}x {merch?.name || "Merchandise"}</span>
                     <span className="font-medium">{formatCurrency(lineTotal, currency)}</span>
                   </div>
                 );
               }
-
               const [, tierId] = cartKey.split("_");
               const tier = getTierDetails(tierId);
               if (!tier) return null;
               return (
-                <div key={cartKey} className="flex justify-between items-center text-sm">
-                  <span>
-                    {qty}x {tier.type}
-                  </span>
-                  <span className="font-medium">
-                    {formatCurrency(parseFloat(tier.cost || 0) * qty, currency)}
-                  </span>
+                <div key={cartKey} className="flex justify-between items-center text-[15px]">
+                  <span className="text-muted-foreground">{qty}x {tier.type}</span>
+                  <span className="font-medium text-foreground">{formatCurrency(parseFloat(tier.cost || tier.price || 0) * qty, currency)}</span>
                 </div>
               );
             })}
           </div>
+          
+          <div className="mt-5 pt-4 border-t border-border/40 flex justify-between items-center text-[17px]">
+            <span className="font-bold text-foreground">Total</span>
+            <span className="font-bold text-primary">{formatCurrency(total, currency)}</span>
+          </div>
         </div>
 
-        {/* Attendee Details */}
-        <div>
-          <h1 className="text-2xl font-bold px-1 mb-5">Checkout ({totalTickets})</h1>
-
-          {totalTickets > 1 && (
-            <div className="flex bg-muted/50 p-1 rounded-xl mb-6 mx-1 w-fit">
-              <button
-                onClick={() => setAssignMode("me")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  assignMode === "me"
-                    ? "bg-background shadow text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Assign to Me (Faster)
-              </button>
-              <button
-                onClick={() => setAssignMode("others")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  assignMode === "others"
-                    ? "bg-background shadow text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Assign Individually
-              </button>
+        {/* Payment Method */}
+        <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-bold text-foreground text-[15px]">Payment Method</h2>
+            <button onClick={() => setIsPaymentModalOpen(true)} className="text-primary text-[13px] font-medium tracking-wide">Change</button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+               <div className="h-10 w-12 bg-secondary/50 rounded-lg flex items-center justify-center">
+                  {paymentMethod === 'momo' ? <Smartphone className="h-5 w-5 text-indigo-700 dark:text-indigo-400" /> : <CreditCard className="h-5 w-5 text-indigo-700 dark:text-indigo-400" />}
+               </div>
+               <div>
+                 <p className="font-bold text-sm">{paymentMethod === 'momo' ? 'Mobile Money' : 'Credit Card'}</p>
+                 <p className="text-[11px] text-muted-foreground mt-0.5">{paymentMethod === 'momo' ? 'Pay with Phone' : 'Secure payment'}</p>
+               </div>
             </div>
-          )}
+            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+              <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />
+            </div>
+          </div>
+        </div>
 
+        {/* Trip Details (Event Details) */}
+        <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
+           <div className="flex justify-between items-center mb-5">
+              <h2 className="font-bold text-[15px]">Event Details</h2>
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+           </div>
+           <div className="relative pl-6 space-y-6">
+              <div className="absolute left-1.5 top-2 bottom-2 w-[1.5px] border-l-2 border-dashed border-border/60"></div>
+              
+              <div className="relative">
+                 <div className="absolute -left-[27px] top-1 h-3 w-3 rounded-full border-2 border-primary bg-white"></div>
+                 <div className="flex justify-between items-start">
+                    <p className="text-sm font-medium pr-4">{event.title}</p>
+                    <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">{((event as any).time || event.tour_stops?.[0]?.time)}</p>
+                 </div>
+              </div>
+              
+              <div className="relative">
+                 <div className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-primary border-[2.5px] border-white shadow-sm ring-1 ring-primary/20"></div>
+                 <div className="flex justify-between items-start">
+                    <p className="text-sm text-muted-foreground pr-4 line-clamp-2">{[ (event as any).venue || event.tour_stops?.[0]?.venue, (event as any).city || event.tour_stops?.[0]?.city].filter(Boolean).join(", ")}</p>
+                    <p className="text-xs font-medium text-muted-foreground whitespace-nowrap">{((event as any).date || event.tour_stops?.[0]?.date)}</p>
+                 </div>
+              </div>
+           </div>
+           
+           {(event.duration || event.workspaces?.organizer?.name || event.workspaces?.name) && (
+             <div className="mt-5 pt-4 border-t border-border/40 text-[11px] text-muted-foreground font-medium flex gap-4">
+               {event.duration && <span>{event.duration}</span>}
+               {(event.workspaces?.organizer?.name || event.workspaces?.name) && <span>Hosted by {event.workspaces?.organizer?.name || event.workspaces?.name}</span>}
+             </div>
+           )}
+        </div>
+
+        {/* Attendee Details Form styled cleanly */}
+        <div className="bg-white dark:bg-card p-5 rounded-3xl shadow-sm">
+          <div className="flex justify-between items-center mb-5">
+              <h2 className="font-bold text-[15px]">Attendee Details</h2>
+              {totalTickets > 1 && (
+                <div className="flex gap-2">
+                   <button onClick={() => setAssignMode("me")} className={`text-[11px] px-2 py-1 rounded-md font-medium ${assignMode === 'me' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Me</button>
+                   <button onClick={() => setAssignMode("others")} className={`text-[11px] px-2 py-1 rounded-md font-medium ${assignMode === 'others' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Others</button>
+                </div>
+              )}
+          </div>
+          
           <div className="space-y-6">
             {(assignMode === "me" ? [attendees[0]] : attendees).map((attendee, idx) => {
               if (!attendee) return null;
               const tier = getTierDetails(attendee.tierId);
-              const stop = getStopDetails(attendee.stopIdx);
-
-              const projectForStop = stopsWithVenues.find(
-                (s) => s.stopIdx === attendee.stopIdx,
-              )?.project;
-              const isSeatRequired = projectForStop?.sections_data?.some(
-                (s: any) => s.ticketId === attendee.tierId,
-              );
-
-              // Calculate assigned seats to show
-              const seatsList =
-                assignMode === "me"
-                  ? attendees
-                      .filter((a) => a.tierId === attendee.tierId && a.stopIdx === attendee.stopIdx)
-                      .map((a) => formatSeatDisplay(a.seatName || a.seat, a.sectionName))
-                      .filter(Boolean)
-                  : [
-                      formatSeatDisplay(attendee.seatName || attendee.seat, attendee.sectionName),
-                    ].filter(Boolean);
-
               return (
-                <div
-                  key={idx}
-                  className="p-5 rounded-3xl border border-border/60 bg-card/40 space-y-5"
-                >
-                  <div className="flex items-start justify-between pb-3 border-b border-border/60">
-                    <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-                        {idx + 1}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm">
-                          {assignMode === "me"
-                            ? "Your Details (Applied to all tickets)"
-                            : tier
-                              ? tier.type
-                              : "Ticket"}
-                        </h3>
-                        {assignMode === "others" && (
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                            {stop.city} &middot; {stop.date}
-                          </p>
-                        )}
-                      </div>
+                <div key={idx} className="space-y-4">
+                  {assignMode === 'others' && (
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{tier?.type || "Ticket"} {idx + 1}</h3>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] text-muted-foreground px-1">First Name</Label>
+                      <Input value={attendee.firstName || ""} onChange={(e) => updateAttendee(idx, "firstName", e.target.value)} placeholder="Alex" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
                     </div>
-                    {isSeatRequired && seatsList.length > 0 && (
-                      <div className="flex flex-col items-end">
-                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5">
-                          Assigned Seat{seatsList.length > 1 ? "s" : ""}
-                        </span>
-                        <div className="flex gap-1 flex-wrap justify-end">
-                          {seatsList.map((sName, sIdx) => (
-                            <span
-                              key={sIdx}
-                              className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-bold"
-                            >
-                              {sName}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="space-y-1">
+                      <Label className="text-[11px] text-muted-foreground px-1">Last Name</Label>
+                      <Input value={attendee.lastName || ""} onChange={(e) => updateAttendee(idx, "lastName", e.target.value)} placeholder="Doe" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                    </div>
                   </div>
-
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">First Name</Label>
-                        <Input
-                          value={attendee.firstName || ""}
-                          onChange={(e) => updateAttendee(idx, "firstName", e.target.value)}
-                          placeholder="Alex"
-                          className="h-10"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Last Name</Label>
-                        <Input
-                          value={attendee.lastName || ""}
-                          onChange={(e) => updateAttendee(idx, "lastName", e.target.value)}
-                          placeholder="Doe"
-                          className="h-10"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Email</Label>
-                      <Input
-                        type="email"
-                        value={attendee.email || ""}
-                        onChange={(e) => updateAttendee(idx, "email", e.target.value)}
-                        placeholder="alex@example.com"
-                        className="h-10"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Phone Number</Label>
-                      <Input
-                        type="tel"
-                        value={attendee.phone || ""}
-                        onChange={(e) => updateAttendee(idx, "phone", e.target.value)}
-                        placeholder="+250 788 123 456"
-                        className="h-10"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Country</Label>
-                      <Select
-                        value={attendee.country}
-                        onValueChange={(val) => updateAttendee(idx, "country", val)}
-                      >
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Select Country" />
-                        </SelectTrigger>
-                        <SelectContent>{countrySelectItems}</SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground px-1">Email</Label>
+                    <Input type="email" value={attendee.email || ""} onChange={(e) => updateAttendee(idx, "email", e.target.value)} placeholder="alex@example.com" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground px-1">Phone Number</Label>
+                    <Input type="tel" value={attendee.phone || ""} onChange={(e) => updateAttendee(idx, "phone", e.target.value)} placeholder="+250 788 123 456" className="h-11 rounded-xl bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/50" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground px-1">Country</Label>
+                    <Select value={attendee.country} onValueChange={(val) => updateAttendee(idx, "country", val)}>
+                      <SelectTrigger className="h-11 rounded-xl bg-secondary/30 border-0 focus:ring-1 focus:ring-primary/50">
+                        <SelectValue placeholder="Select Country" />
+                      </SelectTrigger>
+                      <SelectContent>{countrySelectItems}</SelectContent>
+                    </Select>
                   </div>
                 </div>
               );
@@ -1315,20 +995,12 @@ export function BookingMobile({ eventId }: { eventId: string }) {
       </div>
 
       {/* Sticky Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/40 z-40 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-        <div className="flex items-center justify-between mb-3 px-2">
-          <span className="text-sm font-medium text-muted-foreground">Total to pay</span>
-          <span className="text-xl font-bold">{formatCurrency(total, currency)}</span>
-        </div>
+      <div className="fixed bottom-0 left-0 right-0 px-5 py-4 pb-safe bg-[#f4f5f7]/90 dark:bg-background/90 backdrop-blur-md z-40">
         {issuedTickets.length > 0 ? (
           <Button
-            onClick={() => {
-              setIsGenerating(true);
-              setIsPaymentModalOpen(true);
-            }}
+            onClick={() => { setIsGenerating(true); setIsPaymentModalOpen(true); }}
             disabled={isGenerating}
-            className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-            style={{ background: "var(--gradient-primary)" }}
+            className="w-full h-14 rounded-full text-lg font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
           >
             Retry Ticket Generation
           </Button>
@@ -1342,15 +1014,11 @@ export function BookingMobile({ eventId }: { eventId: string }) {
               }
             }}
             disabled={!isFormValid || isCheckingOut || isGenerating}
-            className="w-full h-14 rounded-2xl text-lg shadow-[var(--shadow-glow)] font-bold tracking-wide"
-            style={{ background: "var(--gradient-primary)" }}
+            className="w-full h-[52px] rounded-full text-[17px] font-bold tracking-wide bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-transform active:scale-[0.98]"
           >
-            Pay {formatCurrency(total, currency)}
+            Pay Now
           </Button>
         )}
-        <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <Shield className="h-3.5 w-3.5" /> Secure encrypted checkout
-        </div>
       </div>
 
       <AuthSuggestionModal
