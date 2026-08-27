@@ -39,7 +39,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   const [isAuthSuggestionOpen, setIsAuthSuggestionOpen] = useState(false);
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
 
-  const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [assignMode, setAssignMode] = useState<"me" | "others">("me");
   const [isSuccess, setIsSuccess] = useState(false);

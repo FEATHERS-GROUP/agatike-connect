@@ -1129,6 +1129,18 @@ export async function handlePawaPayWebhook(request: Request): Promise<Response> 
           }
         }
       }
+
+      // 5. Handle Failed Deposits/Payments (Rollback seats and attendees)
+      if (tx && tx.status === "failed" && tx.type !== "withdrawal") {
+        if (tx.provider_reference) {
+          try {
+            const { cancelPendingPayment } = await import("./pawapay");
+            await cancelPendingPayment({ data: { depositId: tx.provider_reference } } as any);
+          } catch (e) {
+            console.error("[PawaPay Webhook] Failed to cancel pending payment on failure:", e);
+          }
+        }
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {

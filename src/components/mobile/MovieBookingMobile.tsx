@@ -48,7 +48,7 @@ export function MovieBookingMobile({ movieId }: { movieId: string }) {
   const [hasSkippedAuth, setHasSkippedAuth] = useState(false);
   const { date: searchDate } = useSearch({ from: "/book-movie/$movieId" }) as any;
 
-  const [paymentMethod, setPaymentMethod] = useState("apple");
+  const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [step, setStep] = useState(1);
