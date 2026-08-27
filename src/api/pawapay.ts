@@ -169,9 +169,12 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
     // Fetch pricing plan using the billing service
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
-    const custCollectionPct = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const rawCustCollection = plan.customer_collection_fee_percentage;
+    const custCollectionPct = rawCustCollection !== null && rawCustCollection !== undefined ? parseFloat(rawCustCollection as any) : null;
     const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
     const custServicePct = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+
+    const finalCustPct = custCollectionPct !== null ? custCollectionPct : custServicePct;
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
@@ -191,8 +194,7 @@ export const getProfitableNetworks = createServerFn({ method: "POST" })
       let collectionFixed = parseFloat(providerFees.collection_fixed_fee) || 0;
 
       // Calculate Customer Fee and Organizer Fee based on baseAmount
-      const customerFee =
-        baseAmount * (custCollectionPct / 100) + custFixed + baseAmount * (custServicePct / 100);
+      const customerFee = baseAmount * (finalCustPct / 100) + custFixed;
       const grossAmount = baseAmount + customerFee;
 
       let organizerFee = baseAmount * (orgCollectionPct / 100) + orgFixed;
@@ -365,17 +367,19 @@ export const initiatePawaPayDeposit = createServerFn({ method: "POST" })
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
     // ── Pricing plan fees ────────────────────────────────────────────────────
-    const custCollectionPct = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const rawCustCollection = plan.customer_collection_fee_percentage;
+    const custCollectionPct = rawCustCollection !== null && rawCustCollection !== undefined ? parseFloat(rawCustCollection as any) : null;
     const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
     const custServicePct = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+    
+    const finalCustPct = custCollectionPct !== null ? custCollectionPct : custServicePct;
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
 
     const grossAmount = parseFloat(amount);
     const baseAmt = parseFloat(baseAmount || amount);
-    const calculatedCustomerFee =
-      baseAmt * (custCollectionPct / 100) + custFixed + baseAmt * (custServicePct / 100);
+    const calculatedCustomerFee = baseAmt * (finalCustPct / 100) + custFixed;
     let customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
 
     // ── Provider (PawaPay) cost ──────────────────────────────────────────────
@@ -717,7 +721,7 @@ export const cancelPendingPayment = createServerFn({ method: "POST" })
           `mutation CancelAttendees($booking_ref: String!) {
             update_event_attendees(
               where: { custom_fields: { _contains: { booking_ref: $booking_ref } }, status: { _eq: "Pending Payment" } },
-              _set: { status: "Failed" }
+              _set: { status: "Cancelled" }
             ) { affected_rows }
           }`,
           { booking_ref: tx.reference_id },

@@ -100,17 +100,19 @@ export const initiatePesapalPayment = createServerFn({ method: "POST" })
     const { getWorkspaceActivePlanFees } = await import("./billing");
     const plan = await getWorkspaceActivePlanFees({ data: { organizer_id: organizerId } } as any);
 
-    const custCollectionPct = parseFloat(plan.customer_collection_fee_percentage as any) || 0;
+    const rawCustCollection = plan.customer_collection_fee_percentage;
+    const custCollectionPct = rawCustCollection !== null && rawCustCollection !== undefined ? parseFloat(rawCustCollection as any) : null;
     const custFixed = parseFloat(plan.customer_collection_fee_fixed as any) || 0;
     const custServicePct = parseFloat(plan.customer_service_fee_percentage as any) || 0;
+
+    const finalCustPct = custCollectionPct !== null ? custCollectionPct : custServicePct;
 
     const orgCollectionPct = parseFloat(plan.organizer_collection_fee_percentage as any) || 0;
     const orgFixed = parseFloat(plan.organizer_collection_fee_fixed as any) || 0;
 
     const grossAmount = parseFloat(amount);
     const baseAmt = parseFloat(baseAmount || amount);
-    const calculatedCustomerFee =
-      baseAmt * (custCollectionPct / 100) + custFixed + baseAmt * (custServicePct / 100);
+    const calculatedCustomerFee = baseAmt * (finalCustPct / 100) + custFixed;
     let customerFee = Math.max(grossAmount - baseAmt, calculatedCustomerFee);
 
     const pf = feeRes.payment_provider_fees?.[0] || {};
