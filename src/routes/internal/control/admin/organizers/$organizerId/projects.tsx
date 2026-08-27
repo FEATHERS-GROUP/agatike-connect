@@ -570,11 +570,30 @@ function OrganizerProjects() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-500 dark:text-[#797775] text-xs uppercase font-semibold mb-2">Modules ({selectedApp?.app_modules?.length || 0})</p>
-                <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 max-h-[300px] overflow-y-auto border border-gray-200 dark:border-[#333333] font-mono text-[11px] leading-relaxed">
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                   {selectedApp?.app_modules?.length > 0 ? (
-                    <pre>{JSON.stringify(selectedApp.app_modules, null, 2)}</pre>
+                    selectedApp.app_modules.map((mod: any) => (
+                      <div key={mod.id} className="bg-gray-50 dark:bg-[#252526] border border-gray-200 dark:border-[#333333] rounded-md p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {mod.icon && <span className="text-[10px] bg-gray-200 dark:bg-[#333333] px-1.5 py-0.5 rounded text-gray-700 dark:text-[#cccccc] font-medium">{mod.icon}</span>}
+                            <span className="font-semibold text-sm text-gray-900 dark:text-white">{mod.title || "Untitled"}</span>
+                          </div>
+                          <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-[#797775]">{mod.type?.replace(/_/g, " ")}</span>
+                        </div>
+                        <div className="bg-white dark:bg-[#1e1e1e] border border-gray-100 dark:border-[#333333] rounded p-2 overflow-x-auto text-[10px] font-mono text-gray-600 dark:text-[#aaaaaa]">
+                          {mod.config ? (
+                            <pre>{JSON.stringify(mod.config, null, 2)}</pre>
+                          ) : (
+                            <span className="italic">No config</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
                   ) : (
-                    <span className="text-gray-500 dark:text-[#797775] italic">No modules configured.</span>
+                    <div className="bg-gray-50 dark:bg-[#252526] rounded-md p-3 border border-gray-200 dark:border-[#333333]">
+                      <span className="text-gray-500 dark:text-[#797775] italic text-xs">No modules configured.</span>
+                    </div>
                   )}
                 </div>
               </div>
