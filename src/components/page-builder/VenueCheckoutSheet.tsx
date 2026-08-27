@@ -529,6 +529,8 @@ export function VenueCheckoutSheet({
               if (pawapayDepositId) {
                 try {
                   await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                  queryClient.invalidateQueries({ queryKey: ["venue-attendees", venue.id] });
+                  queryClient.invalidateQueries({ queryKey: ["public-venue", venue.id] });
                 } catch (e) {
                   console.error("Cancel cleanup failed:", e);
                 }

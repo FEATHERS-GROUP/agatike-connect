@@ -1268,6 +1268,7 @@ export function FacilityCheckoutSheet({
               if (pawapayDepositId) {
                 try {
                   await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                  queryClient.invalidateQueries({ queryKey: ["facility-bookings", facility.id] });
                 } catch (e) {
                   console.error("Cancel cleanup failed:", e);
                 }

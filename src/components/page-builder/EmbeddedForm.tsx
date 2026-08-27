@@ -255,6 +255,7 @@ export function EmbeddedForm({
             if (pawapayDepositId) {
               try {
                 await cancelPendingPayment({ data: { depositId: pawapayDepositId } } as any);
+                queryClient.invalidateQueries({ queryKey: ["public-form", formId] });
               } catch (e) {
                 console.error("Cancel cleanup failed:", e);
               }
