@@ -572,6 +572,17 @@ Agatike creates subscription tiers (e.g., "Pro", "Enterprise") that explicitly d
 
 This entire equation is calculated dynamically in the `simulateTransaction` engine and enforced in the `PaymentModal` prior to any PawaPay charges. Upon successful completion in the webhook, the resulting net profit (or subsidized loss) is permanently logged into the `earnings` ledger.
 
+#### 12.3.1 Customer Override Fee Logic
+
+To give administrators precise control over what attendees are charged, the fee engine incorporates an explicit **Override Logic**:
+
+- **Customer Service Fee Percentage** (`customer_service_fee_percentage`): The standard default fee charged to the attendee (e.g., 2%).
+- **Customer Collection Fee Percentage** (`customer_collection_fee_percentage`): A dedicated override field. In the admin dashboard, this is labeled as **"Cust. Override (%)"**.
+
+**Behavior:**
+If the **Customer Collection Fee Percentage** is explicitly set (i.e. not `null`), it **completely overrides and replaces** the standard service fee rather than adding to it. 
+For example, if the Service Fee is 2% and the Override is set to 1%, the engine will exclusively charge the customer 1% (`basePrice * 1%`). This ensures strict, predictable fee ceilings without unexpected compounding.
+
 ### 12.4 Platform Subscriptions & Earnings Architecture
 
 In addition to ticketing fees, the platform also derives revenue from **Organizer Subscriptions** (e.g., Business or Premium plans). The logic for subscription payments explicitly diverges from the ticketing fee model to ensure accurate financial reporting.
