@@ -522,12 +522,14 @@ export function PaymentModal({
                           {targetCurrency}
                         </span>
                       </div>
-                      <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
-                        <span>Service Fee</span>
-                        <span>
-                          {simulation.serviceFee.toFixed(2)} {targetCurrency}
-                        </span>
-                      </div>
+                      {simulation.serviceFee > 0 && (
+                        <div className="flex justify-between text-muted-foreground md:text-primary-foreground/70">
+                          <span>Service Fee</span>
+                          <span>
+                            {simulation.serviceFee.toFixed(2)} {targetCurrency}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex justify-end font-medium text-foreground md:text-primary-foreground border-t border-border/40 md:border-primary-foreground/20 pt-1">
                         <span>
                           {simulation.totalCustomerCharge.toLocaleString()} {targetCurrency}
@@ -677,10 +679,12 @@ export function PaymentModal({
                               <span>Base Ticket</span>
                               <span>{simulation.convertedBasePrice?.toLocaleString() || baseAmount} {targetCurrency}</span>
                            </div>
-                           <div className="flex justify-between">
-                              <span>Service Fee</span>
-                              <span>{simulation.serviceFee.toFixed(2)} {targetCurrency}</span>
-                           </div>
+                           {simulation.serviceFee > 0 && (
+                             <div className="flex justify-between">
+                                <span>Service Fee</span>
+                                <span>{simulation.serviceFee.toFixed(2)} {targetCurrency}</span>
+                             </div>
+                           )}
                            {baseCurrency !== targetCurrency && (
                               <div className="flex justify-between pt-2 border-t border-primary-foreground/20 text-xs text-primary-foreground/80">
                                  <span>Live Rate</span>
