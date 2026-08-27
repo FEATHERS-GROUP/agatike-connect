@@ -233,7 +233,9 @@ export function CreateEventDesktop() {
   const { step: urlStep } = useSearch({ strict: false }) as { step?: number };
   const step = urlStep || 0;
   const { activeWorkspace } = useWorkspace();
-  const currencySymbol = getCurrencySymbol(activeWorkspace?.currency || activeWorkspace?.wallet?.currency);
+  const currencySymbol = getCurrencySymbol(
+    activeWorkspace?.currency || activeWorkspace?.wallet?.currency,
+  );
   const {
     canCreateTicketTier,
     canCreateEvent,
@@ -720,9 +722,7 @@ export function CreateEventDesktop() {
             <div>
               <Label>Description</Label>
               <Suspense
-                fallback={
-                  <div className="h-32 w-full animate-pulse rounded-md bg-muted mt-1" />
-                }
+                fallback={<div className="h-32 w-full animate-pulse rounded-md bg-muted mt-1" />}
               >
                 <ReactQuill
                   theme="snow"
@@ -1510,9 +1510,9 @@ function PublishReview({
             )}
           </div>
           {data.description && data.description.includes("<") ? (
-            <div 
+            <div
               className="mt-4 text-sm whitespace-pre-wrap prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden w-full [&_*]:break-words"
-              dangerouslySetInnerHTML={{ __html: data.description.replace(/&nbsp;/g, ' ') }}
+              dangerouslySetInnerHTML={{ __html: data.description.replace(/&nbsp;/g, " ") }}
             />
           ) : (
             <p className="mt-4 text-sm whitespace-pre-wrap">

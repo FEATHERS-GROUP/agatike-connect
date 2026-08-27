@@ -52,9 +52,9 @@ export const CheckYourPhone = ({
         />
       </div>
       {status === "payment" && (
-        <Button 
-          variant="outline" 
-          className="rounded-xl h-12 px-8" 
+        <Button
+          variant="outline"
+          className="rounded-xl h-12 px-8"
           onClick={handleCancel}
           disabled={isCancelling}
         >

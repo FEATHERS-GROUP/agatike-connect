@@ -81,8 +81,7 @@ export function VenueCheckoutDesktop({ venue }: { venue: any }) {
   // Fetch Ticket Projects for PDF generation
   const { data: venueProject } = useQuery({
     queryKey: ["venue-ticket-project", venue?.id],
-    queryFn: () =>
-      getTicketProjectPublic({ data: { venueId: venue?.id } } as any),
+    queryFn: () => getTicketProjectPublic({ data: { venueId: venue?.id } } as any),
     enabled: !!venue?.id,
   });
 

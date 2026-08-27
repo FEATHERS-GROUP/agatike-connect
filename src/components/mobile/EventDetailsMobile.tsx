@@ -133,13 +133,14 @@ export function EventDetailsMobile({
         <div>
           <h2 className="text-xl font-bold mb-3">About</h2>
           {d.description && d.description.includes("<") ? (
-            <div 
+            <div
               className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden w-full [&_*]:break-words"
-              dangerouslySetInnerHTML={{ __html: d.description.replace(/&nbsp;/g, ' ') }}
+              dangerouslySetInnerHTML={{ __html: d.description.replace(/&nbsp;/g, " ") }}
             />
           ) : (
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {d.description || "Expect curated sound, immersive lighting and a crowd that brings the energy. Doors open one hour before showtime — bring an ID and your good vibes."}
+              {d.description ||
+                "Expect curated sound, immersive lighting and a crowd that brings the energy. Doors open one hour before showtime — bring an ID and your good vibes."}
             </p>
           )}
         </div>

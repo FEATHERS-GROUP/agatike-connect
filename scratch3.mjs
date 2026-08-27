@@ -12,10 +12,10 @@ async function run() {
     }
   `;
   try {
-     const res = await hasuraRequest(query, {});
-     console.log(JSON.stringify(res, null, 2));
-  } catch(e) {
-     console.log(e);
+    const res = await hasuraRequest(query, {});
+    console.log(JSON.stringify(res, null, 2));
+  } catch (e) {
+    console.log(e);
   }
 }
 run();

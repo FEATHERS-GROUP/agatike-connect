@@ -217,8 +217,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
     ];
   }
 
-
-
   const isPastEvent = useMemo(() => {
     const targetDateStr = ev.end_date || date;
     if (!targetDateStr || targetDateStr === "Upcoming") return false;
@@ -284,7 +282,6 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
       return { ...prev, [key]: Math.max(0, (prev[key] || 0) - 1) };
     });
   };
-
 
   const { data: feedbackData } = useQuery({
     queryKey: ["public-feedback", eventId],
@@ -358,14 +355,16 @@ export function useEventDetails(eventId: string, initialEvent?: any) {
         ).map((t: any) => {
           const sold = parseInt(t.sold) || 0;
           const ticketsLeft = Math.max(0, parseInt(t.remaining) || 0);
-          
+
           let perks: string[] = [];
           if (t.vip_privilege_ids && t.vip_privilege_ids.length > 0) {
             perks = t.vip_privilege_ids
-              .map((pid: string) => workspaceVipPrivileges.find((p: any) => p.id === pid)?.description)
+              .map(
+                (pid: string) => workspaceVipPrivileges.find((p: any) => p.id === pid)?.description,
+              )
               .filter(Boolean);
           }
-          
+
           return {
             id: t.id,
             name: t.name || t.type,

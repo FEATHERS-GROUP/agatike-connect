@@ -92,8 +92,7 @@ export function MovieBookingDesktop({ movieId }: { movieId: string }) {
   // Fetch Ticket Projects for PDF generation
   const { data: cinemaProject } = useQuery({
     queryKey: ["cinema-ticket-project", cinema?.id],
-    queryFn: () =>
-      getTicketProjectPublic({ data: { cinemaId: cinema?.id } } as any),
+    queryFn: () => getTicketProjectPublic({ data: { cinemaId: cinema?.id } } as any),
     enabled: !!cinema?.id,
   });
 

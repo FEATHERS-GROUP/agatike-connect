@@ -1499,7 +1499,7 @@ export const sendOrganizerStatusEmailRaw = async (ctx: any) => {
 
   const html = `
     <div style="font-family: 'Inter', system-ui, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-      <div style="background-color: ${active ? '#10b981' : '#f43f5e'}; padding: 40px 24px; text-align: center;">
+      <div style="background-color: ${active ? "#10b981" : "#f43f5e"}; padding: 40px 24px; text-align: center;">
         <div style="background: white; width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px auto; overflow: hidden; border: 2px solid white;">
           <img src="${agatikeHeaderIconUrl}" alt="Agatike" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
@@ -1508,7 +1508,7 @@ export const sendOrganizerStatusEmailRaw = async (ctx: any) => {
       <div style="padding: 40px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
         <p>Hi ${name},</p>
         <p>Your Agatike Connect organizer account has been <strong>${statusStr.toLowerCase()}</strong> by the administrator.</p>
-        ${active ? '<p>You can now log in and continue managing your workspaces and events.</p>' : '<p>If you have any questions or believe this is a mistake, please contact our support team.</p>'}
+        ${active ? "<p>You can now log in and continue managing your workspaces and events.</p>" : "<p>If you have any questions or believe this is a mistake, please contact our support team.</p>"}
       </div>
       <div style="background-color: #fafafa; padding: 32px 24px; text-align: center; border-top: 1px solid #eaeaea;">
         <p style="font-size: 13px; color: #666; margin: 0 0 16px 0;">Powered securely by <strong>Agatike Connect</strong></p>

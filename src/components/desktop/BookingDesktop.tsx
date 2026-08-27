@@ -82,8 +82,7 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
   // Fetch Ticket Projects for PDF generation
   const { data: eventProject } = useQuery({
     queryKey: ["event-ticket-project", eventId],
-    queryFn: () =>
-      getTicketProjectPublic({ data: { eventId } } as any),
+    queryFn: () => getTicketProjectPublic({ data: { eventId } } as any),
     enabled: !!eventId,
   });
 
@@ -596,7 +595,11 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
 
     const safeParse = (val: any) => {
       if (typeof val === "string") {
-        try { return JSON.parse(val); } catch { return val; }
+        try {
+          return JSON.parse(val);
+        } catch {
+          return val;
+        }
       }
       return val;
     };
@@ -608,26 +611,26 @@ export function BookingDesktop({ eventId }: { eventId: string }) {
       ...combinationOverride,
       palette: safeParse(
         combinationOverride.palette ||
-        tierOverride.palette ||
-        stopOverride.palette ||
-        baseProject.palette
+          tierOverride.palette ||
+          stopOverride.palette ||
+          baseProject.palette,
       ),
       font: safeParse(
-        combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font
+        combinationOverride.font || tierOverride.font || stopOverride.font || baseProject.font,
       ),
       layout: safeParse(
         combinationOverride.layout ||
-        tierOverride.layout ||
-        stopOverride.layout ||
-        baseProject.design_overrides?.layout ||
-        baseProject.layout
+          tierOverride.layout ||
+          stopOverride.layout ||
+          baseProject.design_overrides?.layout ||
+          baseProject.layout,
       ),
       back: safeParse(
         combinationOverride.back ||
-        tierOverride.back ||
-        stopOverride.back ||
-        baseProject.design_overrides?.back ||
-        baseProject.back
+          tierOverride.back ||
+          stopOverride.back ||
+          baseProject.design_overrides?.back ||
+          baseProject.back,
       ),
     };
   };

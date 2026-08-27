@@ -145,10 +145,7 @@ export function RenderedPage({
       const baseAmount = Number(selectedPaymentBlock.amount || 0);
 
       const workspaceCurrency =
-        page?.currency ||
-        page?.parent?.currency ||
-        page?.workspaces?.currency ||
-        "RWF";
+        page?.currency || page?.parent?.currency || page?.workspaces?.currency || "RWF";
 
       const pawaRes = await initiatePawaPayDeposit({
         data: {
