@@ -15,26 +15,50 @@ export const recordHeartbeat = createServerFn({ method: "POST" })
     let userType = "anonymous";
 
     const authCookie = getCookie("agatike_auth");
-    if (authCookie) {
-      try {
-        const { payload } = await jwtVerify(authCookie, SECRET);
-        if (payload) {
-          userId = payload.sub as string;
-          userType = payload.type as string;
-        }
-      } catch (e) {}
-    } else {
-      const userToken = getCookie("agatike_user_auth");
+    const userToken = getCookie("agatike_user_auth");
+
+    // Determine the context based on the path
+    const isOrganizerPath = path.includes("/dashboard") || path.includes("/internal/control");
+
+    async function verifyOrganizer() {
+      if (authCookie) {
+        try {
+          const { payload } = await jwtVerify(authCookie, SECRET);
+          if (payload) {
+            userId = payload.sub as string;
+            userType = payload.type as string;
+            return true;
+          }
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    async function verifyUser() {
       if (userToken) {
         try {
           const { payload } = await jwtVerify(userToken, SECRET);
           if (payload && payload.type === "user") {
             userId = payload.sub as string;
             userType = "user";
+            return true;
           }
-        } catch (e) {
-          // invalid or expired token
-        }
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    if (isOrganizerPath) {
+      // Prioritize organizer token on organizer paths
+      const isOrg = await verifyOrganizer();
+      if (!isOrg) {
+        await verifyUser();
+      }
+    } else {
+      // Prioritize user token on public/user paths
+      const isUsr = await verifyUser();
+      if (!isUsr) {
+        await verifyOrganizer();
       }
     }
 
