@@ -23,7 +23,7 @@ export function useTelemetry() {
 
     const sendHeartbeat = () => {
       // Admin panel must never be recorded in telemetry
-      if (location.pathname.includes("/internal/control/admin")) return;
+      if (location.pathname.includes("/internal/control")) return;
 
       if (sessionIdRef.current) {
         // Use window.location.href for the real full URL
