@@ -68,49 +68,47 @@ export const recordHeartbeat = createServerFn({ method: "POST" })
 
       const sessionRef = db.collection("platform_telemetry").doc(sessionId);
 
-      await db.runTransaction(async (t: any) => {
-        const doc = await t.get(sessionRef);
-        const now = new Date().toISOString();
+      const doc = await sessionRef.get();
+      const now = new Date().toISOString();
 
-        if (!doc.exists) {
-          t.set(sessionRef, {
-            sessionId,
-            userId,
-            userType,
-            startTime: now,
-            lastActive: now,
-            durationSeconds: 0,
-            path,
-            userAgent,
-            lastVisibility: visibilityState,
-          });
-        } else {
-          const data = doc.data();
-          const lastActiveDate = new Date(data.lastActive);
-          const currentDate = new Date(now);
+      if (!doc.exists) {
+        await sessionRef.set({
+          sessionId,
+          userId,
+          userType,
+          startTime: now,
+          lastActive: now,
+          durationSeconds: 0,
+          path,
+          userAgent,
+          lastVisibility: visibilityState,
+        });
+      } else {
+        const data = doc.data() as any;
+        const lastActiveDate = new Date(data.lastActive);
+        const currentDate = new Date(now);
 
-          // Calculate seconds elapsed since last heartbeat
-          const secondsElapsed = Math.floor(
-            (currentDate.getTime() - lastActiveDate.getTime()) / 1000,
-          );
+        // Calculate seconds elapsed since last heartbeat
+        const secondsElapsed = Math.floor(
+          (currentDate.getTime() - lastActiveDate.getTime()) / 1000,
+        );
 
-          // Only add to duration if it's a reasonable heartbeat interval (e.g. less than 5 minutes)
-          // to avoid huge spikes if tab was suspended and restored.
-          const addDuration =
-            secondsElapsed > 0 && secondsElapsed < 300 && visibilityState === "visible"
-              ? secondsElapsed
-              : 0;
+        // Only add to duration if it's a reasonable heartbeat interval (e.g. less than 5 minutes)
+        // to avoid huge spikes if tab was suspended and restored.
+        const addDuration =
+          secondsElapsed > 0 && secondsElapsed < 300 && visibilityState === "visible"
+            ? secondsElapsed
+            : 0;
 
-          t.update(sessionRef, {
-            lastActive: now,
-            durationSeconds: data.durationSeconds + addDuration,
-            path,
-            lastVisibility: visibilityState,
-            userId, // Update user ID in case they logged in during session
-            userType,
-          });
-        }
-      });
+        await sessionRef.update({
+          lastActive: now,
+          durationSeconds: data.durationSeconds + addDuration,
+          path,
+          lastVisibility: visibilityState,
+          userId, // Update user ID in case they logged in during session
+          userType,
+        });
+      }
 
       // Probabilistic Garbage Collection: 1% chance to clean up old telemetry
       // Uses a simple orderBy + limit to avoid needing a composite index.
